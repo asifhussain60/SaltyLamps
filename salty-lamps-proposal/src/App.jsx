@@ -10,6 +10,8 @@ import DesignView from './components/views/DesignView.jsx'
 import GrowthView from './components/views/GrowthView.jsx'
 import BuildPlan from './components/views/BuildPlan.jsx'
 import Pricing from './components/views/Pricing.jsx'
+import RevenueView from './components/views/RevenueView.jsx'
+import LegalitiesView from './components/views/LegalitiesView.jsx'
 
 const VIEWS = [
   { id: 1, label: 'Cover' },
@@ -19,6 +21,8 @@ const VIEWS = [
   { id: 5, label: 'Growth' },
   { id: 6, label: 'Roadmap' },
   { id: 7, label: 'Pricing' },
+  { id: 8, label: 'Revenue' },
+  { id: 9, label: 'Legalities' },
 ]
 
 const VIEW_COMPONENTS = {
@@ -29,6 +33,8 @@ const VIEW_COMPONENTS = {
   5: GrowthView,
   6: BuildPlan,
   7: Pricing,
+  8: RevenueView,
+  9: LegalitiesView,
 }
 
 export default function App() {
