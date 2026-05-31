@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salty Lamps — Website Redesign Proposal</title>
+<link href="assets/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/css/font-awesome.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── ERICKA BASE (adapted from template) ──────────────── */
+body {
+  font-family: "PT Sans", Arial, Helvetica, sans-serif;
+  background: #fff url('assets/img/body-back.png') repeat;
+  font-size: 14px;
+  line-height: 26px;
+  color: #444;
+  -webkit-font-smoothing: antialiased;
+  border-top: 3px solid #b86040;
+  overflow: hidden;
+}
+h1,h2,h3,h4,h5,h6 {
+  font-family: "Oswald", sans-serif;
+  font-weight: 400;
+  color: #555;
+  margin: 4px 0;
+  padding: 3px 0;
+}
+a, a:visited { color: #b86040; text-decoration: none; }
+a:hover { color: #8f4a2e; }
+hr { margin: 4px 0 14px; border-top: 0; border-bottom: 1px solid #eee; }
+.bor { height: 20px; margin: 16px 0 14px; background: url('assets/img/dot.png') repeat-x; }
+
+/* ── SHELL ────────────────────────────────────────────── */
+.shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* ── SITE HEADER ──────────────────────────────────────── */
+.site-header {
+  flex-shrink: 0;
+  padding: 14px 0 0;
+  border-bottom: 1px solid #ddd;
+  background: url('assets/img/header-back.png') repeat;
+}
+.site-header .brand h1 {
+  font-family: "Oswald", sans-serif;
+  font-size: 28px;
+  line-height: 34px;
+  color: #666;
+  margin: 0;
+}
+.site-header .brand h1 span { color: #b86040; }
+.site-header .brand small {
+  font-family: "PT Sans", sans-serif;
+  font-size: 12px;
+  color: #999;
+  display: block;
+  margin-top: 2px;
+  letter-spacing: .5px;
+}
+.site-header .info-box {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 1px 2px #ddd;
+  padding: 6px 12px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #777;
+  float: right;
+  margin-top: -14px;
+}
+.site-header .info-box i { color: #b86040; margin-right: 5px; }
+
+/* ── NAVBAR (Ericka style) ────────────────────────────── */
+.step-navbar {
+  flex-shrink: 0;
+  background: #b86040;
+  border-top: 1px solid #8f4a2e;
+  border-bottom: 1px solid #8f4a2e;
+  margin: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.step-navbar::-webkit-scrollbar { display: none; }
+.step-navbar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+}
+.step-navbar ul li a {
+  display: block;
+  padding: 12px 15px;
+  color: #fff !important;
+  font-family: "PT Sans", sans-serif;
+  font-size: 12px;
+  border-left: 1px solid #8f4a2e;
+  transition: background .3s ease;
+  text-decoration: none;
+}
+.step-navbar ul li a:hover { background: #8f4a2e; }
+.step-navbar ul li.active a { background: #8f4a2e; }
+.step-navbar ul li:first-child a { border-left: none; }
+
+/* progress bar */
+.progress-strip { flex-shrink: 0; height: 4px; background: #e8d5c4; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #b86040, #d4956b); transition: width .45s ease; }
+
+/* ── CONTENT ──────────────────────────────────────────── */
+.content-area { flex: 1; overflow-y: auto; background: #fff url('assets/img/body-back.png') repeat; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── FOOTER NAV ───────────────────────────────────────── */
+.footer-nav {
+  flex-shrink: 0;
+  background: url('assets/img/fback.png') repeat;
+  border-top: 3px solid #b86040;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-nav .step-info {
+  font-family: "Oswald", sans-serif;
+  font-size: 14px;
+  color: #ccc;
+  letter-spacing: 1px;
+}
+.footer-nav .step-info strong { color: #d4956b; }
+.btn-nav {
+  font-family: "Oswald", sans-serif;
+  font-size: 13px;
+  padding: 7px 22px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: background .2s;
+}
+.btn-back { background: #555; color: #ddd; }
+.btn-back:hover { background: #444; }
+.btn-back:disabled { opacity: .3; cursor: not-allowed; }
+.btn-forward { background: #b86040; color: #fff; border-bottom: 2px solid #8f4a2e; }
+.btn-forward:hover { background: #8f4a2e; }
+.btn-forward:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ── SECTION WRAPPERS ─────────────────────────────────── */
+.section-wrap { padding: 28px 0 20px; }
+.section-alt { background: #f9f9f9; }
+
+/* ── HERO TITLE (Ericka dot-line pattern) ─────────────── */
+.hero-title {
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+.hero-title h2 {
+  font-size: 26px;
+  color: #555;
+  background: url('assets/img/dot.png') left center repeat-x;
+  background-size: 4px 16px;
+  line-height: 38px;
+  margin: 0;
+}
+.hero-title h2 span.title-text {
+  background: #fff url('assets/img/body-back.png') repeat;
+  padding-right: 12px;
+}
+.hero-title h2 span.color { color: #b86040; }
+.hero-title p { color: #777; margin: 8px 0 0; font-size: 14px; line-height: 22px; }
+
+/* ── SERVICE CARD (Ericka core card) ──────────────────── */
+.service-card {
+  background: #fff;
+  padding: 14px 16px;
+  border: 1px solid #e7e7e7;
+  border-bottom: 3px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 18px;
+  transition: border-bottom .3s;
+}
+.service-card:hover { border-bottom: 3px solid #b86040; }
+.service-card h5 {
+  font-family: "Oswald", sans-serif;
+  font-size: 15px;
+  padding: 3px 0 8px;
+  margin: 0 0 6px;
+  border-bottom: 1px solid #f1f1f1;
+  color: #555;
+}
+.service-card h5 i { color: #b86040; margin-right: 7px; font-size: 16px; }
+.service-card p { font-size: 13px; line-height: 22px; color: #666; margin: 0; }
+.service-card ul { list-style: none; padding: 0; margin: 8px 0 0; }
+.service-card ul li { font-size: 13px; color: #666; padding: 3px 0; border-bottom: 1px solid #f5f5f5; }
+.service-card ul li:last-child { border-bottom: none; }
+.service-card ul li i { color: #b86040; margin-right: 6px; font-size: 12px; }
+
+/* ── CTA BOX ──────────────────────────────────────────── */
+.cta-box {
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-left: 4px solid #b86040;
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+.cta-box p { margin: 0; font-size: 14px; color: #555; line-height: 24px; }
+.cta-box strong { color: #b86040; }
+.cta-box.green { border-left-color: #5a8a58; }
+.cta-box.green strong { color: #4a7a48; }
+.cta-box.red { border-left-color: #9e3e2a; }
+.cta-box.red strong { color: #9e3e2a; }
+
+/* ── TABLE ────────────────────────────────────────────── */
+.ericka-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+.ericka-table thead tr { background: #b86040; color: #fff; }
+.ericka-table th { padding: 10px 14px; font-family: "Oswald", sans-serif; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: 400; }
+.ericka-table tbody tr:nth-child(even) { background: #fdf8f5; }
+.ericka-table tbody tr:nth-child(odd) { background: #fff; }
+.ericka-table td { padding: 10px 14px; border-bottom: 1px solid #f0e8e0; color: #555; vertical-align: top; font-size: 13px; }
+.ericka-table td:first-child { font-weight: 700; color: #444; }
+.ericka-table tr.highlight td { background: rgba(184,96,64,.07); }
+
+/* ── SCORE BARS ───────────────────────────────────────── */
+.score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.score-lbl { font-size: 13px; color: #666; width: 220px; flex-shrink: 0; }
+.score-track { flex: 1; background: #eee; border-radius: 20px; height: 9px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 20px; }
+.fill-lo { background: #c0614e; }
+.fill-md { background: #c9a047; }
+.fill-hi { background: #5a8a58; }
+.score-val { font-family: "Oswald", sans-serif; font-size: 13px; font-weight: 500; width: 38px; text-align: right; color: #444; }
+
+/* ── BADGES ───────────────────────────────────────────── */
+.badge-custom { display: inline-block; padding: 2px 9px; border-radius: 3px; font-size: 11px; font-family: "Oswald", sans-serif; letter-spacing: .5px; }
+.badge-red { background: #f5e4e0; color: #8b2a1a; }
+.badge-green { background: #e4f0e4; color: #2d6b2d; }
+.badge-amber { background: #f8f0dc; color: #7a5a18; }
+.badge-blue { background: #e0eef5; color: #1a5a7a; }
+
+/* ── DOC CALLOUT ──────────────────────────────────────── */
+.doc-callout {
+  background: #fff;
+  border: 1px solid #e7e7e7;
+  border-left: 4px solid #b86040;
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+.doc-callout .doc-label {
+  font-family: "Oswald", sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #b86040;
+  background: rgba(184,96,64,.1);
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+.doc-callout h4 { font-size: 16px; color: #444; margin: 0 0 8px; }
+.doc-callout p { font-size: 13px; color: #666; margin: 0; line-height: 22px; }
+.doc-callout blockquote {
+  border-left: 3px solid #d4956b;
+  background: #fdf8f5;
+  padding: 10px 16px;
+  margin: 10px 0 0;
+  font-style: italic;
+  font-size: 13px;
+  color: #666;
+  line-height: 22px;
+  border-radius: 0 4px 4px 0;
+}
+.doc-callout.green { border-left-color: #5a8a58; }
+.doc-callout.green .doc-label { color: #4a7a48; background: rgba(90,138,88,.1); }
+.doc-callout.purple { border-left-color: #7b68c0; }
+.doc-callout.purple .doc-label { color: #6655aa; background: rgba(123,104,192,.1); }
+.doc-callout.navy { border-left-color: #5a6898; }
+.doc-callout.navy .doc-label { color: #4a5888; background: rgba(90,104,152,.1); }
+
+/* ── TIMELINE PHASES ──────────────────────────────────── */
+.timeline { position: relative; padding-left: 24px; margin: 10px 0; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, #b86040, #d4956b, #eee); }
+.phase { position: relative; padding: 0 0 28px 28px; }
+.phase::before { content: ''; position: absolute; left: -5px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #b86040; border: 2px solid #fff; box-shadow: 0 0 0 2px #e7d0c4; }
+.phase-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.phase-num { font-family: "Oswald", sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #b86040; }
+.phase-title { font-family: "Oswald", sans-serif; font-size: 18px; color: #555; font-weight: 400; }
+.phase-weeks { margin-left: auto; font-size: 11px; color: #999; background: #f5f5f5; border: 1px solid #eee; padding: 2px 10px; border-radius: 20px; }
+.phase-tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px,1fr)); gap: 8px; }
+.p-task { background: #fff; border: 1px solid #e7e7e7; border-bottom: 2px solid #eee; border-radius: 4px; padding: 9px 12px; font-size: 13px; color: #666; line-height: 1.5; }
+.p-task i { color: #b86040; margin-right: 5px; font-size: 11px; }
+.p-task.star { border-bottom-color: #b86040; background: #fdf8f5; }
+
+/* ── KEYWORD ROWS ─────────────────────────────────────── */
+.kw-section-title { font-family: "Oswald", sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #b86040; padding-bottom: 6px; border-bottom: 2px solid #eee; margin-bottom: 8px; }
+.kw-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+.kw-term { font-family: "Courier New", monospace; color: #444; flex: 1; }
+.kw-tag { font-size: 11px; font-family: "Oswald", sans-serif; padding: 2px 8px; border-radius: 2px; letter-spacing: .5px; }
+.kw-tag.buy { background: #e4f0e4; color: #2d6b2d; }
+.kw-tag.info { background: #e0eef5; color: #1a5a7a; }
+.kw-tag.b2b { background: #ede8f5; color: #5a3e9b; }
+.kw-diff { font-size: 12px; color: #aaa; width: 70px; text-align: right; }
+
+/* ── COVER PAGE ───────────────────────────────────────── */
+.cover-page {
+  min-height: calc(100vh - 160px);
+  background: #2a1508 url('assets/img/fback.png') repeat;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 60px 40px;
+  border-top: 4px solid #b86040;
+  border-bottom: 4px solid #b86040;
+}
+.cover-page h1 {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(36px, 5vw, 68px);
+  color: #fff;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+.cover-page h1 span { color: #d4956b; }
+.cover-page .cover-sub { font-size: 15px; color: rgba(255,255,255,.55); max-width: 560px; margin: 0 auto 32px; line-height: 1.65; }
+.cover-page .cover-meta { display: inline-block; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 3px; padding: 4px 16px; font-size: 12px; color: rgba(255,255,255,.45); margin: 3px 4px; font-family: "Oswald", sans-serif; letter-spacing: 1px; }
+.cover-page .cover-meta strong { color: #d4956b; }
+
+/* ── WIREFRAME ────────────────────────────────────────── */
+.wireframe { background: #1a0a04; border: 1px solid #3a1a08; border-top: 3px solid #b86040; border-radius: 3px; overflow: hidden; }
+.wf-hero { background: linear-gradient(160deg,#1a0804,#3a1a08); padding: 36px 32px; text-align: center; border-bottom: 1px solid rgba(255,255,255,.06); }
+.wf-tag { font-family: "Oswald", sans-serif; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: #d4956b; margin-bottom: 10px; opacity: .7; }
+.wf-hero h3 { font-family: "Oswald", sans-serif; font-size: clamp(18px, 2.5vw, 28px); color: #fff; font-weight: 300; margin-bottom: 8px; letter-spacing: 1px; }
+.wf-hero p { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 16px; }
+.wf-btn { display: inline-block; padding: 8px 20px; border-radius: 3px; font-family: "Oswald", sans-serif; font-size: 12px; letter-spacing: 1px; margin: 3px; cursor: default; }
+.wf-btn.primary { background: #b86040; color: #fff; border-bottom: 2px solid #8f4a2e; }
+.wf-btn.secondary { background: rgba(255,255,255,.08); color: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.12); }
+.wf-trust { display: flex; gap: 20px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.wf-trust span { font-size: 10px; color: rgba(255,255,255,.3); }
+.wf-trust span::before { content: '✓ '; color: #d4956b; }
+.wf-section { padding: 18px 28px; border-bottom: 1px solid rgba(255,255,255,.04); }
+.wf-label { font-family: "Oswald", sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.2); margin-bottom: 10px; }
+.wf-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.wf-product { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 3px; padding: 10px; text-align: center; }
+.wf-product .emoji { font-size: 20px; margin-bottom: 5px; }
+.wf-product .pname { font-size: 9px; color: rgba(255,255,255,.4); }
+.wf-product .pprice { font-family: "Oswald", sans-serif; font-size: 12px; color: #d4956b; }
+.wf-product .poffer { font-size: 9px; color: #b86040; margin-top: 2px; }
+.wf-reviews { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.wf-review { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); border-radius: 3px; padding: 12px; }
+.wf-review .stars { color: #d4956b; font-size: 10px; margin-bottom: 5px; }
+.wf-review p { font-size: 10px; color: rgba(255,255,255,.38); line-height: 1.5; font-style: italic; }
+.wf-review .author { font-size: 9px; color: rgba(255,255,255,.2); margin-top: 5px; }
+.click-step { display: inline-block; background: #b86040; color: #fff; font-family: "Oswald", sans-serif; font-size: 9px; padding: 2px 8px; border-radius: 2px; margin-bottom: 6px; letter-spacing: 1px; }
+
+/* ── SEO FUNNEL ───────────────────────────────────────── */
+.funnel-level { padding: 12px 18px; margin-bottom: 3px; text-align: center; border-radius: 3px; }
+.funnel-level h5 { font-family: "Oswald", sans-serif; font-size: 14px; font-weight: 500; margin: 0 0 3px; }
+.funnel-level p { font-size: 12px; margin: 0; opacity: .75; }
+.fl-1 { background: #b86040; color: #fff; }
+.fl-2 { background: rgba(184,96,64,.1); border: 1px solid rgba(184,96,64,.25); color: #444; }
+.fl-3 { background: #eef5f3; border: 1px solid rgba(61,114,104,.2); color: #444; }
+.fl-4 { background: #eff4ee; border: 1px solid rgba(90,122,88,.2); color: #444; }
+
+/* ── FOLDER TREE ──────────────────────────────────────── */
+.tree-box { background: #f9f6f2; border: 1px solid #e7ddd5; border-left: 4px solid #b86040; border-radius: 3px; padding: 20px 24px; font-family: "Courier New", monospace; font-size: 13px; line-height: 1.9; color: #555; overflow-x: auto; }
+.tree-box .d { color: #b86040; font-weight: 700; }
+.tree-box .f { color: #3d7268; }
+.tree-box .c { color: #bbb; font-style: italic; }
+.i1{padding-left:18px;} .i2{padding-left:36px;} .i3{padding-left:54px;}
+
+/* ── SITEMAP ──────────────────────────────────────────── */
+.sitemap-wrap { background: #fdf8f5; border: 1px solid #e7ddd5; border-radius: 4px; padding: 28px 20px; overflow-x: auto; }
+.sm-root { display: flex; flex-direction: column; align-items: center; }
+.sm-root-node { background: #b86040; color: #fff; font-family: "Oswald", sans-serif; font-size: 14px; letter-spacing: 1px; padding: 10px 28px; border-radius: 3px; border-bottom: 3px solid #8f4a2e; }
+.sm-conn { width: 2px; height: 16px; background: #ddd; margin: 0 auto; }
+.sm-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.sm-col { display: flex; flex-direction: column; align-items: center; }
+.sm-l1 { background: rgba(184,96,64,.12); border: 1px solid rgba(184,96,64,.3); color: #b86040; font-family: "Oswald", sans-serif; font-size: 11px; letter-spacing: .5px; padding: 7px 16px; border-radius: 3px; white-space: nowrap; font-weight: 500; }
+.sm-l2 { background: #fff; border: 1px solid #eee; color: #777; font-size: 11px; padding: 5px 12px; border-radius: 3px; white-space: nowrap; margin: 2px 0; }
+.sm-children { display: flex; flex-direction: column; align-items: center; }
+
+/* ── SUMMARY BAND ─────────────────────────────────────── */
+.summary-band { background: #b86040; border-top: 3px solid #8f4a2e; padding: 24px 32px; text-align: center; color: #fff; }
+.summary-band h3 { font-family: "Oswald", sans-serif; font-size: 20px; font-weight: 400; letter-spacing: 1px; color: #fff; margin-bottom: 6px; }
+.summary-band p { font-size: 13px; color: rgba(255,255,255,.75); margin: 0 auto 16px; max-width: 600px; }
+.summary-stats { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+.sstat .val { font-family: "Oswald", sans-serif; font-size: 32px; color: #fff; display: block; line-height: 1; }
+.sstat .lbl { font-size: 10px; color: rgba(255,255,255,.6); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; display: block; }
+
+/* ── NAMING BOXES ─────────────────────────────────────── */
+.naming-do { background: #eff4ee; border: 1px solid rgba(90,138,88,.25); border-left: 4px solid #5a8a58; border-radius: 4px; padding: 16px 18px; }
+.naming-dont { background: #faf0ed; border: 1px solid rgba(158,62,42,.2); border-left: 4px solid #9e3e2a; border-radius: 4px; padding: 16px 18px; }
+.naming-do h5 { font-family: "Oswald", sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #4a7a48; margin-bottom: 10px; }
+.naming-dont h5 { font-family: "Oswald", sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #9e3e2a; margin-bottom: 10px; }
+.nex { font-family: "Courier New", monospace; font-size: 12px; display: block; padding: 3px 8px; border-radius: 3px; margin: 3px 0; }
+.naming-do .nex { background: rgba(90,138,88,.12); color: #2a5c28; }
+.naming-dont .nex { background: rgba(158,62,42,.1); color: #7a2a1a; text-decoration: line-through; }
+
+/* UTILS */
+.text-accent { color: #b86040; }
+.text-red { color: #9e3e2a; }
+.mt-10 { margin-top: 10px; } .mt-16 { margin-top: 16px; } .mt-20 { margin-top: 20px; }
+.content-area::-webkit-scrollbar { width: 5px; }
+.content-area::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── SITE HEADER ── -->
+<div class="site-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-7 col-xs-8">
+        <div class="brand">
+          <h1>Salty Lamps<span>.</span></h1>
+          <small>Website Redesign Proposal &nbsp;·&nbsp; Stoke-on-Trent, UK</small>
+        </div>
+      </div>
+      <div class="col-sm-5 col-xs-4 hidden-xs">
+        <div class="info-box">
+          <i class="fa fa-phone"></i> +44 (0) 1782 970001 &nbsp;&nbsp;
+          <i class="fa fa-envelope-o"></i> info@saltylamps.co.uk
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STEP NAVBAR ── -->
+<nav class="step-navbar">
+  <ul>
+    <li class="active" onclick="goTo(1)"><a href="#">1 · Cover</a></li>
+    <li onclick="goTo(2)"><a href="#">2 · Vision &amp; Docs</a></li>
+    <li onclick="goTo(3)"><a href="#">3 · Honest Audit</a></li>
+    <li onclick="goTo(4)"><a href="#">4 · Competitors</a></li>
+    <li onclick="goTo(5)"><a href="#">5 · Homepage &amp; 3-Click</a></li>
+    <li onclick="goTo(6)"><a href="#">6 · SEO &amp; Ranking</a></li>
+    <li onclick="goTo(7)"><a href="#">7 · Organic Traffic</a></li>
+    <li onclick="goTo(8)"><a href="#">8 · Tech Stack</a></li>
+    <li onclick="goTo(9)"><a href="#">9 · Sitemap &amp; Structure</a></li>
+    <li onclick="goTo(10)"><a href="#">10 · Build Plan</a></li>
+  </ul>
+</nav>
+<div class="progress-strip"><div class="progress-fill" id="prog" style="width:10%"></div></div>
+
+<!-- ── CONTENT ── -->
+<div class="content-area">
+
+<!-- ════════════════════════════════════
+     PAGE 1 · COVER
+════════════════════════════════════ -->
+<div class="page active" id="p1">
+  <div class="cover-page">
+    <div>
+      <h1>Website <span>Redesign</span><br>Proposal</h1>
+      <p class="cover-sub">A React-powered, fully responsive digital experience built to rank on Google, captivate visitors, and convert in 3 clicks — grown entirely through organic traffic.</p>
+      <div>
+        <span class="cover-meta"><strong>10</strong> Proposal Sections</span>
+        <span class="cover-meta"><strong>B2C first</strong> · B2B portal</span>
+        <span class="cover-meta"><strong>Organic-only</strong> traffic</span>
+        <span class="cover-meta"><strong>3-click</strong> purchase path</span>
+        <span class="cover-meta"><strong>React 18</strong> + Tailwind v4</span>
+        <span class="cover-meta"><strong>16-week</strong> build plan</span>
+        <span class="cover-meta"><strong>UK → EU → US</strong></span>
+        <span class="cover-meta">Warm &amp; <strong>Earthy</strong> brand</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 2 · VISION & DOCS
+════════════════════════════════════ -->
+<div class="page" id="p2">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Vision &amp; <span class="color">Extracted Documents</span></span></h2>
+    <p>Everything recovered from the four uploaded Apple Pages files, customer review screenshots, and voice memo.</p>
+  </div>
+
+  <div class="doc-callout">
+    <span class="doc-label">Vision.pages</span>
+    <h4>Owner's Vision — verbatim</h4>
+    <blockquote>"We are manufacturers for the Himalayan Salt Products. Would be interested in selling to trade / wholesale business as bulk supplies, as well as to consumers as individual buyers. [Web]site needs to be compatible with Mobile / tablet / Desktop. Prefer [a] new design and ready for a change."</blockquote>
+  </div>
+
+  <div class="doc-callout green">
+    <span class="doc-label">Manufacturing process.pages</span>
+    <h4>The Supply Chain — verbatim extract</h4>
+    <p>This is the brand's biggest differentiator. No UK competitor has a documented manufacturing story.</p>
+    <blockquote>"Raw material (rock salt) is extracted from mines and loaded onto trucks. The trucks deliver [it] to our warehouse in Karachi. [It is then] washed and dried [and] segregated according [to grade/size]..."</blockquote>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="doc-callout purple">
+        <span class="doc-label">Return &amp; Exchange Policy on Web.pages</span>
+        <h4>Returns Policy — June 2020</h4>
+        <p>Standard policy, 5 years old. Must be updated for UK Consumer Rights Act 2015 compliance before launch. Action item for Phase 3.</p>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="doc-callout">
+        <span class="doc-label">Salty Lamps Price List 2025.pages</span>
+        <h4>Trade Wholesale Price List</h4>
+        <p>Partial extraction: TC-1 candle holders at £2.20/unit, CUL-100 culinary salt pouches at £1.25. Populates the B2B portal price download.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-callout green">
+    <span class="doc-label">Customer Reviews (2014–2016)</span>
+    <h4>5 Real Reviews — Key Themes</h4>
+    <p>Fast delivery in 4 of 6 reviews. Healthcare professional recommends to patients. Culinary salt cited for blood pressure. Repeat purchasing and gifting confirmed.</p>
+    <blockquote>"Recommending you to all my patients. Excellent service time after time." — Simon D., healthcare professional</blockquote>
+  </div>
+
+  <div class="doc-callout navy">
+    <span class="doc-label">Voice Memo — 31 May 2026</span>
+    <h4>Promotional Pricing + Responsive Bug Report</h4>
+    <p><strong>Offers requested:</strong> Buy 1 Get 1 Half Price &nbsp;·&nbsp; Buy 2 Get 1 Free &nbsp;·&nbsp; Buy 3 Get 1 Free. <strong>Documented bugs:</strong> column shift on page navigation, inconsistent mobile hamburger icon. Full responsiveness confirmed: mobile, tablet, desktop.</p>
+  </div>
+
+  <div class="service-card">
+    <h5><i class="fa fa-server"></i> Current Hosting — live site inspection</h5>
+    <ul>
+      <li><i class="fa fa-angle-right"></i> Platform: <strong>Wix.com</strong> — being replaced entirely by new stack</li>
+      <li><i class="fa fa-angle-right"></i> Domain: saltylamps.co.uk — registrar unknown, to confirm for DNS migration</li>
+      <li><i class="fa fa-angle-right"></i> Social links point to Wix's own accounts — not Salty Lamps brand pages (live bug)</li>
+      <li><i class="fa fa-angle-right"></i> Meta keywords: "Quality, Home, Goods" — no salt-specific terms, completely ineffective</li>
+    </ul>
+  </div>
+
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 3 · HONEST AUDIT
+════════════════════════════════════ -->
+<div class="page" id="p3">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Why the Site Gets <span class="color">Zero Traffic</span></span></h2>
+    <p>A direct, honest diagnosis. Understanding exact root causes is the only way to fix them.</p>
+  </div>
+
+  <div class="cta-box red">
+    <p><strong>The core problem:</strong> saltylamps.co.uk is effectively invisible to Google — no content to rank, no authority signals, no technical SEO, and a homepage that gives visitors no reason to stay. It is not a site with a traffic problem. It is a site that has not been built for traffic.</p>
+  </div>
+
+  <h4 class="mt-16" style="font-size:16px; color:#555;">Current health scores</h4>
+  <div class="bor"></div>
+  <div class="score-row"><span class="score-lbl">Visual Design &amp; Brand</span><div class="score-track"><div class="score-fill fill-lo" style="width:15%"></div></div><span class="score-val">15%</span></div>
+  <div class="score-row"><span class="score-lbl">Mobile Responsiveness</span><div class="score-track"><div class="score-fill fill-lo" style="width:25%"></div></div><span class="score-val">25%</span></div>
+  <div class="score-row"><span class="score-lbl">SEO &amp; Discoverability</span><div class="score-track"><div class="score-fill fill-lo" style="width:10%"></div></div><span class="score-val">10%</span></div>
+  <div class="score-row"><span class="score-lbl">Content &amp; Storytelling</span><div class="score-track"><div class="score-fill fill-lo" style="width:5%"></div></div><span class="score-val">5%</span></div>
+  <div class="score-row"><span class="score-lbl">Trust &amp; Social Proof</span><div class="score-track"><div class="score-fill fill-md" style="width:40%"></div></div><span class="score-val">40%*</span></div>
+  <div class="score-row"><span class="score-lbl">E-commerce UX</span><div class="score-track"><div class="score-fill fill-md" style="width:35%"></div></div><span class="score-val">35%</span></div>
+  <div class="score-row"><span class="score-lbl">Promotional Pricing</span><div class="score-track"><div class="score-fill fill-lo" style="width:0%"></div></div><span class="score-val">0%</span></div>
+  <div class="score-row"><span class="score-lbl">B2B / Trade Portal</span><div class="score-track"><div class="score-fill fill-lo" style="width:0%"></div></div><span class="score-val">0%</span></div>
+  <p style="font-size:11px;color:#aaa;margin-top:4px;">* Reviews exist but not deployed. Requires GDPR consent before display.</p>
+
+  <div class="bor mt-16"></div>
+  <h4 style="font-size:16px; color:#555;">The 10 root causes — ranked by impact</h4>
+  <div class="bor"></div>
+
+  <table class="ericka-table">
+    <thead><tr><th>#</th><th>Root Cause</th><th>Impact</th><th>Fix in new site</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>Zero indexable content.</strong> One scrolling page — no blog, no category URLs, nothing for Google to rank.</td><td><span class="badge-custom badge-red">Fatal</span></td><td>12+ pages, dedicated URLs, blog with 12 articles/year</td></tr>
+      <tr><td>2</td><td><strong>"Himalyan" typo in every meta tag.</strong> The primary keyword is misspelled in title, description, and OG tags. Google sees a brand optimised for a word nobody searches.</td><td><span class="badge-custom badge-red">Fatal</span></td><td>Corrected throughout. Unique meta per page targeting real search terms</td></tr>
+      <tr><td>3</td><td><strong>Wix performance penalty.</strong> Wix JS bundles produce Lighthouse 30–50. Google's LCP &gt; 2.5s penalty: −23% traffic loss vs faster competitors.</td><td><span class="badge-custom badge-red">Critical</span></td><td>React + Vite on Vercel CDN. Target Lighthouse ≥ 90, LCP &lt; 2.5s</td></tr>
+      <tr><td>4</td><td><strong>Zero backlinks.</strong> No other site links to saltylamps.co.uk. PageRank is a vote counter — zero votes = near-zero domain authority.</td><td><span class="badge-custom badge-red">Critical</span></td><td>Manufacturing story as linkable asset. Trade directories. Blog attracts natural links</td></tr>
+      <tr><td>5</td><td><strong>No Google Business Profile.</strong> Invisible in local and map search. GBP is a free domain trust anchor.</td><td><span class="badge-custom badge-red">Critical</span></td><td>GBP created and verified Week 1 — before any code written</td></tr>
+      <tr><td>6</td><td><strong>Meta keywords: "Quality, Home, Goods."</strong> Nobody searches for these. The entire keyword slot is wasted.</td><td><span class="badge-custom badge-amber">High</span></td><td>Targeted keyword strategy per page — himalayan salt lamp UK, category terms, long-tail</td></tr>
+      <tr><td>7</td><td><strong>No structured data.</strong> Google doesn't know these are purchasable products. No Product schema = no price or rating in search results.</td><td><span class="badge-custom badge-amber">High</span></td><td>JSON-LD on every page: Product, AggregateRating, Organization, FAQPage, Article</td></tr>
+      <tr><td>8</td><td><strong>Social links go to Wix, not the brand.</strong> Authority built by clicks benefits Wix's domain, not saltylamps.co.uk.</td><td><span class="badge-custom badge-amber">Medium</span></td><td>Fix immediately. Instagram and Pinterest prioritised for visual product content</td></tr>
+      <tr><td>9</td><td><strong>Homepage causes instant bounce.</strong> Static product grid, no hero message, no emotional hook, no CTA hierarchy. Google's dwell-time signals confirm the page doesn't satisfy intent.</td><td><span class="badge-custom badge-amber">High</span></td><td>Ambient video hero, 3-click path, trust signals above fold. Target &lt; 35% bounce rate</td></tr>
+      <tr><td>10</td><td><strong>No E-E-A-T signals.</strong> Google Dec 2025 update extended trust requirements to all ecommerce. No author, no credentials, no reviews, no manufacturing evidence.</td><td><span class="badge-custom badge-amber">Medium</span></td><td>Manufacturing story page, real reviews, About team, expert blog content</td></tr>
+    </tbody>
+  </table>
+
+  <div class="row mt-20">
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-arrow-down text-red"></i> The bounce problem — specifically</h5>
+        <p>A visitor lands and sees: a logo, the text "Energize Your Decor", an image, and a product grid. There is no story, no offer, no trust signal, no urgency. The brain classifies the page as "not useful" in under 3 seconds and leaves. That single pattern is the root of the entire traffic problem.</p>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-check text-accent"></i> Strengths to build from</h5>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Manufacturer — direct supply chain nobody else has</li>
+          <li><i class="fa fa-angle-right"></i> 7 genuine product categories</li>
+          <li><i class="fa fa-angle-right"></i> Fast delivery — cited in 4 of 6 reviews</li>
+          <li><i class="fa fa-angle-right"></i> Healthcare professional endorsement in reviews</li>
+          <li><i class="fa fa-angle-right"></i> Unique B2B: spas, butchers, equestrian</li>
+          <li><i class="fa fa-angle-right"></i> UK base (Stoke-on-Trent) builds local trust</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 4 · COMPETITORS
+════════════════════════════════════ -->
+<div class="page" id="p4">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Competitors &amp; <span class="color">Our Edge</span></span></h2>
+    <p>Four UK competitors researched with live site visits. None occupy the manufacturer + retail + B2B position simultaneously.</p>
+  </div>
+
+  <table class="ericka-table">
+    <thead><tr><th>Brand</th><th>Platform</th><th>Strengths</th><th>SEO Gap We Exploit</th><th>Our Edge</th></tr></thead>
+    <tbody>
+      <tr><td>The Lamp Life<br><small style="color:#aaa;font-weight:400">thelamplife.co</small></td><td><span class="badge-custom badge-blue">Shopify</span></td><td>Active blog, multi-currency, all payment methods</td><td>No manufacturing story, no B2B verticals</td><td>Brand depth + B2B + manufacturer authority</td></tr>
+      <tr><td>Himalayan Salt Direct<br><small style="color:#aaa;font-weight:400">himalayansaltdirect.co.uk</small></td><td><span class="badge-custom badge-amber">Custom</span></td><td>Trusted since 2012, next-day delivery</td><td>Dated design, poor Core Web Vitals, no content</td><td>Modern UX, storytelling, faster loads</td></tr>
+      <tr><td>Mystic Moments<br><small style="color:#aaa;font-weight:400">mysticmomentsuk.com</small></td><td><span class="badge-custom badge-blue">Shopify</span></td><td>Strong SEO, large catalogue, wishlists</td><td>Salt is one of hundreds of products — no specialist authority</td><td>Own "Himalayan salt specialist" positioning</td></tr>
+      <tr><td>Namaste Fair Trade<br><small style="color:#aaa;font-weight:400">namaste-uk.com</small></td><td><span class="badge-custom badge-amber">Custom</span></td><td>Ethical sourcing story, wholesale focus</td><td>Old UI, slow loads, no interactive content</td><td>Surpass on visual quality, speed</td></tr>
+      <tr class="highlight"><td><strong>Salty Lamps (target)</strong></td><td><span class="badge-custom badge-green">React + Vite</span></td><td>Direct manufacturer, 7 categories, unique B2B: spas, butchers, equestrian</td><td><em>Currently exploiting none of these advantages</em></td><td><strong>Category leader: brand + content + B2B + manufacturing</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="row mt-20">
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-crosshairs"></i> Positioning: untaken space</h5>
+        <p>No UK Himalayan salt brand simultaneously claims direct manufacturer, retail destination, and B2B trade supplier to spas, butchers, and equestrian centres. The new site plants a flag in all three.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-key"></i> SEO keyword gap</h5>
+        <p>Competitors rank for "himalayan salt lamp UK" but miss low-competition B2B terms: <strong>"salt walls for spas UK"</strong>, <strong>"salt brick meat curing UK"</strong>, <strong>"horse lick supplier UK"</strong>. These can rank #1 within 60 days.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-globe"></i> International gap</h5>
+        <p>No competitor has clean EU/US localisation. Launching with GBP/EUR/USD switching and EU VAT handling gives a first-mover advantage on international organic search.</p>
+      </div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 5 · HOMEPAGE & 3-CLICK
+════════════════════════════════════ -->
+<div class="page" id="p5">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Homepage &amp; the <span class="color">3-Click Journey</span></span></h2>
+    <p>Every section has a single job. Visitors go from "who are you?" to "add to cart" in three clicks.</p>
+  </div>
+
+  <div class="cta-box">
+    <p><strong>Design principle:</strong> Lead with a feeling, not a product. The first thing a visitor sees must answer <em>"why does this matter to me?"</em> — not <em>"here are some lamps for sale."</em> Sensory language, ambient warmth, and a single unmistakable CTA do more conversion work than any product grid.</p>
+  </div>
+
+  <div class="row mt-16">
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-mouse-pointer"></i> Click 1 — Hero → Collection</h5>
+        <p>"Shop Salt Lamps" button on the hero lands the visitor directly in the most popular category. One action, one destination, no dead ends.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-eye"></i> Click 2 — Card → Product Detail</h5>
+        <p>Gallery, health benefits, variant selector, delivery promise, offer badge, and Add to Cart — everything needed to decide, on one screen.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-shopping-cart"></i> Click 3 — Add to Cart → Checkout</h5>
+        <p>Cart drawer with Apple Pay / Google Pay one-tap. Guest checkout — no forced account. Free shipping threshold visible immediately.</p>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mt-20" style="font-size:16px;color:#555;">Homepage wireframe — section by section</h4>
+  <div class="bor"></div>
+
+  <div class="wireframe">
+    <div class="wf-hero">
+      <div class="wf-tag">▶ ambient video loop — glowing lamp in dark room</div>
+      <h3>Handcrafted Himalayan Salt — Direct from Source</h3>
+      <p>Manufacturer since [year]. Thousands of UK customers. Natural, authentic, glowing.</p>
+      <div><span class="wf-btn primary">Shop Salt Lamps →</span><span class="wf-btn secondary">Explore All Products</span></div>
+      <div class="wf-trust">
+        <span>Fast UK Delivery</span><span>Manufacturer Direct</span><span>5★ Reviews</span><span>Secure Checkout</span>
+      </div>
+    </div>
+    <div class="wf-section">
+      <div class="wf-label">Section 2 — Bestsellers with offer badges (Click 1 destination)</div>
+      <div class="wf-grid4">
+        <div class="wf-product"><div class="emoji">🪨</div><div class="pname">Natural Crystal Lamp</div><div class="pprice">£11.99</div><div class="poffer">Buy 1 Get 1 Half Price</div></div>
+        <div class="wf-product"><div class="emoji">🕯</div><div class="pname">Candle Holders</div><div class="pprice">£10.00</div><div class="poffer">3 for 2</div></div>
+        <div class="wf-product"><div class="emoji">🍽</div><div class="pname">Salt Platter</div><div class="pprice">£8.00</div><div class="poffer">&nbsp;</div></div>
+        <div class="wf-product"><div class="emoji">🛁</div><div class="pname">Bath Salts</div><div class="pprice">£5.00</div><div class="poffer">&nbsp;</div></div>
+      </div>
+    </div>
+    <div class="wf-section">
+      <div class="wf-label">Section 3 — 5 real customer reviews (ready to deploy)</div>
+      <div class="wf-reviews">
+        <div class="wf-review"><div class="stars">★★★★★</div><p>"Recommending to all my patients."</p><div class="author">— Simon D., Verified Customer</div></div>
+        <div class="wf-review"><div class="stars">★★★★★</div><p>"First thing I do when I get home."</p><div class="author">— Julie D., Verified Customer</div></div>
+        <div class="wf-review"><div class="stars">★★★★★</div><p>"Converted the whole family to Himalayan salt."</p><div class="author">— Umm H., Verified Customer</div></div>
+      </div>
+    </div>
+    <div class="wf-section" style="border-bottom:none;">
+      <div class="wf-label">Section 4 — B2B callout strip + manufacturing teaser</div>
+      <div style="background:rgba(184,96,64,.12);border:1px solid rgba(184,96,64,.2);border-radius:3px;padding:14px 20px;text-align:center;">
+        <p style="color:rgba(255,255,255,.5);font-size:12px;margin:0;">🏨 Spa? 🥩 Butcher? 🐴 Equestrian? → <span style="color:#d4956b;font-weight:700;">Trade accounts available — apply now →</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-20">
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-check-circle"></i> Must appear above the fold</h5>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Brand tagline — transformation language, not product language</li>
+          <li><i class="fa fa-angle-right"></i> Single primary CTA — "Shop Salt Lamps"</li>
+          <li><i class="fa fa-angle-right"></i> Delivery trust signal — "Fast UK Delivery"</li>
+          <li><i class="fa fa-angle-right"></i> At least one social proof signal</li>
+          <li><i class="fa fa-angle-right"></i> Ambient video playing behind hero</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-times-circle text-red"></i> Must NOT appear above the fold</h5>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> A full product grid — no story context</li>
+          <li><i class="fa fa-angle-right"></i> Navigation with 8+ competing items</li>
+          <li><i class="fa fa-angle-right"></i> Multiple competing CTAs</li>
+          <li><i class="fa fa-angle-right"></i> Large blocks of descriptive text</li>
+          <li><i class="fa fa-angle-right"></i> A popup or modal on first visit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 6 · SEO & RANKING
+════════════════════════════════════ -->
+<div class="page" id="p6">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">How Google Ranks Sites &amp; <span class="color">What We're Doing About It</span></span></h2>
+    <p>Google's ranking follows an exact logic you can engineer for. Here is how it works and how every decision in this build responds to it.</p>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <h4 style="font-size:15px;color:#555;">Google's 4-level ranking hierarchy</h4>
+      <div class="bor"></div>
+      <div class="funnel-level fl-1"><h5>Level 1 — Can Google find &amp; crawl it?</h5><p>Sitemap · robots.txt · fast load · no broken pages</p></div>
+      <div class="funnel-level fl-2"><h5>Level 2 — Does it match search intent?</h5><p>Keyword relevance · content depth · structured data · unique URLs</p></div>
+      <div class="funnel-level fl-3"><h5>Level 3 — Does Google trust it?</h5><p>E-E-A-T · backlinks · GBP · reviews · real business signals</p></div>
+      <div class="funnel-level fl-4"><h5>Level 4 — Do users actually like it?</h5><p>Dwell time · scroll depth · return visits · low bounce · Core Web Vitals</p></div>
+    </div>
+    <div class="col-sm-6">
+      <h4 style="font-size:15px;color:#555;">Current site vs new site — by level</h4>
+      <div class="bor"></div>
+      <p style="font-size:12px;color:#aaa;margin-bottom:10px;">Current</p>
+      <div class="score-row"><span class="score-lbl">Level 1: Crawlability</span><div class="score-track"><div class="score-fill fill-md" style="width:40%"></div></div><span class="score-val">40%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 2: Relevance</span><div class="score-track"><div class="score-fill fill-lo" style="width:5%"></div></div><span class="score-val">5%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 3: Trust</span><div class="score-track"><div class="score-fill fill-lo" style="width:3%"></div></div><span class="score-val">3%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 4: UX</span><div class="score-track"><div class="score-fill fill-lo" style="width:10%"></div></div><span class="score-val">10%</span></div>
+      <p style="font-size:12px;color:#aaa;margin:12px 0 10px;">New site targets</p>
+      <div class="score-row"><span class="score-lbl">Level 1: Crawlability</span><div class="score-track"><div class="score-fill fill-hi" style="width:95%"></div></div><span class="score-val">95%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 2: Relevance</span><div class="score-track"><div class="score-fill fill-hi" style="width:85%"></div></div><span class="score-val">85%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 3: Trust</span><div class="score-track"><div class="score-fill fill-md" style="width:55%"></div></div><span class="score-val">55%</span></div>
+      <div class="score-row"><span class="score-lbl">Level 4: UX</span><div class="score-track"><div class="score-fill fill-hi" style="width:90%"></div></div><span class="score-val">90%</span></div>
+      <p style="font-size:11px;color:#aaa;">* Trust builds over 6–18 months through content and backlinks. Cannot be shortcut.</p>
+    </div>
+  </div>
+
+  <div class="bor mt-16"></div>
+  <h4 style="font-size:15px;color:#555;">Keyword strategy — target terms by intent &amp; difficulty</h4>
+  <div class="bor"></div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="kw-section-title">Tier 1 — High volume, competitive (12–24 months)</div>
+      <div class="kw-row"><span class="kw-term">himalayan salt lamp uk</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Hard</span></div>
+      <div class="kw-row"><span class="kw-term">salt lamp</span><span class="kw-tag info">Info</span><span class="kw-diff">Hard</span></div>
+      <div class="kw-row"><span class="kw-term">himalayan bath salts uk</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Medium</span></div>
+      <div class="kw-section-title mt-16">Tier 2 — Medium volume, winnable (3–9 months)</div>
+      <div class="kw-row"><span class="kw-term">himalayan rock salt lamp</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Medium</span></div>
+      <div class="kw-row"><span class="kw-term">salt candle holder uk</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Low</span></div>
+      <div class="kw-row"><span class="kw-term">himalayan culinary salt uk</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Low</span></div>
+    </div>
+    <div class="col-sm-6">
+      <div class="kw-section-title">Tier 3 — B2B, very low competition (1–4 months)</div>
+      <div class="kw-row"><span class="kw-term">salt walls for spas uk</span><span class="kw-tag b2b">B2B</span><span class="kw-diff">Very Low</span></div>
+      <div class="kw-row"><span class="kw-term">himalayan salt brick meat curing</span><span class="kw-tag b2b">B2B</span><span class="kw-diff">Very Low</span></div>
+      <div class="kw-row"><span class="kw-term">horse salt lick supplier uk</span><span class="kw-tag b2b">B2B</span><span class="kw-diff">Very Low</span></div>
+      <div class="kw-section-title mt-16">Tier 4 — Long-tail content (blog articles)</div>
+      <div class="kw-row"><span class="kw-term">do himalayan salt lamps actually work</span><span class="kw-tag info">Info</span><span class="kw-diff">Low</span></div>
+      <div class="kw-row"><span class="kw-term">himalayan salt lamp for sleep uk</span><span class="kw-tag buy">Buy</span><span class="kw-diff">Low</span></div>
+      <div class="kw-row"><span class="kw-term">culinary himalayan salt vs table salt</span><span class="kw-tag info">Info</span><span class="kw-diff">Very Low</span></div>
+    </div>
+  </div>
+
+  <div class="row mt-20">
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-map-marker"></i> Google Business Profile — Week 1</h5>
+        <p>Free. Takes 5–7 days to verify by post. Immediately improves local and national visibility. Add products, post weekly. This single action is the fastest ranking win available before any code is written.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-code"></i> Structured Data — every page</h5>
+        <p>JSON-LD on every page: Product, AggregateRating, Organization, BreadcrumbList, FAQPage, Article. Rich snippets in Google results = higher click-through rate at the same ranking position.</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card">
+        <h5><i class="fa fa-tachometer"></i> Core Web Vitals targets</h5>
+        <p>LCP &lt; 2.5s · INP &lt; 200ms · CLS &lt; 0.1. Sites failing these lose −19% to −31% traffic vs faster competitors. React + Vite + Vercel CDN achieves these on launch day.</p>
+      </div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 7 · ORGANIC TRAFFIC
+════════════════════════════════════ -->
+<div class="page" id="p7">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Organic Traffic — <span class="color">The Complete Strategy</span></span></h2>
+    <p>No paid ads. Growth from four compounding channels: content, social, email, backlinks. Each feeds the others.</p>
+  </div>
+
+  <div class="cta-box green">
+    <p><strong>Organic-only is the right call.</strong> A well-written article about "salt walls for spas UK" will rank #1 within 60 days and send free trade enquiries forever. No ad budget replicates that compounding effect. Paid ads are documented in <code>data/marketing-research.json</code> as a future Phase 5 option once conversion data exists.</p>
+  </div>
+
+  <div class="row mt-16">
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-pencil"></i> Content &amp; Blog Strategy</h5>
+        <p style="margin-bottom:8px;">12 articles/year minimum. Each targets a specific long-tail term and links to a product page.</p>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Month 1: "Do Himalayan salt lamps actually work?"</li>
+          <li><i class="fa fa-angle-right"></i> Month 2: "Salt walls for therapy rooms — buyer's guide" (B2B, very low competition)</li>
+          <li><i class="fa fa-angle-right"></i> Month 3: "Himalayan salt lamp for sleep"</li>
+          <li><i class="fa fa-angle-right"></i> Month 4: "Culinary Himalayan salt vs table salt"</li>
+          <li><i class="fa fa-angle-right"></i> Month 5: "How we make our salt lamps — mine to home" (E-E-A-T goldmine)</li>
+          <li><i class="fa fa-angle-right"></i> Month 6: "Best Himalayan salt lamp UK guide 2026"</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-envelope"></i> Email Marketing (42:1 ROI)</h5>
+        <p style="margin-bottom:8px;">Captured via homepage lead magnet (free Salt Care Guide PDF).</p>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Welcome sequence: 3 emails — story, bestsellers, health guide</li>
+          <li><i class="fa fa-angle-right"></i> Abandoned cart: 3 emails at 1hr, 24hr, 72hr</li>
+          <li><i class="fa fa-angle-right"></i> Post-purchase: delivery confirmation → review request → upsell</li>
+          <li><i class="fa fa-angle-right"></i> Seasonal: Christmas, Valentine's, Mother's Day</li>
+          <li><i class="fa fa-angle-right"></i> B2B newsletter: trade list, bulk pricing updates</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-instagram"></i> Instagram &amp; Pinterest</h5>
+        <p style="margin-bottom:8px;">Salt lamps are among the most visually compelling products for social. Pinterest pins have 120-day organic life vs 24hr on Facebook.</p>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Instagram: 3 posts/week — lifestyle, Reels of lamp glow (highly shareable)</li>
+          <li><i class="fa fa-angle-right"></i> Pinterest: 5 pins/week — home décor, wellness, gift boards</li>
+          <li><i class="fa fa-angle-right"></i> UGC: tag @saltylamps for 10% off next order</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card">
+        <h5><i class="fa fa-link"></i> Backlink Building</h5>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> Trade directories: wellness, spa, equestrian, food — each is a free backlink</li>
+          <li><i class="fa fa-angle-right"></i> Manufacturer story: pitch mine-to-UK angle to wellness press</li>
+          <li><i class="fa fa-angle-right"></i> Guest posts: write for wellness and home décor blogs</li>
+          <li><i class="fa fa-angle-right"></i> Partnerships: spa/yoga studio case studies earn links</li>
+          <li><i class="fa fa-angle-right"></i> Google Business Profile: generates citation link and domain trust</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mt-20" style="font-size:15px;color:#555;">Organic traffic growth timeline (realistic)</h4>
+  <div class="bor"></div>
+  <table class="ericka-table">
+    <thead><tr><th>Timeline</th><th>Expected Visits/Month</th><th>Primary Driver</th><th>Key Milestone</th></tr></thead>
+    <tbody>
+      <tr><td>Month 1–2</td><td>Near zero</td><td>Google indexing the new site</td><td>GBP verified · Sitemap submitted · All pages indexed</td></tr>
+      <tr><td>Month 3–4</td><td>50–150</td><td>B2B long-tail keywords (very low competition)</td><td>First trade enquiries from organic search</td></tr>
+      <tr><td>Month 5–6</td><td>200–500</td><td>Blog articles starting to rank (Tier 4 keywords)</td><td>Email list of 100+ subscribers</td></tr>
+      <tr><td>Month 7–9</td><td>500–1,500</td><td>Tier 2 keywords · Instagram/Pinterest referral traffic</td><td>Reviews visible in search (AggregateRating schema)</td></tr>
+      <tr><td>Month 10–12</td><td>1,500–4,000</td><td>Content compounds · backlinks accumulating</td><td>Tier 1 keywords appearing in top 20</td></tr>
+      <tr><td>Year 2+</td><td>5,000–15,000</td><td>Authority builds · Tier 1 top-10 rankings</td><td>Self-sustaining organic growth</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;color:#aaa;margin-top:6px;">Projections assume minimum 1 blog post/month and weekly social activity. Without content, organic growth stalls at Month 3.</p>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 8 · TECH STACK
+════════════════════════════════════ -->
+<div class="page" id="p8">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Modern <span class="color">Tech Stack</span></span></h2>
+    <p>Every choice justified by SEO performance, developer velocity, and long-term maintainability.</p>
+  </div>
+
+  <div class="cta-box">
+    <p><strong>Commerce engine TBD.</strong> Built behind <code>src/lib/commerce.js</code> abstraction. <strong>Critical requirement:</strong> must support automatic discount rules (Buy 1 Get 1 Half Price, Buy 2 Get 1 Free, Buy 3 Get 1 Free). Shopify handles this natively. WooCommerce requires Dynamic Pricing plugin (~£79/yr). This should be the deciding factor.</p>
+  </div>
+
+  <div class="row mt-16">
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-code"></i> React 18 + Vite</h5><p>Component UI, code-splitting, sub-2s page loads. SEO-critical: fast bundle = better Core Web Vitals = higher Google ranking.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-paint-brush"></i> Tailwind CSS v4</h5><p>Custom salt-brand design tokens. Purged CSS bundle. Consistent layout system eliminates the column-shift bug of the current site.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-shopping-cart"></i> Commerce Layer (TBD)</h5><p>Shopify Headless or WooCommerce. Must support: automatic discount rules, Google Shopping feed, multi-currency.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-exchange"></i> React Router v6</h5><p>Clean SEO-friendly URLs. Lazy-loaded routes. One consistent header/footer component — eliminates icon-shift bug permanently.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-edit"></i> Sanity CMS</h5><p>Non-developer editable blog, product copy, trade brochures. Enables the content strategy without a developer for every post.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-image"></i> Cloudinary</h5><p>WebP auto-conversion, responsive srcsets, lazy loading. Existing product photos upload directly. Critical for LCP score.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-search"></i> JSON-LD Schema</h5><p>Product, AggregateRating, Organization, BreadcrumbList, FAQPage, Article on every applicable page type. Rich snippets in Google = higher CTR.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-bar-chart"></i> GA4 + Search Console</h5><p>Track dwell time, scroll depth, conversion funnel. Search Console shows exactly which queries bring visitors — critical for refining content strategy.</p></div>
+    </div>
+    <div class="col-sm-4">
+      <div class="service-card"><h5><i class="fa fa-rocket"></i> Vercel Edge CDN</h5><p>Sub-50ms TTFB globally. Preview deploys per branch. Automatically achieves LCP &lt; 2.5s on fast connections from day one.</p></div>
+    </div>
+  </div>
+
+  <div class="row mt-20">
+    <div class="col-sm-6">
+      <h4 style="font-size:15px;color:#555;">Estimated monthly running costs</h4>
+      <div class="bor"></div>
+      <table class="ericka-table">
+        <thead><tr><th>Service</th><th>Tier</th><th>Cost/mo</th></tr></thead>
+        <tbody>
+          <tr><td>Vercel</td><td>Pro</td><td>~£16</td></tr>
+          <tr><td>Sanity CMS</td><td>Growth</td><td>£0–£19</td></tr>
+          <tr><td>Cloudinary</td><td>Free → Plus</td><td>£0–£15</td></tr>
+          <tr><td>Commerce engine</td><td>TBD</td><td>£0–£65</td></tr>
+          <tr><td>Email (Klaviyo)</td><td>Free → Starter</td><td>£0–£20</td></tr>
+          <tr class="highlight"><td><strong>New stack total</strong></td><td>—</td><td><strong>£16–£135/mo</strong></td></tr>
+          <tr><td><em>Current platform</em></td><td><em>Business</em></td><td><em>~£15–£20/mo</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-sm-6">
+      <div class="service-card mt-16" style="margin-top:32px;">
+        <h5><i class="fa fa-times-circle text-red"></i> Why not stay on Wix</h5>
+        <ul>
+          <li><i class="fa fa-angle-right"></i> 500–900kb JS bundle before content loads — Lighthouse 30–50</li>
+          <li><i class="fa fa-angle-right"></i> LCP &gt; 3.0s = −23% traffic loss vs competitors</li>
+          <li><i class="fa fa-angle-right"></i> No custom code control — B2B portal impossible to build</li>
+          <li><i class="fa fa-angle-right"></i> Platform lock-in — cannot export data cleanly</li>
+          <li><i class="fa fa-angle-right"></i> Promotional discount rules not supported at required granularity</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 9 · SITEMAP & STRUCTURE
+════════════════════════════════════ -->
+<div class="page" id="p9">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Sitemap, Folder Structure &amp; <span class="color">Naming Rules</span></span></h2>
+    <p>Every page has a job and a target keyword. Folder naming is strict kebab-case throughout — no exceptions.</p>
+  </div>
+
+  <div class="sitemap-wrap">
+    <div class="sm-root">
+      <div class="sm-root-node">saltylamps.co.uk</div>
+      <div class="sm-conn"></div>
+      <div class="sm-row">
+        <div class="sm-col"><div class="sm-l1">/ home</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">Video hero + 3-click CTA</div><div class="sm-l2">Bestsellers + offer badges</div><div class="sm-l2">Health benefits</div><div class="sm-l2">Reviews</div><div class="sm-l2">B2B callout</div><div class="sm-l2">Newsletter</div></div></div>
+        <div class="sm-col"><div class="sm-l1">/shop</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">/salt-lamps</div><div class="sm-l2">/candle-holders</div><div class="sm-l2">/platters-bowls</div><div class="sm-l2">/culinary-salt</div><div class="sm-l2">/bath-salts</div><div class="sm-l2">/animal-licks</div><div class="sm-l2">/spa-walls</div><div class="sm-l2">/special-offers</div><div class="sm-l2">/[product-slug]</div></div></div>
+        <div class="sm-col"><div class="sm-l1">/trade</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">/overview</div><div class="sm-l2">/spas</div><div class="sm-l2">/butchers</div><div class="sm-l2">/equestrian</div><div class="sm-l2">/apply</div><div class="sm-l2">/price-list (gated)</div></div></div>
+        <div class="sm-col"><div class="sm-l1">/about</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">/our-story</div><div class="sm-l2">/manufacturing</div><div class="sm-l2">/sustainability</div></div></div>
+        <div class="sm-col"><div class="sm-l1">/journal</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">/ (index)</div><div class="sm-l2">/[slug]</div><div class="sm-l2">Health &amp; wellness</div><div class="sm-l2">Interior styling</div><div class="sm-l2">Trade insights</div></div></div>
+        <div class="sm-col"><div class="sm-l1">/contact</div><div class="sm-conn"></div><div class="sm-children"><div class="sm-l2">Contact form</div><div class="sm-l2">Map (Stoke-on-Trent)</div><div class="sm-l2">Trade enquiry</div></div></div>
+      </div>
+      <div class="sm-conn" style="height:22px;"></div>
+      <div class="sm-row"><div class="sm-l2">/cart</div><div class="sm-l2">/checkout</div><div class="sm-l2">/account</div><div class="sm-l2">/search</div><div class="sm-l2">/policies/returns</div><div class="sm-l2">/policies/privacy</div><div class="sm-l2">/404</div></div>
+    </div>
+  </div>
+
+  <div class="row mt-20">
+    <div class="col-sm-6">
+      <div class="naming-do">
+        <h5><i class="fa fa-check"></i> Do — kebab-case everywhere</h5>
+        <span class="nex">src/components/product-card/</span>
+        <span class="nex">src/pages/shop/salt-lamps.jsx</span>
+        <span class="nex">src/hooks/use-cart.js</span>
+        <span class="nex">src/assets/images/lamp-natural-pink.webp</span>
+        <span class="nex">src/styles/tokens/color-salt.css</span>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="naming-dont">
+        <h5><i class="fa fa-times"></i> Don't — these are banned</h5>
+        <span class="nex">ProductCard.jsx (PascalCase filename)</span>
+        <span class="nex">SALT_LAMPS / SRC (screaming caps)</span>
+        <span class="nex">saltLamps.jsx (camelCase filename)</span>
+        <span class="nex">img1.jpg (meaningless name)</span>
+        <span class="nex">Salty Lamps Page.jsx (spaces)</span>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mt-20" style="font-size:15px;color:#555;">Folder structure</h4>
+  <div class="bor"></div>
+  <div class="tree-box">
+<span class="d">salty-lamps/</span>
+<span class="i1 d">├── public/</span>         <span class="c">favicon  sitemap.xml  robots.txt  og-home.jpg</span>
+<span class="i1 d">├── src/</span>
+<span class="i2 d">│   ├── assets/</span>      <span class="c">images/  videos/  icons/</span>
+<span class="i2 d">│   ├── components/</span>
+<span class="i3 d">│   │   ├── ui/</span>     <span class="c">button  badge  card  modal  drawer  offer-badge</span>
+<span class="i3 d">│   │   ├── layout/</span> <span class="c">header  footer  nav  sidebar  ← consistent across ALL pages (fixes column-shift bug)</span>
+<span class="i3 d">│   │   ├── product/</span><span class="c">product-card  gallery  price-display  bundle-pricing-panel</span>
+<span class="i3 d">│   │   ├── cart/</span>   <span class="c">cart-drawer  cart-item  cart-summary  express-checkout</span>
+<span class="i3 d">│   │   ├── seo/</span>    <span class="c">json-ld-product  json-ld-article  json-ld-org  meta-tags</span>
+<span class="i3 d">│   │   └── forms/</span>  <span class="c">contact-form  trade-enquiry  newsletter  review-request</span>
+<span class="i2 d">│   ├── pages/</span>
+<span class="i3 d">│   │   ├── shop/</span>   <span class="c">index  salt-lamps  candle-holders  platters-bowls  culinary-salt</span>
+<span class="i3">│   │   │         </span>  <span class="c">bath-salts  animal-licks  spa-walls  special-offers  [slug]</span>
+<span class="i3 d">│   │   ├── trade/</span>  <span class="c">index  spas  butchers  equestrian  apply</span>
+<span class="i3 d">│   │   ├── about/</span>  <span class="c">our-story  manufacturing  sustainability</span>
+<span class="i3 d">│   │   ├── journal/</span><span class="c">index  [slug]</span>
+<span class="i3 f">│   │   └── home.jsx  contact.jsx  search.jsx  not-found.jsx</span>
+<span class="i2 d">│   ├── hooks/</span>       <span class="c">use-cart  use-wishlist  use-search  use-currency  use-breakpoint</span>
+<span class="i2 d">│   ├── context/</span>     <span class="c">cart-context  auth-context  currency-context</span>
+<span class="i2 d">│   ├── lib/</span>         <span class="c">commerce.js (abstracted)  sanity.js  analytics.js  schema.js</span>
+<span class="i2 d">│   └── styles/</span>      <span class="c">globals.css  tokens.css</span>
+<span class="i1 d">├── data/</span>            <span class="c">customer-reviews.json  marketing-research.json  internal/</span>
+<span class="i1 d">└── tests/</span>           <span class="c">Playwright e2e</span>
+  </div>
+</div></div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE 10 · BUILD PLAN
+════════════════════════════════════ -->
+<div class="page" id="p10">
+<div class="section-wrap">
+<div class="container">
+  <div class="hero-title">
+    <h2><span class="title-text">Build Plan &amp; <span class="color">Next Steps</span></span></h2>
+    <p>Five phases over twenty weeks. SEO work starts Week 1 before any code. The site goes live in Phase 2 and organic traffic compounds immediately.</p>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-check text-accent"></i> B2C primary, B2B secondary</h5><p>B2C homepage and shop. B2B trade portal with 3 vertical landing pages. B2B callout strip on homepage above fold.</p></div></div>
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-check text-accent"></i> Warm &amp; Earthy brand</h5><p>Clay, terracotta, deep brown. Sensory wellness-forward copy. Ambient video hero. Cormorant Garamond + Lato typography.</p></div></div>
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-check text-accent"></i> Organic-only traffic</h5><p>Content + social + email + backlinks. Paid ads documented in marketing-research.json for future Phase 5.</p></div></div>
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-check text-accent"></i> 3-click purchase path</h5><p>Hero → Collection → Product → Add to Cart. Express checkout. No forced account creation.</p></div></div>
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-check text-accent"></i> Promotional pricing</h5><p>B1G1 Half Price · B2G1 Free · B3G1 Free. Cart-level rules + product page badges.</p></div></div>
+    <div class="col-sm-4"><div class="service-card"><h5><i class="fa fa-clock-o text-accent"></i> Commerce engine — Phase 1</h5><p>Must support automatic discount rules. Shopify recommended. Decision needed before Phase 2.</p></div></div>
+  </div>
+
+  <div class="bor mt-20"></div>
+  <div class="timeline">
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="phase-num">Phase 00</span>
+        <span class="phase-title">SEO &amp; GBP — before code starts</span>
+        <span class="phase-weeks">Week 1</span>
+      </div>
+      <div class="phase-tasks">
+        <div class="p-task star"><i class="fa fa-star"></i> Create and verify Google Business Profile (Stoke-on-Trent) — takes 5–7 days</div>
+        <div class="p-task star"><i class="fa fa-star"></i> Fix "Himalayan" spelling in all Wix meta tags while still live</div>
+        <div class="p-task star"><i class="fa fa-star"></i> Fix social footer links to point to real Salty Lamps accounts</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Set up Google Search Console — submit Wix sitemap, collect baseline data</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Set up GA4 on current Wix site — capture conversion baseline before migration</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Set up email platform (Klaviyo free tier)</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="phase-num">Phase 01</span>
+        <span class="phase-title">Foundation &amp; Design System</span>
+        <span class="phase-weeks">Weeks 2–4</span>
+      </div>
+      <div class="phase-tasks">
+        <div class="p-task"><i class="fa fa-circle"></i> Brand identity: colour tokens, typography, logo refinement</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Tailwind config with salt-brand design tokens</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Component library: button, badge, card, offer-badge, modal, drawer</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Header + footer + nav (all 4 breakpoints — fixes column-shift permanently)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Vite + React + React Router scaffold</div>
+        <div class="p-task star"><i class="fa fa-star"></i> Commerce engine finalised (Shopify vs WooCommerce)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Vercel CI/CD + preview branch deploys</div>
+        <div class="p-task"><i class="fa fa-circle"></i> schema.js utility — JSON-LD for all page types</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="phase-num">Phase 02</span>
+        <span class="phase-title">Core Shop — Site Goes Live</span>
+        <span class="phase-weeks">Weeks 5–9</span>
+      </div>
+      <div class="phase-tasks">
+        <div class="p-task star"><i class="fa fa-star"></i> Homepage: video hero, 3-click CTA, bestsellers, reviews, B2B strip, newsletter</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Shop index + 8 collection pages + /special-offers</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Product detail: gallery, bundle pricing panel, offer badges, health accordion, JSON-LD</div>
+        <div class="p-task star"><i class="fa fa-star"></i> Promotional pricing rules: B1G1 · B2G1 · B3G1 — cart logic + product badges</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Cart drawer + express checkout (Apple Pay / Google Pay)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Upload all product photos to Cloudinary</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Deploy 5 customer reviews (send GDPR consent emails first)</div>
+        <div class="p-task star"><i class="fa fa-star"></i> DNS migration → Vercel. Site goes live. Submit sitemap immediately.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="phase-num">Phase 03</span>
+        <span class="phase-title">Content, Trade Portal &amp; Authority</span>
+        <span class="phase-weeks">Weeks 10–15</span>
+      </div>
+      <div class="phase-tasks">
+        <div class="p-task"><i class="fa fa-circle"></i> Sanity CMS connected + Journal/blog live</div>
+        <div class="p-task star"><i class="fa fa-star"></i> First 3 blog articles published (Tier 3 B2B keywords — fastest ranking)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Trade portal: spas, butchers, equestrian + enquiry form</div>
+        <div class="p-task"><i class="fa fa-circle"></i> About + Manufacturing story page (mine → Karachi → UK timeline)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Updated returns + privacy policies (UK Consumer Rights Act 2015)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> FAQPage schema on all relevant pages (People Also Ask targeting)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> 5+ trade directory submissions (backlinks)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Instagram + Pinterest accounts set up + first 12 posts</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="phase-num">Phase 04</span>
+        <span class="phase-title">Internationalisation &amp; Polish</span>
+        <span class="phase-weeks">Weeks 16–20</span>
+      </div>
+      <div class="phase-tasks">
+        <div class="p-task"><i class="fa fa-circle"></i> EUR + USD currency switching</div>
+        <div class="p-task"><i class="fa fa-circle"></i> EU VAT handling</div>
+        <div class="p-task"><i class="fa fa-circle"></i> hreflang tags (UK / EU / US)</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Lighthouse audit: ≥ 90 on all key pages</div>
+        <div class="p-task"><i class="fa fa-circle"></i> WCAG AA accessibility pass</div>
+        <div class="p-task"><i class="fa fa-circle"></i> Cross-browser QA: Chrome, Safari, Firefox, Edge — all 4 breakpoints</div>
+        <div class="p-task"><i class="fa fa-circle"></i> 6-month content calendar planned (12 articles + seasonal email campaigns)</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary-band mt-20">
+    <h3>Three things needed to start Phase 0 this week</h3>
+    <p>All are low-lift and cost nothing. None require waiting for the build to begin.</p>
+    <div class="summary-stats">
+      <div class="sstat"><span class="val">1</span><span class="lbl">Create Google Business Profile at business.google.com</span></div>
+      <div class="sstat"><span class="val">2</span><span class="lbl">Confirm domain registrar for DNS migration planning</span></div>
+      <div class="sstat"><span class="val">3</span><span class="lbl">Decide: Shopify headless or WooCommerce</span></div>
+    </div>
+  </div>
+
+</div></div>
+</div>
+
+</div><!-- /content-area -->
+
+<!-- ── FOOTER NAV ── -->
+<div class="footer-nav">
+  <button class="btn-nav btn-back" id="btn-back" onclick="prev()" disabled>← Back</button>
+  <span class="step-info">Step <strong id="cur">1</strong> of <strong>10</strong> &nbsp;·&nbsp; <span id="hint" style="font-size:12px;color:#888;font-family:'PT Sans',sans-serif;">Vision &amp; Docs →</span></span>
+  <button class="btn-nav btn-forward" id="btn-fwd" onclick="next()">Next →</button>
+</div>
+
+</div><!-- /shell -->
+
+<script src="assets/js/jquery.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script>
+var cur = 1, total = 10;
+var hints = ['','Vision & Docs →','Honest Audit →','Competitors →','Homepage & 3-Click →','SEO & Ranking →','Organic Traffic →','Tech Stack →','Sitemap & Structure →','Build Plan →','End of proposal'];
+
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  $('#p' + cur).removeClass('active');
+  $('.step-navbar ul li').eq(cur - 1).removeClass('active');
+  cur = n;
+  $('#p' + cur).addClass('active');
+  $('.step-navbar ul li').eq(cur - 1).addClass('active');
+  $('.content-area').scrollTop(0);
+  $('#cur').text(cur);
+  $('#prog').css('width', (cur / total * 100) + '%');
+  $('#btn-back').prop('disabled', cur === 1);
+  $('#btn-fwd').prop('disabled', cur === total);
+  $('#hint').text(hints[cur]);
+  var $tab = $('.step-navbar ul li').eq(cur - 1);
+  $tab[0] && $tab[0].scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+function next() { goTo(cur + 1); }
+function prev() { goTo(cur - 1); }
+$(document).on('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prev();
+});
+// prevent anchor default on tab clicks
+$('.step-navbar a').on('click', function(e) { e.preventDefault(); });
+</script>
+</body>
+</html>

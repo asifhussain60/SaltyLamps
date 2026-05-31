@@ -1,0 +1,307 @@
+{
+  "metadata": {
+    "compiled": "2026-05-31",
+    "sources": [
+      "https://www.nostra.ai/blogs-collection/bounce-rate-ecommerce",
+      "https://www.convertcart.com/blog/ecommerce-bounce-rate",
+      "https://www.ecorn.agency/blog/conversion-rate-optimization-best-practices",
+      "https://www.triplewhale.com/blog/ecommerce-benchmarks",
+      "https://developers.google.com/search/docs/appearance/core-web-vitals",
+      "https://thatware.co/google-december-2025-core-update/",
+      "https://whitehat-seo.co.uk/blog/seo-ranking-factors",
+      "https://www.bluesoftdesign.com/general/what-google-actually-looks-for-in-2025-and-why-your-website-might-be-failing/",
+      "https://www.echelonn.io/post/2025-google-shopping-ads-ultimate-guide-benchmarks-and-pricing-breakdown",
+      "https://www.wordstream.com/blog/2025-google-ads-benchmarks",
+      "https://www.wordstream.com/blog/facebook-ads-benchmarks-2025",
+      "https://www.factmr.com/report/himalayan-salt-market"
+    ]
+  },
+  "market": {
+    "himalayan_salt_global_market_2025_usd_millions": 528,
+    "himalayan_salt_global_market_2035_usd_millions": 868.3,
+    "cagr_percent": 5.1,
+    "demand_drivers": [
+      "wellness and health product integration",
+      "home decor and ambient lighting trends",
+      "gifting and seasonal demand (Christmas, Mother's Day)",
+      "culinary interest in specialty salts",
+      "spa and hospitality sector growth"
+    ],
+    "uk_ecommerce_opportunity": "strong — competitors are Shopify-based with no manufacturer differentiation"
+  },
+  "seo_ranking_factors_2025": {
+    "primary_framework": "E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)",
+    "core_web_vitals": {
+      "lcp_target_seconds": 2.5,
+      "inp_target_ms": 200,
+      "cls_target": 0.1,
+      "lcp_penalty": "sites with LCP > 3.0s lose -23% traffic vs faster competitors",
+      "inp_penalty": "poor INP (>300ms) causes -31% traffic loss especially on mobile",
+      "cls_penalty": "CLS > 0.15 causes -19% traffic loss",
+      "mobile_first_indexing": true,
+      "note": "Google uses mobile performance scores for all ranking — desktop scores are secondary"
+    },
+    "ranking_pillars": [
+      {
+        "pillar": "Technical SEO",
+        "weight": "critical foundation",
+        "factors": [
+          "Core Web Vitals (LCP, INP, CLS)",
+          "mobile-first indexing compliance",
+          "clean URL structure",
+          "XML sitemap",
+          "robots.txt",
+          "no duplicate title tags or content",
+          "no redirect chains",
+          "no broken links / 404s",
+          "schema markup / structured data",
+          "HTTPS"
+        ]
+      },
+      {
+        "pillar": "Content & Relevance",
+        "weight": "dominant",
+        "factors": [
+          "helpful content system (written for users, not search engines)",
+          "keyword intent matching",
+          "content depth and topical authority",
+          "regular fresh content (blog, journal)",
+          "FAQ schema for People Also Ask boxes",
+          "heading hierarchy (H1, H2, H3)",
+          "unique meta title and description per page",
+          "internal linking between related pages"
+        ]
+      },
+      {
+        "pillar": "Authority & Trust",
+        "weight": "significant",
+        "factors": [
+          "backlinks from relevant, high-authority domains",
+          "Google Business Profile (verified)",
+          "consistent NAP (Name, Address, Phone) across web",
+          "reviews on Google, Trustpilot",
+          "social signals (real brand social accounts)",
+          "topical authority (consistent niche content)"
+        ]
+      },
+      {
+        "pillar": "User Experience Signals",
+        "weight": "increasingly important",
+        "factors": [
+          "low bounce rate (< 40% target)",
+          "high dwell time (time on page > 2 minutes)",
+          "scroll depth (users reading past the fold)",
+          "click-through rate from SERPs",
+          "return visitors",
+          "conversion rate"
+        ]
+      }
+    ],
+    "structured_data_types_for_ecommerce": [
+      "Product (price, availability, SKU)",
+      "AggregateRating (star ratings in search results)",
+      "BreadcrumbList",
+      "Organization",
+      "LocalBusiness",
+      "Article (for blog posts)",
+      "FAQPage"
+    ],
+    "keyword_strategy": {
+      "high_volume_competitive": [
+        "himalayan salt lamp UK",
+        "salt lamp",
+        "pink himalayan salt lamp",
+        "salt lamp benefits"
+      ],
+      "medium_volume_winnable": [
+        "himalayan rock salt lamp",
+        "natural salt lamp UK",
+        "salt candle holder UK",
+        "himalayan culinary salt UK",
+        "bath salt himalayan UK"
+      ],
+      "low_volume_high_intent_b2b": [
+        "salt walls for spas UK",
+        "himalayan salt brick meat curing UK",
+        "horse salt lick supplier UK",
+        "wholesale himalayan salt lamps UK",
+        "bulk salt lamps UK supplier"
+      ],
+      "long_tail_content": [
+        "do himalayan salt lamps actually work",
+        "benefits of himalayan salt lamp bedroom",
+        "how to clean a himalayan salt lamp",
+        "himalayan salt lamp for sleep",
+        "culinary himalayan salt vs table salt"
+      ]
+    }
+  },
+  "conversion_benchmarks": {
+    "ecommerce_avg_conversion_rate_percent": 2.5,
+    "ecommerce_avg_bounce_rate_percent_range": "36-47",
+    "acceptable_bounce_rate_percent_range": "26-40",
+    "homepage_above_fold_rules": [
+      "one primary CTA above the fold",
+      "value proposition visible without scrolling",
+      "page load under 1 second for 2.5-5x more conversions vs 5-10 second load",
+      "mobile thumb-friendly buttons (44px minimum)",
+      "social proof visible within first screen",
+      "no more than one primary action competing for attention"
+    ],
+    "three_click_path_definition": {
+      "click_1": "Hero CTA → Category or Bestseller collection",
+      "click_2": "Product card → Product detail page",
+      "click_3": "Add to cart (with express checkout option for 1-click purchase)"
+    },
+    "checkout_optimization": {
+      "abandonment_cause_1": "unexpected costs at checkout (shipping, tax) — 48% of abandonment",
+      "abandonment_cause_2": "forced account creation — 26% of abandonment",
+      "fix": "show free/paid shipping threshold upfront, offer guest checkout, Apple Pay / Google Pay one-tap"
+    },
+    "personalization_impact": "45% of shoppers more likely to purchase on sites with personalized recommendations",
+    "page_speed_impact": "1-second load = 2.5-5x more conversions vs 5-10 second load",
+    "social_proof_impact": "adding reviews increases conversion by 270% (BrightLocal)",
+    "trust_signals_required": [
+      "verified customer reviews with star rating",
+      "delivery promise / shipping speed prominently displayed",
+      "secure checkout badge",
+      "returns policy linked near CTA",
+      "real business address visible"
+    ]
+  },
+  "paid_advertising": {
+    "google_shopping": {
+      "avg_cpc_gbp": 0.52,
+      "avg_cpc_range_gbp": "0.36-0.93",
+      "avg_roas_ecommerce": "2.81:1",
+      "potential_roas": "8:1 for optimised campaigns",
+      "minimum_monthly_spend_for_algorithm_learning_gbp": 600,
+      "conversions_needed_per_month_for_smart_bidding": 30,
+      "campaign_structure": [
+        "High priority: bestselling products (salt lamps) — aggressive bid",
+        "Medium priority: product categories — moderate bid",
+        "Low priority: full catalogue catch-all — conservative bid"
+      ],
+      "product_feed_tips": [
+        "Include brand name + key specs in product title (boosts CTR by 18%)",
+        "Optimised descriptions improve quality score by 10%",
+        "Better quality score reduces CPC by up to 15%",
+        "High-quality images are the single biggest lever in Shopping"
+      ],
+      "setup_requirements": [
+        "Google Merchant Center account",
+        "Product data feed (title, price, GTIN, image, availability)",
+        "Google Ads account linked to Merchant Center",
+        "Conversion tracking installed"
+      ]
+    },
+    "google_search_ads": {
+      "avg_cpc_gbp": 1.72,
+      "avg_conversion_rate_percent": 3.65,
+      "best_for": "high-intent branded and category terms",
+      "recommended_for_salty_lamps": [
+        "salt lamp UK",
+        "himalayan salt lamp",
+        "buy salt lamp",
+        "salt walls spa"
+      ]
+    },
+    "meta_facebook_instagram": {
+      "uk_adult_reach_percent": 72,
+      "organic_reach_business_pages_percent": 1.8,
+      "requires_paid_amplification": true,
+      "daily_budget_minimum_gbp": 8,
+      "daily_budget_recommended_gbp": 24,
+      "avg_roas_range": "3-5x",
+      "best_formats_2025": [
+        "Reels (short ambient lamp video — 15-30 seconds)",
+        "Carousel ads (multiple products in one ad)",
+        "Collection ads (shop-the-look format)",
+        "Retargeting (visitors who viewed product but didn't buy)"
+      ],
+      "targeting_strategy": {
+        "cold_audiences": "broad + algorithm-optimised via Advantage+ (Meta AI)",
+        "warm_audiences": "website visitors (pixel retargeting), email list upload",
+        "lookalike": "lookalike audience from existing customer email list"
+      },
+      "best_for": "awareness, gifting campaigns, ambient lifestyle content, visual products"
+    },
+    "pinterest": {
+      "relevance": "very high — home decor, wellness, gift ideas are Pinterest's top categories",
+      "avg_cpc_gbp": 0.25,
+      "organic_shelf_life_days": 120,
+      "note": "Pinterest pins have 120-day organic life vs 24h for Facebook — compound value over time",
+      "recommended": true
+    },
+    "email_marketing": {
+      "avg_roi": "42:1",
+      "recommended_sequences": [
+        "Welcome sequence (3 emails after newsletter signup)",
+        "Abandoned cart sequence (3 emails: 1h, 24h, 72h)",
+        "Post-purchase review request (7 days after delivery)",
+        "Re-engagement (dormant customers > 60 days)",
+        "Seasonal campaigns (Christmas, Valentine's, Mother's Day)"
+      ]
+    },
+    "recommended_monthly_budget_tiers": {
+      "starter_gbp": {
+        "total": 300,
+        "google_shopping": 150,
+        "meta_ads": 100,
+        "email_platform": 30,
+        "note": "Minimal — enough to collect data and test. Google algorithm won't fully optimise."
+      },
+      "growth_gbp": {
+        "total": 800,
+        "google_shopping": 400,
+        "meta_ads": 300,
+        "pinterest": 50,
+        "email_platform": 30,
+        "note": "Recommended minimum for algorithm learning (30+ conversions/month)"
+      },
+      "scale_gbp": {
+        "total": 2000,
+        "google_shopping": 900,
+        "meta_ads": 700,
+        "pinterest": 200,
+        "email_platform": 50,
+        "retargeting": 150,
+        "note": "Full-funnel approach. At 8:1 ROAS, £2000 spend generates ~£16,000 revenue"
+      }
+    }
+  },
+  "homepage_design_principles": {
+    "above_fold_must_haves": [
+      "Emotional hook — not a product, a feeling or transformation",
+      "Single primary CTA (Shop Now / Explore Collection)",
+      "Delivery trust signal (e.g. 'Free UK delivery over £30')",
+      "One trust badge or social proof signal",
+      "Brand tagline that answers: why Salty Lamps over anyone else?"
+    ],
+    "below_fold_journey": [
+      "Section 2: Featured / bestselling products (3-4 products, quick-add)",
+      "Section 3: Health benefits strip (animated icons, emotional copy)",
+      "Section 4: Brand story teaser (manufacturer, from Himalayas to your home)",
+      "Section 5: Customer reviews carousel (5-star social proof)",
+      "Section 6: B2B callout (for spas/butchers/equestrian — drives to trade portal)",
+      "Section 7: Instagram / UGC feed (real people using products)",
+      "Section 8: Newsletter (lead magnet — free Salt Care Guide)"
+    ],
+    "engagement_tactics": [
+      "Autoplay ambient video (muted, looping, 15-30s — lamp glowing in dark room)",
+      "Parallax scroll effect on hero",
+      "Animated number counters (e.g. '5,000+ happy customers', '10+ years manufacturing')",
+      "Hover state on products (image swap to product-in-use lifestyle shot)",
+      "Scroll-triggered section animations (fade-in, slide-up)",
+      "Live stock indicators on bestsellers",
+      "Bundle offer badges (visible immediately on product cards)"
+    ],
+    "copywriting_principles": [
+      "Lead with transformation, not features: 'Transform any room into a sanctuary' not 'Buy a salt lamp'",
+      "Use sensory language: glow, warmth, calm, breathe, amber light",
+      "Answer the intent: browsing (show collections), buying (show price + offer), gifting (show gift sets)",
+      "Build urgency without fake scarcity: seasonal offers, limited bundles",
+      "Speak to values: natural, handcrafted, direct from the Himalayas, UK-based"
+    ]
+  }
+}
