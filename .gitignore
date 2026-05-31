@@ -2,3 +2,12 @@ node_modules/
 dist/
 .DS_Store
 *.timestamp-*.mjs
+
+# Environment secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Editor/tool settings
+.claude/
+
