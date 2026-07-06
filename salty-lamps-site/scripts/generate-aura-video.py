@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 """Generate the Aura Collection hero video via the Gemini API (Veo 3.1).
 
-Five ~8s scenes: three presenter-led (conditioned on reference frames of the
-home-gifts presenter for face consistency) and two product close-up inserts
-(first-frame conditioned on the real product photos). Clips are stitched with
-ffmpeg into public/media/video/collection/aura-collection-hero-16x9.mp4 and a
-poster frame is extracted, matching the naming of the four existing hero videos.
+Six ~8s presenter-led scenes forming one continuous piece: the same British
+woman speaks to camera throughout while the background morphs cinematically
+through the locations she describes (living room -> salt macro -> workshop frame
+-> wellness studio -> hotel reception -> aspirational close), ending on an
+explicit call to action. Every scene is conditioned on the presenter reference
+frame (scripts/video-refs/presenter-home-mid.jpg) for a consistent face,
+wardrobe and framing — that reference is extracted from the surviving
+home-gifts hero video (the source the presenter originated from) and committed
+so this generator is self-sufficient.
+
+Design note — why reference (asset) conditioning on every clip rather than
+last-frame chaining: asset conditioning is the proven path for a *speaking*
+presenter with generated audio; first-frame (image) conditioning is only proven
+for the silent product inserts and risks suppressing her speech. Continuity is
+instead delivered by (a) the same reference on every clip and (b) morph-aligned
+prompts where each clip's background flows from the previous clip's end state.
+This also lets scene 1 open on a dark room that warms as the panel ignites.
+
+Clips are stitched with ffmpeg into
+public/media/video/collection/aura-collection-hero-16x9.mp4 and a warm poster
+frame is extracted, matching the naming of the existing hero videos. The prior
+video and poster are backed up to *.bak before overwrite.
 
 API key comes from the macOS Keychain item `gemini_api_key`.
-Copy stays claim-free: ambience, craftsmanship, uniqueness, sizes only.
+Copy stays claim-free: ambience, craftsmanship, uniqueness, sizes only —
+no medical or health claims.
 """
 
 import base64
@@ -36,56 +54,82 @@ PRESENTER = (
     "speaking directly to camera in a calm, warm English accent. "
 )
 
+# One continuous take: she never stops speaking; only the world behind her
+# changes. This directive is appended to every scene so the woman is held
+# constant and the location shift reads as a cinematic dissolve, not a cut.
+HOLD = (
+    "She stays centre-frame, same wardrobe and the same warm light on her face, "
+    "speaking to camera without pause. The change happens only behind her, as a "
+    "single smooth cinematic dissolve — never a hard cut, never a jump. "
+)
+
 SCENES = [
     {
-        "name": "01-living-room",
+        # Sajni's opening beat: a dark ordinary room transformed by the light.
+        "name": "01-open-transform",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + (
-            "She stands in an elegant evening living room beside a large framed "
-            "backlit Himalayan salt wall panel glowing amber on the wall. She says: "
-            "\"Some artwork is admired. Some transforms the atmosphere.\" "
-            "The room is warm and inviting, sofa and plants softly lit by the panel."
+        "prompt": STYLE + PRESENTER + HOLD + (
+            "The shot opens in a dark, ordinary, dimly lit living room. As she "
+            "begins to speak, the large framed backlit Himalayan salt wall panel "
+            "on the wall behind her slowly illuminates and the whole room warms "
+            "to a soft amber glow — a sofa, plants and candles emerging gently "
+            "from the shadows. She says: \"Some artwork is admired. Some "
+            "transforms the atmosphere.\""
         ),
     },
     {
-        "name": "02-salt-macro",
-        "first_frame": "insert-salt-surface.jpg",
-        "prompt": STYLE + (
-            "Extreme close-up macro shot slowly panning across a glowing backlit "
-            "Himalayan salt panel, rich amber and pale pink mineral veining, texture "
-            "detail. A soft female British voiceover says: \"Carved from ancient "
-            "Himalayan rock salt — every panel is unique in its mineral veining.\""
+        "name": "02-materials",
+        "reference": "presenter-home-mid.jpg",
+        "prompt": STYLE + PRESENTER + HOLD + (
+            "She stands in the warm, amber-lit living room, the glowing framed "
+            "salt panel beside her. Behind her the wall dissolves into an extreme "
+            "close view of glowing Himalayan salt — rich amber and pale-pink "
+            "mineral veining, natural texture — then eases back to a full backlit "
+            "panel. She says: \"Carved from Himalayan rock salt formed over "
+            "millions of years — no two panels are ever alike.\""
         ),
     },
     {
-        "name": "03-frame-craft",
-        "first_frame": "insert-frame-corner.jpg",
-        "prompt": STYLE + (
-            "Slow close-up camera move along the mitred corner of a hand-finished "
-            "solid walnut wood frame holding a glowing salt panel, wood grain detail. "
-            "A soft female British voiceover says: \"Each frame is finished by hand — "
-            "crafted to last.\""
+        "name": "03-craft",
+        "reference": "presenter-home-mid.jpg",
+        "prompt": STYLE + PRESENTER + HOLD + (
+            "Behind her the setting dissolves from the living room into a warm "
+            "artisan workshop: a close view of a hand-finished solid walnut frame "
+            "and its clean mitred corner, wood grain catching the light beside "
+            "her. She says: \"Set in a solid-wood frame, finished by hand — "
+            "mitred corner to mitred corner.\""
         ),
     },
     {
         "name": "04-studio",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + (
-            "She stands in a bright, calm yoga studio with a tall framed backlit "
-            "Himalayan salt panel glowing on the wall behind her. She says: "
-            "\"A warm, calming presence — wherever it hangs.\" Yoga mats and soft "
-            "daylight in the background."
+        "prompt": STYLE + PRESENTER + HOLD + (
+            "Behind her the workshop dissolves into a bright, calm wellness "
+            "studio — a tall framed backlit salt panel on the wall, soft "
+            "daylight, plants, linen and pale wood. She says: \"A warm, calming "
+            "presence that settles a room — beside wood, stone, linen and green.\""
         ),
     },
     {
-        "name": "05-reception-close",
+        "name": "05-reception",
+        "reference": "presenter-home-mid.jpg",
+        "prompt": STYLE + PRESENTER + HOLD + (
+            "Behind her the studio dissolves into an elegant hotel reception with "
+            "three framed backlit Himalayan salt panels on a rich wood feature "
+            "wall. She says: \"From a single accent panel to a full statement "
+            "wall — at home, in the studio, or in reception.\""
+        ),
+    },
+    {
+        # Explicit call to action — the beat the original video lacked.
+        "name": "06-cta",
         "reference": "presenter-home-mid.jpg",
         "prompt": STYLE + PRESENTER + (
-            "She stands in an elegant hotel reception area with three framed backlit "
-            "Himalayan salt panels on a wood feature wall behind her. She says: "
-            "\"From a single accent panel to a full statement wall. Nature. "
-            "Simplicity. Timeless beauty.\" She smiles warmly as the camera slowly "
-            "pushes in on the glowing panels."
+            "She stands before the glowing feature wall of framed Himalayan salt "
+            "panels as the camera slowly pushes in and the amber glow deepens — "
+            "refined, aspirational, timeless. She smiles warmly and says: \"The "
+            "Aura Collection. Nature. Simplicity. Timeless beauty. Discover "
+            "yours.\""
         ),
     },
 ]
@@ -172,6 +216,16 @@ def main():
     concat_list = WORK / "concat.txt"
     concat_list.write_text("".join(f"file '{c.name}'\n" for c in clips))
     final = OUT_DIR / "aura-collection-hero-16x9.mp4"
+    poster = OUT_DIR / "aura-collection-hero-poster-16x9.jpg"
+
+    # Back up the current video and poster before overwriting, so a weaker
+    # render can be reverted (cp -> *.bak, only if an original exists).
+    for asset in (final, poster):
+        if asset.exists():
+            backup = asset.with_suffix(asset.suffix + ".bak")
+            backup.write_bytes(asset.read_bytes())
+            print(f"backed up {asset.name} -> {backup.name}", flush=True)
+
     # Re-encode (not stream-copy) so slight per-clip encoder differences can't
     # corrupt playback; normalize to the site's 1280x720 H.264/AAC baseline.
     subprocess.run(
@@ -182,10 +236,11 @@ def main():
          "-c:a", "aac", "-b:a", "128k", str(final)],
         check=True, cwd=WORK,
     )
+    # Poster from ~4s: scene 1 opens dark and warms, so grab a frame once the
+    # room is fully lit rather than the black opening.
     subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-ss", "1", "-i", str(final),
-         "-frames:v", "1", "-q:v", "3",
-         str(OUT_DIR / "aura-collection-hero-poster-16x9.jpg")],
+        ["ffmpeg", "-y", "-v", "error", "-ss", "4", "-i", str(final),
+         "-frames:v", "1", "-q:v", "3", str(poster)],
         check=True,
     )
     print(f"done: {final}")

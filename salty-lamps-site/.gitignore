@@ -14,3 +14,7 @@ vite.config.js.timestamp-*
 
 # macOS
 .DS_Store
+
+# Aura video generator: local render cache + pre-overwrite backups
+public/media/video/collection/_aura_work/
+*.bak
