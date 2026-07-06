@@ -42,7 +42,9 @@ BASE = "https://generativelanguage.googleapis.com/v1beta"
 SITE = Path(__file__).resolve().parent.parent
 OUT_DIR = SITE / "public" / "media" / "video" / "collection"
 REF_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else SITE / "scripts" / "video-refs"
-WORK = OUT_DIR / "_aura_work"
+# Render cache lives OUTSIDE public/ so Vite never publishes the intermediate
+# clips (public/ is copied verbatim into dist/ on build).
+WORK = SITE / ".aura-render-cache"
 
 STYLE = (
     "Cinematic commercial footage, warm golden colour grading, soft lighting, "
