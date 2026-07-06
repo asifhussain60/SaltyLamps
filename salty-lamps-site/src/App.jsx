@@ -20,6 +20,7 @@ const groupThemes = {
   'himalayan-salt-massage-relaxation-products': 'relaxation',
   accessories: 'accessory',
   'special-deal': 'deal',
+  'salt-wall-panels': 'panel',
 }
 
 const siteUrl = 'https://www.saltylamps.co.uk'
@@ -106,6 +107,12 @@ const featuredReviews = [
   },
 ]
 
+// Display-only filter for republished guestbook notes: quotes making medical or
+// air-treatment claims stay in the archive but are never rendered, since a
+// republished testimonial counts as a marketing claim under UK ASA guidance.
+const medicalClaimPattern = /asthma|eczema|pneumonia|\blungs?\b|purif|air quality|negative ions?|healing|\bheals?\b|detox|\bcures?\b/i
+const displayableReviews = reviews.filter(review => !medicalClaimPattern.test(review.feedback || ''))
+
 const proofByTheme = {
   lamp: featuredReviews[1],
   holder: featuredReviews[0],
@@ -115,6 +122,7 @@ const proofByTheme = {
   relaxation: featuredReviews[3],
   accessory: featuredReviews[4],
   deal: featuredReviews[1],
+  panel: featuredReviews[0],
 }
 
 const reviewSignals = [
@@ -167,6 +175,10 @@ const supportImages = {
   deal: [
     { src: img('holder-apple-gemini.jpg'), alt: 'Giftable Himalayan salt candle holder' },
     { src: img('lamp-sphere-gemini.jpg'), alt: 'Himalayan salt lamp gift set' },
+  ],
+  panel: [
+    { src: img('aura-collection-livingroom-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a living room' },
+    { src: img('aura-collection-hotel-lobby-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a hotel lobby' },
   ],
 }
 
@@ -246,6 +258,14 @@ const sellingContentByTheme = {
     careTitle: 'What to expect',
     care: ['Check the included items before ordering.', 'Natural salt pieces vary in colour, texture, and weight.', 'Keep items dry and follow the care notes for the product type included.'],
     promise: 'A simpler route for buyers who want the Salty Lamps look with less decision fatigue.',
+  },
+  panel: {
+    lede: name => `${name} is illuminated Himalayan salt wall art — ancient rock salt carved into a hand-finished solid-wood frame. Each panel is a unique piece of nature, with mineral veining that ranges from pale pink to deep orange, and a warm glow that changes the feel of a room the moment it is lit.`,
+    useTitle: 'Where it works best',
+    uses: ['Living rooms, bedrooms, and home offices that want a warmer, calmer feel.', 'Gyms, yoga studios, and wellness spaces where a soft glow sets the tone.', 'Reception areas and interiors projects that want a natural statement piece.'],
+    careTitle: 'Setup and care',
+    care: ['Keep the panel dry and wipe gently with a dry cloth.', 'Avoid prolonged exposure to humidity — mount securely with the supplied fittings.', 'Natural variation in colour, veining, and texture is normal; no two panels are alike.'],
+    promise: 'A unique piece of nature, framed by hand, bringing warmth and timeless character to any wall.',
   },
 }
 
@@ -344,6 +364,12 @@ const categories = [
     description: 'Bundle offers and starter sets for easy gifting.',
     image: img('holder-apple-gemini.jpg'),
   },
+  {
+    slug: 'salt-wall-panels',
+    name: 'Aura Collection',
+    description: 'Illuminated Himalayan salt wall art in hand-finished wood frames.',
+    image: img('aura-collection-frame-detail-live-site.jpg'),
+  },
 ]
 
 const shopperPaths = [
@@ -436,6 +462,29 @@ const shopperPaths = [
     theme: 'bricks',
     background: media('home-spa-salt-room-generated.png'),
     foreground: [img('salt-bricks-clean-gemini.jpg'), img('massage-stones-gemini.jpg')],
+  },
+  {
+    slug: 'aura-collection',
+    name: 'Aura Collection',
+    shortName: 'Aura Collection',
+    eyebrow: 'Illuminated wall art',
+    heading: 'Illuminated Himalayan salt wall art, framed by hand.',
+    description: 'Luxury backlit salt panels in hand-finished wood frames — warm, unique wall art for homes, gyms, and studios.',
+    heroIntro: [
+      'The Aura Collection is ',
+      { hl: 'illuminated Himalayan salt wall art' },
+      ' — carved from ancient rock salt formed over millions of years, so ',
+      { hl: 'every panel is unique' },
+      ', with natural mineral veining from pale pink to deep orange. Each piece is set in a ',
+      { hl: 'hand-finished solid-wood frame' },
+      ' with mitred corners, pairs beautifully with wood, stone, linen, and plants, and comes in a range of sizes — from a single accent panel to a full statement wall, at home, in the studio, or in reception.',
+    ],
+    heroVideo: media('video/collection/aura-collection-hero-16x9.mp4'),
+    heroPoster: media('video/collection/aura-collection-hero-poster-16x9.jpg'),
+    categories: ['salt-wall-panels'],
+    theme: 'panel',
+    background: media('aura-collection-lifestyle.jpg'),
+    foreground: [img('aura-collection-frame-detail-live-site.jpg'), img('aura-collection-workshop-real-live-site.jpg')],
   },
 ]
 
@@ -1668,6 +1717,58 @@ const products = [
     image: img('lamp-pyramid-gemini.jpg'),
     description: 'Pyramid-shaped Himalayan salt lamp.',
     tags: ['Lamp', 'Geometric'],
+  },
+  // Aura Collection size ladder. PROVISIONAL PRICES — these are the buyer's proposed
+  // retail tiers, not finalised; catalog/pricing/inventory will move to a dedicated
+  // commerce platform later. Size is modelled as separate products (not one product
+  // with a Size option) because each tier carries its own price.
+  {
+    id: 'aura-collection-small',
+    slug: 'aura-collection-salt-wall-panel-small',
+    name: 'Aura Collection Salt Wall Panel — Small',
+    sku: 'AP-S',
+    price: 149,
+    stock: true,
+    categories: ['all-products', 'salt-wall-panels'],
+    image: img('aura-collection-frame-detail-live-site.jpg'),
+    description: 'The smallest Aura panel — a single accent piece of illuminated Himalayan salt wall art in a hand-finished solid-wood frame, unique in its mineral veining.',
+    tags: ['Wall art', 'Hand finished', 'Accent'],
+  },
+  {
+    id: 'aura-collection-medium',
+    slug: 'aura-collection-salt-wall-panel-medium',
+    name: 'Aura Collection Salt Wall Panel — Medium',
+    sku: 'AP-M',
+    price: 299,
+    stock: true,
+    categories: ['all-products', 'salt-wall-panels'],
+    image: img('aura-collection-livingroom-live-site.jpg'),
+    description: 'A room-sized Aura panel for living rooms, bedrooms, and studios — illuminated Himalayan salt wall art framed by hand, warm and unique.',
+    tags: ['Wall art', 'Hand finished', 'Decor'],
+  },
+  {
+    id: 'aura-collection-large',
+    slug: 'aura-collection-salt-wall-panel-large',
+    name: 'Aura Collection Salt Wall Panel — Large',
+    sku: 'AP-L',
+    price: 599,
+    stock: true,
+    categories: ['all-products', 'salt-wall-panels'],
+    image: img('aura-collection-hotel-lobby-live-site.jpg'),
+    description: 'A tall statement Aura panel for larger walls, receptions, and feature spaces — hand-finished solid-wood frame, glowing natural salt.',
+    tags: ['Wall art', 'Hand finished', 'Statement'],
+  },
+  {
+    id: 'aura-collection-xl',
+    slug: 'aura-collection-salt-wall-panel-xl-statement',
+    name: 'Aura Collection Salt Wall Panel — XL Statement',
+    sku: 'AP-XL',
+    price: 1195,
+    stock: true,
+    categories: ['all-products', 'salt-wall-panels'],
+    image: img('aura-collection-workshop-real-live-site.jpg'),
+    description: 'The full statement-wall Aura installation — a multi-panel run of illuminated Himalayan salt, hand-framed for lobbies, spas, and premium interiors.',
+    tags: ['Wall art', 'Hand finished', 'Statement'],
   },
 ]
 
@@ -3228,10 +3329,10 @@ export default function App() {
           <p className="eyebrow">Representative guestbook notes</p>
           <h2>Recent proof without the endless scroll.</h2>
         </div>
-        <p>Showing 36 of {reviews.length} verified notes. The full archive can stay available behind a “load more” control when the live site needs it.</p>
+        <p>Showing {Math.min(36, displayableReviews.length)} of {reviews.length} verified notes. The full archive can stay available behind a “load more” control when the live site needs it.</p>
       </div>
       <div className="reviews-grid">
-        {reviews.slice(0, 36).map(review => (
+        {displayableReviews.slice(0, 36).map(review => (
           <article key={review.id}>
             <div className="review-card-header">
               <span className="review-avatar" aria-hidden="true">{initialsFor(review.name)}</span>
