@@ -15,29 +15,59 @@ depends on that folder to redeploy.
 | Build output | `dist` |
 | Framework | React 18 + Vite 5 |
 
-> **Account note (2026-07-06):** the `salty-lamps-proposal` project is **not** in
-> the `asifhussain60@gmail.com` account whose id is `19cb05067ea7e704f94481df1685ec51`
-> (that account only holds `asif-academy`). Deploys must authenticate against the
-> Cloudflare account that actually owns `salty-lamps-proposal.pages.dev`. Use an
-> API token from that account, or `wrangler login` into it.
+> **Account note (2026-07-06):** the `salty-lamps-proposal` project lives in the
+> **`Asifhussain60@hotmail.com`** Cloudflare account (id
+> `844bc687926c910d5ad9d79c40ad1f2f`) — **not** the `asifhussain60@gmail.com`
+> account (id `19cb05067ea7e704f94481df1685ec51`, which only holds
+> `asif-academy`; `wrangler` on this machine is logged into that one). Deploys
+> must authenticate with a token from the hotmail account.
 
 ## Quick deploy
 
 ```bash
 cd salty-lamps-site
-
-# Option A — non-interactive (recommended): token from the owning account
-export CLOUDFLARE_API_TOKEN=...      # Pages:Edit permission
-export CLOUDFLARE_ACCOUNT_ID=...     # the owning account's id
-./deploy-cloudflare.sh
-
-# Option B — interactive: opens a browser to log in
 ./deploy-cloudflare.sh
 ```
 
-`deploy-cloudflare.sh` builds, then runs
+That's it — the token and account id are saved in this Mac's Keychain (see
+below), so no manual auth is needed on this machine. `deploy-cloudflare.sh`
+builds, then runs
 `wrangler pages deploy dist --project-name salty-lamps-proposal --branch master --commit-dirty=true`.
-With a token it is fully hands-off; without one it falls back to browser OAuth.
+
+On a machine without the Keychain entries, either set env vars first:
+
+```bash
+export CLOUDFLARE_API_TOKEN=...      # Pages:Edit permission, hotmail account
+export CLOUDFLARE_ACCOUNT_ID=844bc687926c910d5ad9d79c40ad1f2f
+./deploy-cloudflare.sh
+```
+
+or just run `./deploy-cloudflare.sh` with no token set — it falls back to
+interactive browser OAuth (make sure to log into the hotmail account, not
+gmail, when the browser opens).
+
+## Where the credentials live (this machine)
+
+Saved once in the macOS Keychain, read automatically by
+`deploy-cloudflare.sh` (same pattern as `scripts/generate-aura-video.py`'s
+`gemini_api_key` lookup):
+
+| Keychain service | Account field | Holds |
+|---|---|---|
+| `salty-lamps-proposal-cloudflare-token` | `salty-lamps-proposal` | API token (Pages: Edit, hotmail account) |
+| `salty-lamps-proposal-cloudflare-account-id` | `salty-lamps-proposal` | `844bc687926c910d5ad9d79c40ad1f2f` |
+
+To rotate the token: create a new one in the hotmail account's dashboard, then
+overwrite with `security add-generic-password -s salty-lamps-proposal-cloudflare-token
+-a salty-lamps-proposal -w '<new token>' -U`, and delete the old token in the
+Cloudflare dashboard.
+
+> Two now-deleted Keychain items, `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`
+> (generic names, scoped to the **gmail/asif-academy** account), used to shadow
+> any token a script might read by that literal env var name — they didn't apply
+> to this project and were removed on 2026-07-06 to avoid confusion. The unrelated,
+> clearly-named `asif-academy-cloudflare` Keychain item for the asif-academy
+> project was left untouched.
 
 ## Build-time environment
 
