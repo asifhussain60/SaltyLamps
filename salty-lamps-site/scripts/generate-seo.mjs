@@ -314,11 +314,6 @@ function injectHead(html, route) {
   return output
 }
 
-function routeHtmlPath(routePath) {
-  if (routePath === '/') return path.join(distDir, 'index.html')
-  return path.join(distDir, routePath.replace(/^\/+/, ''), 'index.html')
-}
-
 function flatRouteHtmlPath(routePath) {
   if (routePath === '/') return path.join(distDir, 'index.html')
   return path.join(distDir, `${routePath.replace(/^\/+/, '')}.html`)
@@ -331,22 +326,19 @@ const baseHtml = fs
 
 for (const route of routes) {
   const html = injectHead(baseHtml, route)
-  writeFile(routeHtmlPath(route.path), html)
+  // Emit a SINGLE flat `<route>.html`. Cloudflare Pages serves `foo.html` at
+  // the clean URL `/foo` natively (and 308s `/foo.html` -> `/foo`). Emitting
+  // BOTH `<route>.html` and `<route>/index.html`, plus `_redirects` rewrites
+  // to `.html`, made Pages canonicalization loop — every sub-route 308'd to
+  // itself. One flat file + Pages' native serving is loop-free.
   writeFile(flatRouteHtmlPath(route.path), html)
 }
 
-const redirectsPath = path.join(distDir, '_redirects')
-if (fs.existsSync(redirectsPath)) {
-  const redirects = fs.readFileSync(redirectsPath, 'utf8')
-  const routeRewrites = routes
-    .filter(route => route.path !== '/')
-    .map(route => `${route.path} ${route.path}.html 200`)
-    .join('\n')
-  fs.writeFileSync(
-    redirectsPath,
-    redirects.replace('/* /index.html 200', `${routeRewrites}\n/* /index.html 200`),
-  )
-}
+// No per-route `_redirects` rewrites: a rule like `/foo /foo.html 200` gets
+// 308'd straight back to `/foo` by Cloudflare Pages' `.html` canonicalization,
+// producing an infinite loop. Pages serves the flat `.html` files above with no
+// rule; the SPA catch-all (`/* /index.html 200`) in public/_redirects still
+// covers any shell-less route.
 
 writeFile(
   path.join(distDir, 'robots.txt'),
