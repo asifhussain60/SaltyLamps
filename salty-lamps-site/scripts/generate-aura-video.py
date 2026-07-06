@@ -54,13 +54,17 @@ PRESENTER = (
     "speaking directly to camera in a calm, warm English accent. "
 )
 
-# One continuous take: she never stops speaking; only the world behind her
-# changes. This directive is appended to every scene so the woman is held
-# constant and the location shift reads as a cinematic dissolve, not a cut.
-HOLD = (
-    "She stays centre-frame, same wardrobe and the same warm light on her face, "
-    "speaking to camera without pause. The change happens only behind her, as a "
-    "single smooth cinematic dissolve — never a hard cut, never a jump. "
+# Each scene is ONE stable location — the woman speaking a single, short,
+# complete line. The change of location happens between clips as a crossfade
+# (see stitch_crossfade), so the film flows scene-to-scene instead of hard-
+# cutting. PACE keeps her consistent and, critically, tells her to finish the
+# line with a calm pause before the shot ends — so the 8s clip boundary never
+# clips a word (the "there was more to the sentence" problem).
+PACE = (
+    "She stays centre-frame in the same cream wrap over a satin blouse, warm "
+    "light on her face, speaking directly and unhurried to camera. She begins "
+    "after a brief beat and finishes the line a clear moment before the shot "
+    "ends, holding a calm, natural pause — never rushing, never cut off. "
 )
 
 SCENES = [
@@ -68,68 +72,61 @@ SCENES = [
         # Sajni's opening beat: a dark ordinary room transformed by the light.
         "name": "01-open-transform",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + HOLD + (
-            "The shot opens in a dark, ordinary, dimly lit living room. As she "
+        "prompt": STYLE + PRESENTER + PACE + (
+            "The setting is a dark, ordinary, dimly lit living room. As she "
             "begins to speak, the large framed backlit Himalayan salt wall panel "
-            "on the wall behind her slowly illuminates and the whole room warms "
-            "to a soft amber glow — a sofa, plants and candles emerging gently "
-            "from the shadows. She says: \"Some artwork is admired. Some "
-            "transforms the atmosphere.\""
+            "behind her illuminates and the whole room warms to a soft amber "
+            "glow — a sofa, plants and candles emerging from the shadows. She "
+            "says: \"Some artwork is admired. Some transforms the atmosphere.\""
         ),
     },
     {
         "name": "02-materials",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + HOLD + (
-            "She stands in the warm, amber-lit living room, the glowing framed "
-            "salt panel beside her. Behind her the wall dissolves into an extreme "
-            "close view of glowing Himalayan salt — rich amber and pale-pink "
-            "mineral veining, natural texture — then eases back to a full backlit "
-            "panel. She says: \"Carved from Himalayan rock salt formed over "
-            "millions of years — no two panels are ever alike.\""
+        "prompt": STYLE + PRESENTER + PACE + (
+            "The setting is a warm, amber-lit living room; a glowing framed "
+            "Himalayan salt panel rests on the wall beside her, its pink-and-"
+            "amber mineral veining catching the light. She says: \"Carved from "
+            "ancient Himalayan salt — no two are ever alike.\""
         ),
     },
     {
         "name": "03-craft",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + HOLD + (
-            "Behind her the setting dissolves from the living room into a warm "
-            "artisan workshop: a close view of a hand-finished solid walnut frame "
-            "and its clean mitred corner, wood grain catching the light beside "
-            "her. She says: \"Set in a solid-wood frame, finished by hand — "
-            "mitred corner to mitred corner.\""
+        "prompt": STYLE + PRESENTER + PACE + (
+            "The setting is a warm interior beside the panel's hand-finished "
+            "solid walnut frame, the wood grain and clean mitred corner glowing "
+            "next to her. She says: \"Framed in solid wood, and finished by "
+            "hand.\""
         ),
     },
     {
         "name": "04-studio",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + HOLD + (
-            "Behind her the workshop dissolves into a bright, calm wellness "
-            "studio — a tall framed backlit salt panel on the wall, soft "
-            "daylight, plants, linen and pale wood. She says: \"A warm, calming "
-            "presence that settles a room — beside wood, stone, linen and green.\""
+        "prompt": STYLE + PRESENTER + PACE + (
+            "The setting is a bright, calm wellness studio — a tall framed "
+            "backlit salt panel on the wall, soft daylight, plants and linen. "
+            "She says: \"A warm, calming presence in any room.\""
         ),
     },
     {
         "name": "05-reception",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + HOLD + (
-            "Behind her the studio dissolves into an elegant hotel reception with "
-            "three framed backlit Himalayan salt panels on a rich wood feature "
-            "wall. She says: \"From a single accent panel to a full statement "
-            "wall — at home, in the studio, or in reception.\""
+        "prompt": STYLE + PRESENTER + PACE + (
+            "The setting is an elegant hotel reception, three framed backlit "
+            "Himalayan salt panels on a rich wood feature wall behind her. She "
+            "says: \"From a single accent panel to a full statement wall.\""
         ),
     },
     {
         # Explicit call to action — the beat the original video lacked.
         "name": "06-cta",
         "reference": "presenter-home-mid.jpg",
-        "prompt": STYLE + PRESENTER + (
-            "She stands before the glowing feature wall of framed Himalayan salt "
-            "panels as the camera slowly pushes in and the amber glow deepens — "
-            "refined, aspirational, timeless. She smiles warmly and says: \"The "
-            "Aura Collection. Nature. Simplicity. Timeless beauty. Discover "
-            "yours.\""
+        "prompt": STYLE + PRESENTER + PACE + (
+            "She stands before a glowing feature wall of framed Himalayan salt "
+            "panels as the camera slowly, gently pushes in and the amber glow "
+            "deepens. She smiles warmly and says: \"The Aura Collection. Nature. "
+            "Simplicity. Discover yours.\""
         ),
     },
 ]
@@ -162,7 +159,7 @@ def get_json(url, key):
         return json.load(resp)
 
 
-def generate_scene(scene, key):
+def _generate_once(scene, key):
     instance = {"prompt": scene["prompt"]}
     if "reference" in scene:
         instance["referenceImages"] = [
@@ -182,7 +179,7 @@ def generate_scene(scene, key):
         status = get_json(f"{BASE}/{op_name}", key)
         if status.get("done"):
             if "error" in status:
-                raise RuntimeError(f"scene {scene['name']}: {status['error']}")
+                raise RuntimeError(status["error"])
             resp = status["response"]
             samples = (resp.get("generateVideoResponse", {}).get("generatedSamples")
                        or resp.get("generatedVideos") or [])
@@ -200,6 +197,78 @@ def generate_scene(scene, key):
         print("  ...rendering", flush=True)
 
 
+def generate_scene(scene, key, attempts=4):
+    """Generate one scene, retrying transient Veo failures (code 13 / internal
+    server errors are common on long runs) with a short back-off before giving
+    up. Cached earlier scenes let a hard failure resume without re-spending."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return _generate_once(scene, key)
+        except RuntimeError as err:
+            transient = "'code': 13" in str(err) or "internal" in str(err).lower()
+            if attempt == attempts or not transient:
+                raise RuntimeError(f"scene {scene['name']}: {err}")
+            wait = 30 * attempt
+            print(f"  transient error on {scene['name']} "
+                  f"(attempt {attempt}/{attempts}); retrying in {wait}s: {err}",
+                  flush=True)
+            time.sleep(wait)
+
+
+def probe_dur(path):
+    out = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "csv=p=0", str(path)],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    return float(out)
+
+
+NORM_V = ("scale=1280:720:force_original_aspect_ratio=decrease,"
+          "pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24,format=yuv420p,"
+          "setsar=1,settb=AVTB")
+
+
+def stitch_crossfade(clips, final, xdur=0.6):
+    """Concatenate clips with a crossfade (xfade + acrossfade) at every join so
+    scenes flow into one another instead of hard-cutting. Each input is first
+    normalized to the site's 1280x720/24fps baseline so xfade's inputs match.
+    """
+    durs = [probe_dur(c) for c in clips]
+    inputs = []
+    for c in clips:
+        inputs += ["-i", str(c)]
+
+    fc = []
+    for i in range(len(clips)):
+        fc.append(f"[{i}:v]{NORM_V}[v{i}]")
+        fc.append(f"[{i}:a]aformat=sample_rates=48000:channel_layouts=stereo,"
+                  f"asetpts=PTS-STARTPTS[a{i}]")
+
+    # Chain the crossfades. offset for each join = running output length minus
+    # the crossfade duration (transition starts xdur before the current tail).
+    cur_v, cur_a = "[v0]", "[a0]"
+    prev_dur = durs[0]
+    for k in range(1, len(clips)):
+        off = prev_dur - xdur
+        out_v = "[vout]" if k == len(clips) - 1 else f"[vx{k}]"
+        out_a = "[aout]" if k == len(clips) - 1 else f"[ax{k}]"
+        fc.append(f"{cur_v}[v{k}]xfade=transition=fade:duration={xdur}:"
+                  f"offset={off:.3f}{out_v}")
+        fc.append(f"{cur_a}[a{k}]acrossfade=d={xdur}{out_a}")
+        cur_v, cur_a = out_v, out_a
+        prev_dur = prev_dur + durs[k] - xdur
+
+    subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", *inputs,
+         "-filter_complex", ";".join(fc),
+         "-map", "[vout]", "-map", "[aout]",
+         "-c:v", "libx264", "-crf", "20", "-preset", "medium",
+         "-c:a", "aac", "-b:a", "128k", str(final)],
+        check=True,
+    )
+
+
 def main():
     key = api_key()
     WORK.mkdir(parents=True, exist_ok=True)
@@ -213,8 +282,6 @@ def main():
         print(f"scene {scene['name']}: generating...", flush=True)
         clips.append(generate_scene(scene, key))
 
-    concat_list = WORK / "concat.txt"
-    concat_list.write_text("".join(f"file '{c.name}'\n" for c in clips))
     final = OUT_DIR / "aura-collection-hero-16x9.mp4"
     poster = OUT_DIR / "aura-collection-hero-poster-16x9.jpg"
 
@@ -226,16 +293,7 @@ def main():
             backup.write_bytes(asset.read_bytes())
             print(f"backed up {asset.name} -> {backup.name}", flush=True)
 
-    # Re-encode (not stream-copy) so slight per-clip encoder differences can't
-    # corrupt playback; normalize to the site's 1280x720 H.264/AAC baseline.
-    subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
-         "-i", str(concat_list),
-         "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24",
-         "-c:v", "libx264", "-crf", "20", "-preset", "medium",
-         "-c:a", "aac", "-b:a", "128k", str(final)],
-        check=True, cwd=WORK,
-    )
+    stitch_crossfade(clips, final)
     # Poster from ~4s: scene 1 opens dark and warms, so grab a frame once the
     # room is fully lit rather than the black opening.
     subprocess.run(
