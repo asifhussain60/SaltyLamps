@@ -1,0 +1,8 @@
+http://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
+https://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
+http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
+/category/himalyan-salt-massage-relaxation-products /category/himalayan-salt-massage-relaxation-products 301
+/collection/trade-spa/himalyan-salt-massage-relaxation-products /collection/trade-spa/himalayan-salt-massage-relaxation-products 301
+/product-page/tequilla-shot-glass /product-page/tequila-shot-glass 301
+/returns-exchanges /return-refund-policy 301
+/* /index.html 200

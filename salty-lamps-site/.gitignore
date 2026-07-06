@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment — contains API keys, never commit
+.env
+.env.local
+.env.*.local
+
+# Vite temp files
+vite.config.js.timestamp-*
+
+# macOS
+.DS_Store

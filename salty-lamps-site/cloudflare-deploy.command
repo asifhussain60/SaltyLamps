@@ -5,7 +5,7 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_NAME="salty-lamps-deck"
+PROJECT_NAME="salty-lamps-proposal"
 
 echo ""
 echo "╔══════════════════════════════════════════════════╗"
@@ -46,7 +46,7 @@ echo "╔═══════════════════════�
 echo "║   ✅  DEPLOYED                                   ║"
 echo "║                                                  ║"
 echo "║   Live URL:                                      ║"
-echo "║   https://salty-lamps-deck.pages.dev             ║"
+echo "║   https://salty-lamps-proposal.pages.dev         ║"
 echo "║                                                  ║"
 echo "║   Dashboard:                                     ║"
 echo "║   https://dash.cloudflare.com/pages              ║"
