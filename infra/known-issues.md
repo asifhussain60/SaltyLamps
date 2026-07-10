@@ -48,16 +48,35 @@ the SEO build step doesn't depend on a deployment that hasn't happened yet. If t
 recreated (new id), this needs updating alongside `wrangler.toml`. See
 [`migration-playbook.md`](migration-playbook.md) Scenario C.
 
-## 5. One checkout flow step never verified live
+## 5. ~~One checkout flow step never verified live~~ — verified 2026-07-10
 
-A full test purchase (Stripe test card → webhook fires → order appears in D1, stock decrements)
-was not completed — Stripe's iframe-based card input didn't accept automated browser input
-reliably. Everything up to Checkout Session creation is proven live; this last step needs a human
-to click through once. Takes about 30 seconds with test card `4242 4242 4242 4242`, any future
-expiry, any CVC.
+A full test purchase was completed against the live site: card `4242 4242 4242 4242`, £29.99,
+"Angel Shape Himalayan Rock Salt Lamp". Confirmed in D1:
+
+- `orders` row written with `status = 'paid'`, correct `customer_email`, `amount_total_pence = 2999`.
+- `order_items` row written with the correct `sku_id`, `quantity`, `unit_price_pence`.
+- Stock decremented correctly for this `quantity`-tracked SKU (`RSL-A`: seed quantity 10 → 9 after
+  the purchase).
+
+The webhook, signature verification, and D1 writes all work end-to-end. One new issue surfaced
+during this test — see #7 below.
 
 ## 6. Standard (full-access) Stripe key in use, not the restricted one
 
 See [`stripe.md`](stripe.md#api-key-in-use) — a deliberate choice for test-mode simplicity, but
 worth revisiting before live mode (Scenario B in the migration playbook already recommends the
 restricted key for the live-mode key).
+
+## 7. ~~Post-checkout success/cancel pages 404~~ — fixed 2026-07-10
+
+`functions/api/checkout.js` sets `success_url` to `${siteUrl}/checkout/success?session_id=...` and
+`cancel_url` to `${siteUrl}/checkout/cancelled`, but the SPA router in `src/App.jsx` had no case for
+either path — a customer who completed payment landed on the "This page is not available." 404
+screen instead of a confirmation. The order was always captured correctly in D1 (see #5); this was
+purely a missing frontend route.
+
+Fixed by adding `renderCheckoutSuccess()` / `renderCheckoutCancelled()` and wiring
+`/checkout/success` and `/checkout/cancelled` into the route-matching chain and `notFound` check in
+`src/App.jsx`. Verified locally: both routes render the correct copy, title, and working
+"Continue shopping" / "Contact us" links. Not yet deployed to production — see the deploy step in
+[`cloudflare.md`](cloudflare.md).

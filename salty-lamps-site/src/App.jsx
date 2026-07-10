@@ -1359,6 +1359,8 @@ const activePageMeta = ({ route, categorySlug, activeShopperPath, currentProduct
   if (route === '/process') return { title: pageTitle('Manufacturing Process'), description: 'See how Salty Lamps products move from mined rock salt to cut, finished, packed products.', image: media('video/salty-lamps-manufacturing-process-poster-16x9.jpg') }
   if (route === '/reviews') return { title: pageTitle('Customer Reviews'), description: 'Read verified Salty Lamps guestbook feedback by customer theme.', image: img('lamp-natural-gemini.jpg') }
   if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('logo.png') }
+  if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('logo.png'), robots: 'noindex,follow' }
+  if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('logo.png'), robots: 'noindex,follow' }
   if (page) return { title: pageTitle(page.title), description: page.body[0], image: media('logo.png') }
   if (route === '/') return { title: siteTitle, description: siteDescription, image: media('video/salty-lamps-homepage-hero-poster-16x9.jpg') }
   return { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
@@ -1621,6 +1623,8 @@ export default function App() {
     route !== '/reviews' &&
     route !== '/returns-exchanges' &&
     route !== '/return-refund-policy' &&
+    route !== '/checkout/success' &&
+    route !== '/checkout/cancelled' &&
     !(categorySlug && isKnownCategoryRoute)
   const meta = notFound
     ? { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
@@ -3195,6 +3199,34 @@ export default function App() {
     </section>
   )
 
+  const renderCheckoutSuccess = () => (
+    <section className="policy-page checkout-status-page">
+      <p className="eyebrow">Order confirmed</p>
+      <h1>Thank you — your order is confirmed.</h1>
+      <p>
+        Payment was successful and a confirmation email is on its way. Salty Lamps will get your order packed and shipped shortly.
+      </p>
+      <div className="hero-actions">
+        <Link className="button primary" href="/shop">Continue shopping</Link>
+        <a className="button secondary" href="mailto:info@saltylamps.co.uk">Contact us about this order</a>
+      </div>
+    </section>
+  )
+
+  const renderCheckoutCancelled = () => (
+    <section className="policy-page checkout-status-page">
+      <p className="eyebrow">Checkout cancelled</p>
+      <h1>Your order was not placed.</h1>
+      <p>
+        No payment was taken. Your cart is still here if you would like to try again.
+      </p>
+      <div className="hero-actions">
+        <Link className="button primary" href="/shop">Return to shop</Link>
+        <a className="button secondary" href="mailto:info@saltylamps.co.uk">Contact us</a>
+      </div>
+    </section>
+  )
+
   const renderNotFound = () => (
     <section className="policy-page not-found-page">
       <p className="eyebrow">{pageCopy.notFound.eyebrow}</p>
@@ -3239,6 +3271,10 @@ export default function App() {
           ? renderNotFound()
           : currentProduct
           ? renderProductPage(currentProduct)
+          : route === '/checkout/success'
+            ? renderCheckoutSuccess()
+          : route === '/checkout/cancelled'
+            ? renderCheckoutCancelled()
           : route === '/migration'
             ? renderMigrationPage()
           : route === '/process'
