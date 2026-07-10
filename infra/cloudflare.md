@@ -127,3 +127,26 @@ wrangler pages dev dist --port 8799 --d1 DB=salty-lamps-db
 ```
 (then load schema+seed into whichever local sqlite file it actually bound to — see the gotcha
 above.)
+
+### Admin portal local dev (live-reload UI + real backend)
+
+The admin portal (`/admin`) calls `/api/admin/*`, which — like every other API route — only
+exists inside Cloudflare Pages Functions. Plain `vite dev` doesn't run Functions at all, so
+`/admin` pages fail to load anything under it. Two servers running together fix this:
+
+```
+# Terminal 1 — the real backend (D1 + R2 + Functions), no live reload needed
+npm run build
+wrangler pages dev dist --port 8788 --d1 DB=salty-lamps-db --r2 IMAGES=salty-lamps-images
+
+# Terminal 2 — the fast-reloading UI; vite.config.js proxies /api/* to :8788
+npm run dev
+```
+
+Load schema/seed/migrations into whichever local sqlite file `wrangler pages dev` bound to (see
+the gotcha above) before testing admin CRUD. To point the proxy at a different backend port, set
+`WRANGLER_PORT` before running `npm run dev`.
+
+Admin auth in local dev: set `DEV_ADMIN_BYPASS=1` in `.dev.vars` so the middleware skips the
+Cloudflare Access check (see `functions/api/admin/_middleware.js`). Never set this in production —
+Pages secrets, not `.dev.vars`.
