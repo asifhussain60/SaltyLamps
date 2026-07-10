@@ -58,11 +58,24 @@ async function api(path, { method = 'GET', body, isForm } = {}) {
     opts.body = body
   }
   const res = await fetch(path, opts)
+  const text = await res.text()
   let data = null
-  try {
-    data = await res.json()
-  } catch {
-    /* non-JSON (e.g. CSV) or empty */
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      // Every admin endpoint always returns JSON, so a 200 with unparseable
+      // body means this request never reached the admin API at all — most
+      // likely the dev server is plain `vite dev` (no Cloudflare Functions)
+      // rather than `wrangler pages dev`, which serves the SPA shell instead.
+      const err = new Error(
+        'The admin API did not respond with data. If you are running the storefront '
+        + 'with plain `vite dev`, the admin backend needs `wrangler pages dev` instead '
+        + '(it hosts the Cloudflare Pages Functions the admin API runs on).',
+      )
+      err.status = res.status
+      throw err
+    }
   }
   if (!res.ok) {
     const err = new Error(data?.error?.message || `Request failed (${res.status}).`)
