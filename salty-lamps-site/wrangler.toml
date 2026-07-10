@@ -1,3 +1,20 @@
 name = "salty-lamps-proposal"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
+
+# --- D1 database binding ---
+# 1. Create the database once:  wrangler d1 create salty-lamps-db
+# 2. Copy the "database_id" it prints into the line below, then uncomment this block.
+# 3. Apply the schema:          wrangler d1 execute salty-lamps-db --file=d1/schema.sql
+# 4. Load the catalog:          wrangler d1 execute salty-lamps-db --file=d1/seed.sql
+#
+[[d1_databases]]
+binding = "DB"
+database_name = "salty-lamps-db"
+database_id = "e8e40717-628d-481d-9175-e9c473620125"
+
+# --- Stripe secrets (never put these in this file) ---
+# wrangler pages secret put STRIPE_SECRET_KEY
+# wrangler pages secret put STRIPE_WEBHOOK_SECRET
+# wrangler pages secret put SITE_URL   (e.g. https://www.saltylamps.co.uk)

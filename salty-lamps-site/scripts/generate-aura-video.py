@@ -55,6 +55,25 @@ PRESENTER = (
     "her late 30s with shoulder-length wavy brown hair, warm neutral clothing, "
     "speaking directly to camera in a calm, warm English accent. "
 )
+# Every scene is also conditioned on a real photo of the actual product (see
+# "product_reference" per scene) so Veo renders the real backlit stone-and-walnut
+# panel instead of inventing one. This phrase must stay claim-free (no "salt",
+# no health language) and match what that reference image actually shows.
+PRODUCT = (
+    "a backlit wall panel of warm, sunset-hued stone in a hand-finished solid "
+    "walnut frame, matching the second reference image exactly"
+)
+# 2026-07-06 fix: three scenes (living-room settings) kept rendering extra
+# rock-shaped Himalayan salt lamps as incidental shelf/table decor even after
+# PRODUCT stopped saying "salt". Naming the unwanted object risks a negation
+# backfire in video diffusion models (the token still shows up), so this
+# states positively what nearby surfaces DO hold instead of what to avoid.
+NO_OTHER_LAMPS = (
+    "This rectangular framed panel is the only illuminated object anywhere in "
+    "the room. Any shelves or surfaces nearby hold only books, plants, or a "
+    "candle in a plain glass holder — never another glowing or rounded "
+    "decorative object. "
+)
 
 # Each scene is ONE stable location — the woman speaking a single, short,
 # complete line. The change of location happens between clips as a crossfade
@@ -74,60 +93,95 @@ SCENES = [
         # Sajni's opening beat: a dark ordinary room transformed by the light.
         "name": "01-open-transform",
         "reference": "presenter-home-mid.jpg",
+        # Two product shots: the room setting, plus a macro of the mitred
+        # corner so Veo has a true read on the frame's wood thickness/depth,
+        # not just a flat frontal view (scene 1 previously dropped the panel
+        # entirely and rendered stock rock lamps instead).
+        "product_reference": [
+            "product/living-room-single-panel.jpg",
+            "product/frame-joinery.jpg",
+        ],
         "prompt": STYLE + PRESENTER + PACE + (
             "The setting is a dark, ordinary, dimly lit living room. As she "
-            "begins to speak, the large framed backlit Himalayan salt wall panel "
-            "behind her illuminates and the whole room warms to a soft amber "
-            "glow — a sofa, plants and candles emerging from the shadows. She "
-            "says: \"Some artwork is admired. Some transforms the atmosphere.\""
+            f"begins to speak, the large framed panel behind her — {PRODUCT} — "
+            "illuminates and the whole room warms to a soft amber glow — a "
+            f"sofa and plants emerging from the shadows. {NO_OTHER_LAMPS}"
+            "She says: \"Some artwork is admired. Some transforms the "
+            "atmosphere.\""
         ),
     },
     {
+        # 2026-07-06: moved off "living room" (scene 1 already owns that) and
+        # off the macro-only reference, which was rendering the frame as an
+        # oversized shadow-box — this now uses a wide, front-on office photo
+        # so Veo has the true glow-to-frame ratio, not just the corner detail.
+        # Second attempt: the first wording ("smart, warm-toned office") still
+        # rendered a generic bright home room — presumably the presenter's own
+        # reference photo (a home interior) outweighed a soft text cue. This
+        # version names concrete corporate-office objects up front instead of
+        # relying on the word "office" alone.
         "name": "02-materials",
         "reference": "presenter-home-mid.jpg",
+        "product_reference": "product/office-desk-duo.jpg",
         "prompt": STYLE + PRESENTER + PACE + (
-            "The setting is a warm, amber-lit living room; a glowing framed "
-            "Himalayan salt panel rests on the wall beside her, its pink-and-"
-            "amber mineral veining catching the light. She says: \"Carved from "
-            "ancient Himalayan salt — no two are ever alike.\""
+            "The setting is a corporate office reception area, matching the "
+            "reference image exactly: a dark wood reception desk with a "
+            "computer monitor, keyboard, a desk telephone, and potted plants "
+            "in the foreground, neutral fabric-textured office wallpaper and "
+            "a plain ceiling with recessed office lighting behind. On the "
+            f"wall beside her hang two panels matching the reference image — "
+            f"each {PRODUCT} — their warm veining catching the light. She "
+            "says: \"Carved from natural stone — no two are ever alike.\""
         ),
     },
     {
         "name": "03-craft",
         "reference": "presenter-home-mid.jpg",
+        "product_reference": "product/frame-joinery.jpg",
         "prompt": STYLE + PRESENTER + PACE + (
             "The setting is a warm interior beside the panel's hand-finished "
             "solid walnut frame, the wood grain and clean mitred corner glowing "
-            "next to her. She says: \"Framed in solid wood, and finished by "
-            "hand.\""
+            f"next to her. {NO_OTHER_LAMPS}She says: \"Framed in solid wood, "
+            "and finished by hand.\""
         ),
     },
     {
         "name": "04-studio",
         "reference": "presenter-home-mid.jpg",
+        "product_reference": "product/studio-panel.jpg",
         "prompt": STYLE + PRESENTER + PACE + (
-            "The setting is a bright, calm wellness studio — a tall framed "
-            "backlit salt panel on the wall, soft daylight, plants and linen. "
-            "She says: \"A warm, calming presence in any room.\""
+            "The setting is a bright, calm wellness studio — a tall panel on "
+            f"the wall ({PRODUCT}), soft daylight, plants and linen. "
+            f"{NO_OTHER_LAMPS}She says: \"A warm, calming presence in any "
+            "room.\""
         ),
     },
     {
         "name": "05-reception",
         "reference": "presenter-home-mid.jpg",
+        "product_reference": "product/hotel-lobby-triptych.jpg",
         "prompt": STYLE + PRESENTER + PACE + (
-            "The setting is an elegant hotel reception, three framed backlit "
-            "Himalayan salt panels on a rich wood feature wall behind her. She "
-            "says: \"From a single accent panel to a full statement wall.\""
+            "The setting is an elegant hotel reception, three panels matching "
+            f"the reference image — each {PRODUCT} — on a rich wood feature "
+            "wall behind her. She says: \"From a single accent panel to a full "
+            "statement wall.\""
         ),
     },
     {
         # Explicit call to action — the beat the original video lacked.
+        # 2026-07-06: reworded from a generic "feature wall" (read too close
+        # to scene 5's hotel reception) to a private library, for setting
+        # variety. Same product reference kept — its proportions were
+        # already correct, only scene 2's macro-only reference had the bug.
         "name": "06-cta",
         "reference": "presenter-home-mid.jpg",
+        "product_reference": "product/feature-wall-triptych.jpg",
         "prompt": STYLE + PRESENTER + PACE + (
-            "She stands before a glowing feature wall of framed Himalayan salt "
-            "panels as the camera slowly, gently pushes in and the amber glow "
-            "deepens. She smiles warmly and says: \"The Aura Collection. Nature. "
+            "The setting is an elegant private library, floor-to-ceiling "
+            "bookshelves and a leather armchair. She stands before three "
+            f"panels matching the reference image — each {PRODUCT} — as the "
+            "camera slowly, gently pushes in and the amber glow deepens. She "
+            "smiles warmly and says: \"The Aura Collection. Nature. "
             "Simplicity. Discover yours.\""
         ),
     },
@@ -163,9 +217,20 @@ def get_json(url, key):
 
 def _generate_once(scene, key):
     instance = {"prompt": scene["prompt"]}
+    # Veo allows up to 3 asset references total. presenter (face) + product
+    # photo(s) gives Veo a visual anchor for both instead of adjectives; a
+    # second product shot (e.g. a macro of the frame's mitred profile) can be
+    # added where the setting shot alone doesn't convey true wood thickness.
+    refs = []
     if "reference" in scene:
+        refs.append(scene["reference"])
+    if "product_reference" in scene:
+        prod = scene["product_reference"]
+        refs.extend(prod if isinstance(prod, list) else [prod])
+    refs = refs[:3]
+    if refs:
         instance["referenceImages"] = [
-            {"image": b64_image(REF_DIR / scene["reference"]), "referenceType": "asset"}
+            {"image": b64_image(REF_DIR / ref), "referenceType": "asset"} for ref in refs
         ]
     if "first_frame" in scene:
         instance["image"] = b64_image(REF_DIR / scene["first_frame"])

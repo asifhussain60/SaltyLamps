@@ -8,9 +8,13 @@ dist/
 .env
 .env.local
 .env.*.local
+.dev.vars
 
 # Vite temp files
 vite.config.js.timestamp-*
+
+# Wrangler local dev state (local D1 sqlite, cache — never real data)
+.wrangler/
 
 # macOS
 .DS_Store

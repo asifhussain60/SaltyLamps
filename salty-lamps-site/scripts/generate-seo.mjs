@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { PRODUCTS_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -31,7 +33,40 @@ function evalValue(source) {
   return Function('img', 'media', `return (${source})`)(img, media)
 }
 
-const products = evalValue(extractConst('products', 'pages'))
+// Products now live in Cloudflare D1, not in App.jsx source. Query D1's HTTP API
+// directly (not the live /api/products endpoint) so this build step doesn't
+// depend on a deployment that hasn't happened yet — flattening logic is shared
+// with functions/api/products.js via flatten-products.mjs, kept in sync there.
+function keychainSecret(service, account = 'salty-lamps-proposal') {
+  try {
+    return execFileSync('security', ['find-generic-password', '-s', service, '-a', account, '-w'], {
+      encoding: 'utf8',
+    }).trim()
+  } catch {
+    return ''
+  }
+}
+
+async function fetchProductsFromD1() {
+  const token = process.env.CLOUDFLARE_D1_TOKEN || keychainSecret('salty-lamps-proposal-cloudflare-d1-token')
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || keychainSecret('salty-lamps-proposal-cloudflare-account-id')
+  const databaseId = 'e8e40717-628d-481d-9175-e9c473620125'
+  if (!token || !accountId) throw new Error('Missing Cloudflare D1 token/account id (check Keychain or env vars)')
+
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
+    {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ sql: PRODUCTS_QUERY }),
+    },
+  )
+  const body = await res.json()
+  if (!body.success) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
+  return flattenProductRows(body.result[0].results)
+}
+
+const products = await fetchProductsFromD1()
 const categories = evalValue(extractConst('categories', 'shopperPaths'))
 const shopperPaths = evalValue(extractConst('shopperPaths', 'processSteps'))
 const policyPages = evalValue(extractConst('pages', 'categoryPageCopy'))

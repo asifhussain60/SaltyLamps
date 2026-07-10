@@ -8,6 +8,11 @@ const money = value =>
     currency: 'GBP',
   }).format(value)
 
+// Aura Collection pricing isn't finalised yet (see the size-ladder products
+// below) — priceTBD swaps the real number out for "TBD" everywhere a price
+// would otherwise display, and disables purchasing until it's confirmed.
+const priceLabel = product => (product.priceTBD ? 'TBD' : money(product.price))
+
 const img = name => `/media/live-site-products/${name}`
 const media = name => `/media/${name}`
 
@@ -465,7 +470,7 @@ const shopperPaths = [
   },
   {
     slug: 'aura-collection',
-    name: 'Aura Collection',
+    name: 'The Aura Collection',
     shortName: 'Aura Collection',
     eyebrow: 'Illuminated wall art',
     heading: 'Illuminated Himalayan salt wall art, framed by hand.',
@@ -579,51 +584,51 @@ const migrationOverviewCards = [
     icon: '🏠',
     tone: 'amber',
     title: 'Keep the live site safe',
-    text: 'Do not disconnect Wix until the new Cloudflare site, Shopify checkout, and domain setup have been tested.',
+    text: 'Do not disconnect Wix until the new Cloudflare site, Stripe checkout, and domain setup have been tested.',
   },
   {
     icon: '☁️',
     tone: 'blue',
-    title: 'Cloudflare hosts the website',
-    text: 'Cloudflare will serve the new fast custom website and give us a private preview link before launch.',
+    title: 'Cloudflare hosts everything',
+    text: 'Cloudflare Pages serves the website, Cloudflare D1 stores products, stock, and orders, and Cloudflare Pages Functions handle the server-side logic. One platform, one bill.',
   },
   {
-    icon: '🛒',
+    icon: '💳',
     tone: 'green',
-    title: 'Shopify runs the shop',
-    text: 'Shopify becomes the place for products, stock, checkout, orders, payments, customers, and fulfilment.',
+    title: 'Stripe runs checkout only',
+    text: 'Stripe takes the card payment on a secure hosted page. It never sees or stores your product catalog — that stays in Cloudflare D1.',
   },
 ]
 
 const migrationSteps = [
   {
-    icon: '📦',
+    icon: '💳',
     label: 'Step 1',
     tone: 'amber',
-    title: 'Create Shopify and prepare the shop data',
-    outcome: 'Shopify becomes the trusted place for products, stock, orders, payments, and customer checkout.',
+    title: 'Create Stripe and prepare the product data',
+    outcome: 'Stripe becomes the trusted place for card payments only. Products, stock, and orders live in Cloudflare D1, not Stripe.',
     actions: [
-      'Open the Shopify setup page and create a store account with the Salty Lamps business email.',
-      'Enter the legal business name, business address, phone number, and store email.',
-      'Set currency, UK market, tax settings, payments, shipping zones, and delivery rates.',
-      'Create collections for salt lamps, candle holders, pantry items, salt bricks, salt licks, relaxation products, accessories, and deals.',
-      'Add a small test set of real products first, including SKUs, variants, prices, images, weights, and starting stock.',
+      'Open the Stripe signup page and create an account with the Salty Lamps business email.',
+      'Enter the legal business name, business address, phone number, and support email.',
+      'Set the currency to GBP, confirm UK tax settings, and add a bank account for payouts.',
+      'Keep Stripe in test mode until checkout, webhooks, and a real test order have all passed.',
+      'Export the product list (name, SKU, price, weight, starting stock, category) so it can be loaded into Cloudflare D1 — the inventory.csv export from Wix already has this.',
     ],
     verify: [
-      'You can log in to Shopify admin.',
-      'At least one test product has a price, SKU, image, variant, weight, and stock count.',
-      'Shipping and payment settings are visible in Shopify admin.',
+      'You can log in to the Stripe dashboard.',
+      'Test mode is on and a test API key is available.',
+      'The product list has a SKU, price, weight, and starting stock for every item.',
     ],
     stopIf: [
-      'You do not know which email owns the Shopify account.',
+      'You do not know which email owns the Stripe account.',
       'Products do not have SKUs or stock counts yet.',
-      'Shipping rates have not been decided.',
+      'Payout bank details have not been decided.',
     ],
-    ownerNote: 'Think of Shopify as the new stockroom, till, order book, and customer checkout.',
+    ownerNote: 'Think of Stripe as just the card machine — it takes the payment and nothing else.',
     links: [
-      { label: 'Shopify store setup checklist', url: 'https://help.shopify.com/en/manual/intro-to-shopify/initial-setup/new-to-shopify-checklists/general-checklist' },
-      { label: 'Shopify products guide', url: 'https://help.shopify.com/en/manual/products' },
-      { label: 'Shopify shipping rates', url: 'https://help.shopify.com/en/manual/fulfillment/setup/shipping-rates/setting-up-shipping-rates' },
+      { label: 'Stripe UK signup', url: 'https://dashboard.stripe.com/register' },
+      { label: 'Stripe Checkout overview', url: 'https://docs.stripe.com/payments/checkout' },
+      { label: 'Stripe test mode', url: 'https://docs.stripe.com/test-mode' },
     ],
   },
   {
@@ -659,35 +664,34 @@ const migrationSteps = [
     ],
   },
   {
-    icon: '🔌',
+    icon: '🗄️',
     label: 'Step 3',
     tone: 'green',
-    title: 'Connect Shopify products, cart, and checkout',
-    outcome: 'The website stops using sample products and starts reading real Shopify product, cart, and checkout data.',
+    title: 'Load Cloudflare D1 and connect Stripe Checkout',
+    outcome: 'The website stops using hardcoded sample products and starts reading real product and stock data from Cloudflare D1. Checkout hands off to Stripe.',
     actions: [
-      'In Shopify, install or open the Headless channel for the custom storefront.',
-      'Create a storefront for the Cloudflare website.',
-      'Copy the public Storefront API token for the buyer-facing shop.',
-      'Save the Shopify store domain and Storefront API token in Cloudflare environment variables.',
-      'Connect product listings, product pages, prices, variants, and stock status to Shopify.',
-      'Replace the local cart with a Shopify cart.',
-      'Use the Shopify cart checkout URL so customers pay through Shopify-hosted checkout.',
+      'Create a Cloudflare D1 database and load it with the product and inventory data exported from Wix.',
+      'Replace the hardcoded product list in the website code with a call to D1 through a Cloudflare Pages Function.',
+      'Keep the shopping cart entirely in the browser (no server call needed until checkout).',
+      'Add a Pages Function that creates a Stripe Checkout session from the cart contents when the customer checks out.',
+      'Save the Stripe secret key as a Cloudflare Pages Function secret — never in the website code or GitHub.',
+      'Add a Pages Function that receives the Stripe webhook after payment, writes the order into D1, and reduces stock.',
     ],
     verify: [
-      'A product shown on the website matches the same product in Shopify.',
-      'Adding to cart creates a Shopify cart.',
-      'Checkout opens a Shopify-hosted checkout page.',
+      'A product shown on the website matches the same product in D1.',
+      'Adding to cart works entirely without a server call.',
+      'Checkout opens a real Stripe Checkout page.',
     ],
     stopIf: [
-      'The website still reads sample products.',
+      'The website still reads the hardcoded sample products.',
       'Out-of-stock products can still be bought.',
       'Checkout does not open from the cart.',
     ],
-    ownerNote: 'Customers browse the custom site, but Shopify quietly handles the basket and payment.',
+    ownerNote: 'Customers browse the custom site, add to a basket that lives in their own browser, then Stripe quietly takes the payment.',
     links: [
-      { label: 'Shopify Headless channel', url: 'https://shopify.dev/docs/storefronts/headless/bring-your-own-stack' },
-      { label: 'Storefront API getting started', url: 'https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/getting-started' },
-      { label: 'Shopify cart guide', url: 'https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/cart/manage' },
+      { label: 'Cloudflare D1 getting started', url: 'https://developers.cloudflare.com/d1/get-started/' },
+      { label: 'Cloudflare Pages Functions', url: 'https://developers.cloudflare.com/pages/functions/' },
+      { label: 'Stripe Checkout with Workers', url: 'https://docs.stripe.com/checkout/quickstart' },
     ],
   },
   {
@@ -697,28 +701,28 @@ const migrationSteps = [
     title: 'Test orders before launch',
     outcome: 'You know checkout, stock, emails, and orders work before the domain moves.',
     actions: [
-      'Place a test order using Shopify test mode.',
-      'Check that the order appears in Shopify.',
-      'Check that stock changes correctly after the order.',
-      'Check order emails, shipping details, and the return path.',
+      'Place a test order using a Stripe test card while Stripe is still in test mode.',
+      'Check that the order appears in the Cloudflare D1 orders table.',
+      'Check that stock changes correctly in D1 after the order.',
+      'Check the Stripe receipt email and confirm a shipping/fulfilment notification path exists.',
       'Check that out-of-stock products cannot be purchased.',
-      'Check that refunds, cancellations, and fulfilment are understood inside Shopify admin.',
+      'Check that refunds and cancellations are understood inside the Stripe dashboard.',
     ],
     verify: [
-      'The test order appears in Shopify admin.',
-      'Inventory changes as expected.',
-      'Order emails arrive at the right inbox.',
+      'The test order appears in the D1 orders table and in the Stripe dashboard.',
+      'Inventory changes as expected in D1.',
+      'The Stripe payment receipt arrives at the right inbox.',
     ],
     stopIf: [
-      'A test order does not appear in Shopify.',
+      'A test order does not appear in D1 or Stripe.',
       'Inventory does not change correctly.',
-      'Order or customer emails are missing.',
+      'The receipt email is missing.',
     ],
     ownerNote: 'This is the rehearsal. No domain move should happen before this passes.',
     links: [
-      { label: 'Shopify migration guide', url: 'https://help.shopify.com/en/manual/migrating-to-shopify' },
-      { label: 'Shopify order management', url: 'https://help.shopify.com/en/manual/fulfillment/managing-orders' },
-      { label: 'Shopify customer accounts', url: 'https://help.shopify.com/en/manual/customers/customer-accounts' },
+      { label: 'Stripe testing guide', url: 'https://docs.stripe.com/testing' },
+      { label: 'Stripe webhooks', url: 'https://docs.stripe.com/webhooks' },
+      { label: 'Stripe refunds', url: 'https://docs.stripe.com/refunds' },
     ],
   },
   {
@@ -738,7 +742,7 @@ const migrationSteps = [
     verify: [
       'https://www.saltylamps.co.uk/ opens the Cloudflare site.',
       'Email still sends and receives after DNS changes.',
-      'Shopify checkout still opens from the live domain.',
+      'Stripe checkout still opens from the live domain.',
     ],
     stopIf: [
       'You have not copied the current Wix DNS records.',
@@ -803,17 +807,17 @@ const migrationAdminCards = [
   {
     icon: '📊',
     title: 'Inventory dashboard',
-    text: 'See stock, low-stock items, SKUs, variants, and Shopify locations without digging through every product.',
+    text: 'See stock, low-stock items, SKUs, and variants read straight from Cloudflare D1, without digging through every product.',
   },
   {
     icon: '🧾',
     title: 'Order viewer',
-    text: 'Read recent orders, payment status, fulfilment status, line items, shipping details, tags, and notes.',
+    text: 'Read recent orders, payment status, line items, and shipping details from the D1 orders table, with a link to the matching Stripe payment.',
   },
   {
     icon: '✏️',
     title: 'Product quick editor',
-    text: 'Update simple product details while leaving refunds, disputes, tax, shipping, and payment settings inside Shopify.',
+    text: 'Update simple product details directly in D1, while leaving refunds, disputes, and payment settings inside Stripe.',
   },
   {
     icon: '🛡️',
@@ -825,13 +829,13 @@ const migrationAdminCards = [
 const migrationAccountCards = [
   {
     icon: '🟢',
-    title: 'Create Shopify',
-    url: 'https://www.shopify.com/signup',
+    title: 'Create Stripe',
+    url: 'https://dashboard.stripe.com/register',
     steps: [
-      'Use the Salty Lamps business email so the store is not tied to a personal inbox.',
-      'Choose a store name close to Salty Lamps.',
-      'Add the legal business details requested by Shopify.',
-      'Do not launch paid checkout until products, shipping, and test orders are ready.',
+      'Use the Salty Lamps business email so the account is not tied to a personal inbox.',
+      'Add the legal business details Stripe asks for, and a payout bank account.',
+      'Stay in test mode while building — switch to live mode only after test orders pass.',
+      'Do not take live payments until products, stock, and test orders are ready.',
     ],
   },
   {
@@ -853,7 +857,7 @@ const migrationAccountCards = [
       'The website code should live in a GitHub repository.',
       'Cloudflare reads that repository and rebuilds the website when changes are approved.',
       'Keep the repository private if you do not want the code visible publicly.',
-      'Do not put Shopify admin tokens or passwords into GitHub.',
+      'Do not put Stripe secret keys, webhook signing secrets, or Cloudflare API tokens into GitHub.',
     ],
   },
   {
@@ -870,11 +874,11 @@ const migrationAccountCards = [
 ]
 
 const migrationBeforeYouStart = [
-  'Logins for Wix, Shopify, Cloudflare, and GitHub.',
+  'Logins for Wix, Stripe, Cloudflare, and GitHub.',
   'Access to the email inbox that owns the saltylamps.co.uk domain.',
-  'A product spreadsheet or list with SKUs, prices, stock, weights, and images.',
+  'A product spreadsheet or list with SKUs, prices, stock, weights, and images — the inventory.csv export from Wix already covers this.',
   'Shipping rules for UK delivery and any international markets.',
-  'Payment provider decision, usually Shopify Payments if eligible.',
+  'Confirmation that Stripe is available and eligible for the business.',
   'A quiet launch window when orders are less likely, so the domain move can be checked calmly.',
 ]
 
@@ -883,32 +887,41 @@ const migrationCostEstimates = [
     icon: '🛒',
     tone: 'green',
     label: 'Main monthly cost',
-    title: 'Shopify plan',
-    estimate: 'From £19/month on Basic, £49/month on Grow, or £259/month on Advanced when paid yearly.',
-    detail: 'Start with Basic if one owner can manage the shop. Move to Grow only when extra staff accounts or lower card rates are worth the higher monthly fee.',
-    link: { label: 'Shopify UK pricing', url: 'https://www.shopify.com/uk/pricing' },
+    title: 'None — there is no platform subscription',
+    estimate: 'Stripe and Cloudflare both charge £0/month to start. You only pay Stripe when a sale actually happens.',
+    detail: 'This is the main saving versus Shopify: no £19–259/month plan fee, at any catalog size, for as long as usage stays inside Cloudflare’s free tier.',
+    link: { label: 'Cloudflare Workers & Pages pricing', url: 'https://developers.cloudflare.com/workers/platform/pricing/' },
   },
   {
     icon: '💳',
     tone: 'amber',
     label: 'Per-order cost',
-    title: 'Payment processing',
-    estimate: 'Shopify Payments UK card rates currently start from 2% + 25p on Basic, 1.7% + 25p on Grow, and 1.5% + 25p on Advanced.',
-    detail: 'If Shopify Payments is eligible, it usually keeps the bill simpler. Third-party payment providers can add extra Shopify transaction fees.',
-    link: { label: 'Shopify billing overview', url: 'https://help.shopify.com/en/manual/intro-to-shopify/pricing-plans/pricing-overview' },
+    title: 'Stripe payment processing',
+    estimate: 'UK cards: 1.5% + 20p standard, 1.9% + 20p premium. EEA cards: 2.5% + 20p. Other international cards: 3.25% + 20p, plus 2% on currency conversion.',
+    detail: 'No setup fee, no monthly fee, no fee just for using Stripe Checkout — the rate above is the whole cost per sale.',
+    link: { label: 'Stripe UK pricing', url: 'https://stripe.com/gb/pricing' },
   },
   {
     icon: '☁️',
     tone: 'blue',
     label: 'Website hosting',
     title: 'Cloudflare Pages',
-    estimate: 'Likely £0/month for the public website at launch, if it is mostly static pages and Shopify-hosted checkout.',
-    detail: 'Cloudflare Pages has a free route for static hosting. If the admin portal or server functions grow, budget for Workers Paid from $5/month.',
-    link: { label: 'Cloudflare Pages pricing', url: 'https://developers.cloudflare.com/pages/functions/pricing/' },
+    estimate: '£0/month at launch. The free plan covers 100,000 Pages Function requests a day, more than this catalog will realistically use.',
+    detail: 'If the site later needs more than 100,000 requests a day, Workers Paid is $5/month and includes 10 million requests.',
+    link: { label: 'Cloudflare Pages Functions pricing', url: 'https://developers.cloudflare.com/workers/platform/pricing/' },
+  },
+  {
+    icon: '🗄️',
+    tone: 'purple',
+    label: 'Product & order database',
+    title: 'Cloudflare D1',
+    estimate: '£0/month. The free tier includes 5 million row reads and 100,000 row writes a day, and 5GB storage — a 77-item catalog uses a tiny fraction of this.',
+    detail: 'D1 is bundled into the same Cloudflare account as Pages, so there is nothing separate to sign up for or bill.',
+    link: { label: 'Cloudflare D1 pricing', url: 'https://developers.cloudflare.com/d1/platform/pricing/' },
   },
   {
     icon: '🌐',
-    tone: 'purple',
+    tone: 'slate',
     label: 'Domain move',
     title: 'Wix and .co.uk domain',
     estimate: 'Pointing www.saltylamps.co.uk from Wix to Cloudflare should not require a new domain purchase.',
@@ -916,40 +929,26 @@ const migrationCostEstimates = [
     link: { label: 'Cloudflare .UK transfer note', url: 'https://developers.cloudflare.com/registrar/top-level-domains/uk-domains/' },
   },
   {
-    icon: '🔐',
-    tone: 'slate',
-    label: 'Optional build cost',
-    title: 'Private admin portal',
-    estimate: 'No extra Shopify plan is required just to read Shopify data, but building the private portal is separate development work.',
-    detail: 'Keep phase 1 read-only to control cost and risk. Add stock editing and product editing later only after the read-only dashboard is trusted.',
-    link: { label: 'Shopify Admin API authentication', url: 'https://shopify.dev/docs/api/usage/authentication' },
-  },
-  {
     icon: '➕',
     tone: 'rose',
     label: 'Possible add-ons',
-    title: 'Apps, email, and extras',
-    estimate: 'Budget separately for Shopify apps, email inboxes, review tools, subscriptions, or paid themes if you choose them.',
-    detail: 'These are not required for the first migration. Add only when a real operational need appears, such as advanced reviews, subscriptions, or marketing automation.',
-    link: { label: 'Wix pricing and billing', url: 'https://www.wix.com/plans' },
+    title: 'Tax automation, email, and extras',
+    estimate: 'Optional Stripe Tax starts around £70/month for the fully managed plan, or pay-per-transaction (0.5% no-code, £0.40 per transaction with API integration) if only a few markets need it.',
+    detail: 'Not required for a UK-only launch with manual VAT handling. Add only when a real operational need appears, such as selling into new tax jurisdictions.',
+    link: { label: 'Stripe Tax pricing', url: 'https://stripe.com/gb/pricing' },
   },
 ]
 
 const migrationMonthlyScenarios = [
   {
-    title: 'Lean launch',
-    amount: 'About £19/month plus card fees',
-    detail: 'Shopify Basic, Cloudflare Pages Free, existing Wix kept only during the overlap, and no paid add-ons unless needed.',
+    title: 'Lean launch (recommended for this catalog)',
+    amount: '£0/month plus Stripe card fees only',
+    detail: 'Cloudflare Pages Free, Cloudflare D1 Free, Stripe with no monthly fee, existing Wix kept only during the overlap. Comfortably covers a 77-item catalog.',
   },
   {
-    title: 'Small team setup',
-    amount: 'About £49/month plus card fees',
-    detail: 'Shopify Grow for staff access and lower card rates, with Cloudflare still likely free unless private server features need Workers Paid.',
-  },
-  {
-    title: 'Do not start here',
-    amount: '£259/month or more',
-    detail: 'Shopify Advanced or Plus should wait until the business needs advanced shipping rates, regional controls, or larger team features.',
+    title: 'If traffic or order volume grows a lot',
+    amount: 'About $5/month plus card fees',
+    detail: 'Workers Paid, only needed once daily Pages Function requests or D1 writes exceed the free tier — unlikely at this catalog size for a long time.',
   },
 ]
 
@@ -960,23 +959,23 @@ const migrationTechnicalFlow = [
   },
   {
     label: 'Products come from',
-    value: 'Shopify products, collections, variants, pricing, and inventory',
+    value: 'Cloudflare D1 — products, variants, pricing, and inventory, loaded from the Wix export',
   },
   {
     label: 'Cart comes from',
-    value: 'Shopify Storefront API cart',
+    value: 'The customer’s own browser (localStorage) — no server call until checkout',
   },
   {
     label: 'Payment happens in',
-    value: 'Shopify-hosted checkout',
+    value: 'Stripe Checkout, a Stripe-hosted PCI-compliant payment page',
   },
   {
     label: 'Orders live in',
-    value: 'Shopify admin',
+    value: 'Cloudflare D1, written by a Stripe webhook, cross-checkable in the Stripe dashboard',
   },
   {
     label: 'Private admin tools use',
-    value: 'Cloudflare server functions calling Shopify Admin API securely',
+    value: 'Cloudflare Pages Functions reading and writing D1 directly, with the Stripe API for payment and refund status',
   },
 ]
 
@@ -984,26 +983,26 @@ const migrationDataDecisions = [
   {
     icon: '📦',
     title: 'Products and collections',
-    decision: 'Move into Shopify before launch.',
-    detail: 'Products, SKUs, prices, variants, weights, stock, images, and collections should become Shopify data. The website should read them from Shopify rather than from hardcoded sample content.',
+    decision: 'Move into Cloudflare D1 before launch.',
+    detail: 'Products, SKUs, prices, variants, weights, stock, images, and collections should become D1 rows. The website should read them from D1 rather than from hardcoded sample content.',
   },
   {
     icon: '🔢',
     title: 'Inventory counts',
-    decision: 'Move into Shopify as the source of truth.',
-    detail: 'Stock should be managed in Shopify locations. The custom admin portal can show stock later, but Shopify should remain the place that decides whether an item is available.',
+    decision: 'Move into Cloudflare D1 as the source of truth.',
+    detail: 'Stock should be managed in a D1 table, decremented by the Stripe webhook after each paid order. The admin portal reads and edits the same table.',
   },
   {
     icon: '🧾',
     title: 'Old Wix orders',
     decision: 'Keep archived unless a legal or operational reason requires import.',
-    detail: 'Historical orders do not need to block launch. Export them from Wix for records, but new orders should start in Shopify after launch.',
+    detail: 'Historical orders do not need to block launch. Export them from Wix for records, but new orders should start in D1 and Stripe after launch.',
   },
   {
     icon: '👤',
     title: 'Customer accounts',
     decision: 'Do not force a full account migration at launch.',
-    detail: 'Customers can check out through Shopify going forward. Existing customer records can be exported for reference or marketing only if consent and data handling are clear.',
+    detail: 'Customers can check out through Stripe Checkout going forward, no account required. Existing customer records can be exported for reference or marketing only if consent and data handling are clear.',
   },
   {
     icon: '⭐',
@@ -1050,11 +1049,11 @@ const migrationDomainCutover = [
 const migrationLaunchDayChecks = [
   'The Cloudflare preview works on desktop and mobile.',
   'At least one product from every major range appears correctly.',
-  'Prices, variants, product images, and stock status match Shopify.',
-  'A test customer can add an item to cart and reach Shopify checkout.',
-  'A test order appears in Shopify admin.',
-  'Inventory reduces after the test order where inventory tracking is enabled.',
-  'Order emails arrive correctly.',
+  'Prices, variants, product images, and stock status match Cloudflare D1.',
+  'A test customer can add an item to cart and reach Stripe Checkout.',
+  'A test order appears in the D1 orders table and the Stripe dashboard.',
+  'Inventory reduces after the test order.',
+  'The Stripe payment receipt email arrives correctly.',
   'Email records are not changed or deleted during DNS work.',
   'www.saltylamps.co.uk opens the new site in a private browser window.',
   'The old Wix site remains accessible until the new setup is confirmed.',
@@ -1064,7 +1063,7 @@ const migrationAdminPhases = [
   {
     icon: '👁️',
     title: 'Phase 1: read-only dashboard',
-    text: 'Show products, stock status, low-stock items, recent orders, order details, and links back to Shopify admin. No edits yet.',
+    text: 'Show products, stock status, low-stock items, recent orders, order details, and links back to the Stripe dashboard. No edits yet.',
   },
   {
     icon: '✍️',
@@ -1074,25 +1073,25 @@ const migrationAdminPhases = [
   {
     icon: '🧯',
     title: 'Phase 3: limited product edits',
-    text: 'Add simple title, description, status, or tag edits later. Keep refunds, payment disputes, tax, shipping, and fulfilment inside Shopify.',
+    text: 'Add simple title, description, status, or tag edits later. Keep refunds and payment disputes inside Stripe.',
   },
 ]
 
 const migrationOfficialLinks = [
   { label: 'Cloudflare account creation', url: 'https://developers.cloudflare.com/fundamentals/account/create-account/' },
-  { label: 'Cloudflare Pages pricing', url: 'https://developers.cloudflare.com/pages/functions/pricing/' },
+  { label: 'Cloudflare Pages pricing', url: 'https://developers.cloudflare.com/workers/platform/pricing/' },
   { label: 'Cloudflare Workers pricing', url: 'https://developers.cloudflare.com/workers/platform/pricing/' },
   { label: 'Cloudflare Pages Git integration', url: 'https://developers.cloudflare.com/pages/get-started/git-integration/' },
   { label: 'Cloudflare Pages build configuration', url: 'https://developers.cloudflare.com/pages/configuration/build-configuration/' },
   { label: 'Cloudflare Pages custom domains', url: 'https://developers.cloudflare.com/pages/configuration/custom-domains/' },
-  { label: 'Cloudflare Workers secrets', url: 'https://developers.cloudflare.com/workers/configuration/secrets/' },
-  { label: 'Shopify UK pricing', url: 'https://www.shopify.com/uk/pricing' },
-  { label: 'Shopify billing overview', url: 'https://help.shopify.com/en/manual/intro-to-shopify/pricing-plans/pricing-overview' },
-  { label: 'Shopify new store checklist', url: 'https://help.shopify.com/en/manual/intro-to-shopify/initial-setup/new-to-shopify-checklists/general-checklist' },
-  { label: 'Shopify migrate to Shopify', url: 'https://help.shopify.com/en/manual/migrating-to-shopify' },
-  { label: 'Shopify Storefront API', url: 'https://shopify.dev/docs/api/storefront/latest' },
-  { label: 'Shopify Headless channel', url: 'https://shopify.dev/docs/storefronts/headless/bring-your-own-stack' },
-  { label: 'Shopify Admin API authentication', url: 'https://shopify.dev/docs/api/usage/authentication' },
+  { label: 'Cloudflare Pages Functions secrets', url: 'https://developers.cloudflare.com/pages/functions/bindings/#environment-variables' },
+  { label: 'Cloudflare D1 getting started', url: 'https://developers.cloudflare.com/d1/get-started/' },
+  { label: 'Cloudflare D1 pricing', url: 'https://developers.cloudflare.com/d1/platform/pricing/' },
+  { label: 'Stripe UK pricing', url: 'https://stripe.com/gb/pricing' },
+  { label: 'Stripe Checkout overview', url: 'https://docs.stripe.com/payments/checkout' },
+  { label: 'Stripe Checkout quickstart', url: 'https://docs.stripe.com/checkout/quickstart' },
+  { label: 'Stripe webhooks', url: 'https://docs.stripe.com/webhooks' },
+  { label: 'Stripe testing guide', url: 'https://docs.stripe.com/testing' },
   { label: 'Wix domain to external site', url: 'https://support.wix.com/en/article/connecting-a-wix-domain-to-an-external-site' },
   { label: 'Wix DNS records', url: 'https://support.wix.com/en/article/managing-dns-records-in-your-wix-account' },
   { label: 'Wix .co.uk transfer away', url: 'https://support.wix.com/en/article/transferring-a-couk-domain-away-from-wix' },
@@ -1288,490 +1287,6 @@ const buildCollectionSections = (slug, items) => {
   return sections
 }
 
-const products = [
-  {
-    id: 'goblet-holder',
-    slug: 'himalayan-crystal-rock-salt-candle-holder-goblet',
-    name: 'Himalayan Crystal Rock Salt Candle Holder / Goblet Shape',
-    sku: 'TCG',
-    price: 7.99,
-    stock: false,
-    categories: ['candle-holders'],
-    image: img('holder-goblet-gemini.jpg'),
-    description: 'Goblet-shaped Himalayan salt candle holder for warm decor and relaxation.',
-    tags: ['Candle holder', 'Gift'],
-  },
-  {
-    id: 'candle-offer',
-    slug: 'himalayan-crystal-rock-salt-candle-holders-special-offer',
-    name: 'Special Offer - Himalayan Crystal Rock Salt Candle Holders',
-    sku: 'Deal 2',
-    price: 10,
-    stock: true,
-    categories: ['all-products', 'candle-holders', 'special-deal'],
-    image: img('holder-special-offer-gemini.jpg'),
-    description: 'Buy two natural-shape candle holders and get one free; tea lights not included.',
-    tags: ['Bundle', 'Gift'],
-  },
-  {
-    id: 'fire-basket-lamp',
-    slug: 'himalayan-crystal-rock-salt-lamp-basket-wire',
-    name: 'Fire Basket Himalayan Rock Salt Lamp',
-    sku: 'RSL-B1',
-    price: 12.5,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-fire-basket-gemini.jpg'),
-    description: 'Metal wire basket filled with lit Himalayan rock salt chunks.',
-    tags: ['Lamp', 'Bestseller'],
-  },
-  {
-    id: 'salty-licks-special',
-    slug: 'salty-licks-for-horses-cattle-himalayan-rock-salt-licks',
-    name: 'Salty Licks for Horses and Cattle, Himalayan Rock Salt Licks',
-    sku: 'SL-2',
-    price: 15,
-    stock: true,
-    categories: ['all-products', 'equestrian-salt-licks', 'special-deal'],
-    image: img('lick-field-scene-gemini.jpg'),
-    description: 'Special offer bulk-ready Himalayan salt licks for horses and cattle.',
-    tags: ['Equestrian', 'Bulk'],
-  },
-  {
-    id: 'fire-bowl-lamp',
-    slug: 'fire-bowl-himalayan-rock-salt-lamp',
-    name: 'Fire Bowl Himalayan Rock Salt Lamp',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-fire-bowl-gemini.jpg'),
-    description: 'Fire bowl salt lamp available in two sizes, with cord, bulb, and box.',
-    options: [{ name: 'Size', values: ['Small', 'Large'] }],
-    tags: ['Lamp', 'Selectable size'],
-  },
-  {
-    id: 'mushroom-lamp',
-    slug: 'himalayan-rock-salt-lamp-mushroom-shape',
-    name: 'Mushroom Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-M',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-mushroom-gemini.jpg'),
-    description: 'Mushroom-shaped salt lamp with slim-base power cord.',
-    tags: ['Lamp', 'Gift'],
-  },
-  {
-    id: 'flower-lamp',
-    slug: 'flower-shape-himalayan-rock-salt-lamp',
-    name: 'Flower Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-F',
-    price: 29.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-flower-gemini.jpg'),
-    description: 'Flower-shaped handcrafted Himalayan salt lamp.',
-    tags: ['Lamp', 'Decorative'],
-  },
-  {
-    id: 'angel-lamp',
-    slug: 'himalayan-rock-salt-lamp-angel-shape',
-    name: 'Angel Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-A',
-    price: 29.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-angel-gemini.jpg'),
-    description: 'Angel-shaped hand-crafted Himalayan salt lamp.',
-    tags: ['Lamp', 'Keepsake'],
-  },
-  {
-    id: 'shot-glass',
-    slug: 'tequila-shot-glass',
-    name: 'Himalayan Salt Shot Glass',
-    sku: 'SG-01',
-    price: 5,
-    stock: true,
-    categories: ['rock-salt-pantry-items'],
-    image: img('shot-glass-gemini.jpg'),
-    description: 'Hand-carved Himalayan salt shot glass for tequila and barware.',
-    tags: ['Kitchen', 'Barware'],
-  },
-  {
-    id: 'platters',
-    slug: 'himalayan-rock-salt-platters-cooking-food-display',
-    name: 'Himalayan Rock Salt Platters',
-    price: 8,
-    stock: true,
-    categories: ['all-products', 'rock-salt-pantry-items'],
-    image: img('platter-kitchen-gemini.jpg'),
-    description: 'Salt platters for cooking, serving, and food display.',
-    options: [
-      {
-        name: 'Shape',
-        values: ['8 x 4 x 1 rectangle', '8 x 8 x 1 square', '8 x 8 x 1.5 square', '8 x 1.5 round', '12 x 8 x 1.5 rectangle'],
-      },
-    ],
-    tags: ['Kitchen', 'Hosting'],
-  },
-  {
-    id: 'cable-standard',
-    slug: 'cable-for-salt-lamp-1',
-    name: 'Cable for Salt Lamp',
-    sku: 'PC2',
-    price: 5.99,
-    stock: true,
-    categories: ['accessories'],
-    image: img('accessory-cable-standard-gemini.jpg'),
-    description: 'Standard cable with UK plug, bed switch, E14 holder, and bulb.',
-    tags: ['Accessory'],
-  },
-  {
-    id: 'culinary-salt',
-    slug: 'himalayan-crystal-rock-salt-culinary-salt',
-    name: 'Himalayan Crystal Rock Salt / Culinary Salt',
-    price: 2.8,
-    stock: true,
-    categories: ['all-products', 'rock-salt-pantry-items'],
-    image: img('salty-chef-pouch-gemini.jpg'),
-    description: 'Food-grade Himalayan rock salt in pack sizes and grades.',
-    options: [
-      { name: 'Pack Size', values: ['1Kg', '5Kg', '10Kg'] },
-      { name: 'Grade', values: ['Fine', 'Coarse'] },
-    ],
-    tags: ['Kitchen', 'Pantry'],
-  },
-  {
-    id: 'wood-basket-lamp',
-    slug: 'rock-salt-lamp-wooden-basket-himalayan',
-    name: 'Wooden Basket Himalayan Rock Salt Lamp',
-    sku: 'RSL-WB',
-    price: 39.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-wood-basket-gemini.jpg'),
-    description: 'Wooden basket salt lamp with crystal rocks housed in sheesham wood basket.',
-    tags: ['Lamp', 'Premium'],
-  },
-  {
-    id: 'dove-lamp',
-    slug: 'himalayan-rock-salt-lamp-dove-shape-lamp',
-    name: 'Dove Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-D',
-    price: 29.99,
-    stock: false,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-dove-gemini.jpg'),
-    description: 'Dove-shaped handcrafted Himalayan salt lamp.',
-    tags: ['Lamp', 'Out of stock'],
-  },
-  {
-    id: 'cable-premium',
-    slug: 'cable-for-salt-lamp',
-    name: 'Cable for Salt Lamp',
-    sku: 'PC1',
-    price: 6.99,
-    stock: true,
-    categories: ['accessories'],
-    image: img('accessory-cable-premium-gemini.jpg'),
-    description: 'Cable with base as one unit and E14 bulb; no separate wood base required.',
-    tags: ['Accessory'],
-  },
-  {
-    id: 'bowls',
-    slug: 'himalayan-rock-salt-bowls',
-    name: 'Himalayan Rock Salt Bowl',
-    price: 5,
-    stock: true,
-    categories: ['all-products', 'rock-salt-pantry-items'],
-    image: img('bowl-salad-gemini.jpg'),
-    description: 'Natural pink salt serving bowls for salads, soups, snacks, and gourmet dishes.',
-    options: [{ name: 'Size', values: ['2.5 inch dia', '6 inch dia', '8 inch dia', '10 inch dia'] }],
-    tags: ['Kitchen', 'Serving'],
-  },
-  {
-    id: 'bulb',
-    slug: 'salt-lamp-bulb',
-    name: 'Salt Lamp Bulb',
-    sku: 'E14-1',
-    price: 1,
-    stock: true,
-    categories: ['accessories'],
-    image: img('accessory-bulb-gemini.jpg'),
-    description: 'E14 bulbs for salt lamps, with wattage and pack-size selectors.',
-    options: [
-      { name: 'Watts', values: ['15 Watts', '25 Watts'] },
-      { name: 'Pack Size', values: ['1pc', '2pc', '3pc'] },
-    ],
-    tags: ['Accessory'],
-  },
-  {
-    id: 'sphere-lamp',
-    slug: 'himalayan-rock-salt-ballsphere-shape-lamp',
-    name: 'Ball - Sphere Shaped Himalayan Rock Salt Lamp',
-    sku: 'RSL-B',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-sphere-gemini.jpg'),
-    description: 'Sphere-shaped salt lamp with small and large variants.',
-    options: [{ name: 'Size', values: ['Small', 'Large'] }],
-    tags: ['Lamp', 'Round'],
-  },
-  {
-    id: 'tear-lamp',
-    slug: 'tear-drop-shape-himalayan-rock-salt-lamp',
-    name: 'Tear Drop Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-T',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-tear-drop-gemini.jpg'),
-    description: 'Tear-drop salt lamp with slim-base power cord.',
-    tags: ['Lamp', 'Sculptural'],
-  },
-  {
-    id: 'block-holder',
-    slug: 'himalayan-rock-salt-candle-holder-block-square-shape',
-    name: 'Himalayan Rock Salt Candle Holder (Block / Square Shape)',
-    sku: 'TCC',
-    price: 7.99,
-    stock: true,
-    categories: ['candle-holders'],
-    image: img('holder-block-gemini.jpg'),
-    description: 'Block or square Himalayan salt tealight holder.',
-    options: [{ name: 'Size', values: ['Small', 'Large'] }],
-    tags: ['Candle holder'],
-  },
-  {
-    id: 'dolphin-lamp',
-    slug: 'himalayan-rock-salt-lamp-dolphin',
-    name: 'Dolphin Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-Dolphin',
-    price: 29.99,
-    stock: false,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-dolphin-gemini.jpg'),
-    description: 'Dolphin-shaped handcrafted Himalayan salt lamp.',
-    tags: ['Lamp', 'Out of stock'],
-  },
-  {
-    id: 'salt-bricks',
-    slug: 'himalayan-rock-salt-bricks-for-salt-walls',
-    name: 'Himalayan Rock Salt Bricks for Salt Walls',
-    sku: 'ST-841',
-    price: 5,
-    stock: true,
-    categories: ['rock-salt-bricks'],
-    image: img('salt-bricks-clean-gemini.jpg'),
-    description: 'Hand-cut Himalayan salt bricks and tiles for salt walls and wellness spaces.',
-    options: [{ name: 'Size', values: ['ST-841', 'ST-842'] }],
-    tags: ['Trade', 'Salt wall'],
-  },
-  {
-    id: 'natural-lamp',
-    slug: 'natural-shape-himalayan-rock-salt-lamp-crystal',
-    name: 'Natural Shape Himalayan Crystal Rock Salt Lamp',
-    price: 11.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-natural-gemini.jpg'),
-    description: 'Natural-shape salt lamp with wood base, bulb, cord, and box.',
-    options: [{ name: 'Size', values: ['X-Small', 'Small', 'Medium', 'Large'] }],
-    tags: ['Lamp', 'Classic'],
-  },
-  {
-    id: 'heart-holder',
-    slug: 'himalayan-rock-salt-candle-holder-heart-shape',
-    name: 'Himalayan Rock Salt Candle Holder (Heart Shape)',
-    sku: 'TCH',
-    price: 7.99,
-    stock: true,
-    categories: ['all-products', 'candle-holders'],
-    image: img('holder-heart-gemini.jpg'),
-    description: 'Heart-shaped salt candle holder for gifts and warm ambience.',
-    tags: ['Candle holder', 'Gift'],
-  },
-  {
-    id: 'apple-holder',
-    slug: 'rock-salt-candle-holder-apple-shape',
-    name: 'Rock Salt Candle Holder (Apple Shape)',
-    sku: 'TCA',
-    price: 7.99,
-    stock: true,
-    categories: ['candle-holders'],
-    image: img('holder-apple-gemini.jpg'),
-    description: 'Apple-shaped Himalayan rock salt tealight candle holder.',
-    tags: ['Candle holder', 'Gift'],
-  },
-  {
-    id: 'massage-stones',
-    slug: 'himalayan-rock-salt-massage-stones-sticks',
-    name: 'Himalayan Rock Salt Massage Stones / Sticks',
-    sku: 'SH-01',
-    price: 3.99,
-    stock: true,
-    categories: ['all-products', 'himalayan-salt-massage-relaxation-products'],
-    image: img('massage-stones-gemini.jpg'),
-    description: 'Massage stones and pressure massage sticks in multiple shapes.',
-    options: [{ name: 'Shape', values: ['Heart', 'Ball', 'Disk', 'Stick'] }],
-    tags: ['Relaxation', 'Spa'],
-  },
-  {
-    id: 'sphere-holder',
-    slug: 'himalayan-rock-salt-candle-holder-ball-sphere-shape',
-    name: 'Himalayan Rock Salt Candle Holder (Ball / Sphere Shape)',
-    price: 7.99,
-    stock: true,
-    categories: ['all-products', 'candle-holders'],
-    image: img('holder-sphere-gemini.jpg'),
-    description: 'Ball or sphere salt tealight holder for warm decor and wellness.',
-    tags: ['Candle holder', 'Spa'],
-  },
-  {
-    id: 'lamp-candle-offer',
-    slug: 'himalayan-rock-salt-lamp-2-x-candle-special-offer',
-    name: 'Special Offer - Himalayan Rock Salt Lamp and Candle Holders',
-    sku: 'Deal 1',
-    price: 15,
-    stock: true,
-    categories: ['all-products', 'special-deal', 'salt-lamps'],
-    image: img('deal-lamp-candle-gemini.jpg'),
-    description: 'Bundle with one salt lamp and two tealight candle holders.',
-    tags: ['Bundle', 'Gift'],
-  },
-  {
-    id: 'block-lamp',
-    slug: 'himalayan-rock-salt-lamp-block-shape',
-    name: 'Block Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-BL',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-block-gemini.jpg'),
-    description: 'Block-shaped Himalayan salt lamp.',
-    tags: ['Lamp', 'Modern'],
-  },
-  {
-    id: 'natural-holder',
-    slug: 'himalayan-rock-salt-candle-holder-natural-shape',
-    name: 'Himalayan Rock Salt Candle Holder Natural Shape',
-    price: 5.99,
-    stock: true,
-    categories: ['all-products', 'candle-holders'],
-    image: img('holder-natural-gemini.jpg'),
-    description: 'Natural-shape Himalayan salt tealight holder in small and large sizes.',
-    options: [{ name: 'Size', values: ['Small', 'Large'] }],
-    tags: ['Candle holder', 'Classic'],
-  },
-  {
-    id: 'lick-standard',
-    slug: 'himalayan-rock-salt-lick-equestrian-cattle',
-    name: 'Himalayan Rock Salt Lick for Equestrian and Cattle',
-    sku: 'SL-2',
-    price: 3.99,
-    stock: true,
-    categories: ['equestrian-salt-licks'],
-    image: img('lick-product-clean-gemini.jpg'),
-    description: 'Mineral salt lick for horses and cattle with size and pack selectors.',
-    options: [
-      { name: 'Size', values: ['1-1.5Kg', '2-3Kg', '4-5Kg'] },
-      { name: 'Pack Size', values: ['1pc', '2pc', '4pc', '12pc'] },
-    ],
-    tags: ['Equestrian', 'Bulk'],
-  },
-  {
-    id: 'soap-bar',
-    slug: 'rock-salt-soap-bar-scrub-bar-himalayan',
-    name: 'Himalayan Rock Salt Soap Bar / Scrub Bar',
-    sku: '364215376135191',
-    price: 3.99,
-    stock: true,
-    categories: ['all-products', 'himalayan-salt-massage-relaxation-products'],
-    image: img('soap-scrub-bars-gemini.jpg'),
-    description: 'Natural Himalayan salt soap and scrub bar in regular and leaf shapes.',
-    options: [{ name: 'Shape', values: ['Regular', 'Leaf'] }],
-    tags: ['Relaxation', 'Bath'],
-  },
-  {
-    id: 'bath-salt',
-    slug: 'himalayan-crystal-bath-salt',
-    name: 'Himalayan Crystal Bath Salt',
-    sku: 'BS-1000',
-    price: 4.49,
-    stock: false,
-    categories: ['all-products', 'himalayan-salt-massage-relaxation-products'],
-    image: img('bath-salt-gemini.jpg'),
-    description: 'Himalayan crystal rock salt for bath and relaxation in multiple pack sizes.',
-    options: [{ name: 'Pack Size', values: ['1Kg', '5Kg', '10Kg'] }],
-    tags: ['Relaxation', 'Bath salt'],
-  },
-  {
-    id: 'pyramid-lamp',
-    slug: 'himalayan-rock-salt-lamp-pyramid-shape',
-    name: 'Pyramid Shape Himalayan Rock Salt Lamp',
-    sku: 'RSL-P',
-    price: 24.99,
-    stock: true,
-    categories: ['all-products', 'salt-lamps'],
-    image: img('lamp-pyramid-gemini.jpg'),
-    description: 'Pyramid-shaped Himalayan salt lamp.',
-    tags: ['Lamp', 'Geometric'],
-  },
-  // Aura Collection size ladder. PROVISIONAL PRICES — these are the buyer's proposed
-  // retail tiers, not finalised; catalog/pricing/inventory will move to a dedicated
-  // commerce platform later. Size is modelled as separate products (not one product
-  // with a Size option) because each tier carries its own price.
-  {
-    id: 'aura-collection-small',
-    slug: 'aura-collection-salt-wall-panel-small',
-    name: 'Aura Collection Salt Wall Panel — Small',
-    sku: 'AP-S',
-    price: 149,
-    stock: true,
-    categories: ['all-products', 'salt-wall-panels'],
-    image: img('aura-collection-frame-detail-live-site.jpg'),
-    description: 'The smallest Aura panel — a single accent piece of illuminated Himalayan salt wall art in a hand-finished solid-wood frame, unique in its mineral veining.',
-    tags: ['Wall art', 'Hand finished', 'Accent'],
-  },
-  {
-    id: 'aura-collection-medium',
-    slug: 'aura-collection-salt-wall-panel-medium',
-    name: 'Aura Collection Salt Wall Panel — Medium',
-    sku: 'AP-M',
-    price: 299,
-    stock: true,
-    categories: ['all-products', 'salt-wall-panels'],
-    image: img('aura-collection-livingroom-live-site.jpg'),
-    description: 'A room-sized Aura panel for living rooms, bedrooms, and studios — illuminated Himalayan salt wall art framed by hand, warm and unique.',
-    tags: ['Wall art', 'Hand finished', 'Decor'],
-  },
-  {
-    id: 'aura-collection-large',
-    slug: 'aura-collection-salt-wall-panel-large',
-    name: 'Aura Collection Salt Wall Panel — Large',
-    sku: 'AP-L',
-    price: 599,
-    stock: true,
-    categories: ['all-products', 'salt-wall-panels'],
-    image: img('aura-collection-hotel-lobby-live-site.jpg'),
-    description: 'A tall statement Aura panel for larger walls, receptions, and feature spaces — hand-finished solid-wood frame, glowing natural salt.',
-    tags: ['Wall art', 'Hand finished', 'Statement'],
-  },
-  {
-    id: 'aura-collection-xl',
-    slug: 'aura-collection-salt-wall-panel-xl-statement',
-    name: 'Aura Collection Salt Wall Panel — XL Statement',
-    sku: 'AP-XL',
-    price: 1195,
-    stock: true,
-    categories: ['all-products', 'salt-wall-panels'],
-    image: img('aura-collection-workshop-real-live-site.jpg'),
-    description: 'The full statement-wall Aura installation — a multi-panel run of illuminated Himalayan salt, hand-framed for lobbies, spas, and premium interiors.',
-    tags: ['Wall art', 'Hand finished', 'Statement'],
-  },
-]
-
 const pages = {
   '/privacy-policy': {
     title: 'Privacy Policy',
@@ -1840,7 +1355,7 @@ const activePageMeta = ({ route, categorySlug, activeShopperPath, currentProduct
 
   if (route === '/shop') return { title: pageTitle('Shop'), description: pageCopy.shop.description, image: img('lamp-sphere-gemini.jpg') }
   if (route === '/gallery') return { title: pageTitle('Gallery'), description: 'Browse Salty Lamps product details, lifestyle scenes, and trade-use references.', image: media('yoga-room.png') }
-  if (route === '/migration') return { title: pageTitle('Migration Plan'), description: 'Step-by-step Cloudflare, Shopify, and Wix domain migration guide for Salty Lamps.', image: media('logo.png'), robots: 'noindex,follow' }
+  if (route === '/migration') return { title: pageTitle('Migration Plan'), description: 'Step-by-step Cloudflare, Stripe, and Wix domain migration guide for Salty Lamps.', image: media('logo.png'), robots: 'noindex,follow' }
   if (route === '/process') return { title: pageTitle('Manufacturing Process'), description: 'See how Salty Lamps products move from mined rock salt to cut, finished, packed products.', image: media('video/salty-lamps-manufacturing-process-poster-16x9.jpg') }
   if (route === '/reviews') return { title: pageTitle('Customer Reviews'), description: 'Read verified Salty Lamps guestbook feedback by customer theme.', image: img('lamp-natural-gemini.jpg') }
   if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('logo.png') }
@@ -1913,12 +1428,12 @@ function ProductCard({ product, onQuickView, onAdd, variant = '' }) {
         <span>{product.description}</span>
       </div>
       <div className="product-meta">
-        <strong>{money(product.price)}</strong>
+        <strong>{priceLabel(product)}</strong>
         <small>{product.stock ? 'In stock' : 'Currently unavailable'}</small>
       </div>
       <div className="product-actions">
         <button type="button" onClick={() => onQuickView(product.id)}>View</button>
-        <button type="button" onClick={() => onAdd(product)} disabled={!product.stock}>
+        <button type="button" onClick={() => onAdd(product)} disabled={!product.stock || product.priceTBD}>
           {product.options?.length ? 'Choose' : 'Add'}
         </button>
       </div>
@@ -2041,7 +1556,9 @@ export default function App() {
   const [route, setRoute] = useState(getRoute)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('featured')
+  const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
   const [selectedOptions, setSelectedOptions] = useState({})
@@ -2061,6 +1578,13 @@ export default function App() {
     const updateRoute = () => setRoute(getRoute())
     window.addEventListener('popstate', updateRoute)
     return () => window.removeEventListener('popstate', updateRoute)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => setProducts(data.products || []))
+      .catch(() => setProducts([]))
   }, [])
 
   const categorySlug = route.startsWith('/category/') ? resolveCategorySlug(route.replace('/category/', '')) : null
@@ -2131,7 +1655,7 @@ export default function App() {
         variant: index % 3 === 0 ? 'wide' : '',
       })),
     ],
-    [],
+    [products],
   )
   const galleryShowcaseItems = useMemo(
     () => [
@@ -2192,7 +1716,7 @@ export default function App() {
     if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name))
 
     return list
-  }, [activeShopperPath, categoryFilter, query, sort])
+  }, [products, activeShopperPath, categoryFilter, query, sort])
 
   // The collection landing (no sub-category, no search) shows the hero + grouped
   // sections; any drill-down or search falls back to the flat result grid.
@@ -2393,17 +1917,28 @@ export default function App() {
     )
   }
 
-  const orderSummary = encodeURIComponent(
-    cart
-      .map(item => {
-        const opts = Object.entries(item.options)
-          .map(([name, value]) => `${name}: ${value}`)
-          .join(', ')
-        return `${item.qty} x ${item.product.name}${opts ? ` (${opts})` : ''}`
+  const handleCheckout = async () => {
+    setCheckoutLoading(true)
+    setNotice('')
+    try {
+      const items = cart.map(item => ({ skuId: item.product.skuId, quantity: item.qty }))
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ items }),
       })
-      .concat(cart.length ? [`Subtotal: ${money(cartTotal)}`] : [])
-      .join('\n'),
-  )
+      const data = await res.json()
+      if (!res.ok) {
+        setNotice(data.error || 'Checkout failed. Please try again.')
+        setCheckoutLoading(false)
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      setNotice('Checkout failed. Please try again.')
+      setCheckoutLoading(false)
+    }
+  }
 
   const storeSchema = {
     '@context': 'https://schema.org',
@@ -2433,7 +1968,9 @@ export default function App() {
       '@type': 'Brand',
       name: 'Salty Lamps',
     },
-    offers: {
+    // Omit the Offer entirely when pricing is TBD — publishing a placeholder
+    // price to search engines would be worse than publishing none.
+    offers: currentProduct.priceTBD ? undefined : {
       '@type': 'Offer',
       url: absoluteUrl(`/product-page/${currentProduct.slug}`),
       price: currentProduct.price,
@@ -2568,7 +2105,7 @@ export default function App() {
                   type="button"
                   className="video-facade"
                   onClick={() => setHeroPlaying(true)}
-                  aria-label={`Play the ${activeShopperPath.name} film`}
+                  aria-label={`Play the ${activeShopperPath.shortName} film`}
                 >
                   <img
                     className="video-facade__poster"
@@ -2990,7 +2527,7 @@ export default function App() {
             <h1>{product.name}</h1>
             <p className="product-lede">{selling.lede}</p>
             <div className="detail-meta">
-              <strong>{money(product.price)}</strong>
+              <strong>{priceLabel(product)}</strong>
               <span>{product.stock ? 'In stock' : 'Out of stock'}</span>
               {product.sku && <span>SKU {product.sku}</span>}
             </div>
@@ -3001,7 +2538,7 @@ export default function App() {
             />
             {notice && (quickViewId === product.id || currentProduct?.id === product.id) && <p className="notice">{notice}</p>}
             <div className="hero-actions product-cta-row">
-              <button className="button primary" type="button" onClick={() => addProduct(product, 'product-page')} disabled={!product.stock}>
+              <button className="button primary" type="button" onClick={() => addProduct(product, 'product-page')} disabled={!product.stock || product.priceTBD}>
                 Add to cart
               </button>
               <a className="button secondary" href={`mailto:info@saltylamps.co.uk?subject=${encodeURIComponent(product.name)}`}>
@@ -3355,15 +2892,15 @@ export default function App() {
       <header className="migration-hero">
         <div>
           <p className="eyebrow">Migration plan</p>
-          <h1>Move Salty Lamps from Wix to Cloudflare, with Shopify running the shop.</h1>
+          <h1>Move Salty Lamps from Wix to Cloudflare, with Stripe running checkout.</h1>
           <p>
-            This guide is written for a non-technical owner. The goal is simple: keep the existing site live, prepare the new site safely, connect Shopify for products and orders, then move www.saltylamps.co.uk when everything is tested.
+            This guide is written for a non-technical owner. The goal is simple: keep the existing site live, prepare the new site safely, load products and orders into Cloudflare D1 and set up Stripe for checkout, then move www.saltylamps.co.uk when everything is tested.
           </p>
         </div>
         <aside className="migration-safe-card">
           <span aria-hidden="true">✅</span>
           <strong>Safe launch rule</strong>
-          <p>Do not cancel Wix or move the domain until the Cloudflare preview, Shopify checkout, test order, and stock update have all passed.</p>
+          <p>Do not cancel Wix or move the domain until the Cloudflare preview, Stripe checkout, test order, and stock update have all passed.</p>
         </aside>
       </header>
 
@@ -3396,8 +2933,8 @@ export default function App() {
       <section className="migration-section migration-cost-section">
         <div className="migration-section-head">
           <p className="eyebrow">Expected costs</p>
-          <h2>Budget for Shopify first, then keep Cloudflare and add-ons lean.</h2>
-          <p>These estimates are based on official pricing checked in June 2026. Treat them as planning figures and confirm the final price inside each account before paying.</p>
+          <h2>No platform subscription — pay Cloudflare and Stripe only for what gets used.</h2>
+          <p>These estimates are based on official pricing checked in July 2026. Treat them as planning figures and confirm the final price inside each account before paying.</p>
         </div>
         <div className="migration-cost-grid">
           {migrationCostEstimates.map(item => (
@@ -3453,7 +2990,7 @@ export default function App() {
       <section className="migration-section migration-flow-section">
         <div className="migration-section-head">
           <p className="eyebrow">How the finished setup works</p>
-          <h2>The customer sees one website, but Shopify runs the shop behind it.</h2>
+          <h2>The customer sees one website; Cloudflare and Stripe quietly run the shop behind it.</h2>
         </div>
         <div className="migration-flow-grid">
           {migrationTechnicalFlow.map(item => (
@@ -3469,7 +3006,7 @@ export default function App() {
         <div className="migration-section-head">
           <p className="eyebrow">What actually moves</p>
           <h2>Decide the data migration before touching the live domain.</h2>
-          <p>Products and stock need to move into Shopify for launch. Historical Wix data can be archived unless there is a clear business reason to import it.</p>
+          <p>Products and stock need to move into Cloudflare D1 for launch. Historical Wix data can be archived unless there is a clear business reason to import it.</p>
         </div>
         <div className="migration-data-grid">
           {migrationDataDecisions.map(item => (
@@ -3607,7 +3144,7 @@ export default function App() {
       <section className="migration-section migration-admin-section">
         <div className="migration-section-head">
           <p className="eyebrow">Admin portal</p>
-          <h2>Yes, we can build an admin area, but Shopify stays in charge.</h2>
+          <h2>Yes, we can build an admin area, backed directly by Cloudflare D1 and Stripe.</h2>
           <p>
             The website can have a private admin area for stock and order visibility. Sensitive actions must go through a protected server connection, never directly from the public browser.
           </p>
@@ -3636,7 +3173,7 @@ export default function App() {
           <span aria-hidden="true">🔒</span>
           <div>
             <strong>Important security rule</strong>
-            <p>Shopify admin keys must stay hidden on the server. The public website can manage a customer cart, but stock, order, and product admin tools need a protected login and secure Cloudflare server functions.</p>
+            <p>The Stripe secret key and webhook signing secret must stay hidden on the server, stored only as Cloudflare Pages Function secrets. The public website can manage a customer cart, but stock, order, and product admin tools need a protected login and secure Cloudflare Pages Functions.</p>
           </div>
         </div>
       </section>
@@ -3644,7 +3181,7 @@ export default function App() {
       <section className="migration-section migration-reference-section">
         <div className="migration-section-head">
           <p className="eyebrow">Helpful official pages</p>
-          <h2>Use these official URLs when you are inside Cloudflare, Shopify, or Wix.</h2>
+          <h2>Use these official URLs when you are inside Cloudflare, Stripe, or Wix.</h2>
         </div>
         <div className="migration-reference-grid">
           {migrationOfficialLinks.map(link => (
@@ -3807,15 +3344,18 @@ export default function App() {
           )) : <p>Your selected products will appear here.</p>}
         </div>
         <footer>
+          {notice && <p className="notice">{notice}</p>}
           <span>Subtotal</span>
           <strong>{money(cartTotal)}</strong>
           {cart.length ? (
-            <a
+            <button
+              type="button"
               className="button primary"
-              href={`mailto:info@saltylamps.co.uk?subject=Salty%20Lamps%20order%20request&body=${orderSummary}`}
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
             >
-              Request checkout
-            </a>
+              {checkoutLoading ? 'Redirecting…' : 'Checkout'}
+            </button>
           ) : (
             <Link className="button secondary" href="/shop" onClick={() => setCartOpen(false)}>
               Continue shopping
@@ -3835,7 +3375,7 @@ export default function App() {
               <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>
               <p>{quickViewProduct.description}</p>
-              <strong>{money(quickViewProduct.price)}</strong>
+              <strong>{priceLabel(quickViewProduct)}</strong>
               <OptionSelectors
                 product={quickViewProduct}
                 selected={selectedOptions[quickViewProduct.id] || {}}
@@ -3843,7 +3383,7 @@ export default function App() {
               />
               {notice && quickViewId === quickViewProduct.id && <p className="notice">{notice}</p>}
               <div className="hero-actions">
-                <button className="button primary" type="button" onClick={() => addProduct(quickViewProduct, 'quick-view')} disabled={!quickViewProduct.stock}>
+                <button className="button primary" type="button" onClick={() => addProduct(quickViewProduct, 'quick-view')} disabled={!quickViewProduct.stock || quickViewProduct.priceTBD}>
                   Add to cart
                 </button>
                 <Link className="button secondary" href={`/product-page/${quickViewProduct.slug}`} onClick={() => setQuickViewId(null)}>
