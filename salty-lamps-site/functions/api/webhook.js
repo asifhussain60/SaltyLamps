@@ -43,11 +43,30 @@ async function recordOrder(db, stripe, session) {
     expand: ['data.price.product'],
   })
 
+  // Capture the shipping address Stripe collected — needed to pack and post the
+  // order. Fall back to the customer's billing address if no shipping block.
+  const ship = session.shipping_details || {}
+  const addr = ship.address || session.customer_details?.address || {}
+  const shipName = ship.name || session.customer_details?.name || null
+
   const statements = [
     db.prepare(
-      `INSERT INTO orders (id, payment_intent, status, customer_email, amount_total_pence, currency)
-       VALUES (?, ?, 'paid', ?, ?, ?)`
-    ).bind(session.id, session.payment_intent, session.customer_details?.email ?? null, session.amount_total, session.currency),
+      `INSERT INTO orders (id, payment_intent, status, customer_email, amount_total_pence, currency,
+                           ship_name, ship_line1, ship_line2, ship_city, ship_postcode, ship_country)
+       VALUES (?, ?, 'paid', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      session.id,
+      session.payment_intent,
+      session.customer_details?.email ?? null,
+      session.amount_total,
+      session.currency,
+      shipName,
+      addr.line1 ?? null,
+      addr.line2 ?? null,
+      addr.city ?? null,
+      addr.postal_code ?? null,
+      addr.country ?? null,
+    ),
   ]
 
   for (const line of lineItems.data) {

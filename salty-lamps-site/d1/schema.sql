@@ -37,7 +37,19 @@ CREATE TABLE IF NOT EXISTS orders (
   customer_email TEXT,
   amount_total_pence INTEGER,
   currency TEXT NOT NULL DEFAULT 'gbp',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  -- Fulfilment lifecycle, distinct from the Stripe payment `status` above.
+  fulfilment_status TEXT NOT NULL DEFAULT 'unfulfilled'
+    CHECK (fulfilment_status IN ('unfulfilled', 'packed', 'shipped', 'delivered')),
+  tracking_number TEXT,
+  shipped_at TEXT,
+  -- Shipping address captured from Stripe at checkout (needed to pack and post).
+  ship_name TEXT,
+  ship_line1 TEXT,
+  ship_line2 TEXT,
+  ship_city TEXT,
+  ship_postcode TEXT,
+  ship_country TEXT
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -47,3 +59,17 @@ CREATE TABLE IF NOT EXISTS order_items (
   unit_price_pence INTEGER NOT NULL,  -- snapshot of price at time of order
   PRIMARY KEY (order_id, sku_id)
 );
+
+-- Append-only audit log: every admin write records who did what, to which entity.
+-- actor_email comes from the verified Cloudflare Access token (see functions/_middleware.js).
+CREATE TABLE IF NOT EXISTS admin_audit (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_email TEXT NOT NULL,
+  action TEXT NOT NULL,              -- e.g. 'product.update', 'sku.delete', 'order.fulfil', 'image.upload'
+  entity TEXT NOT NULL,             -- 'product' | 'sku' | 'order' | 'inventory' | 'image'
+  entity_id TEXT,
+  detail TEXT,                       -- JSON string with the changed fields / context
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_audit_created_at ON admin_audit(created_at);

@@ -141,14 +141,9 @@ const staticRoutes = [
     description: page.body[0],
     image: '/media/logo.png',
   })),
-  {
-    path: '/migration',
-    title: 'Migration Plan | Salty Lamps',
-    description: 'Internal launch planning guide for moving Salty Lamps from Wix to Cloudflare and Shopify.',
-    image: '/media/logo.png',
-    robots: 'noindex,follow',
-    excludeFromSitemap: true,
-  },
+  // NOTE: /admin/* is intentionally excluded from prerender + sitemap (noindex).
+  // The admin portal is a client-only, auth-gated SPA subtree; it must not be
+  // crawled or statically emitted.
 ]
 
 const productRoutes = products.map(product => ({
@@ -379,6 +374,7 @@ writeFile(
   path.join(distDir, 'robots.txt'),
   `User-agent: *
 Allow: /
+Disallow: /admin/
 
 Sitemap: ${siteUrl}/sitemap.xml
 `,
