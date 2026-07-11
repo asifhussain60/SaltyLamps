@@ -1,9 +1,12 @@
 // GET /api/admin/stats — dashboard KPIs, recent orders, top products, sales series.
-import { json, apiError } from '../../lib/admin-helpers.mjs'
+import { json, apiError, fillDailySeries } from '../../lib/admin-helpers.mjs'
 import { LOW_STOCK_THRESHOLD } from '../../lib/validation.mjs'
 
 export async function onRequestGet({ env }) {
   const db = env.DB
+  const today = new Date()
+  const seriesFrom = new Date(today.getTime() - 13 * 86400000).toISOString().slice(0, 10)
+  const seriesToExclusive = new Date(today.getTime() + 86400000).toISOString().slice(0, 10)
   try {
     const stmts = [
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= date('now')`),
@@ -24,6 +27,27 @@ export async function onRequestGet({ env }) {
       db.prepare(`SELECT date(created_at) day, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
                   FROM orders WHERE status='paid' AND created_at >= date('now','-13 days')
                   GROUP BY day ORDER BY day`),
+      db.prepare(`SELECT COALESCE(SUM(oi.quantity),0) v
+                  FROM order_items oi JOIN orders o ON o.id = oi.order_id
+                  WHERE o.status='paid' AND o.created_at >= date('now')`),
+      // A customer counts as "new" this week if their earliest-ever paid order falls in the window.
+      db.prepare(`SELECT COUNT(*) c FROM (
+                    SELECT customer_email FROM orders
+                    WHERE status='paid' AND customer_email IS NOT NULL
+                    GROUP BY customer_email
+                    HAVING MIN(created_at) >= date('now','-6 days')
+                  )`),
+      db.prepare(`SELECT COUNT(DISTINCT o.id) orders, COALESCE(SUM(oi.quantity),0) units
+                  FROM order_items oi JOIN orders o ON o.id = oi.order_id
+                  WHERE o.status='paid' AND o.created_at >= date('now','-6 days')`),
+      // Prior-period comparisons for the dashboard's KPI rings.
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
+                  WHERE status='paid' AND created_at >= date('now','-1 day') AND created_at < date('now')`),
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
+                  WHERE status='paid' AND created_at >= date('now','-13 days') AND created_at < date('now','-6 days')`),
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
+                  WHERE status='paid' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+      db.prepare(`SELECT fulfilment_status, COUNT(*) c FROM orders WHERE status='paid' GROUP BY fulfilment_status`),
     ]
     const r = await db.batch(stmts)
     const one = i => r[i].results?.[0] || {}
@@ -50,7 +74,22 @@ export async function onRequestGet({ env }) {
       },
       recent_orders: r[7].results || [],
       top_products: r[8].results || [],
-      sales_series: r[9].results || [],
+      sales_series: fillDailySeries(r[9].results || [], seriesFrom, seriesToExclusive),
+      activity: {
+        units_today: one(10).v || 0,
+        new_customers_week: one(11).c || 0,
+        avg_items_per_order_week: one(12).orders > 0 ? Math.round((one(12).units / one(12).orders) * 10) / 10 : 0,
+      },
+      comparisons: {
+        yesterday_pence: one(13).v || 0,
+        previous_week_pence: one(14).v || 0,
+        previous_month_pence: one(15).v || 0,
+      },
+      fulfilment_breakdown: Object.fromEntries(
+        ['unfulfilled', 'packed', 'shipped', 'delivered'].map(s => [
+          s, r[16].results?.find(row => row.fulfilment_status === s)?.c || 0,
+        ]),
+      ),
     })
   } catch (err) {
     return apiError(`Could not load dashboard: ${err.message}`, 500, { code: 'server_error' })

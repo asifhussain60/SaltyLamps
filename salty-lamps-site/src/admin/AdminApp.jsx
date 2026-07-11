@@ -15,6 +15,7 @@ import {
   LOW_STOCK_THRESHOLD,
   FULFILMENT_STATUSES,
 } from '../../functions/lib/validation.mjs'
+import DonutChart from '../components/DonutChart.jsx'
 
 // ---- small utilities ------------------------------------------------------
 
@@ -25,6 +26,25 @@ const dateFmt = s => {
   if (!s) return '—'
   const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('T') ? '' : 'Z'))
   return Number.isNaN(d.getTime()) ? s : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const monthLabel = ym => {
+  const [y, m] = ym.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+}
+
+const shortMonthLabel = ym => {
+  const m = Number(ym.split('-')[1])
+  return new Date(2000, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' })
+}
+
+// Interpolates between two hex colors — used for a sequential (ordered-category) color
+// scale, e.g. months within a year, rather than an arbitrary categorical palette.
+function shadeBetween(hexA, hexB, t) {
+  const a = hexA.match(/\w\w/g).map(h => parseInt(h, 16))
+  const b = hexB.match(/\w\w/g).map(h => parseInt(h, 16))
+  const c = a.map((v, i) => Math.round(v + (b[i] - v) * t))
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
 function navigate(path) {
@@ -155,6 +175,29 @@ function StatusBadge({ value, kind = 'payment' }) {
   return <span className={`admin-badge admin-badge--${kind}-${value}`}>{value}</span>
 }
 
+const PAGE_SIZE = 20
+
+function paginate(items, page) {
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
+  const clampedPage = Math.min(page, pageCount - 1)
+  return {
+    page: clampedPage,
+    pageCount,
+    pageItems: items.slice(clampedPage * PAGE_SIZE, clampedPage * PAGE_SIZE + PAGE_SIZE),
+  }
+}
+
+function Pagination({ page, pageCount, onChange }) {
+  if (pageCount <= 1) return null
+  return (
+    <div className="admin-pagination">
+      <button className="admin-btn admin-btn--ghost" disabled={page === 0} onClick={() => onChange(page - 1)}>← Previous</button>
+      <span className="admin-muted">Page {page + 1} of {pageCount}</span>
+      <button className="admin-btn admin-btn--ghost" disabled={page === pageCount - 1} onClick={() => onChange(page + 1)}>Next →</button>
+    </div>
+  )
+}
+
 function Confirm({ open, title, message, confirmLabel = 'Confirm', danger, onConfirm, onCancel }) {
   if (!open) return null
   return (
@@ -186,35 +229,208 @@ function Field({ label, error, children, hint }) {
 
 // ---- dashboard ------------------------------------------------------------
 
-function StatTile({ label, value, tone }) {
+// Small filled-area trend backdrop for a KPI card. Purely decorative context
+// (the number is the real value) so it degrades silently when there's no series.
+function Sparkline({ series, width = 120, height = 32 }) {
+  if (!series?.length) return null
+  const max = Math.max(...series.map(d => d.revenue_pence), 1)
+  const stepX = width / (series.length - 1 || 1)
+  const pts = series.map((d, i) => [i * stepX, height - (d.revenue_pence / max) * height])
+  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+  const area = `${line} L${width},${height} L0,${height} Z`
   return (
-    <div className={`admin-tile admin-tile--${tone || 'neutral'}`}>
-      <span className="admin-tile-value">{value}</span>
-      <span className="admin-tile-label">{label}</span>
+    <svg className="admin-sparkline" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true">
+      <path d={area} className="admin-sparkline-area" />
+      <path d={line} className="admin-sparkline-line" />
+    </svg>
+  )
+}
+
+// current as a % of prior — prior=0 reads as "100% (new)" rather than a divide-by-zero.
+function pctVs(current, prior) {
+  if (prior > 0) return Math.round((current / prior) * 100)
+  return current > 0 ? 100 : 0
+}
+
+function ringTone(pct) {
+  if (pct >= 100) return 'hi'
+  if (pct >= 70) return 'md'
+  return 'lo'
+}
+
+function KpiCard({ label, value, current, prior, compareLabel }) {
+  const hasComparison = prior != null
+  const pct = hasComparison ? Math.min(pctVs(current, prior), 200) : null
+  return (
+    <div className="admin-kpi-card">
+      <span className="admin-kpi-label">{label}</span>
+      <div className="admin-kpi-ring-row">
+        {hasComparison && <DonutChart pct={pct} color={ringTone(pct)} size={56} />}
+        <div className="admin-kpi-ring-text">
+          <span className="admin-kpi-value">{value}</span>
+          {hasComparison && <span className="admin-kpi-compare">vs {compareLabel}</span>}
+        </div>
+      </div>
     </div>
   )
 }
 
+// Smooth gradient-filled area/line chart. Shared by Dashboard and Reports.
 function SalesBars({ series }) {
   if (!series?.length) return <EmptyState>No sales in this window yet.</EmptyState>
-  const max = Math.max(...series.map(d => d.revenue_pence), 1)
   const W = 640
-  const H = 160
-  const gap = 6
-  const bw = (W - gap * (series.length - 1)) / series.length
+  const H = 200
+  const padTop = 16
+  const padBottom = 26
+  const padX = 6 // keeps the endpoint dots (r=3 + 2px stroke) from clipping at the viewBox edge
+  const max = Math.max(...series.map(d => d.revenue_pence), 1)
+  const innerH = H - padTop - padBottom
+  const stepX = (W - padX * 2) / (series.length - 1 || 1)
+  const pts = series.map((d, i) => ({
+    x: padX + i * stepX,
+    y: padTop + innerH - (d.revenue_pence / max) * innerH,
+    d,
+  }))
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+  const area = `${line} L${pts[pts.length - 1].x.toFixed(1)},${H - padBottom} L${pts[0].x.toFixed(1)},${H - padBottom} Z`
+  const gridYs = [0.25, 0.5, 0.75].map(f => padTop + innerH * f)
+  const labelIdx = [0, Math.floor((pts.length - 1) / 2), pts.length - 1]
+
   return (
-    <svg className="admin-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Daily sales">
-      {series.map((d, i) => {
-        const h = Math.max(2, (d.revenue_pence / max) * (H - 24))
-        return (
-          <g key={d.day}>
-            <rect x={i * (bw + gap)} y={H - h} width={bw} height={h} rx="3" className="admin-chart-bar">
-              <title>{`${d.day}: ${gbp(d.revenue_pence)} (${d.orders} orders)`}</title>
-            </rect>
-          </g>
-        )
-      })}
+    <svg className="admin-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Daily sales">
+      <defs>
+        <linearGradient id="admin-trend-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" className="admin-trend-stop-start" />
+          <stop offset="100%" className="admin-trend-stop-end" />
+        </linearGradient>
+      </defs>
+      {gridYs.map(y => <line key={y} x1="0" y1={y} x2={W} y2={y} className="admin-trend-grid" />)}
+      <path d={area} className="admin-trend-area" />
+      <path d={line} className="admin-trend-line" />
+      {pts.map((p, i) => (
+        <circle key={p.d.day} cx={p.x} cy={p.y} r="3" className="admin-trend-dot">
+          <title>{`${p.d.day}: ${gbp(p.d.revenue_pence)} (${p.d.orders} orders)`}</title>
+        </circle>
+      ))}
+      {labelIdx.map(i => (
+        <text
+          key={i}
+          x={Math.min(Math.max(pts[i].x, 20), W - 20)}
+          y={H - 6}
+          textAnchor="middle"
+          className="admin-trend-label"
+        >
+          {dateFmt(pts[i].d.day)}
+        </text>
+      ))}
     </svg>
+  )
+}
+
+function StockAlertBar({ low, out }) {
+  const total = low + out
+  if (total === 0) return <p className="admin-muted">All stock levels healthy.</p>
+  const W = 100
+  const outW = (out / total) * W
+  const lowW = (low / total) * W
+  return (
+    <div className="admin-stock-alert">
+      <svg className="admin-stock-bar" viewBox={`0 0 ${W} 14`} preserveAspectRatio="none" role="img" aria-label="Stock alerts">
+        {out > 0 && <rect x="0" y="0" width={outW} height="14" className="admin-stock-seg admin-stock-seg--out" />}
+        {low > 0 && <rect x={outW} y="0" width={lowW} height="14" className="admin-stock-seg admin-stock-seg--low" />}
+      </svg>
+      <div className="admin-stock-legend">
+        {out > 0 && <span className="admin-stock-legend-item"><i className="admin-dot admin-dot--out" />{out} out of stock</span>}
+        {low > 0 && <span className="admin-stock-legend-item"><i className="admin-dot admin-dot--low" />{low} low stock</span>}
+      </div>
+    </div>
+  )
+}
+
+const FULFIL_STAGES = ['unfulfilled', 'packed', 'shipped', 'delivered']
+const FULFIL_LABELS = { unfulfilled: 'Unfulfilled', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered' }
+
+// Share of all paid orders currently at each fulfilment stage — same segmented-bar language as
+// StockAlertBar above, colored to match the existing fulfilment StatusBadge palette.
+function FulfilmentFunnelBar({ breakdown }) {
+  const total = FULFIL_STAGES.reduce((sum, s) => sum + (breakdown[s] || 0), 0)
+  if (total === 0) return <p className="admin-muted">No fulfilled orders yet.</p>
+  const W = 100
+  let x = 0
+  const segs = FULFIL_STAGES.map(stage => {
+    const count = breakdown[stage] || 0
+    const seg = { stage, count, x, w: (count / total) * W }
+    x += seg.w
+    return seg
+  })
+  return (
+    <div className="admin-funnel">
+      <svg className="admin-funnel-bar" viewBox={`0 0 ${W} 14`} preserveAspectRatio="none" role="img" aria-label="Fulfilment breakdown">
+        {segs.map(s => s.count > 0 && (
+          <rect key={s.stage} x={s.x} y="0" width={s.w} height="14" className={`admin-funnel-seg admin-funnel-seg--${s.stage}`} />
+        ))}
+      </svg>
+      <div className="admin-funnel-legend">
+        {segs.map(s => s.count > 0 && (
+          <span key={s.stage} className="admin-funnel-legend-item">
+            <i className={`admin-dot admin-dot--${s.stage}`} />{s.count} {FULFIL_LABELS[s.stage].toLowerCase()}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Compact stage indicator for a single order — filled dots up to its current fulfilment stage.
+function FulfilmentStepper({ status }) {
+  const reached = FULFIL_STAGES.indexOf(status)
+  return (
+    <span className="admin-stepper" title={FULFIL_LABELS[status] || status}>
+      {FULFIL_STAGES.map((s, i) => (
+        <span key={s} className={`admin-stepper-dot ${i <= reached ? `admin-stepper-dot--${s}` : ''}`} />
+      ))}
+    </span>
+  )
+}
+
+function TopProductsBar({ products }) {
+  if (!products?.length) return null
+  const max = Math.max(...products.map(p => p.revenue_pence), 1)
+  return (
+    <div className="admin-hbar-chart">
+      {products.map(p => (
+        <div className="admin-hbar-row" key={p.name}>
+          <span className="admin-hbar-label" title={p.name}>{p.name}</span>
+          <div className="admin-hbar-track">
+            <div className="admin-hbar-fill" style={{ width: `${(p.revenue_pence / max) * 100}%` }} />
+          </div>
+          <span className="admin-hbar-value">{gbp(p.revenue_pence)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ActivityRow({ label, value, series }) {
+  return (
+    <li className="admin-activity-row">
+      {series ? <Sparkline series={series} width={60} height={24} /> : <span className="admin-activity-spacer" />}
+      <span className="admin-activity-text"><strong>{label}</strong> : {value}</span>
+    </li>
+  )
+}
+
+// "Store activity" — a compact glance list, real store data only (no invented analytics).
+function ActivityList({ data, last7 }) {
+  const a = data.activity
+  return (
+    <ul className="admin-activity-list">
+      <ActivityRow label="Orders today" value={data.orders.today} series={last7} />
+      <ActivityRow label="Orders this week" value={data.orders.week} series={last7} />
+      <ActivityRow label="Units sold today" value={a.units_today} />
+      <ActivityRow label="New customers this week" value={a.new_customers_week} />
+      <ActivityRow label="Avg items per order (7d)" value={a.avg_items_per_order_week} />
+    </ul>
   )
 }
 
@@ -223,25 +439,52 @@ function Dashboard() {
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
+  const series = data.sales_series
+  const last7 = series.slice(-7)
+  const weekAvgPence = data.orders.week > 0 ? Math.round(data.revenue.week_pence / data.orders.week) : 0
+
   return (
     <>
-      <div className="admin-tiles">
-        <StatTile label="Revenue today" value={gbp(data.revenue.today_pence)} tone="amber" />
-        <StatTile label="Revenue this week" value={gbp(data.revenue.week_pence)} tone="amber" />
-        <StatTile label="Revenue this month" value={gbp(data.revenue.month_pence)} tone="amber" />
-        <StatTile label="Avg order" value={gbp(data.average_order_pence)} tone="neutral" />
-        <StatTile label="Orders to fulfil" value={data.orders.unfulfilled} tone={data.orders.unfulfilled ? 'blue' : 'neutral'} />
-        <StatTile label="Low stock" value={data.stock.low_stock} tone={data.stock.low_stock ? 'rose' : 'neutral'} />
-        <StatTile label="Out of stock" value={data.stock.out_of_stock} tone={data.stock.out_of_stock ? 'rose' : 'neutral'} />
-        <StatTile label="Orders all-time" value={data.orders.all_time} tone="neutral" />
+      <div className="admin-kpi-row">
+        <KpiCard
+          label="Revenue today" value={gbp(data.revenue.today_pence)}
+          current={data.revenue.today_pence} prior={data.comparisons.yesterday_pence} compareLabel="yesterday"
+        />
+        <KpiCard
+          label="Revenue this week" value={gbp(data.revenue.week_pence)}
+          current={data.revenue.week_pence} prior={data.comparisons.previous_week_pence} compareLabel="last week"
+        />
+        <KpiCard
+          label="Revenue this month" value={gbp(data.revenue.month_pence)}
+          current={data.revenue.month_pence} prior={data.comparisons.previous_month_pence} compareLabel="last month"
+        />
+        <KpiCard
+          label="Avg order (7d)" value={gbp(weekAvgPence)}
+          current={weekAvgPence} prior={data.average_order_pence} compareLabel="all-time avg"
+        />
       </div>
 
-      <section className="admin-card">
-        <h2>Sales — last 14 days</h2>
-        <SalesBars series={data.sales_series} />
-      </section>
+      <div className="admin-chart-row">
+        <section className="admin-card">
+          <h2>Sales — last 14 days</h2>
+          <SalesBars series={series} />
+        </section>
+
+        <section className="admin-card">
+          <h2>Store activity</h2>
+          <ActivityList data={data} last7={last7} />
+        </section>
+      </div>
 
       <div className="admin-two-col">
+        <section className="admin-card">
+          <h2>Operations</h2>
+          <h3 className="admin-subhead">Fulfilment</h3>
+          <FulfilmentFunnelBar breakdown={data.fulfilment_breakdown} />
+          <h3 className="admin-subhead admin-subhead--spaced">Stock</h3>
+          <StockAlertBar low={data.stock.low_stock} out={data.stock.out_of_stock} />
+        </section>
+
         <section className="admin-card">
           <div className="admin-card-head">
             <h2>Recent orders</h2>
@@ -260,19 +503,22 @@ function Dashboard() {
                     <td>{dateFmt(o.created_at)}</td>
                     <td>{o.customer_email || '—'}</td>
                     <td>{gbp(o.amount_total_pence)}</td>
-                    <td><StatusBadge value={o.fulfilment_status} kind="fulfilment" /></td>
+                    <td><FulfilmentStepper status={o.fulfilment_status} /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
         </section>
+      </div>
 
-        <section className="admin-card">
-          <h2>Top products</h2>
-          {data.top_products.length === 0 ? (
-            <EmptyState>No sales yet.</EmptyState>
-          ) : (
+      <section className="admin-card">
+        <h2>Top products</h2>
+        {data.top_products.length === 0 ? (
+          <EmptyState>No sales yet.</EmptyState>
+        ) : (
+          <>
+            <TopProductsBar products={data.top_products} />
             <table className="admin-table">
               <thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead>
               <tbody>
@@ -281,45 +527,228 @@ function Dashboard() {
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
-      </div>
+          </>
+        )}
+      </section>
     </>
   )
 }
 
 // ---- orders ---------------------------------------------------------------
 
-function OrdersList() {
-  const [status, setStatus] = useState('')
-  const [fulfilment, setFulfilment] = useState('')
-  const [q, setQ] = useState('')
-  const qs = new URLSearchParams()
-  if (status) qs.set('status', status)
-  if (fulfilment) qs.set('fulfilment', fulfilment)
-  if (q) qs.set('q', q)
-  const { loading, error, data, reload } = usePageData(
-    () => api(`/api/admin/orders?${qs.toString()}`),
-    [status, fulfilment, q],
+// ---- shared grouped-breakdown chart views (Orders: By month / By year) ---------
+
+function HBarBreakdown({ items }) {
+  const max = Math.max(...items.map(it => it.revenue_pence), 1)
+  return (
+    <div className="admin-hbar-chart">
+      {items.map(it => (
+        <div className="admin-hbar-row" key={it.key}>
+          <span className="admin-hbar-label">{it.label}</span>
+          <div className="admin-hbar-track">
+            <div className="admin-hbar-fill" style={{ width: `${(it.revenue_pence / max) * 100}%` }} />
+          </div>
+          <span className="admin-hbar-value">{gbp(it.revenue_pence)}</span>
+        </div>
+      ))}
+    </div>
   )
+}
+
+function ColumnChart({ items }) {
+  const W = 640
+  const H = 200
+  const padTop = 10
+  const padBottom = 30
+  const gap = 8
+  const max = Math.max(...items.map(it => it.revenue_pence), 1)
+  const bw = (W - gap * (items.length - 1)) / items.length
+  return (
+    <svg className="admin-column-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Revenue breakdown">
+      {items.map((it, i) => {
+        const h = Math.max(2, ((H - padTop - padBottom) * it.revenue_pence) / max)
+        const x = i * (bw + gap)
+        return (
+          <g key={it.key}>
+            <rect x={x} y={H - padBottom - h} width={bw} height={h} rx="3" className="admin-column-bar">
+              <title>{`${it.label}: ${gbp(it.revenue_pence)} (${it.orders} orders)`}</title>
+            </rect>
+            <text x={x + bw / 2} y={H - padBottom + 14} textAnchor="middle" className="admin-column-label">
+              {it.axisLabel}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+const DONUT_FROM = '#d88a35' // var(--amber)
+const DONUT_TO = '#9b4328' // var(--ember)
+
+function BreakdownDonut({ items }) {
+  const total = items.reduce((sum, it) => sum + it.revenue_pence, 0)
+  if (total === 0) return <p className="admin-muted">No revenue in this window yet.</p>
+
+  const size = 160
+  const strokeWidth = size * 0.16
+  const r = size / 2 - strokeWidth / 2
+  const cx = size / 2
+  const cy = size / 2
+  const circ = 2 * Math.PI * r
+  let offset = 0
+  const shade = i => shadeBetween(DONUT_FROM, DONUT_TO, items.length <= 1 ? 0 : i / (items.length - 1))
+
+  return (
+    <div className="admin-donut-breakdown">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Revenue breakdown">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--paper)" strokeWidth={strokeWidth} />
+        {items.map((it, i) => {
+          const frac = it.revenue_pence / total
+          const len = frac * circ
+          const dashOffset = -offset
+          offset += len
+          return (
+            <circle
+              key={it.key}
+              cx={cx} cy={cy} r={r} fill="none"
+              stroke={shade(i)} strokeWidth={strokeWidth}
+              strokeDasharray={`${len} ${circ - len}`}
+              strokeDashoffset={dashOffset}
+              transform={`rotate(-90 ${cx} ${cy})`}
+            >
+              <title>{`${it.label}: ${gbp(it.revenue_pence)} (${Math.round(frac * 100)}%)`}</title>
+            </circle>
+          )
+        })}
+      </svg>
+      <ul className="admin-donut-legend">
+        {items.map((it, i) => (
+          <li key={it.key} className="admin-donut-legend-item">
+            <i className="admin-donut-swatch" style={{ background: shade(i) }} />
+            <span>{it.axisLabel}</span>
+            <strong>{gbp(it.revenue_pence)}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function GroupedBreakdown({ items, chartMode, columnLabel }) {
+  if (items.length === 0) return <EmptyState>No paid orders yet.</EmptyState>
+  return (
+    <section className="admin-card">
+      {chartMode === 'bars' && <HBarBreakdown items={items} />}
+      {chartMode === 'columns' && <ColumnChart items={items} />}
+      {chartMode === 'donut' && <BreakdownDonut items={items} />}
+      <table className="admin-table">
+        <thead><tr><th>{columnLabel}</th><th>Orders</th><th>Revenue</th></tr></thead>
+        <tbody>
+          {items.map(it => (
+            <tr key={it.key}><td>{it.label}</td><td>{it.orders}</td><td>{gbp(it.revenue_pence)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  )
+}
+
+// Paid orders grouped by calendar month, scoped to one year at a time — order volume
+// made visual (same chart language as the dashboard), not just another table of numbers.
+function OrdersByMonth({ chartMode }) {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/orders/by-month'))
+  const [year, setYear] = useState('')
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+  if (data.months.length === 0) return <EmptyState>No paid orders yet.</EmptyState>
+
+  const years = [...new Set(data.months.map(m => m.month.slice(0, 4)))].sort().reverse()
+  const activeYear = years.includes(year) ? year : years[0]
+  const items = data.months
+    .filter(m => m.month.startsWith(activeYear))
+    .map(m => ({ key: m.month, label: monthLabel(m.month), axisLabel: shortMonthLabel(m.month), orders: m.orders, revenue_pence: m.revenue_pence }))
 
   return (
     <>
       <div className="admin-filters">
-        <input className="admin-input" placeholder="Search email or order id…" value={q} onChange={e => setQ(e.target.value)} />
-        <select className="admin-input" value={status} onChange={e => setStatus(e.target.value)}>
+        <select className="admin-input admin-input--year" value={activeYear} onChange={e => setYear(e.target.value)}>
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+      <GroupedBreakdown items={items} chartMode={chartMode} columnLabel="Month" />
+    </>
+  )
+}
+
+// Paid orders grouped by calendar year — inherently compact, no filter needed.
+function OrdersByYear({ chartMode }) {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/orders/by-year'))
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+  if (data.years.length === 0) return <EmptyState>No paid orders yet.</EmptyState>
+
+  const items = data.years.map(y => ({ key: y.year, label: y.year, axisLabel: y.year, orders: y.orders, revenue_pence: y.revenue_pence }))
+  return <GroupedBreakdown items={items} chartMode={chartMode} columnLabel="Year" />
+}
+
+function OrdersList() {
+  const [status, setStatus] = useState('')
+  const [fulfilment, setFulfilment] = useState('')
+  const [q, setQ] = useState('')
+  const [page, setPage] = useState(0)
+  const [view, setView] = useState('list') // 'list' | 'month' | 'year'
+  const [chartMode, setChartMode] = useState('bars') // 'bars' | 'columns' | 'donut'
+  const qs = new URLSearchParams()
+  if (status) qs.set('status', status)
+  if (fulfilment) qs.set('fulfilment', fulfilment)
+  if (q) qs.set('q', q)
+  qs.set('limit', PAGE_SIZE)
+  qs.set('offset', page * PAGE_SIZE)
+  const { loading, error, data, reload } = usePageData(
+    () => api(`/api/admin/orders?${qs.toString()}`),
+    [status, fulfilment, q, page],
+  )
+
+  const setFilter = (setter) => e => { setter(e.target.value); setPage(0) }
+
+  return (
+    <>
+      <div className="admin-filters">
+        <input
+          className="admin-input" placeholder="Search email or order id…"
+          value={q} onChange={setFilter(setQ)}
+        />
+        <select className="admin-input" value={status} onChange={setFilter(setStatus)}>
           <option value="">All payments</option>
           <option value="paid">Paid</option>
           <option value="refunded">Refunded</option>
           <option value="cancelled">Cancelled</option>
         </select>
-        <select className="admin-input" value={fulfilment} onChange={e => setFulfilment(e.target.value)}>
+        <select className="admin-input" value={fulfilment} onChange={setFilter(setFulfilment)}>
           <option value="">All fulfilment</option>
           {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
-      {loading ? (
+      <div className="admin-view-toggle">
+        <button className={`admin-toggle-btn ${view === 'list' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setView('list')}>List</button>
+        <button className={`admin-toggle-btn ${view === 'month' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setView('month')}>By month</button>
+        <button className={`admin-toggle-btn ${view === 'year' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setView('year')}>By year</button>
+        {view !== 'list' && (
+          <div className="admin-chart-mode-toggle">
+            <button className={`admin-toggle-btn ${chartMode === 'bars' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setChartMode('bars')}>Bars</button>
+            <button className={`admin-toggle-btn ${chartMode === 'columns' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setChartMode('columns')}>Columns</button>
+            <button className={`admin-toggle-btn ${chartMode === 'donut' ? 'admin-toggle-btn--active' : ''}`} onClick={() => setChartMode('donut')}>Donut</button>
+          </div>
+        )}
+      </div>
+
+      {view === 'month' ? (
+        <OrdersByMonth chartMode={chartMode} />
+      ) : view === 'year' ? (
+        <OrdersByYear chartMode={chartMode} />
+      ) : loading ? (
         <Loading />
       ) : error ? (
         <ErrorState error={error} onRetry={reload} />
@@ -345,6 +774,7 @@ function OrdersList() {
             </tbody>
           </table>
           <p className="admin-muted">{data.total} order{data.total === 1 ? '' : 's'} total</p>
+          <Pagination page={page} pageCount={Math.max(1, Math.ceil(data.total / PAGE_SIZE))} onChange={setPage} />
         </section>
       )}
     </>
@@ -485,6 +915,9 @@ function ProductsList() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/products'))
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [actionErr, setActionErr] = useState(null)
+  const [q, setQ] = useState('')
+  const [visibility, setVisibility] = useState('')
+  const [page, setPage] = useState(0)
 
   const doDelete = async id => {
     setActionErr(null)
@@ -501,42 +934,69 @@ function ProductsList() {
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
+  const needle = q.trim().toLowerCase()
+  const filtered = data.products.filter(p => {
+    if (visibility === 'visible' && !p.visible) return false
+    if (visibility === 'hidden' && p.visible) return false
+    if (needle && !p.name.toLowerCase().includes(needle)) return false
+    return true
+  })
+  const { page: shownPage, pageCount, pageItems } = paginate(filtered, page)
+
   return (
     <>
       <div className="admin-card-head admin-card-head--bare">
-        <p className="admin-muted">{data.products.length} products</p>
+        <p className="admin-muted">{filtered.length} of {data.products.length} products</p>
         <AdminLink href="/admin/products/new" className="admin-btn admin-btn--primary">+ New product</AdminLink>
+      </div>
+      <div className="admin-filters">
+        <input
+          className="admin-input"
+          placeholder="Search products…"
+          value={q}
+          onChange={e => { setQ(e.target.value); setPage(0) }}
+        />
+        <select className="admin-input" value={visibility} onChange={e => { setVisibility(e.target.value); setPage(0) }}>
+          <option value="">All products</option>
+          <option value="visible">Visible</option>
+          <option value="hidden">Hidden</option>
+        </select>
       </div>
       {actionErr && <ErrorState error={actionErr} />}
       <section className="admin-card">
-        <table className="admin-table">
-          <thead>
-            <tr><th></th><th>Name</th><th>SKUs</th><th>Price</th><th>Visible</th><th></th></tr>
-          </thead>
-          <tbody>
-            {data.products.map(p => {
-              const prices = p.skus.map(s => s.price_pence)
-              const priceLabel = prices.length
-                ? prices.every(v => v === prices[0])
-                  ? gbp(prices[0])
-                  : `${gbp(Math.min(...prices))}–${gbp(Math.max(...prices))}`
-                : '—'
-              return (
-                <tr key={p.id}>
-                  <td>{p.image ? <img className="admin-thumb" src={p.image} alt="" /> : <div className="admin-thumb admin-thumb--empty" />}</td>
-                  <td><AdminLink href={`/admin/products/${p.id}`} className="admin-link">{p.name}</AdminLink></td>
-                  <td>{p.skus.length}</td>
-                  <td>{priceLabel}</td>
-                  <td>{p.visible ? 'Yes' : <span className="admin-muted">Hidden</span>}</td>
-                  <td className="admin-cell-actions">
-                    <AdminLink href={`/admin/products/${p.id}`} className="admin-link">Edit</AdminLink>
-                    <button className="admin-link admin-link--danger" onClick={() => setConfirmDelete(p)}>Delete</button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        {pageItems.length === 0 ? (
+          <EmptyState>No products match.</EmptyState>
+        ) : (
+          <table className="admin-table">
+            <thead>
+              <tr><th></th><th>Name</th><th>SKUs</th><th>Price</th><th>Visible</th><th></th></tr>
+            </thead>
+            <tbody>
+              {pageItems.map(p => {
+                const prices = p.skus.map(s => s.price_pence)
+                const priceLabel = prices.length
+                  ? prices.every(v => v === prices[0])
+                    ? gbp(prices[0])
+                    : `${gbp(Math.min(...prices))}–${gbp(Math.max(...prices))}`
+                  : '—'
+                return (
+                  <tr key={p.id}>
+                    <td>{p.image ? <img className="admin-thumb" src={p.image} alt="" /> : <div className="admin-thumb admin-thumb--empty" />}</td>
+                    <td><AdminLink href={`/admin/products/${p.id}`} className="admin-link">{p.name}</AdminLink></td>
+                    <td>{p.skus.length}</td>
+                    <td>{priceLabel}</td>
+                    <td>{p.visible ? 'Yes' : <span className="admin-muted">Hidden</span>}</td>
+                    <td className="admin-cell-actions">
+                      <AdminLink href={`/admin/products/${p.id}`} className="admin-link">Edit</AdminLink>
+                      <button className="admin-link admin-link--danger" onClick={() => setConfirmDelete(p)}>Delete</button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+        <Pagination page={shownPage} pageCount={pageCount} onChange={setPage} />
       </section>
       <Confirm
         open={!!confirmDelete}
@@ -783,19 +1243,39 @@ function ProductEdit({ id }) {
 
 // ---- inventory ------------------------------------------------------------
 
+function StockBadge({ status }) {
+  if (!status) return null
+  return (
+    <span className={`admin-badge admin-badge--stock-${status}`}>
+      {status === 'out' ? 'Out of stock' : 'Low stock'}
+    </span>
+  )
+}
+
 function Inventory() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/products'))
   const [edits, setEdits] = useState({}) // skuId -> { quantity? , in_stock? }
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
   const [savedMsg, setSavedMsg] = useState('')
+  const [q, setQ] = useState('')
+  const [stockFilter, setStockFilter] = useState('')
+  const [page, setPage] = useState(0)
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
   const rows = data.products.flatMap(p => p.skus.map(s => ({ ...s, productName: p.name })))
-  const lowOrOut = s =>
-    (s.track_mode === 'quantity' && s.quantity <= LOW_STOCK_THRESHOLD) || (s.track_mode === 'binary' && !s.in_stock)
+  // Matches the low/out-of-stock definitions used on the dashboard (functions/api/admin/stats.js).
+  const stockStatus = s => {
+    if (s.track_mode === 'quantity') {
+      if (s.quantity <= 0) return 'out'
+      if (s.quantity <= LOW_STOCK_THRESHOLD) return 'low'
+    } else if (!s.in_stock) {
+      return 'out'
+    }
+    return null
+  }
 
   const setQty = (id, v) => setEdits(e => ({ ...e, [id]: { quantity: v } }))
   const setInStock = (id, v) => setEdits(e => ({ ...e, [id]: { in_stock: v } }))
@@ -818,6 +1298,16 @@ function Inventory() {
     }
   }
 
+  const needle = q.trim().toLowerCase()
+  const filtered = rows.filter(s => {
+    const status = stockStatus(s)
+    if (stockFilter === 'low' && status !== 'low') return false
+    if (stockFilter === 'out' && status !== 'out') return false
+    if (needle && !s.productName.toLowerCase().includes(needle) && !s.sku.toLowerCase().includes(needle)) return false
+    return true
+  })
+  const { page: shownPage, pageCount, pageItems } = paginate(filtered, page)
+
   return (
     <>
       <div className="admin-card-head admin-card-head--bare">
@@ -826,46 +1316,66 @@ function Inventory() {
           {saving ? 'Saving…' : `Save changes${Object.keys(edits).length ? ` (${Object.keys(edits).length})` : ''}`}
         </button>
       </div>
+      <div className="admin-filters">
+        <input
+          className="admin-input"
+          placeholder="Search product or SKU…"
+          value={q}
+          onChange={e => { setQ(e.target.value); setPage(0) }}
+        />
+        <select className="admin-input" value={stockFilter} onChange={e => { setStockFilter(e.target.value); setPage(0) }}>
+          <option value="">All stock</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+        </select>
+      </div>
       {savedMsg && <div className="admin-state admin-state--ok">{savedMsg}</div>}
       {saveErr && <ErrorState error={saveErr} />}
       <section className="admin-card">
-        <table className="admin-table">
-          <thead>
-            <tr><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Stock</th></tr>
-          </thead>
-          <tbody>
-            {rows.map(s => {
-              const edit = edits[s.id] || {}
-              return (
-                <tr key={s.id} className={lowOrOut(s) ? 'admin-row--warn' : ''}>
-                  <td>{s.productName}</td>
-                  <td>{s.sku}</td>
-                  <td>{s.variant_label || '—'}</td>
-                  <td>{s.track_mode}</td>
-                  <td>
-                    {s.track_mode === 'quantity' ? (
-                      <input
-                        className="admin-input admin-input--sm"
-                        inputMode="numeric"
-                        value={edit.quantity != null ? edit.quantity : s.quantity}
-                        onChange={e => setQty(s.id, e.target.value)}
-                      />
-                    ) : (
-                      <label className="admin-checkbox admin-checkbox--inline">
+        {pageItems.length === 0 ? (
+          <EmptyState>No SKUs match.</EmptyState>
+        ) : (
+          <table className="admin-table">
+            <thead>
+              <tr><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Stock</th><th></th></tr>
+            </thead>
+            <tbody>
+              {pageItems.map(s => {
+                const edit = edits[s.id] || {}
+                const status = stockStatus(s)
+                return (
+                  <tr key={s.id} className={status ? 'admin-row--warn' : ''}>
+                    <td>{s.productName}</td>
+                    <td>{s.sku}</td>
+                    <td>{s.variant_label || '—'}</td>
+                    <td>{s.track_mode}</td>
+                    <td>
+                      {s.track_mode === 'quantity' ? (
                         <input
-                          type="checkbox"
-                          checked={edit.in_stock != null ? edit.in_stock : !!s.in_stock}
-                          onChange={e => setInStock(s.id, e.target.checked)}
+                          className="admin-input admin-input--sm"
+                          inputMode="numeric"
+                          value={edit.quantity != null ? edit.quantity : s.quantity}
+                          onChange={e => setQty(s.id, e.target.value)}
                         />
-                        <span>In stock</span>
-                      </label>
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                      ) : (
+                        <label className="admin-checkbox admin-checkbox--inline">
+                          <input
+                            type="checkbox"
+                            checked={edit.in_stock != null ? edit.in_stock : !!s.in_stock}
+                            onChange={e => setInStock(s.id, e.target.checked)}
+                          />
+                          <span>In stock</span>
+                        </label>
+                      )}
+                    </td>
+                    <td><StockBadge status={status} /></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+        <Pagination page={shownPage} pageCount={pageCount} onChange={setPage} />
       </section>
     </>
   )

@@ -1,6 +1,6 @@
 // GET /api/admin/reports/sales?from=YYYY-MM-DD&to=YYYY-MM-DD[&format=csv]
 // Daily paid-sales series plus totals for the window (default: last 30 days).
-import { json, apiError, toCsv, csvResponse } from '../../../lib/admin-helpers.mjs'
+import { json, apiError, toCsv, csvResponse, fillDailySeries } from '../../../lib/admin-helpers.mjs'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -17,6 +17,12 @@ export async function onRequestGet({ request, env }) {
   if (from) binds.push(from)
   if (to) binds.push(to)
 
+  // Same window, resolved in JS so the returned series can be zero-filled day by day — keeps
+  // chart x-axis spacing accurate and avoids degenerate rendering when a window has little data.
+  const jsFrom = from || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const jsToExclusive = to ? new Date(new Date(`${to}T00:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10)
+    : new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+
   try {
     const rows = await env.DB.prepare(
       `SELECT date(created_at) day, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
@@ -25,11 +31,12 @@ export async function onRequestGet({ request, env }) {
        GROUP BY day ORDER BY day`,
     ).bind(...binds).all()
 
-    const series = rows.results || []
-    const totals = series.reduce(
+    const sparse = rows.results || []
+    const totals = sparse.reduce(
       (acc, r) => ({ revenue_pence: acc.revenue_pence + r.revenue_pence, orders: acc.orders + r.orders }),
       { revenue_pence: 0, orders: 0 },
     )
+    const series = fillDailySeries(sparse, jsFrom, jsToExclusive)
 
     if (format === 'csv') {
       const csv = toCsv(series, [

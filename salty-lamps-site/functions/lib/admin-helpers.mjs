@@ -45,6 +45,23 @@ export async function readJson(request) {
   }
 }
 
+// Zero-fills a sparse {day, revenue_pence, orders} series (SQL only returns days that had at
+// least one order) so every day in [from, toExclusive) appears exactly once, in order. Keeps
+// chart x-axis spacing accurate for gappy data and avoids degenerate rendering (a lone dot, or a
+// collapsed area fill) when a window has very little or no data.
+export function fillDailySeries(rows, from, toExclusive) {
+  const byDay = new Map(rows.map(r => [r.day, r]))
+  const start = new Date(`${from}T00:00:00Z`)
+  const end = new Date(`${toExclusive}T00:00:00Z`)
+  const out = []
+  for (let d = start; d < end; d = new Date(d.getTime() + 86400000)) {
+    const day = d.toISOString().slice(0, 10)
+    const row = byDay.get(day)
+    out.push({ day, revenue_pence: row?.revenue_pence || 0, orders: row?.orders || 0 })
+  }
+  return out
+}
+
 // Rows -> CSV string. columns is [{ key, label }]; values are stringified safely.
 export function toCsv(rows, columns) {
   const esc = v => {
