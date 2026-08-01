@@ -1,80 +1,36 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { PRODUCTS_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
-const appPath = path.join(root, 'src/App.jsx')
 const distDir = path.join(root, 'dist')
-const siteUrl = 'https://www.saltylamps.co.uk'
 const today = new Date().toISOString().slice(0, 10)
 
-const appSource = fs.readFileSync(appPath, 'utf8')
+// Content comes from the committed build snapshot written by
+// scripts/fetch-content-snapshot.mjs, which runs first in `npm run build`.
+//
+// This used to text-scrape src/App.jsx (indexOf slicing + Function() eval) for
+// `categories`, `shopperPaths` and `pages`. That coupled the build to the literal
+// source layout of App.jsx three separate ways — the exact `const <name> = ` text,
+// the next const following immediately, and an eval sandbox exposing only
+// img/media — so renaming or reordering a const broke `npm run build` outright.
+const snapshot = readSnapshot()
+const { products, categories, shopperPaths, pages: policyPages, siteUrl, categoryAliases } = snapshot
 
-const img = name => `/media/live-site-products/${name}`
-const media = name => `/media/${name}`
-
-function extractConst(name, nextName) {
-  const start = appSource.indexOf(`const ${name} = `)
-  if (start === -1) throw new Error(`Could not find ${name}`)
-
-  const valueStart = start + `const ${name} = `.length
-  const end = nextName
-    ? appSource.indexOf(`\n\nconst ${nextName}`, valueStart)
-    : appSource.indexOf('\n\nfunction ', valueStart)
-
-  if (end === -1) throw new Error(`Could not find end of ${name}`)
-  return appSource.slice(valueStart, end).trim()
-}
-
-function evalValue(source) {
-  return Function('img', 'media', `return (${source})`)(img, media)
-}
-
-// Products now live in Cloudflare D1, not in App.jsx source. Query D1's HTTP API
-// directly (not the live /api/products endpoint) so this build step doesn't
-// depend on a deployment that hasn't happened yet — flattening logic is shared
-// with functions/api/products.js via flatten-products.mjs, kept in sync there.
-function keychainSecret(service, account = 'salty-lamps-proposal') {
-  try {
-    return execFileSync('security', ['find-generic-password', '-s', service, '-a', account, '-w'], {
-      encoding: 'utf8',
-    }).trim()
-  } catch {
-    return ''
+function readSnapshot() {
+  const snapshotPath = path.join(root, 'src/content/content-snapshot.json')
+  if (!fs.existsSync(snapshotPath)) {
+    throw new Error(
+      `Missing ${path.relative(root, snapshotPath)}.\n`
+      + '  Run `node scripts/fetch-content-snapshot.mjs` first, or use `npm run build`\n'
+      + '  which runs it as its first step.',
+    )
   }
+  return JSON.parse(fs.readFileSync(snapshotPath, 'utf8'))
 }
 
-async function fetchProductsFromD1() {
-  const token = process.env.CLOUDFLARE_D1_TOKEN || keychainSecret('salty-lamps-proposal-cloudflare-d1-token')
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || keychainSecret('salty-lamps-proposal-cloudflare-account-id')
-  const databaseId = 'e8e40717-628d-481d-9175-e9c473620125'
-  if (!token || !accountId) throw new Error('Missing Cloudflare D1 token/account id (check Keychain or env vars)')
-
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
-    {
-      method: 'POST',
-      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ sql: PRODUCTS_QUERY }),
-    },
-  )
-  const body = await res.json()
-  if (!body.success) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
-  return flattenProductRows(body.result[0].results)
-}
-
-const products = await fetchProductsFromD1()
-const categories = evalValue(extractConst('categories', 'shopperPaths'))
-const shopperPaths = evalValue(extractConst('shopperPaths', 'processSteps'))
-const policyPages = evalValue(extractConst('pages', 'categoryPageCopy'))
-
-const legacyCategorySlug = 'himalyan-salt-massage-relaxation-products'
-const cleanCategorySlug = 'himalayan-salt-massage-relaxation-products'
-
-const cleanSlug = slug => (slug === legacyCategorySlug ? cleanCategorySlug : slug)
+const cleanSlug = slug => categoryAliases[slug] || slug
 const categoryRoute = slug => `/category/${cleanSlug(slug)}`
 const collectionRoute = (collectionSlug, categorySlug) =>
   categorySlug ? `/collection/${collectionSlug}/${cleanSlug(categorySlug)}` : `/collection/${collectionSlug}`

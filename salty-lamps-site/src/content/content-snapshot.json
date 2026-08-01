@@ -1,0 +1,1441 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-01T13:06:11.043Z",
+  "source": "live",
+  "siteUrl": "https://www.saltylamps.co.uk",
+  "categoryAliases": {
+    "himalyan-salt-massage-relaxation-products": "himalayan-salt-massage-relaxation-products"
+  },
+  "categories": [
+    {
+      "slug": "all-products",
+      "name": "All products",
+      "description": "The full Salty Lamps range in one place.",
+      "image": "/media/live-site-products/lamp-sphere-gemini.jpg"
+    },
+    {
+      "slug": "salt-lamps",
+      "name": "Salt lamps",
+      "description": "Warm-glow lamps for bedrooms, counters, lounges, and gifts.",
+      "image": "/media/live-site-products/lamp-block-gemini.jpg"
+    },
+    {
+      "slug": "candle-holders",
+      "name": "Candle holders",
+      "description": "Giftable tealight holders for cosy rooms, spas, and tables.",
+      "image": "/media/live-site-products/holder-natural-gemini.jpg"
+    },
+    {
+      "slug": "rock-salt-pantry-items",
+      "name": "Kitchen saltware",
+      "description": "Platters, bowls, culinary salt, and salt barware.",
+      "image": "/media/live-site-products/salty-chef-family-live-site.png"
+    },
+    {
+      "slug": "rock-salt-bricks",
+      "name": "Salt bricks",
+      "description": "Salt wall bricks and feature-wall materials for trade buyers.",
+      "image": "/media/live-site-products/salt-bricks-clean-gemini.jpg"
+    },
+    {
+      "slug": "equestrian-salt-licks",
+      "name": "Equestrian salt licks",
+      "description": "Mineral salt licks for horses, cattle, fields, and yards.",
+      "image": "/media/live-site-products/lick-field-scene-gemini.jpg"
+    },
+    {
+      "slug": "himalayan-salt-massage-relaxation-products",
+      "name": "Massage and relaxation",
+      "description": "Spa, bath, massage, and body-care salt products.",
+      "image": "/media/live-site-products/massage-stones-gemini.jpg"
+    },
+    {
+      "slug": "accessories",
+      "name": "Accessories",
+      "description": "Replacement bulbs and cables for compatible salt lamps.",
+      "image": "/media/live-site-products/accessory-bulb-gemini.jpg"
+    },
+    {
+      "slug": "special-deal",
+      "name": "Special deals",
+      "description": "Bundle offers and starter sets for easy gifting.",
+      "image": "/media/live-site-products/holder-apple-gemini.jpg"
+    },
+    {
+      "slug": "salt-wall-panels",
+      "name": "Aura Collection",
+      "description": "Illuminated Himalayan salt wall art in hand-finished wood frames.",
+      "image": "/media/live-site-products/aura-collection-frame-detail-live-site.jpg"
+    }
+  ],
+  "shopperPaths": [
+    {
+      "slug": "home-gifts",
+      "name": "Home, gifts and glow",
+      "shortName": "Home and gifts",
+      "eyebrow": "Everyday warmth",
+      "heading": "Lamps, holders, gifts, and easy home glow.",
+      "description": "Warm-room products for bedrooms, desks, lounges, shelves, and simple gifting.",
+      "heroIntro": [
+        "There's a particular kind of calm that arrives when a room glows amber instead of glaring white. Our hand-finished ",
+        {
+          "hl": "salt lamps and candle holders"
+        },
+        " turn bedrooms, desks, and lounges into spaces that feel warmer the moment they're lit — and they make ",
+        {
+          "hl": "quietly thoughtful gifts"
+        },
+        ". Every piece is carved from natural Himalayan rock salt, so ",
+        {
+          "hl": "no two are ever quite alike"
+        },
+        "."
+      ],
+      "heroVideo": "/media/video/collection/home-gifts-hero-16x9.mp4",
+      "heroPoster": "/media/video/collection/home-gifts-hero-poster-16x9.jpg",
+      "categories": [
+        "special-deal",
+        "salt-lamps",
+        "candle-holders",
+        "accessories"
+      ],
+      "theme": "lamp",
+      "background": "/media/yoga-room.png",
+      "foreground": [
+        "/media/live-site-products/lamp-sphere-gemini.jpg",
+        "/media/live-site-products/holder-heart-gemini.jpg"
+      ]
+    },
+    {
+      "slug": "kitchen-food",
+      "name": "Kitchen and food",
+      "shortName": "Kitchen",
+      "eyebrow": "Cooking and serving",
+      "heading": "Saltware, platters, bowls, and pantry salt.",
+      "description": "Food and hosting products for kitchens, counters, table settings, and gifts.",
+      "heroIntro": [
+        "Salt should be something you can see, taste, and serve from. Our ",
+        {
+          "hl": "culinary-grade Himalayan salt"
+        },
+        ", hand-cut platters, and serving bowls bring ",
+        {
+          "hl": "genuine mineral character"
+        },
+        " to everyday cooking and unhurried hosting alike. Sear, chill, plate, and present on a material that is ",
+        {
+          "hl": "as striking on the table as in the pan"
+        },
+        "."
+      ],
+      "heroVideo": "/media/video/collection/kitchen-food-hero-16x9.mp4",
+      "heroPoster": "/media/video/collection/kitchen-food-hero-poster-16x9.jpg",
+      "categories": [
+        "rock-salt-pantry-items"
+      ],
+      "theme": "kitchen",
+      "background": "/media/kitchen-setup.png",
+      "foreground": [
+        "/media/live-site-products/salty-chef-family-live-site.png",
+        "/media/live-site-products/platter-kitchen-gemini.jpg"
+      ]
+    },
+    {
+      "slug": "horses-farm",
+      "name": "Horses and farm",
+      "shortName": "Horses and farm",
+      "eyebrow": "Field and yard supply",
+      "heading": "Salt licks and bulk-ready animal mineral products.",
+      "description": "Simple routes for horse owners, yards, smallholders, and equestrian suppliers.",
+      "heroIntro": [
+        "Animals know what they need. A ",
+        {
+          "hl": "natural Himalayan salt lick"
+        },
+        " gives horses, ponies, and cattle a simple mineral source they can return to in the field or yard — ",
+        {
+          "hl": "no fuss, no additives"
+        },
+        ", just natural rock salt for everyday routines. Single licks or bulk-ready supply for busy yards."
+      ],
+      "heroVideo": "/media/video/collection/horses-farm-hero-16x9.mp4",
+      "heroPoster": "/media/video/collection/horses-farm-hero-poster-16x9.jpg",
+      "categories": [
+        "equestrian-salt-licks"
+      ],
+      "theme": "equestrian",
+      "background": "/media/home-horse-salt-lick-generated.png",
+      "foreground": [
+        "/media/live-site-products/lick-product-clean-gemini.jpg"
+      ]
+    },
+    {
+      "slug": "trade-spa",
+      "name": "Trade supply",
+      "shortName": "Trade and wellness",
+      "eyebrow": "Projects and repeat supply",
+      "heading": "Salt walls, spa products, and trade-friendly ranges.",
+      "description": "Bulk supply for spas, retailers, and interiors projects.",
+      "heroIntro": [
+        "Wellness spaces sell a feeling before they sell anything else. ",
+        {
+          "hl": "Backlit salt-brick walls"
+        },
+        ", warm massage stones, and mineral bath salts let spas, treatment rooms, and interiors projects build that ",
+        {
+          "hl": "sense of calm"
+        },
+        " into the room itself. ",
+        {
+          "hl": "Trade-friendly pricing and repeat supply"
+        },
+        " make it easy to specify once and reorder with confidence."
+      ],
+      "heroVideo": "/media/video/collection/trade-spa-hero-16x9.mp4",
+      "heroPoster": "/media/video/collection/trade-spa-hero-poster-16x9.jpg",
+      "categories": [
+        "rock-salt-bricks",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "theme": "bricks",
+      "background": "/media/home-spa-salt-room-generated.png",
+      "foreground": [
+        "/media/live-site-products/salt-bricks-clean-gemini.jpg",
+        "/media/live-site-products/massage-stones-gemini.jpg"
+      ]
+    },
+    {
+      "slug": "aura-collection",
+      "name": "The Aura Collection",
+      "shortName": "Aura Collection",
+      "eyebrow": "Illuminated wall art",
+      "heading": "Illuminated Himalayan salt wall art, framed by hand.",
+      "description": "Luxury backlit salt panels in hand-finished wood frames — warm, unique wall art for homes, gyms, and studios.",
+      "heroIntro": [
+        "The Aura Collection is ",
+        {
+          "hl": "illuminated Himalayan salt wall art"
+        },
+        " — carved from ancient rock salt formed over millions of years, so ",
+        {
+          "hl": "every panel is unique"
+        },
+        ", with natural mineral veining from pale pink to deep orange. Each piece is set in a ",
+        {
+          "hl": "hand-finished solid-wood frame"
+        },
+        " with mitred corners, pairs beautifully with wood, stone, linen, and plants, and comes in a range of sizes — from a single accent panel to a full statement wall, at home, in the studio, or in reception."
+      ],
+      "heroVideo": "/media/video/collection/aura-collection-hero-16x9.mp4",
+      "heroPoster": "/media/video/collection/aura-collection-hero-poster-16x9.jpg",
+      "categories": [
+        "salt-wall-panels"
+      ],
+      "theme": "panel",
+      "background": "/media/aura-collection-lifestyle.jpg",
+      "foreground": [
+        "/media/live-site-products/aura-collection-frame-detail-live-site.jpg",
+        "/media/live-site-products/aura-collection-workshop-real-live-site.jpg"
+      ]
+    }
+  ],
+  "pages": {
+    "/privacy-policy": {
+      "title": "Privacy Policy",
+      "body": [
+        "Salty Lamps Ltd only collects the information needed to answer enquiries, process orders, and send requested updates.",
+        "Newsletter subscribers can opt out of marketing emails at any time by contacting info@saltylamps.co.uk.",
+        "Customer details are handled carefully and are not sold to third parties."
+      ]
+    },
+    "/terms-and-conditions": {
+      "title": "Terms and Conditions",
+      "body": [
+        "Orders are subject to product availability, confirmed pricing, and successful payment or agreed invoice terms.",
+        "Natural Himalayan salt products vary in tone, texture, and shape because every piece is cut from natural rock salt.",
+        "Use products according to the care guidance supplied and keep salt items away from excess moisture."
+      ]
+    },
+    "/return-refund-policy": {
+      "title": "Returns and Refund Policy",
+      "body": [
+        "If an item arrives damaged or incorrect, contact Salty Lamps Ltd promptly with your order details and photographs where relevant.",
+        "Returns and exchanges are reviewed against product condition, timing, and the nature of the item ordered.",
+        "Trade, custom, and bulk orders may require separate return arrangements."
+      ]
+    }
+  },
+  "products": [
+    {
+      "id": "sku-121",
+      "skuId": 121,
+      "slug": "angel-shape-himalayan-rock-salt-lamp",
+      "name": "Angel Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-A",
+      "price": 29.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-1b92dfb0-dae.jpg",
+      "description": "Illuminate your space with our Himalayan Crystal Rock Salt Lamp (Angel Shape), a perfect blend of natural beauty and health benefits. Completely hand crafted, this stunning piece looks remarkable…",
+      "tags": []
+    },
+    {
+      "id": "sku-135",
+      "skuId": 135,
+      "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-small",
+      "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Small",
+      "sku": "RSL-B",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-0d1e2d90-db7.png",
+      "description": "Discover the illuminating allure of our Himalayan Rock Salt Ball/Sphere Shape Lamp, available in two variants, small and large. Not only does it give a warm, soothing glow to any room, but it is also…",
+      "tags": []
+    },
+    {
+      "id": "sku-136",
+      "skuId": 136,
+      "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-large",
+      "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large",
+      "sku": "RSL-BB",
+      "price": 24.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-0d1e2d90-db7.png",
+      "description": "Discover the illuminating allure of our Himalayan Rock Salt Ball/Sphere Shape Lamp, available in two variants, small and large. Not only does it give a warm, soothing glow to any room, but it is also…",
+      "tags": []
+    },
+    {
+      "id": "sku-119",
+      "skuId": 119,
+      "slug": "block-shape-himalayan-rock-salt-lamp",
+      "name": "Block Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-BL",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-260249e0-701.jpg",
+      "description": "Himalayan Crystal Rock Salt Lamp (Block Shape) The lamp is 4\" x 4\" x 6\" in dimension. A new design in power cord which comes with a slim base at the bottom of the lamp and is extra long in lenght.…",
+      "tags": []
+    },
+    {
+      "id": "sku-110",
+      "skuId": 110,
+      "slug": "cable-for-salt-lamp",
+      "name": "Cable for Salt Lamp",
+      "sku": "PC2",
+      "price": 5.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-9c0fe076-e77.jpg",
+      "description": "A standard cable for Rock Salt Lamp Comes with 3-pin UK plug, bed switch and an E14 Holder. E14 (15Watt) Bulb is also included along with Cable.",
+      "tags": []
+    },
+    {
+      "id": "sku-112",
+      "skuId": 112,
+      "slug": "cable-for-salt-lamp",
+      "name": "Cable for Salt Lamp",
+      "sku": "PC1",
+      "price": 6.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-b7ee9a81-244.jpg",
+      "description": "Rock Salt Lamps Cable Comes complete with base as one unit & E14 Bulb. Does not require a wood base under the Salt Lamp and this cable can be inserted into any type of rock such as Quartz Crystal…",
+      "tags": []
+    },
+    {
+      "id": "sku-120",
+      "skuId": 120,
+      "slug": "dolphin-shape-himalayan-rock-salt-lamp",
+      "name": "Dolphin Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-Dolphin",
+      "price": 29.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-79f86bda-e4f.jpg",
+      "description": "Himalayan Crystal Rock Salt Lamp (Dolphin Shape) Completely hand crafted, Looks amazing from all sides. Comes with Polyurethene clear feet down under on which the lamp stands. There is no need for a…",
+      "tags": []
+    },
+    {
+      "id": "sku-127",
+      "skuId": 127,
+      "slug": "dove-shape-himalayan-rock-salt-lamp",
+      "name": "Dove Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-D",
+      "price": 29.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-d8f2a678-086.jpg",
+      "description": "Experience the serene and soothing glow of our exquisite Dove Shape Himalayan Rock Salt Lamp, an amazing and meticulously handcrafted piece that exudes tranquility and beauty. This perfectly and…",
+      "tags": []
+    },
+    {
+      "id": "sku-154",
+      "skuId": 154,
+      "slug": "fire-basket-himalayan-rock-salt-lamp",
+      "name": "Fire Basket Himalayan Rock Salt Lamp",
+      "sku": "RSL-B1",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-c8539b66-7a4.png",
+      "description": "Himalayan Crystal Rock Salt Lamp Fire Basket Metal Wire basket filled with rock salt chunks. Rocks lit up when the bulb is switched on and give a worm glow, at the same time improving the air quality…\nBasket Dimension:  (H)15cm x (W)20cm",
+      "tags": []
+    },
+    {
+      "id": "sku-142",
+      "skuId": 142,
+      "slug": "fire-bowl-himalayan-rock-salt-lamp-small",
+      "name": "Fire Bowl Himalayan Rock Salt Lamp — Small",
+      "sku": "RSL-B2",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-fb78f6bc-88b.jpg",
+      "description": "Fire Bowl Himalayan Rock Salt Lamp available in 2 different sizes: Small (6\" in diameter) & Large (7\" in diameter) Includes a new design in power cord which comes with a slim base at the bottom of…",
+      "tags": []
+    },
+    {
+      "id": "sku-143",
+      "skuId": 143,
+      "slug": "fire-bowl-himalayan-rock-salt-lamp-large",
+      "name": "Fire Bowl Himalayan Rock Salt Lamp — Large",
+      "sku": "RSL-B3",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-fb78f6bc-88b.jpg",
+      "description": "Fire Bowl Himalayan Rock Salt Lamp available in 2 different sizes: Small (6\" in diameter) & Large (7\" in diameter) Includes a new design in power cord which comes with a slim base at the bottom of…",
+      "tags": []
+    },
+    {
+      "id": "sku-79",
+      "skuId": 79,
+      "slug": "flower-shape-himalayan-rock-salt-lamp",
+      "name": "Flower Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-F",
+      "price": 29.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-2f15bfa7-2bf.png",
+      "description": "Bring a soft, natural glow into your space with our beautifully carved Flower Shape Himalayan Rock Salt Lamp . Hand-crafted from authentic Himalayan salt crystals, this elegant lamp is shaped like a…",
+      "tags": []
+    },
+    {
+      "id": "sku-129",
+      "skuId": 129,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-fine",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Fine",
+      "sku": "CUL-1000",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-130",
+      "skuId": 130,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-coarse",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Coarse",
+      "sku": "CUL-1000C",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-131",
+      "skuId": 131,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-fine",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Fine",
+      "sku": "CUL-5000",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-132",
+      "skuId": 132,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-coarse",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Coarse",
+      "sku": "CUL-5000C",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-133",
+      "skuId": 133,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-fine",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Fine",
+      "sku": "CUL-10",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-134",
+      "skuId": 134,
+      "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-coarse",
+      "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Coarse",
+      "sku": "CUL-10C",
+      "price": 2.8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-39183349-a08.png",
+      "description": "Experience the exceptional purity and rich mineral content of our Natural Organic Rock Salt for food use, meticulously sourced from the majestic Himalayas. At Salty Lamps, we pride ourselves on being…",
+      "tags": []
+    },
+    {
+      "id": "sku-149",
+      "skuId": 149,
+      "slug": "himalayan-crystal-rock-salt-candle-holder-goblet-shape",
+      "name": "Himalayan Crystal Rock Salt Candle Holder / Goblet Shape",
+      "sku": "TCG",
+      "price": 7.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-ff66797a-a14.jpg",
+      "description": "Enhance your living space with the serene glow of the Himalayan Crystal Rock Salt Candle Holder in an elegant Goblet Shape, exclusively from Salty Lamps. Handcrafted from pure Himalayan rock salt,…",
+      "tags": []
+    },
+    {
+      "id": "sku-91",
+      "skuId": 91,
+      "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-8-dia",
+      "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 8\" Dia",
+      "sku": "SB-04",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-0408c683-5d2.png",
+      "description": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups & Gourmet dishes. Elevate your culinary and aesthetic experience with our Pink Himalayan Rock Salt Bowl from Salty Lamps.…",
+      "tags": []
+    },
+    {
+      "id": "sku-92",
+      "skuId": 92,
+      "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-10-dia",
+      "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 10\" Dia",
+      "sku": "SB-06",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-0408c683-5d2.png",
+      "description": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups & Gourmet dishes. Elevate your culinary and aesthetic experience with our Pink Himalayan Rock Salt Bowl from Salty Lamps.…",
+      "tags": []
+    },
+    {
+      "id": "sku-93",
+      "skuId": 93,
+      "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-2-5-dia",
+      "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 2.5\" Dia",
+      "sku": "SB-05",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-0408c683-5d2.png",
+      "description": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups & Gourmet dishes. Elevate your culinary and aesthetic experience with our Pink Himalayan Rock Salt Bowl from Salty Lamps.…",
+      "tags": []
+    },
+    {
+      "id": "sku-94",
+      "skuId": 94,
+      "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-6-dia",
+      "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 6\" Dia",
+      "sku": "SB-03",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-0408c683-5d2.png",
+      "description": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups & Gourmet dishes. Elevate your culinary and aesthetic experience with our Pink Himalayan Rock Salt Bowl from Salty Lamps.…",
+      "tags": []
+    },
+    {
+      "id": "sku-80",
+      "skuId": 80,
+      "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-842",
+      "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-842",
+      "sku": "ST-842",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-bricks"
+      ],
+      "image": "/media/live-site-products/wix-d9e5764d-48c.png",
+      "description": "Transform your wellness space with our Hand Cut Himalayan Crystal Rock Bricks and Tiles, perfect for creating stunning salt walls in spas, therapy centers, yoga studios, and massage centers. Hand Cut…",
+      "tags": []
+    },
+    {
+      "id": "sku-81",
+      "skuId": 81,
+      "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-841",
+      "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-841",
+      "sku": "ST-841",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-bricks"
+      ],
+      "image": "/media/live-site-products/wix-d9e5764d-48c.png",
+      "description": "Transform your wellness space with our Hand Cut Himalayan Crystal Rock Bricks and Tiles, perfect for creating stunning salt walls in spas, therapy centers, yoga studios, and massage centers. Hand Cut…",
+      "tags": []
+    },
+    {
+      "id": "sku-84",
+      "skuId": 84,
+      "slug": "himalayan-rock-salt-candle-holder-ball-sphere-shape",
+      "name": "Himalayan Rock Salt Candle Holder (Ball / Sphere Shape)",
+      "sku": "product_0b00a2a3-b2c1-3a42-23e4-3c35749dfb19-default",
+      "price": 7.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-0b00a2a3-b2c.png",
+      "description": "Transform your space into a sanctuary of tranquility and wellness with the exquisite Himalayan Rock Salt Candle Holder (Ball / Sphere Shape) from Salty Lamps. This beautiful and elegant piece is…",
+      "tags": []
+    },
+    {
+      "id": "sku-82",
+      "skuId": 82,
+      "slug": "himalayan-rock-salt-candle-holder-block-square-shape-large",
+      "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Large",
+      "sku": "TCCL",
+      "price": 7.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-c76fac9b-0b1.png",
+      "description": "Enhance your living space with our Himalayan Rock Salt Candle Holder (Block / Square Shape) from Salty Lamps. Emitting a soothing glow, this artisanal piece is perfect for creating a calming effect…",
+      "tags": []
+    },
+    {
+      "id": "sku-83",
+      "skuId": 83,
+      "slug": "himalayan-rock-salt-candle-holder-block-square-shape-small",
+      "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Small",
+      "sku": "TCC",
+      "price": 7.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-c76fac9b-0b1.png",
+      "description": "Enhance your living space with our Himalayan Rock Salt Candle Holder (Block / Square Shape) from Salty Lamps. Emitting a soothing glow, this artisanal piece is perfect for creating a calming effect…",
+      "tags": []
+    },
+    {
+      "id": "sku-111",
+      "skuId": 111,
+      "slug": "himalayan-rock-salt-candle-holder-heart-shape",
+      "name": "Himalayan Rock Salt Candle Holder (Heart Shape)",
+      "sku": "TCH",
+      "price": 7.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-0bb26b6a-e51.jpg",
+      "description": "Illuminate your space and heart with the Heart Shaped Himalayan Rock Salt Candle Holder from Salty Lamps. Made from pure Himalayan rock salt, this holder gives off a warm glow and purifies the air by…",
+      "tags": []
+    },
+    {
+      "id": "sku-147",
+      "skuId": 147,
+      "slug": "himalayan-rock-salt-candle-holder-natural-shape-small",
+      "name": "Himalayan Rock Salt Candle Holder Natural Shape — Small",
+      "sku": "TC-1",
+      "price": 5.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-fc4519da-2c4.jpg",
+      "description": "Experience the natural beauty and therapeutic benefits of our Himalayan Rock Salt Candle Holder Natural Shape , Rock Salt T-Light Candle Holder (Natural Shape) from Salty Lamps. Expertly crafted by…",
+      "tags": []
+    },
+    {
+      "id": "sku-148",
+      "skuId": 148,
+      "slug": "himalayan-rock-salt-candle-holder-natural-shape-large",
+      "name": "Himalayan Rock Salt Candle Holder Natural Shape — Large",
+      "sku": "TC-2",
+      "price": 5.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-fc4519da-2c4.jpg",
+      "description": "Experience the natural beauty and therapeutic benefits of our Himalayan Rock Salt Candle Holder Natural Shape , Rock Salt T-Light Candle Holder (Natural Shape) from Salty Lamps. Expertly crafted by…",
+      "tags": []
+    },
+    {
+      "id": "sku-98",
+      "skuId": 98,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-4pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 4pc",
+      "sku": "SL-3 (4)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-99",
+      "skuId": 99,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-4pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 4pc",
+      "sku": "SL-1 (4)",
+      "price": 3.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-100",
+      "skuId": 100,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-12pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 12pc",
+      "sku": "SL-1 (12)",
+      "price": 3.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-101",
+      "skuId": 101,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-2pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 2pc",
+      "sku": "SL-1 (2)",
+      "price": 3.99,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-102",
+      "skuId": 102,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-1pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 1pc",
+      "sku": "SL-3",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-103",
+      "skuId": 103,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-12pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 12pc",
+      "sku": "SL-2 (12)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-104",
+      "skuId": 104,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-12pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 12pc",
+      "sku": "SL-3 (12)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-105",
+      "skuId": 105,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-2pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 2pc",
+      "sku": "SL-3 (2)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-106",
+      "skuId": 106,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-1pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 1pc",
+      "sku": "SL-1",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-107",
+      "skuId": 107,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-2pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 2pc",
+      "sku": "SL-2 (2)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-108",
+      "skuId": 108,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-1pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 1pc",
+      "sku": "SL-2",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-109",
+      "skuId": 109,
+      "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-4pc",
+      "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 4pc",
+      "sku": "SL-2 (4)",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "description": "Enhance your livestock’s well-being with our Himalayan Rock Salt Lick, exclusively available at Salty Lamps. As a trusted manufacturer and processor of Himalayan Crystal Rock Salt products, we ensure…",
+      "tags": []
+    },
+    {
+      "id": "sku-122",
+      "skuId": 122,
+      "slug": "himalayan-rock-salt-massage-stones-sticks-heart",
+      "name": "Himalayan Rock Salt Massage Stones / Sticks — Heart",
+      "sku": "SH-01",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "description": "Himalayan Rock Salt Massage Stones / Sticks Available in shapes of Balls, Hearts, Disks, including our exclusive pressure massage sticks. Can be used warm, cold or at room temperature on ones body.…",
+      "tags": []
+    },
+    {
+      "id": "sku-123",
+      "skuId": 123,
+      "slug": "himalayan-rock-salt-massage-stones-sticks-ball",
+      "name": "Himalayan Rock Salt Massage Stones / Sticks — Ball",
+      "sku": "SB-01",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "description": "Himalayan Rock Salt Massage Stones / Sticks Available in shapes of Balls, Hearts, Disks, including our exclusive pressure massage sticks. Can be used warm, cold or at room temperature on ones body.…",
+      "tags": []
+    },
+    {
+      "id": "sku-124",
+      "skuId": 124,
+      "slug": "himalayan-rock-salt-massage-stones-sticks-disk",
+      "name": "Himalayan Rock Salt Massage Stones / Sticks — Disk",
+      "sku": "SD-01",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "description": "Himalayan Rock Salt Massage Stones / Sticks Available in shapes of Balls, Hearts, Disks, including our exclusive pressure massage sticks. Can be used warm, cold or at room temperature on ones body.…",
+      "tags": []
+    },
+    {
+      "id": "sku-125",
+      "skuId": 125,
+      "slug": "himalayan-rock-salt-massage-stones-sticks-stick",
+      "name": "Himalayan Rock Salt Massage Stones / Sticks — Stick",
+      "sku": "SS-01",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "description": "Himalayan Rock Salt Massage Stones / Sticks Available in shapes of Balls, Hearts, Disks, including our exclusive pressure massage sticks. Can be used warm, cold or at room temperature on ones body.…",
+      "tags": []
+    },
+    {
+      "id": "sku-85",
+      "skuId": 85,
+      "slug": "himalayan-rock-salt-platters-12-x8-x1-5-rectangle",
+      "name": "Himalayan Rock Salt Platters — 12\"x8\"x1.5\" Rectangle",
+      "sku": "SPR-12",
+      "price": 8,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "description": "Discover the unique charm of Himalayan Rock Salt Platters from Salty Lamps, your trusted online store for premium crystal rock salt products. These exquisite platters are perfect for enhancing your…",
+      "tags": []
+    },
+    {
+      "id": "sku-86",
+      "skuId": 86,
+      "slug": "himalayan-rock-salt-platters-8-x1-5-round",
+      "name": "Himalayan Rock Salt Platters — 8\"x1.5\" Round",
+      "sku": "SPC-8",
+      "price": 8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "description": "Discover the unique charm of Himalayan Rock Salt Platters from Salty Lamps, your trusted online store for premium crystal rock salt products. These exquisite platters are perfect for enhancing your…",
+      "tags": []
+    },
+    {
+      "id": "sku-87",
+      "skuId": 87,
+      "slug": "himalayan-rock-salt-platters-8-x8-x1-square",
+      "name": "Himalayan Rock Salt Platters — 8\"x8\"x1\" Square",
+      "sku": "ST-881",
+      "price": 8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "description": "Discover the unique charm of Himalayan Rock Salt Platters from Salty Lamps, your trusted online store for premium crystal rock salt products. These exquisite platters are perfect for enhancing your…",
+      "tags": []
+    },
+    {
+      "id": "sku-88",
+      "skuId": 88,
+      "slug": "himalayan-rock-salt-platters-8-x4-x1-rectangle",
+      "name": "Himalayan Rock Salt Platters — 8\"x4\"x1\" Rectangle",
+      "sku": "ST-841",
+      "price": 8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "description": "Discover the unique charm of Himalayan Rock Salt Platters from Salty Lamps, your trusted online store for premium crystal rock salt products. These exquisite platters are perfect for enhancing your…",
+      "tags": []
+    },
+    {
+      "id": "sku-89",
+      "skuId": 89,
+      "slug": "himalayan-rock-salt-platters-8-x8-x1-5-square",
+      "name": "Himalayan Rock Salt Platters — 8\"x8\"x1.5\" Square",
+      "sku": "SPS-8",
+      "price": 8,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "description": "Discover the unique charm of Himalayan Rock Salt Platters from Salty Lamps, your trusted online store for premium crystal rock salt products. These exquisite platters are perfect for enhancing your…",
+      "tags": []
+    },
+    {
+      "id": "sku-151",
+      "skuId": 151,
+      "slug": "himalayan-rock-salt-soap-bar-scrub-bar-regular",
+      "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Regular",
+      "sku": "SB-02",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-df19c1f7-07d.png",
+      "description": "Himalayan Crystal Rock Salt Soap / Scrub Bar 100% Natural Product - Natures best antiseptic & skin moisturizer - Purifies & Detoxifies the body - Works best on dry & irritated skin - Rejuvenates new…",
+      "tags": []
+    },
+    {
+      "id": "sku-152",
+      "skuId": 152,
+      "slug": "himalayan-rock-salt-soap-bar-scrub-bar-leaf",
+      "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Leaf",
+      "sku": "SB-02L",
+      "price": 3.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "himalayan-salt-massage-relaxation-products"
+      ],
+      "image": "/media/live-site-products/wix-df19c1f7-07d.png",
+      "description": "Himalayan Crystal Rock Salt Soap / Scrub Bar 100% Natural Product - Natures best antiseptic & skin moisturizer - Purifies & Detoxifies the body - Works best on dry & irritated skin - Rejuvenates new…",
+      "tags": []
+    },
+    {
+      "id": "sku-90",
+      "skuId": 90,
+      "slug": "himalayan-salt-shot-glass-hand-carved-tequila-glass-from-natural-rock-salt",
+      "name": "Himalayan Salt Shot Glass – Hand Carved Tequila Glass from Natural Rock Salt",
+      "sku": "SG-01",
+      "price": 5,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "rock-salt-pantry-items"
+      ],
+      "image": "/media/live-site-products/wix-3fdc1a9e-5ce.png",
+      "description": "Elevate your tequila ritual with our handcrafted Himalayan Rock Salt Shot Glass . Carved from 100% natural pink Himalayan salt, each glass subtly infuses your drink with a hint of salt — no need for…",
+      "tags": []
+    },
+    {
+      "id": "sku-153",
+      "skuId": 153,
+      "slug": "mushroom-shape-himalayan-rock-salt-lamp",
+      "name": "Mushroom Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-M",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-cd59cd36-b6d.png",
+      "description": "Mushroom Shape Himalayan Rock Salt Lamp A new design in power cord which comes with a slim base at the bottom of salt lamp and is extra long in lenght. There is no need for a wood base as the lamp on…",
+      "tags": []
+    },
+    {
+      "id": "sku-138",
+      "skuId": 138,
+      "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-x-small",
+      "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — X-Small",
+      "sku": "RSL-XS",
+      "price": 11.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "description": "Discover the beauty and benefits of our Natural Shape Salt Lamp, exclusively at Salty Lamps. Handcrafted with a wood base, this exquisite Himalayan Crystal Rock Salt lamp not only adds a warm,…",
+      "tags": []
+    },
+    {
+      "id": "sku-139",
+      "skuId": 139,
+      "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-small",
+      "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Small",
+      "sku": "RSL-1",
+      "price": 11.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "description": "Discover the beauty and benefits of our Natural Shape Salt Lamp, exclusively at Salty Lamps. Handcrafted with a wood base, this exquisite Himalayan Crystal Rock Salt lamp not only adds a warm,…",
+      "tags": []
+    },
+    {
+      "id": "sku-140",
+      "skuId": 140,
+      "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-medium",
+      "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Medium",
+      "sku": "RSL-2",
+      "price": 11.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "description": "Discover the beauty and benefits of our Natural Shape Salt Lamp, exclusively at Salty Lamps. Handcrafted with a wood base, this exquisite Himalayan Crystal Rock Salt lamp not only adds a warm,…",
+      "tags": []
+    },
+    {
+      "id": "sku-141",
+      "skuId": 141,
+      "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-large",
+      "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Large",
+      "sku": "RSL-3",
+      "price": 11.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "description": "Discover the beauty and benefits of our Natural Shape Salt Lamp, exclusively at Salty Lamps. Handcrafted with a wood base, this exquisite Himalayan Crystal Rock Salt lamp not only adds a warm,…",
+      "tags": []
+    },
+    {
+      "id": "sku-126",
+      "skuId": 126,
+      "slug": "pyramid-shape-himalayan-rock-salt-lamp",
+      "name": "Pyramid Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-P",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-c3ca8d50-6b3.jpg",
+      "description": "Himalayan Crystal Rock Salt Lamp (Pyramid Shape) A new design in power cord which comes with a slim base at the bottom of salt lamp and is extra long in lenght. There is no need for a wood base as…",
+      "tags": []
+    },
+    {
+      "id": "sku-150",
+      "skuId": 150,
+      "slug": "rock-salt-candle-holder-apple-shape",
+      "name": "Rock Salt Candle Holder (Apple Shape)",
+      "sku": "TCA",
+      "price": 7.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders"
+      ],
+      "image": "/media/live-site-products/wix-71c7a15b-5f8.jpg",
+      "description": "Himalayan Rock Salt Tea Light Candle Holder (Apple Shape) 800-1000gms approx. weight 3\" - 3.5\" approx. height",
+      "tags": []
+    },
+    {
+      "id": "sku-113",
+      "skuId": 113,
+      "slug": "salt-lamp-bulb-15-watts-2pc",
+      "name": "Salt Lamp Bulb — 15 Watts / 2pc",
+      "sku": "E14-1",
+      "price": 1,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-114",
+      "skuId": 114,
+      "slug": "salt-lamp-bulb-25-watts-1pc",
+      "name": "Salt Lamp Bulb — 25 Watts / 1pc",
+      "sku": "E14-2",
+      "price": 1,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-115",
+      "skuId": 115,
+      "slug": "salt-lamp-bulb-15-watts-3pc",
+      "name": "Salt Lamp Bulb — 15 Watts / 3pc",
+      "sku": "E14-1 (3)",
+      "price": 1,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-116",
+      "skuId": 116,
+      "slug": "salt-lamp-bulb-25-watts-3pc",
+      "name": "Salt Lamp Bulb — 25 Watts / 3pc",
+      "sku": "E14-2 (3)",
+      "price": 1,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-117",
+      "skuId": 117,
+      "slug": "salt-lamp-bulb-25-watts-2pc",
+      "name": "Salt Lamp Bulb — 25 Watts / 2pc",
+      "sku": "E14-1",
+      "price": 1,
+      "stock": false,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-118",
+      "skuId": 118,
+      "slug": "salt-lamp-bulb-15-watts-1pc",
+      "name": "Salt Lamp Bulb — 15 Watts / 1pc",
+      "sku": "E14-1",
+      "price": 1,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "accessories"
+      ],
+      "image": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "description": "Illuminate your Himalayan Crystal Rock Salt Lamps with our premium Eveready / Tungsten bulbs, exclusively designed for enhancing your wellness experience. Our E-14 bulbs come in both 15 and 25 Watts…",
+      "tags": []
+    },
+    {
+      "id": "sku-95",
+      "skuId": 95,
+      "slug": "salty-licks-for-horses-cattle-himalayan-rock-salt-licks",
+      "name": "Salty Licks for Horses & Cattle, Himalayan Rock Salt Licks",
+      "sku": "SL-2",
+      "price": 15,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "special-deal",
+        "equestrian-salt-licks"
+      ],
+      "image": "/media/live-site-products/wix-a197ccb4-120.png",
+      "description": "Improve the health and vitality of your horses and cattle with our premium Himalayan Rock Salt Licks. Our licks deliver essential minerals that enhance overall well-being. Key benefits include: -…",
+      "tags": []
+    },
+    {
+      "id": "sku-96",
+      "skuId": 96,
+      "slug": "special-offer-himalayan-crystal-rock-salt-candle-holders",
+      "name": "Special Offer - Himalayan Crystal Rock Salt Candle Holders",
+      "sku": "Deal 2",
+      "price": 10,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "candle-holders",
+        "special-deal"
+      ],
+      "image": "/media/live-site-products/wix-33d0afbf-8e8.jpg",
+      "description": "Buy 2 Himalayan Crystal Rock Salt Candle Holder (Natural Shape) and Get 1 Free T-Light candles not included. Weight : 800 - 1200 gms ea. Dimensions: (H)3.8\" x (W) 3.6\" approx.",
+      "tags": []
+    },
+    {
+      "id": "sku-97",
+      "skuId": 97,
+      "slug": "special-offer-himalayan-rock-salt-lamp-candle-holders",
+      "name": "Special Offer - Himalayan Rock Salt Lamp & Candle Holders",
+      "sku": "Deal 1",
+      "price": 15,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "special-deal",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-3ce67eac-b04.png",
+      "description": "Included in this offer is : 1 x Himalayan Rock Salt Lamp, 3-5Kg weight approx. 2 x Himalayan Rock Salt Tealight Candle Holder, 800-1200gms weight approx. Also included is UK Cable and bulb for Rock…",
+      "tags": []
+    },
+    {
+      "id": "sku-137",
+      "skuId": 137,
+      "slug": "tear-drop-shape-himalayan-rock-salt-lamp",
+      "name": "Tear Drop Shape Himalayan Rock Salt Lamp",
+      "sku": "RSL-T",
+      "price": 24.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-6487b67b-4e1.jpg",
+      "description": "Tear Drop Shape Himalayan Rock Salt Lamp. A new design in power cord which comes with a slim base at the bottom of the lamp and is extra long in lenght. There is no need for a wood base as the lamp…",
+      "tags": []
+    },
+    {
+      "id": "sku-128",
+      "skuId": 128,
+      "slug": "wooden-basket-himalayan-rock-salt-lamp",
+      "name": "Wooden Basket Himalayan Rock Salt Lamp",
+      "sku": "RSL-WB",
+      "price": 39.99,
+      "stock": true,
+      "categories": [
+        "all-products",
+        "salt-lamps"
+      ],
+      "image": "/media/live-site-products/wix-ed7c376b-02f.jpg",
+      "description": "Wooden Basket Himalayan Rock Salt Lamp Size: 6\" x 6\" x 7.5\" The Crystal Rocks are housed in a wood basket which is made using finest quality Wood (Sheesham). Sheesham wood, also known as Indian…",
+      "tags": []
+    }
+  ]
+}
