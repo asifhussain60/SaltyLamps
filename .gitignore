@@ -11,6 +11,9 @@ dist/
 .env.local
 .env.*.local
 
-# Editor/tool settings
-.claude/
+# Editor/tool settings. launch.json defines the dev servers (vite + wrangler ports)
+# and is worth sharing — every machine otherwise re-derives it. settings.local.json
+# is per-machine permissions and is not.
+.claude/*
+!.claude/launch.json
 

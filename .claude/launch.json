@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "salty-lamps-site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "salty-lamps-site"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "salty-lamps-api",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd salty-lamps-site && npx wrangler pages dev dist --port 8788 --d1 DB=salty-lamps-db --r2 IMAGES=salty-lamps-images"
+      ],
+      "port": 8788
+    }
+  ]
+}

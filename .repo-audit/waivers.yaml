@@ -1,0 +1,23 @@
+schema: repo-audit/waivers/v1
+
+# Findings the OWNER has ruled not-a-defect. Only the owner adds entries here;
+# the audit may draft one and ask, never write one unasked.
+#
+# A waiver suppresses a finding only on an exact id + fingerprint match, and every
+# audit reports how many it suppressed and why. An entry past its `expires` date is
+# re-raised — a ruling made about a repo that has since changed must not become
+# permanent blindness.
+#
+# Empty at bootstrap (2026-08-01): nothing has been ruled not-a-defect yet. The two
+# candidates from that run were both deliberately left OPEN rather than waived,
+# because neither has been decided:
+#
+#   * 146 MB of video and imagery tracked in git (.git is 183 MB). Consistent with
+#     existing precedent — 8 .mp4 files were already tracked before this run — but
+#     nobody has actually chosen to accept the trajectory.
+#   * 6 dev-only dependency vulnerabilities in sharp/libvips, reached via wrangler.
+#     Zero in production dependencies; build-time only, never served to a user.
+#
+# Waive either by adding an entry with a reason and an expires date.
+
+waivers: []

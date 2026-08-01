@@ -1,0 +1,82 @@
+schema: repo-audit/profile/v1
+
+# Bootstrapped 2026-08-01. Every entry below was ruled on by the owner, not inferred
+# from a photograph of the root — that would only ratify whatever sprawl exists.
+
+# Prose authorities. Read these; never restate their content here.
+cites:
+  - infra/README.md
+  - salty-lamps-site/docs/technical.md
+  - salty-lamps-site/DEPLOY.md
+  - salty-lamps-site/PRODUCTION-HANDOVER.md
+
+root:
+  # EXHAUSTIVE. Anything at the root not listed is a finding.
+  allow_files:
+    - .gitignore
+  allow_dirs:
+    - salty-lamps-site   # the application: storefront + admin + Pages Functions
+    - infra              # Cloudflare / Stripe infrastructure notes
+    - docs               # owner source documents (price list, vision, policies)
+    - data               # research and review source data, not shop data
+    - handover           # the owner hand-over kit
+    - proposal           # the redesign proposal deliverable (203 files)
+    - .claude            # dev-server launch config; the rest is gitignored
+    - .repo-audit        # this contract
+
+# Never move, rename, delete or rewrite. The audit may read these.
+protected:
+  - data/**                          # owner-supplied research; not reproducible
+  - proposal/**                      # a delivered artefact — frozen by definition
+  - docs/**                          # owner source documents, several binary-only
+  - salty-lamps-site/d1/backups/**   # real order data incl. customer addresses
+  - salty-lamps-site/public/media/** # 146 MB of licensed/produced imagery + video
+
+# What proves a change is safe. Phase 6 runs these after every group.
+#
+# There is no test suite. This command IS the repo's verification: it pulls content
+# from D1, type-checks nothing but builds every module, asserts every referenced
+# media file exists, and regenerates 102 prerendered route shells. A break in any of
+# those fails the command.
+verify:
+  - cd salty-lamps-site && npm run build
+
+# Files that MUST change together.
+#
+# Each admin documentation page declares in its own body that it is mirrored as
+# Markdown (e.g. MigrationDoc.jsx: "This page is mirrored as Markdown at
+# docs/migration.md"). Nothing enforces it. On 2026-08-01 the Supabase removal had
+# to touch technical.md and TechnicalDoc.jsx in the same pass, and that only happened
+# because someone noticed — no check would have caught the omission.
+#
+# pinned_by: null is a standing P1 until a shared fixture or a test pins each pair.
+mirrors:
+  - a: salty-lamps-site/docs/technical.md
+    b: salty-lamps-site/src/admin/docs/TechnicalDoc.jsx
+    pinned_by: null
+  - a: salty-lamps-site/docs/infrastructure.md
+    b: salty-lamps-site/src/admin/docs/InfrastructureDoc.jsx
+    pinned_by: null
+  - a: salty-lamps-site/docs/pricing.md
+    b: salty-lamps-site/src/admin/docs/PricingDoc.jsx
+    pinned_by: null
+  - a: salty-lamps-site/docs/migration.md
+    b: salty-lamps-site/src/admin/docs/MigrationDoc.jsx
+    pinned_by: null
+
+# Areas the owner has declared fragile or mid-migration.
+fragile:
+  - path: salty-lamps-site/src/components/views/**
+    note: >
+      An older proposal deck. docs/technical.md already describes it as unused, and
+      DiagnosisView.jsx is the only importer of VisionDocs.jsx — the tree appears to
+      be internally-referencing dead weight. NOT removed during the 2026-08-01 audit
+      because that was outside the approved scope. Confirm reachability from
+      src/App.jsx before touching it.
+  - path: salty-lamps-site/functions/api/webhook.js
+    note: >
+      Reads the Stripe shipping address from BOTH session.shipping_details and
+      session.collected_information.shipping_details. That is deliberate, not
+      redundancy: Stripe moved the field, and a webhook event is serialised at the
+      version pinned on the ENDPOINT, not the one in the Stripe client. Collapsing it
+      to one path silently ships orders to the customer's billing address.
