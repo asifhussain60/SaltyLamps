@@ -8,7 +8,7 @@
 // formatter all hardcode GBP and the Stripe account is GBP, so an editable field
 // that changes nothing would be worse than an honest static one.
 import { json, apiError, validationError, readJson, auditStmt } from '../../lib/admin-helpers.mjs'
-import { validateSettings, SETTING_SPECS, coerceSetting } from '../../lib/validation.mjs'
+import { validateSettings, SETTING_SPECS, coerceSetting, settingStorageType } from '../../lib/validation.mjs'
 
 export async function onRequestGet({ env }) {
   try {
@@ -44,7 +44,7 @@ export async function onRequestPut({ request, env, data }) {
       env.DB.prepare(
         `INSERT INTO settings (key, value, value_type) VALUES (?, ?, ?)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`,
-      ).bind(key, v, SETTING_SPECS[key].type),
+      ).bind(key, v, settingStorageType(key)),
     )
     stmts.push(auditStmt(env.DB, data.actorEmail, 'settings.update', 'settings', null, value))
     await env.DB.batch(stmts)

@@ -166,16 +166,38 @@ export function validateCategory(input = {}, { isNew = false } = {}) {
 export const SETTING_SPECS = {
   low_stock_threshold: { type: 'int', min: 0, max: 1000, editable: true, label: 'Low-stock threshold' },
   currency: { type: 'string', editable: false, label: 'Currency' },
-  site_url: { type: 'string', editable: true, label: 'Site URL', maxLength: 200 },
+  // Not a plain string: this value is written straight into the href of every link
+  // and the src of the logo in every email. A relative value — typing
+  // "saltylamps.co.uk" without the scheme is the obvious mistake — does not resolve
+  // at all in a mail client, so the logo and every link in every customer email
+  // break at once with nothing in the admin to indicate why.
+  site_url: { type: 'url', editable: true, label: 'Site URL', maxLength: 200 },
   // Email. The master switch seeds to off in d1/migrations/005-email.sql because
   // sending needs DKIM/SPF records only the domain owner can add; turn it on after
   // a successful test send from Emails -> Templates.
   email_enabled: { type: 'bool', editable: true, label: 'Send transactional email' },
-  email_from_name: { type: 'string', editable: true, label: 'Sender name', maxLength: 100 },
+  // headerSafe because this is interpolated into `From: <name> <address>`. A comma
+  // makes a mail API read it as two recipients, and angle brackets or a line break
+  // end the display name and start something else in the header.
+  email_from_name: { type: 'string', editable: true, label: 'Sender name', maxLength: 100, headerSafe: true },
   email_from_address: { type: 'email', editable: true, label: 'Sender address', maxLength: 200 },
   admin_notify_email: { type: 'email', editable: true, label: 'Admin notification address', maxLength: 200 },
   low_stock_alerts_enabled: { type: 'bool', editable: true, label: 'Low-stock alerts' },
 }
+
+// A spec's `type` says how to VALIDATE and how to render the input. The settings
+// table's value_type column says how the value is STORED, and its CHECK constraint
+// permits only 'string' | 'int' | 'bool' | 'json'. The two are not the same
+// vocabulary: 'email' is a validation rule applied to a plain string.
+//
+// Writing the spec type straight into the column made every save that touched an
+// email field fail with "CHECK constraint failed: value_type IN (...)" — and because
+// the settings upsert is one batched transaction, it took the rest of the form's
+// edits down with it. The migrations always seeded these two rows as 'string', so
+// the stored data was right and only the write path was wrong.
+const SETTING_STORAGE_TYPES = { email: 'string', url: 'string' }
+export const settingStorageType = key =>
+  SETTING_STORAGE_TYPES[SETTING_SPECS[key]?.type] || SETTING_SPECS[key]?.type || 'string'
 
 export function coerceSetting(key, raw) {
   const spec = SETTING_SPECS[key]
@@ -189,6 +211,26 @@ export function coerceSetting(key, raw) {
 // to reject a legitimate address. Over-strict address regexes reject more real mail
 // than they protect against.
 const isEmailish = s => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(s)
+
+// An absolute http(s) origin. Anything else — a bare domain, a relative path, or a
+// non-web scheme — cannot be resolved by a mail client and must not be stored.
+function normalizeSiteUrl(s) {
+  let url
+  try {
+    url = new URL(s)
+  } catch {
+    return null
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+  // Trailing slashes are stripped on the way in as well as on the way out
+  // (mailer.mjs also strips), so the stored value and every reader agree.
+  return url.toString().replace(/\/+$/, '')
+}
+
+// Characters that terminate the display name in `From: <name> <address>`, or that a
+// mail API reads as a separator between addresses. An apostrophe is deliberately
+// allowed — "Sam's Lamps" is a legitimate sender name.
+const HEADER_UNSAFE = /[<>"\r\n,;:]/
 
 export function validateSettings(input = {}) {
   const errors = {}
@@ -226,10 +268,24 @@ export function validateSettings(input = {}) {
       } else {
         value[key] = s
       }
+    } else if (spec.type === 'url') {
+      const s = trimStr(raw)
+      const normalized = s ? normalizeSiteUrl(s) : ''
+      // Empty means "not configured", same as an address: mailer.mjs then falls back
+      // to env.SITE_URL or the request origin rather than emitting a broken link.
+      if (s && normalized === null) {
+        errors[key] = `${spec.label} must be a full web address starting with http:// or https://.`
+      } else if (spec.maxLength && normalized.length > spec.maxLength) {
+        errors[key] = `${spec.label} must be ${spec.maxLength} characters or fewer.`
+      } else {
+        value[key] = normalized
+      }
     } else {
       const s = trimStr(raw)
       if (spec.maxLength && s.length > spec.maxLength) {
         errors[key] = `${spec.label} must be ${spec.maxLength} characters or fewer.`
+      } else if (spec.headerSafe && HEADER_UNSAFE.test(s)) {
+        errors[key] = `${spec.label} cannot contain < > " , ; : or a line break.`
       } else {
         value[key] = s
       }

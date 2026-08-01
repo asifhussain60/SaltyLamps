@@ -2112,7 +2112,7 @@ function Settings() {
           ) : (
             <input
               className="admin-input"
-              type={s.type === 'int' ? 'number' : s.type === 'email' ? 'email' : 'text'}
+              type={s.type === 'int' ? 'number' : s.type === 'email' ? 'email' : s.type === 'url' ? 'url' : 'text'}
               value={valueOf(s)}
               onChange={e => setEdits(v => ({ ...v, [s.key]: e.target.value }))}
             />
