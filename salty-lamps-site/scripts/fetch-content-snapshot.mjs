@@ -35,7 +35,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { PRODUCTS_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
+import { PRODUCTS_QUERY, PRODUCT_IMAGES_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
 import { categories, shopperPaths, pages, siteUrl, categoryAliases } from '../src/content/site-content.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

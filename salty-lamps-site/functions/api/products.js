@@ -4,12 +4,15 @@
 // card per variant, since the UI has no in-page variant picker today).
 
 import { apiError } from '../lib/admin-helpers.mjs'
-import { PRODUCTS_QUERY, flattenProductRows } from '../lib/flatten-products.mjs'
+import { PRODUCTS_QUERY, PRODUCT_IMAGES_QUERY, flattenProductRows } from '../lib/flatten-products.mjs'
 
 export async function onRequestGet({ env }) {
   try {
-    const { results } = await env.DB.prepare(PRODUCTS_QUERY).all()
-    const products = flattenProductRows(results)
+    const [cards, images] = await env.DB.batch([
+      env.DB.prepare(PRODUCTS_QUERY),
+      env.DB.prepare(PRODUCT_IMAGES_QUERY),
+    ])
+    const products = flattenProductRows(cards.results || [], images.results || [])
 
     return new Response(JSON.stringify({ products }), {
       status: 200,
