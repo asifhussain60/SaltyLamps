@@ -3,6 +3,9 @@ dist/
 .DS_Store
 *.timestamp-*.mjs
 
+# Wrangler local dev state (local D1 sqlite, cache — never real data)
+.wrangler/
+
 # Environment secrets — never commit
 .env
 .env.local

@@ -3748,6 +3748,7 @@ label {
     gap: 14px;
     font-size: 0.92rem;
     padding-inline-end: 10px;
+    overflow-x: auto;
     scrollbar-width: none;
     -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
     mask-image: linear-gradient(90deg, #000 92%, transparent);

@@ -18,7 +18,7 @@ export default function PricingDoc() {
       <Callout tone="ok" title="The bottom line">
         <strong>Cloudflare</strong> (the website, database and image storage) costs roughly
         <strong> £0/month</strong> at this scale. <strong>Stripe</strong> has <strong>no monthly
-        fee</strong> — it simply keeps a small cut of each payment (about <strong>1.5% + 20p</strong>
+        fee</strong> — it simply keeps a small cut of each payment (about <strong>1.5% + 20p</strong>{' '}
         on a UK card). So your running cost is essentially "a little bit per sale."
       </Callout>
 

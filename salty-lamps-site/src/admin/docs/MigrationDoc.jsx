@@ -119,7 +119,7 @@ export default function MigrationDoc() {
 
       <h2>Phase 5 — Move the domain from Wix (the careful part)</h2>
       <Callout tone="warn" title="Inventory the DNS records FIRST">
-        Before changing anything, write down every current DNS record at Wix — especially <strong>MX</strong>
+        Before changing anything, write down every current DNS record at Wix — especially <strong>MX</strong>{' '}
         (email), <strong>TXT</strong> (SPF/DKIM/verification), and any subdomains. If you move the domain
         without recreating these, <strong>email stops working</strong>. This is the most common migration failure.
       </Callout>

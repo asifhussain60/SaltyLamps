@@ -97,7 +97,7 @@ export default function TechnicalDoc() {
       <Callout tone="warn" title="Styling reality (verify before assuming)">
         Styling is <strong>hand-written CSS</strong> in <code>src/styles/saltylamps.css</code> and
         <code> admin.css</code>, built on a shared CSS-custom-property design-token system.
-        <strong> Tailwind is configured but not actually used</strong> (no <code>@tailwind</code>
+        <strong> Tailwind is configured but not actually used</strong> (no <code>@tailwind</code>{' '}
         directives in the stylesheets), and <strong>Bootstrap is a dependency but imported nowhere</strong>
         — both are effectively dead and safe to remove. An older "proposal deck" subtree under
         <code> src/components/views/</code> is also orphaned (not imported by the shipped app).
@@ -144,8 +144,8 @@ export default function TechnicalDoc() {
         <code>AdminApp.jsx</code> renders the sidebar shell and dispatches to page components:
         <code> Dashboard</code>, <code>OrdersList</code>/<code>OrderDetail</code>,
         <code> ProductsList</code>/<code>ProductEdit</code>, <code>Inventory</code>, <code>Reports</code>,
-        <code> Settings</code>, and these <code>docs</code> pages. Shared helpers: <code>Icon</code>
-        (inline-SVG set), <code>AdminLink</code>/<code>navigate</code> (pushState), <code>usePageData</code>
+        <code> Settings</code>, and these <code>docs</code> pages. Shared helpers: <code>Icon</code>{' '}
+        (inline-SVG set), <code>AdminLink</code>/<code>navigate</code> (pushState), <code>usePageData</code>{' '}
         (fetch hook), and <code>api()</code> (fetch wrapper with structured errors). Admin forms import
         the same <code>validation.mjs</code> the server uses, so client and server rules never diverge.
       </p>
@@ -174,7 +174,7 @@ export default function TechnicalDoc() {
       <Figure src={authUrl} alt="Cloudflare Access issues a signed JWT; the admin middleware verifies it on every request." caption="Cloudflare Access + per-request JWT verification in _middleware.js." />
       <p>
         <code>functions/api/admin/_middleware.js</code> runs on every <code>/api/admin/*</code> request. It
-        reads the Access JWT (<code>Cf-Access-Jwt-Assertion</code> header or <code>CF_Authorization</code>
+        reads the Access JWT (<code>Cf-Access-Jwt-Assertion</code> header or <code>CF_Authorization</code>{' '}
         cookie), requires <strong>RS256</strong>, fetches and caches the team <strong>JWKS</strong>, verifies
         the signature, issuer, expiry, and <strong>audience</strong> (<code>ACCESS_AUD</code>), then exposes
         the caller's email for audit logging. It <strong>fails closed</strong>: if <code>ACCESS_AUD</code> or
