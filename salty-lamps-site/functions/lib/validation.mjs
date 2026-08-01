@@ -167,6 +167,14 @@ export const SETTING_SPECS = {
   low_stock_threshold: { type: 'int', min: 0, max: 1000, editable: true, label: 'Low-stock threshold' },
   currency: { type: 'string', editable: false, label: 'Currency' },
   site_url: { type: 'string', editable: true, label: 'Site URL', maxLength: 200 },
+  // Email. The master switch seeds to off in d1/migrations/005-email.sql because
+  // sending needs DKIM/SPF records only the domain owner can add; turn it on after
+  // a successful test send from Emails -> Templates.
+  email_enabled: { type: 'bool', editable: true, label: 'Send transactional email' },
+  email_from_name: { type: 'string', editable: true, label: 'Sender name', maxLength: 100 },
+  email_from_address: { type: 'email', editable: true, label: 'Sender address', maxLength: 200 },
+  admin_notify_email: { type: 'email', editable: true, label: 'Admin notification address', maxLength: 200 },
+  low_stock_alerts_enabled: { type: 'bool', editable: true, label: 'Low-stock alerts' },
 }
 
 export function coerceSetting(key, raw) {
@@ -176,6 +184,11 @@ export function coerceSetting(key, raw) {
   if (spec.type === 'bool') return raw === '1' || raw === 'true' || raw === true
   return String(raw)
 }
+
+// Deliberately permissive: enough to catch a typo or a pasted sentence, not enough
+// to reject a legitimate address. Over-strict address regexes reject more real mail
+// than they protect against.
+const isEmailish = s => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(s)
 
 export function validateSettings(input = {}) {
   const errors = {}
@@ -197,6 +210,21 @@ export function validateSettings(input = {}) {
         errors[key] = `${spec.label} must be a whole number between ${spec.min ?? 0} and ${spec.max ?? 1000000}.`
       } else {
         value[key] = String(n)
+      }
+    } else if (spec.type === 'bool') {
+      // Stored as '1'/'0' so coerceSetting round-trips it. Without this branch a
+      // boolean would fall through to the string case and persist whatever the
+      // client sent — including the string "false", which coerces to true.
+      value[key] = raw === true || raw === 1 || raw === '1' || raw === 'true' ? '1' : '0'
+    } else if (spec.type === 'email') {
+      const s = trimStr(raw)
+      // An empty address is allowed and means "not configured" — the mailer skips
+      // rather than fails. A non-empty one must at least look like an address.
+      if (s && !isEmailish(s)) errors[key] = `${spec.label} must be a valid email address.`
+      else if (spec.maxLength && s.length > spec.maxLength) {
+        errors[key] = `${spec.label} must be ${spec.maxLength} characters or fewer.`
+      } else {
+        value[key] = s
       }
     } else {
       const s = trimStr(raw)
@@ -325,6 +353,175 @@ export function validateOrderPatch(input = {}) {
   if (Object.keys(value).length === 0 && Object.keys(errors).length === 0) {
     errors.form = 'Nothing to update.'
   }
+
+  return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+// ---- email templates ------------------------------------------------------
+// A whitelist of templates, of the fields the admin may edit within each, and of
+// the {{tokens}} each one may reference.
+//
+// The token whitelist is the point of this table. Wording is admin-editable and
+// interpolated at send time, so without a per-template check a typo like
+// {{tracking_no}} would reach a customer rendered as an empty string — or worse,
+// {{customer_name}} on a low-stock alert, which has no customer. Validating at the
+// WRITE path means the mistake is caught by the person making it, in the editor,
+// instead of silently in someone's inbox.
+//
+// SHARED_TOKENS are available everywhere; the per-template list adds to them.
+
+export const SHARED_TOKENS = ['shop_name', 'site_url']
+
+export const EMAIL_EDITABLE_FIELDS = ['subject', 'preheader', 'heading', 'intro', 'cta_label', 'outro']
+
+const ORDER_TOKENS = ['order_ref', 'order_id', 'customer_name', 'order_total', 'order_date']
+
+export const EMAIL_TEMPLATE_SPECS = {
+  order_confirmation: { label: 'Order confirmation', audience: 'customer', tokens: ORDER_TOKENS },
+  admin_new_order: {
+    label: 'New order alert (admin)', audience: 'admin',
+    tokens: [...ORDER_TOKENS, 'customer_email', 'payment_method'],
+  },
+  order_shipped: { label: 'Order despatched', audience: 'customer', tokens: [...ORDER_TOKENS, 'tracking_number'] },
+  order_delivered: { label: 'Order delivered', audience: 'customer', tokens: ORDER_TOKENS },
+  order_refunded: { label: 'Refund confirmed', audience: 'customer', tokens: ORDER_TOKENS },
+  order_cancelled: { label: 'Order cancelled', audience: 'customer', tokens: ORDER_TOKENS },
+  admin_refund_request: {
+    label: 'Refund request (admin)', audience: 'admin',
+    tokens: [...ORDER_TOKENS, 'customer_email', 'reason'],
+  },
+  admin_enquiry_chat: { label: 'Chat message (admin)', audience: 'admin', tokens: ['name', 'email', 'message'] },
+  admin_enquiry_trade: { label: 'Trade enquiry (admin)', audience: 'admin', tokens: ['name', 'email', 'message'] },
+  admin_enquiry_newsletter: { label: 'Newsletter signup (admin)', audience: 'admin', tokens: ['name', 'email', 'message'] },
+  admin_low_stock: {
+    label: 'Low stock alert (admin)', audience: 'admin',
+    tokens: ['product_name', 'sku', 'variant_label', 'quantity', 'threshold'],
+  },
+}
+
+export function tokensFor(key) {
+  const spec = EMAIL_TEMPLATE_SPECS[key]
+  return spec ? [...SHARED_TOKENS, ...spec.tokens] : [...SHARED_TOKENS]
+}
+
+const TOKEN_PATTERN = /\{\{\s*([a-z0-9_]+)\s*\}\}/gi
+
+// Every {{token}} in `text` that is not permitted for this template.
+export function unknownTokens(text, key) {
+  const allowed = new Set(tokensFor(key))
+  const bad = []
+  for (const match of String(text || '').matchAll(TOKEN_PATTERN)) {
+    const token = match[1].toLowerCase()
+    if (!allowed.has(token) && !bad.includes(token)) bad.push(token)
+  }
+  return bad
+}
+
+const EMAIL_FIELD_LIMITS = {
+  subject: 200, preheader: 200, heading: 120, intro: 1500, cta_label: 40, outro: 1500,
+}
+
+// Validates a bulk save: { templates: { key: { subject, ... , enabled }, ... } }.
+// Error keys are "<templateKey>.<field>" so the editor can highlight the exact box.
+export function validateEmailTemplates(input = {}) {
+  const errors = {}
+  const value = {}
+
+  for (const [key, patch] of Object.entries(input)) {
+    if (!EMAIL_TEMPLATE_SPECS[key]) {
+      errors[key] = 'Unknown email template.'
+      continue
+    }
+    const out = {}
+
+    for (const field of EMAIL_EDITABLE_FIELDS) {
+      if (patch?.[field] == null) continue
+      const text = trimStr(patch[field])
+      const limit = EMAIL_FIELD_LIMITS[field]
+      if (text.length > limit) {
+        errors[`${key}.${field}`] = `Must be ${limit} characters or fewer.`
+        continue
+      }
+      const bad = unknownTokens(text, key)
+      if (bad.length) {
+        errors[`${key}.${field}`] =
+          `Unknown placeholder${bad.length === 1 ? '' : 's'}: ${bad.map(t => `{{${t}}}`).join(', ')}.`
+        continue
+      }
+      out[field] = text
+    }
+
+    // A subject is the one field that cannot be blank — a subjectless email is
+    // filtered as spam by most providers before anyone sees it.
+    if (out.subject === '') errors[`${key}.subject`] = 'Subject is required.'
+
+    if (patch?.enabled != null) {
+      out.enabled = patch.enabled === true || patch.enabled === 1 || patch.enabled === '1' ? 1 : 0
+    }
+
+    if (Object.keys(out).length > 0) value[key] = out
+  }
+
+  if (Object.keys(value).length === 0 && Object.keys(errors).length === 0) {
+    errors.form = 'Nothing to update.'
+  }
+
+  return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+// ---- public support forms -------------------------------------------------
+// These back UNAUTHENTICATED endpoints that trigger outbound email, so the caps
+// here are the load-bearing defence against using the shop as a spam relay. The
+// honeypot is a field no human ever sees; anything that fills it is a bot.
+
+export const ENQUIRY_SOURCES = ['chat', 'trade', 'newsletter']
+
+export function validateEnquiry(input = {}) {
+  const errors = {}
+  const value = {}
+
+  const source = trimStr(input.source)
+  if (!ENQUIRY_SOURCES.includes(source)) errors.source = 'Unknown enquiry type.'
+  value.source = source
+
+  const name = trimStr(input.name)
+  if (name.length > 120) errors.name = 'Name must be 120 characters or fewer.'
+  value.name = name
+
+  const email = trimStr(input.email)
+  if (!email) errors.email = 'An email address is required.'
+  else if (!isEmailish(email)) errors.email = 'That does not look like an email address.'
+  else if (email.length > 200) errors.email = 'Email address is too long.'
+  value.email = email
+
+  const message = trimStr(input.message)
+  // Newsletter signups are an address and nothing else, so a message is optional.
+  if (source !== 'newsletter' && !message) errors.message = 'Please include a message.'
+  else if (message.length > 4000) errors.message = 'Message must be 4000 characters or fewer.'
+  value.message = message
+
+  return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+export function validateRefundRequest(input = {}) {
+  const errors = {}
+  const value = {}
+
+  const orderRef = trimStr(input.order_ref ?? input.orderRef)
+  if (!orderRef) errors.order_ref = 'Please enter your order reference.'
+  else if (orderRef.length > 120) errors.order_ref = 'Order reference is too long.'
+  value.order_ref = orderRef
+
+  const email = trimStr(input.email)
+  if (!email) errors.email = 'Please enter the email address you ordered with.'
+  else if (!isEmailish(email)) errors.email = 'That does not look like an email address.'
+  else if (email.length > 200) errors.email = 'Email address is too long.'
+  value.email = email
+
+  const reason = trimStr(input.reason)
+  if (!reason) errors.reason = 'Please tell us what is wrong.'
+  else if (reason.length > 4000) errors.reason = 'Please keep this to 4000 characters or fewer.'
+  value.reason = reason
 
   return { ok: Object.keys(errors).length === 0, errors, value }
 }

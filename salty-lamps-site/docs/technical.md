@@ -18,7 +18,7 @@ Salty Lamps is a single React application serving both the public storefront and
 | Object storage | Cloudflare R2 | Binding `IMAGES`; admin-uploaded photos |
 | Payments | Stripe Checkout + webhook | Server-side only; no card data touches the app |
 | Admin auth | Cloudflare Access (Zero Trust) | RS256 JWT verified in middleware |
-| Peripheral | Supabase | Optional enquiry/notes persistence only — not shop data |
+| Transactional email | Resend, over HTTP | Order, fulfilment, enquiry and stock notifications |
 
 ## 2. Repository layout
 
@@ -34,7 +34,6 @@ salty-lamps-site/
 │  │  ├─ AdminApp.jsx         admin SPA (dashboard, orders, catalog, inventory, reports, docs)
 │  │  └─ docs/                the in-admin documentation pages
 │  ├─ components/             DonutChart (live); the rest is an older proposal deck (unused)
-│  ├─ lib/supabase.js         optional Supabase client
 │  └─ styles/                 saltylamps.css (storefront) + admin.css (portal)
 ├─ functions/
 │  ├─ api/                    Pages Functions (public + admin endpoints)
@@ -148,7 +147,8 @@ Secrets are set with `wrangler pages secret put` (never committed):
 | `SITE_URL` | Stripe success/cancel redirects |
 | `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN` | admin auth middleware |
 | `DEV_ADMIN_BYPASS` | dev/UAT admin bypass (never in prod) |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | optional enquiry persistence (build-time, in `.env.local`) |
+| `RESEND_API_KEY` | transactional email sender (see `functions/lib/mailer.mjs`) |
+| `MAIL_DRY_RUN` | dev/UAT only — log and record every email without delivering it |
 
 ## 13. How to make common changes
 

@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import reviews from './data/reviews.json'
-import { hasSupabase, supabase } from './lib/supabase'
 import AdminApp from './admin/AdminApp.jsx'
-import { img, media, pages, shopperPaths, siteUrl } from './content/site-content.mjs'
+import { img, media, siteUrl } from './content/site-content.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
+import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
 import snapshot from './content/content-snapshot.json'
 
 const money = value =>
@@ -14,113 +13,42 @@ const money = value =>
 
 const priceLabel = product => money(product.price)
 
-// First-paint taxonomy, from the snapshot committed at build time. The live values
-// arrive from /api/categories a moment later and replace this.
+// First-paint taxonomy and copy, from the snapshot committed at build time. The live
+// values arrive from /api/categories and /api/content a moment later and replace it.
 //
-// This is why the shop has no category loading state: there is real content to
-// render immediately, with no network round-trip, and a failed fetch degrades to
-// the last deployed taxonomy rather than an empty nav.
-const SNAPSHOT_TAXONOMY = makeTaxonomy(
-  (snapshot.categories || []).map((c, i) => ({ ...c, sort_order: i * 10, is_virtual: c.slug === 'all-products' ? 1 : 0 })),
-  snapshot.categoryAliases || {},
-)
+// This is why the shop has no copy or category loading state: there is real content to
+// render immediately, with no network round-trip, and a failed fetch degrades to the
+// last deployed content rather than an empty nav and blank headings.
+const SNAPSHOT_TAXONOMY = makeTaxonomy(snapshot.categories || [], snapshot.categoryAliases || {})
 
-const siteTitle = 'Salty Lamps | Himalayan Salt Lamps, Gifts, Saltware and Trade Supply'
-const siteDescription =
-  'Shop Himalayan salt lamps, candle holders, kitchen saltware, salt bricks, salt licks, and trade stock from Salty Lamps Ltd in Stoke-on-Trent.'
+// Everything the marketing layer needs, with the same shape whether it came from the
+// snapshot or from /api/content. Nothing below reads a hardcoded string.
+const EMPTY_CONTENT = { collections: [], themes: {}, pages: {}, snippets: {}, lists: {}, featuredReviews: [], reviewCount: 0 }
+const SNAPSHOT_CONTENT = { ...EMPTY_CONTENT, ...(snapshot.content || {}) }
 
-const pageTitle = title => (title ? `${title} | Salty Lamps` : siteTitle)
+// A missing snippet renders its key rather than an empty gap, so a copy row deleted by
+// accident is visible in testing instead of silently blanking a heading.
+const snippet = (content, key, fallback = '') => content.snippets?.[key] ?? fallback ?? key
 
-const pageCopy = {
-  shop: {
-    eyebrow: 'Shop Salty Lamps',
-    title: 'Shop Himalayan salt lamps, candle holders, saltware, and salt licks.',
-    description: 'Browse the full Salty Lamps range, or use the buyer paths and filters to narrow the choice quickly.',
-  },
-  notFound: {
-    eyebrow: 'Page not found',
-    title: 'This page is not available.',
-    description: 'The product or page may have moved. Start with the full shop or choose a buyer path from the home page.',
-  },
-}
+const siteTitleOf = content => snippet(content, 'site.title', 'Salty Lamps')
+const siteDescriptionOf = content => snippet(content, 'site.description', '')
+const pageTitleOf = (content, title) => (title ? `${title} | Salty Lamps` : siteTitleOf(content))
 
-const reassuranceByTheme = {
-  lamp: ['Includes the lamp parts listed on the product card where applicable.', 'Natural rock salt varies in colour, texture, and weight.', 'Keep dry and use with compatible bulbs and cables.'],
-  holder: ['Made from natural Himalayan rock salt, so every holder is slightly different.', 'Designed for tealight-style ambience and giftable table settings.', 'Keep dry and wipe clean with a soft cloth.'],
-  kitchen: ['Food and serving items should be rinsed or wiped according to the supplied care guidance.', 'Saltware naturally changes with use, moisture, and heat.', 'Choose a size or grade before adding when selectors are shown.'],
-  bricks: ['Suitable for project enquiries, salt wall features, and repeat trade supply.', 'Confirm size, quantity, and lead time before large orders.', 'Trade buyers can ask for project quoting before checkout.'],
-  equestrian: ['Choose size and pack quantity before adding when selectors are shown.', 'Suitable for horses, cattle, fields, yards, and smallholding routines.', 'Bulk enquiries are available for repeat yard supply.'],
-  relaxation: ['Made for sensory, spa, bath, or body-care use depending on the selected item.', 'Natural salt products vary in texture and finish.', 'Keep products dry between uses and follow supplied care guidance.'],
-  accessory: ['Check compatibility with your lamp before ordering.', 'Bulbs and cables are practical replacement parts for existing lamps.', 'Ask the team if you are unsure which fitting you need.'],
-  deal: ['Bundle offers make gift buying simpler.', 'Check included items before ordering.', 'Natural salt pieces vary, so each bundle has its own tone and texture.'],
-}
+const shopCopyOf = content => ({
+  eyebrow: snippet(content, 'shop.eyebrow'),
+  title: snippet(content, 'shop.title'),
+  description: snippet(content, 'shop.description'),
+})
+const notFoundCopyOf = content => ({
+  eyebrow: snippet(content, 'not_found.eyebrow'),
+  title: snippet(content, 'not_found.title'),
+  description: snippet(content, 'not_found.description'),
+})
 
-const featuredReviews = [
-  {
-    name: 'Carmela Ranieri',
-    date: 'Wed 14th May 2014',
-    quote:
-      'I am very impressed with the quality of these items. As an interior designer, I would say that they would complement any scheme.',
-    proof: 'Interior-quality products',
-  },
-  {
-    name: 'Keri',
-    date: 'Thu 20th Oct 2016',
-    quote:
-      'Very quick delivery and extremely well packaged. The lamp and candle holder are absolutely beautiful and very calming.',
-    proof: 'Fast delivery and packaging',
-  },
-  {
-    name: 'Stephanie Wilson',
-    date: 'Thu 9th Mar 2017',
-    quote:
-      "Absolutely beautiful and everything I was hoping it would be. Superb quality and super fast delivery.",
-    proof: 'Product quality',
-  },
-  {
-    name: 'Jennie',
-    date: 'Wed 22nd Dec 2010',
-    quote:
-      'Simple to order, excellent communications, quick responses, and a lovely glow to any room.',
-    proof: 'Customer service',
-  },
-  {
-    name: 'C Jones',
-    date: 'Wed 5th Dec 2012',
-    quote:
-      'Brilliant service. Goods delivered today, packed well, and left exactly where instructed.',
-    proof: 'Careful fulfilment',
-  },
-]
-
-// Display-only filter for republished guestbook notes: quotes making medical or
-// air-treatment claims stay in the archive but are never rendered, since a
-// republished testimonial counts as a marketing claim under UK ASA guidance.
-const medicalClaimPattern = /asthma|eczema|pneumonia|\blungs?\b|purif|air quality|negative ions?|healing|\bheals?\b|detox|\bcures?\b/i
-const displayableReviews = reviews.filter(review => !medicalClaimPattern.test(review.feedback || ''))
-
-const proofByTheme = {
-  lamp: featuredReviews[1],
-  holder: featuredReviews[0],
-  kitchen: featuredReviews[2],
-  bricks: featuredReviews[0],
-  equestrian: featuredReviews[4],
-  relaxation: featuredReviews[3],
-  accessory: featuredReviews[4],
-  deal: featuredReviews[1],
-  panel: featuredReviews[0],
-}
-
-const reviewSignals = [
-  { label: 'Product quality', count: 122, percent: 63 },
-  { label: 'Delivery speed', count: 96, percent: 49 },
-  { label: 'Helpful service', count: 88, percent: 45 },
-  { label: 'Repeat buyers', count: 62, percent: 32 },
-  { label: 'Careful packaging', count: 24, percent: 12 },
-]
+const themeContentOf = (content, theme) => content.themes?.[theme] || content.themes?.lamp || {}
 
 const initialsFor = name =>
-  name
+  String(name || '')
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
@@ -128,55 +56,16 @@ const initialsFor = name =>
     .join('')
     .toUpperCase()
 
-const supportImages = {
-  lamp: [
-    { src: img('lamp-sphere-gemini.jpg'), alt: 'Glowing Himalayan salt lamp' },
-    { src: img('lamp-block-gemini.jpg'), alt: 'Block Himalayan salt lamp' },
-    { src: img('lamp-tear-drop-gemini.jpg'), alt: 'Tear drop Himalayan salt lamp' },
-  ],
-  holder: [
-    { src: img('holder-natural-gemini.jpg'), alt: 'Natural Himalayan salt candle holder' },
-    { src: img('holder-sphere-gemini.jpg'), alt: 'Sphere Himalayan salt candle holder' },
-  ],
-  kitchen: [
-    { src: img('salty-chef-family-live-site.png'), alt: 'Salty Chef Himalayan salt range' },
-    { src: img('platter-kitchen-gemini.jpg'), alt: 'Himalayan salt platter in a kitchen setting' },
-  ],
-  bricks: [
-    { src: img('salt-bricks-clean-gemini.jpg'), alt: 'Himalayan salt bricks' },
-    { src: img('salt-wall-installation-live-site.png'), alt: 'Backlit Himalayan salt wall installation' },
-  ],
-  equestrian: [
-    { src: img('lick-product-clean-gemini.jpg'), alt: 'Himalayan rock salt lick product' },
-    { src: img('lick-field-scene-gemini.jpg'), alt: 'Himalayan salt licks for horses and cattle' },
-  ],
-  relaxation: [
-    { src: img('massage-stones-gemini.jpg'), alt: 'Himalayan salt massage stones' },
-    { src: img('soap-scrub-bars-gemini.jpg'), alt: 'Himalayan salt soap and scrub bars' },
-  ],
-  accessory: [
-    { src: img('accessory-bulb-gemini.jpg'), alt: 'Salt lamp replacement bulb' },
-    { src: img('accessory-cable-premium-gemini.jpg'), alt: 'Salt lamp replacement cable' },
-  ],
-  deal: [
-    { src: img('holder-apple-gemini.jpg'), alt: 'Giftable Himalayan salt candle holder' },
-    { src: img('lamp-sphere-gemini.jpg'), alt: 'Himalayan salt lamp gift set' },
-  ],
-  panel: [
-    { src: img('aura-collection-livingroom-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a living room' },
-    { src: img('aura-collection-hotel-lobby-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a hotel lobby' },
-  ],
-}
-
 // Theme-generic stock photography, used ONLY as a fallback for a product whose own
 // gallery has nothing beyond its primary image. Every product currently has exactly
-// one gallery row, so this is still what most product pages show — but it is now the
+// one gallery row, so this is still what most product pages show — but it is the
 // exception rather than the rule, and it disappears per-product as real photographs
 // are uploaded through the admin gallery.
-const supportImagesForTheme = (theme, primaryImage) => {
-  const productSupport = supportImages[theme] || supportImages.lamp
+const supportImagesForTheme = (content, theme, primaryImage) => {
+  const productSupport = themeContentOf(content, theme).images || []
+  const lampSupport = content.themes?.lamp?.images || []
   const seen = new Set([primaryImage])
-  return [...productSupport, ...supportImages.lamp]
+  return [...productSupport, ...lampSupport]
     .filter(item => {
       if (seen.has(item.src)) return false
       seen.add(item.src)
@@ -188,418 +77,77 @@ const supportImagesForTheme = (theme, primaryImage) => {
 // A product's detail thumbnails: its own gallery when it has one, theme stock photos
 // otherwise. The gallery's first entry is the primary image already shown large, so
 // it is dropped here.
-const detailImagesFor = (product, theme) => {
+const detailImagesFor = (content, product, theme) => {
   const gallery = (product.images || []).filter(src => src !== product.image)
   if (gallery.length) return gallery.map(src => ({ src, alt: product.name }))
-  return supportImagesForTheme(theme, product.image)
+  return supportImagesForTheme(content, theme, product.image)
 }
 
-const sellingContentByTheme = {
-  lamp: {
-    lede: name => `${name} brings a warm amber glow to bedrooms, lounges, desks, treatment rooms, and gift shelves. Each piece is cut from natural Himalayan rock salt, so the colour, shape, and surface character feel individual rather than factory-perfect.`,
-    useTitle: 'Where it works best',
-    uses: ['Bedside tables, shelves, desks, lounges, and calm corners.', 'Gift buying when the recipient likes warm, natural decor.', 'Spa, wellness, or reception areas that need softer ambient light.'],
-    careTitle: 'Care and setup',
-    care: ['Keep the salt dry and away from damp rooms or wet surfaces.', 'Use compatible lamp parts and check bulbs or cables before replacing.', 'Expect natural variation in tone, texture, and weight.'],
-    promise: 'A simple way to add warmth, texture, and atmosphere without making the room feel overly decorated.',
-  },
-  holder: {
-    lede: name => `${name} is made for small moments of glow: dining tables, bedside shelves, spa rooms, gifting, and relaxed evening settings. The natural salt surface gives every holder its own tone and mineral texture.`,
-    useTitle: 'Best used for',
-    uses: ['Tealight ambience for dining tables, shelves, bedrooms, and spa spaces.', 'Low-risk gifting when you want something natural and decorative.', 'Grouped displays with lamps, bowls, or other saltware.'],
-    careTitle: 'Care and safety',
-    care: ['Keep dry and wipe with a soft cloth when needed.', 'Use suitable tealights and place on a stable, heat-safe surface.', 'Colour and surface markings vary because the holder is natural rock salt.'],
-    promise: 'Small, giftable pieces that create an immediate warm glow without needing a large lamp.',
-  },
-  kitchen: {
-    lede: name => `${name} is designed for kitchens, serving, food display, and thoughtful hosting. It gives food presentation a natural pink salt character while still feeling practical for counters, tables, and giftable kitchen ranges.`,
-    useTitle: 'How to use it',
-    uses: ['Serve, present, chill, or display food depending on the selected shape and size.', 'Use for kitchen counters, table settings, food gifting, or hospitality presentation.', 'Pair with culinary salt, bowls, or serving pieces for a fuller saltware set.'],
-    careTitle: 'Care before buying',
-    care: ['Rinse or wipe according to the supplied care guidance and dry thoroughly.', 'Saltware naturally changes with heat, moisture, food contact, and repeated use.', 'Choose the size, grade, or shape that matches how you plan to serve or cook.'],
-    promise: 'A more memorable kitchen piece for buyers who want food presentation to feel tactile, natural, and conversation-worthy.',
-  },
-  bricks: {
-    lede: name => `${name} is suited to salt wall features, wellness rooms, spa projects, interiors work, and repeat trade supply. It is a practical route for buyers who need natural salt material with a project or display purpose.`,
-    useTitle: 'Project fit',
-    uses: ['Salt wall features, wellness rooms, spa areas, and interior displays.', 'Retail, trade, or hospitality buyers planning repeat supply.', 'Specification conversations where size, quantity, and finish matter.'],
-    careTitle: 'Planning notes',
-    care: ['Confirm sizes, quantities, and lead times before large orders.', 'Keep salt materials dry before installation or display.', 'Ask for trade support when matching a project schedule or repeat stock need.'],
-    promise: 'Built for buyers who need confidence before committing to a larger project or repeat order.',
-  },
-  equestrian: {
-    lede: name => `${name} gives horses, cattle, fields, yards, and smallholdings a simple natural salt option. It is made for practical repeat buying rather than decorative display.`,
-    useTitle: 'Yard and field use',
-    uses: ['Fields, stables, yards, smallholdings, and animal mineral routines.', 'Single purchases or repeat supply for busier yards.', 'Buyers who want a simple natural salt lick without complicated presentation.'],
-    careTitle: 'Buying notes',
-    care: ['Choose the correct size or pack quantity where options are shown.', 'Store dry before use and place appropriately for the animal and setting.', 'Ask about bulk supply if you are buying for a yard, field, or repeat routine.'],
-    promise: 'A straightforward mineral-salt product for buyers who care more about reliability than decoration.',
-  },
-  relaxation: {
-    lede: name => `${name} supports spa, bath, massage, body-care, and sensory routines with the natural mineral character of Himalayan salt. It works well for personal use, wellness gifts, and treatment-room ranges.`,
-    useTitle: 'Wellness use',
-    uses: ['Spa, bath, massage, relaxation, or body-care routines depending on the item.', 'Gift bundles for buyers who want calm, tactile, natural products.', 'Treatment rooms or wellness retail displays.'],
-    careTitle: 'Care guidance',
-    care: ['Keep dry between uses and follow the supplied care notes.', 'Texture, colour, and finish vary naturally from piece to piece.', 'Choose the format that matches the intended routine or treatment.'],
-    promise: 'A tactile wellness product with enough natural variation to feel personal and giftable.',
-  },
-  accessory: {
-    lede: name => `${name} helps keep compatible salt lamps working safely and conveniently. It is a practical replacement item for buyers who already own a lamp or need spare parts for repeat use.`,
-    useTitle: 'Compatibility first',
-    uses: ['Replacement parts for compatible salt lamps.', 'Keeping spare bulbs or cables ready for home, retail, or trade use.', 'Solving a practical lamp issue without replacing the full product.'],
-    careTitle: 'Before ordering',
-    care: ['Check compatibility with your lamp before buying.', 'Match bulb, cable, plug, and holder requirements carefully.', 'Ask the team if you are unsure which fitting you need.'],
-    promise: 'A practical support item that protects the value of the lamp you already own.',
-  },
-  deal: {
-    lede: name => `${name} is made for easy gifting, starter sets, and better-value bundles. It helps buyers choose quickly when they want a warm salt product without comparing every individual item.`,
-    useTitle: 'Why choose the bundle',
-    uses: ['Quick gift buying when you want a ready-made salt product set.', 'Starter purchases for homes, desks, lounges, and shelves.', 'Better value when buying more than one piece.'],
-    careTitle: 'What to expect',
-    care: ['Check the included items before ordering.', 'Natural salt pieces vary in colour, texture, and weight.', 'Keep items dry and follow the care notes for the product type included.'],
-    promise: 'A simpler route for buyers who want the Salty Lamps look with less decision fatigue.',
-  },
-  panel: {
-    lede: name => `${name} is illuminated Himalayan salt wall art — ancient rock salt carved into a hand-finished solid-wood frame. Each panel is a unique piece of nature, with mineral veining that ranges from pale pink to deep orange, and a warm glow that changes the feel of a room the moment it is lit.`,
-    useTitle: 'Where it works best',
-    uses: ['Living rooms, bedrooms, and home offices that want a warmer, calmer feel.', 'Gyms, yoga studios, and wellness spaces where a soft glow sets the tone.', 'Reception areas and interiors projects that want a natural statement piece.'],
-    careTitle: 'Setup and care',
-    care: ['Keep the panel dry and wipe gently with a dry cloth.', 'Avoid prolonged exposure to humidity — mount securely with the supplied fittings.', 'Natural variation in colour, veining, and texture is normal; no two panels are alike.'],
-    promise: 'A unique piece of nature, framed by hand, bringing warmth and timeless character to any wall.',
-  },
-}
-
-const productSellingContent = (taxonomy, product) => {
+// `lede` is stored as a template containing {name}; one theme row serves every product
+// in that theme, so the interpolation happens here at read time.
+const productSellingContent = (content, taxonomy, product) => {
   const theme = taxonomy.themeForProduct(product)
-  const content = sellingContentByTheme[theme] || sellingContentByTheme.lamp
-  const category = taxonomy.nameOf(taxonomy.primaryCategoryOf(product))
+  const themeCopy = themeContentOf(content, theme)
   return {
-    ...content,
-    category,
-    lede: content.lede(product.name),
+    ...themeCopy,
+    category: taxonomy.nameOf(taxonomy.primaryCategoryOf(product)),
+    lede: String(themeCopy.lede || '').replace(/\{name\}/g, product.name),
   }
 }
 
-const productVisibleReviews = theme => {
-  const primary = productProof(theme)
-  return [primary, ...featuredReviews.filter(review => review.name !== primary.name)].slice(0, 3)
+// These take the theme string rather than the product, so they need no taxonomy at
+// all — which keeps most of the churn out of the marketing-copy helpers.
+const productReassurance = (content, theme) => themeContentOf(content, theme).reassurance || []
+
+const productProof = (content, theme) => {
+  const wanted = themeContentOf(content, theme).proofReviewId
+  const featured = content.featuredReviews || []
+  return featured.find(r => r.id === wanted) || featured[0] || null
 }
 
-const persistSubmission = async (table, payload) => {
-  const submission = {
-    ...payload,
-    createdAt: new Date().toISOString(),
-  }
+const productVisibleReviews = (content, theme) => {
+  const primary = productProof(content, theme)
+  const featured = content.featuredReviews || []
+  if (!primary) return featured.slice(0, 3)
+  return [primary, ...featured.filter(review => review.id !== primary.id)].slice(0, 3)
+}
+
+// Chat, trade enquiry and newsletter signup -> /api/support/enquiry.
+//
+// These three wrote to Supabase, where nobody was notified — trade leads were
+// arriving and sitting unread. They now post to our own endpoint, which stores the
+// row in D1 (visible in admin under Emails -> Enquiries) and emails the owner.
+// Historical Supabase rows are left untouched in Supabase.
+//
+// The localStorage copy stays. It costs nothing and it is the only record the
+// shopper keeps of what they sent.
+const persistSubmission = async (source, payload) => {
+  const submission = { ...payload, createdAt: new Date().toISOString() }
 
   try {
-    const key = `salty-lamps-${table}`
+    const key = `salty-lamps-${source}`
     const existing = JSON.parse(window.localStorage.getItem(key) || '[]')
     window.localStorage.setItem(key, JSON.stringify([submission, ...existing].slice(0, 80)))
   } catch {
-    // Local storage can be blocked in private browsing, so the email fallback still carries the enquiry.
+    // Local storage can be blocked in private browsing; the submission still posts.
   }
 
-  if (!supabase) return
-
-  const { error } = await supabase.from(table).insert({
-    ...payload,
-    created_at: submission.createdAt,
+  const res = await fetch('/api/support/enquiry', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ source, ...payload }),
   })
-
-  if (error) throw error
+  if (!res.ok) throw new Error(`Enquiry submission failed (${res.status})`)
 }
 
 
-
-const processSteps = [
-  {
-    label: 'Mine',
-    title: 'Mined rock salt',
-    text: 'Raw rock salt is extracted from mines and loaded onto trucks for the first leg of the journey.',
-  },
-  {
-    label: 'Sort',
-    title: 'Warehouse sorting',
-    text: 'The material reaches the Karachi warehouse, where it is washed, dried, and separated by colour and quality.',
-  },
-  {
-    label: 'Cut',
-    title: 'Cut and shaped',
-    text: 'Rock salt is cut into natural lamps, specific shapes, bowls, bricks, tiles, and other product forms.',
-  },
-  {
-    label: 'Finish',
-    title: 'Hand finished',
-    text: 'Each cut piece is carefully hand-crafted by skilled workmen so the natural material keeps its character.',
-  },
-  {
-    label: 'Pack',
-    title: 'Packed for export',
-    text: 'Finished pieces are shrink wrapped, boxed, palletized, and sent to the port for export.',
-  },
-]
-
-const processProofPoints = [
-  {
-    stat: 'Handled',
-    title: 'Real labour at every stage',
-    text: 'The film shows the physical movement behind the product: lifting, rinsing, sorting, cutting, finishing, and packing.',
-  },
-  {
-    stat: 'Checked',
-    title: 'Natural material, judged piece by piece',
-    text: 'Colour, clarity, size, grain, and fractures all affect what each piece can become.',
-  },
-  {
-    stat: 'Finished',
-    title: 'Machine cut, human refined',
-    text: 'The work keeps the irregular mineral character while making each item ready for use or display.',
-  },
-  {
-    stat: 'Arrived',
-    title: 'From workshop to home',
-    text: 'The close is not another step list: it brings the journey home as a finished object with warmth and presence.',
-  },
-]
-
-const processProductRanges = [
-  {
-    title: 'Rock salt lamps',
-    text: 'Warm amber lighting for bedrooms, lounges, desks, treatment rooms, and gift shelves.',
-  },
-  {
-    title: 'Candle holders',
-    text: 'Natural tealight pieces for tables, baths, shelves, spa corners, and calming evening settings.',
-  },
-  {
-    title: 'Bowls and kitchen saltware',
-    text: 'Serving, cooking, and presentation pieces that bring mineral texture into everyday food moments.',
-  },
-  {
-    title: 'Culinary and bath salts',
-    text: 'Pure Himalayan salt formats for cooking, bathing, gifting, and simple personal-care routines.',
-  },
-  {
-    title: 'Cooking platters',
-    text: 'Salt slabs for grilling, chilling, serving, and adding a gentle natural salt character to food.',
-  },
-  {
-    title: 'Bricks and curing tiles',
-    text: 'Trade-ready salt blocks for butchers, dry-ageing, display, interiors, and specialist supply.',
-  },
-  {
-    title: 'Spa salt walls',
-    text: 'Custom salt wall installations for spas, wellness rooms, yoga studios, and treatment spaces.',
-  },
-  {
-    title: 'Horse and cattle licks',
-    text: 'Natural mineral salt blocks and loose forms for yards, fields, livestock, and repeat rural supply.',
-  },
-]
 
 const productMatchesPath = (product, path) => product.categories.some(slug => path.categories.includes(slug))
 
-const slugifyTag = value => String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-// Compares through slugify at BOTH ends. The rules below used TitleCase while the
-// admin validator stores lowercase slugs, so a tag typed in the admin could never
-// have matched a rule written in code.
-const hasTag = (product, tags) => {
-  const want = new Set(tags.map(slugifyTag))
-  return (product.tags || []).some(tag => want.has(slugifyTag(tag)))
-}
 
-// Declarative grouping for each collection landing. Sections render in order;
-// a section may split into labelled sub-bands. A subgroup without `match` is the
-// catch-all "rest". Assignment is first-match, so a product appears once.
-const collectionSectionConfig = {
-  'home-gifts': [
-    {
-      id: 'gift-sets-offers',
-      title: 'Gift sets & offers',
-      descriptor: 'Starter bundles and easy gift buys with a clear value story.',
-      cardText: 'Best for shoppers who want a complete present without comparing every shape.',
-      recommendation: 'Lead with bundles because gift-led visitors usually need confidence and speed more than a deep catalogue.',
-      image: img('deal-lamp-candle-gemini.jpg'),
-      theme: 'deal',
-      categorySlug: 'special-deal',
-      match: product => product.categories.includes('special-deal'),
-    },
-    {
-      id: 'salt-lamps',
-      title: 'Salt lamps',
-      descriptor: 'Warm-glow lamps for bedrooms, counters, lounges, and gifts.',
-      cardText: 'Choose the main glow piece for a bedside table, desk, shelf, or cosy corner.',
-      recommendation: 'Make natural and bestseller lamps the anchor, then let shaped lamps act as decorative alternatives.',
-      image: img('lamp-natural-gemini.jpg'),
-      theme: 'lamp',
-      categorySlug: 'salt-lamps',
-      match: product => product.categories.includes('salt-lamps') && !product.categories.includes('special-deal'),
-      subgroups: [
-        { label: 'Natural, classic & bestselling', match: product => hasTag(product, ['bestseller', 'classic', 'premium']) },
-        { label: 'Decorative, sculptural & gift shapes' },
-      ],
-    },
-    {
-      id: 'candle-holders',
-      title: 'Candle holders',
-      descriptor: 'Giftable tealight holders for cosy rooms, spas, and tables.',
-      cardText: 'Small amber accents for dinner tables, shelves, gift boxes, and quiet evenings.',
-      recommendation: 'Treat holders as affordable add-ons and small gifts, not as direct competitors to lamps.',
-      image: img('holder-heart-gemini.jpg'),
-      theme: 'holder',
-      categorySlug: 'candle-holders',
-      match: product => product.categories.includes('candle-holders') && !product.categories.includes('special-deal'),
-    },
-    {
-      id: 'accessories',
-      title: 'Accessories',
-      descriptor: 'Replacement bulbs and cables for compatible salt lamps.',
-      cardText: 'Keep an existing lamp lit with the right cable or replacement bulb.',
-      recommendation: 'Keep accessories at the end so they support owners without interrupting gift and decor browsing.',
-      image: img('accessory-bulb-gemini.jpg'),
-      theme: 'accessory',
-      categorySlug: 'accessories',
-      match: product => product.categories.includes('accessories'),
-    },
-  ],
-  'kitchen-food': [
-    {
-      id: 'cookware-serving',
-      title: 'Cookware & serving',
-      descriptor: 'Platters and bowls to cook, chill, and serve on pure salt.',
-      cardText: 'Saltware for grazing boards, searing, chilling, and table presentation.',
-      recommendation: 'Start with serving pieces because they are visual, giftable, and easier to understand at a glance.',
-      image: img('platter-kitchen-gemini.jpg'),
-      theme: 'kitchen',
-      categorySlug: 'rock-salt-pantry-items',
-      match: product => hasTag(product, ['hosting', 'serving']),
-    },
-    {
-      id: 'pantry-barware',
-      title: 'Pantry & barware',
-      descriptor: 'Culinary salt and salt barware for everyday cooking and hosting.',
-      cardText: 'Pink mineral salt and smaller pieces for seasoning, drinks, and easy hosting.',
-      recommendation: 'Use pantry items as lower-friction add-ons after the shopper understands the food range.',
-      image: img('salty-chef-pouch-gemini.jpg'),
-      theme: 'kitchen',
-      categorySlug: 'rock-salt-pantry-items',
-      // Catch-all: with no tags set, everything kitchen lands here rather than in
-      // the unnamed "More in this range" sweep, so the page reads correctly with or
-      // without tag data.
-      match: product => product.categories.includes('rock-salt-pantry-items'),
-    },
-  ],
-  'horses-farm': [
-    {
-      id: 'stable-field-licks',
-      title: 'Stable & field licks',
-      descriptor: 'Single mineral salt licks for horses, cattle, fields, and yards.',
-      cardText: 'A simple natural lick for a paddock, stable, pony, or smallholding routine.',
-      recommendation: 'Show the single lick first because it answers the basic buyer need before pack-size decisions.',
-      image: img('lick-product-clean-gemini.jpg'),
-      theme: 'equestrian',
-      categorySlug: 'equestrian-salt-licks',
-      match: product => product.categories.includes('equestrian-salt-licks') && !product.categories.includes('special-deal'),
-    },
-    {
-      id: 'yard-bulk-supply',
-      title: 'Yard & bulk supply',
-      descriptor: 'Bulk-ready salt lick supply for busier yards and repeat orders.',
-      cardText: 'A practical route for keepers who need dependable repeat stock.',
-      recommendation: 'Separate bulk supply so trade and yard buyers see repeat-order value without confusing single-item shoppers.',
-      image: img('lick-field-scene-gemini.jpg'),
-      theme: 'equestrian',
-      categorySlug: 'equestrian-salt-licks',
-      match: product => product.categories.includes('equestrian-salt-licks') && product.categories.includes('special-deal'),
-    },
-  ],
-  'trade-spa': [
-    {
-      id: 'salt-bricks-walls',
-      title: 'Salt bricks & walls',
-      descriptor: 'Salt wall bricks and feature-wall materials for trade buyers.',
-      cardText: 'Create a glowing wall feature for reception areas, treatment rooms, and projects.',
-      recommendation: 'Lead with project materials because trade buyers need specification clarity before browsing spa retail pieces.',
-      image: img('salt-bricks-clean-gemini.jpg'),
-      theme: 'bricks',
-      categorySlug: 'rock-salt-bricks',
-      match: product => product.categories.includes('rock-salt-bricks'),
-    },
-    {
-      id: 'spa-relaxation',
-      title: 'Spa & relaxation',
-      descriptor: 'Massage, bath, and body-care salt for wellness spaces.',
-      cardText: 'Retail-friendly wellness pieces for treatment rooms, bath rituals, and shelves.',
-      recommendation: 'Place relaxation products after salt walls so they feel like retail add-ons for wellness and spa buyers.',
-      image: img('massage-stones-gemini.jpg'),
-      theme: 'relaxation',
-      categorySlug: 'himalayan-salt-massage-relaxation-products',
-      match: product => product.categories.includes('himalayan-salt-massage-relaxation-products'),
-    },
-  ],
-}
-
-// Build labelled sections for a collection landing. In-stock items sort ahead of
-// out-of-stock (stable, so the chosen sort order is preserved within each group).
-// Falls back to a single unlabelled section when no config exists, and sweeps any
-// unassigned products into a trailing section so nothing is ever dropped.
-const buildCollectionSections = (slug, items) => {
-  const ordered = [...items].sort((a, b) => (a.stock === b.stock ? 0 : a.stock ? -1 : 1))
-  const config = collectionSectionConfig[slug]
-  if (!config) {
-    return [{ title: null, descriptor: null, count: ordered.length, groups: [{ label: null, products: ordered }] }]
-  }
-
-  const assigned = new Set()
-  const sections = []
-  for (const section of config) {
-    const sectionItems = ordered.filter(product => !assigned.has(product.id) && section.match(product))
-    if (!sectionItems.length) continue
-    sectionItems.forEach(product => assigned.add(product.id))
-
-    let groups
-    if (section.subgroups) {
-      const used = new Set()
-      groups = section.subgroups
-        .map(subgroup => {
-          const groupItems = sectionItems.filter(
-            product => !used.has(product.id) && (subgroup.match ? subgroup.match(product) : true),
-          )
-          groupItems.forEach(product => used.add(product.id))
-          return { label: subgroup.label, products: groupItems }
-        })
-        .filter(group => group.products.length)
-      // Collapse to a flat grid when only one band actually has products.
-      if (groups.length <= 1) groups = [{ label: null, products: sectionItems }]
-    } else {
-      groups = [{ label: null, products: sectionItems }]
-    }
-
-    sections.push({
-      id: section.id,
-      title: section.title,
-      descriptor: section.descriptor,
-      cardText: section.cardText,
-      recommendation: section.recommendation,
-      image: section.image,
-      theme: section.theme,
-      categorySlug: section.categorySlug,
-      count: sectionItems.length,
-      groups,
-    })
-  }
-
-  const leftover = ordered.filter(product => !assigned.has(product.id))
-  if (leftover.length) {
-    sections.push({ title: 'More in this range', descriptor: null, count: leftover.length, groups: [{ label: null, products: leftover }] })
-  }
-  return sections
-}
-
-
-const categoryPageCopy = (taxonomy, slug) => {
+const categoryPageCopy = (content, taxonomy, slug) => {
   const category = taxonomy.get(slug)
-  if (!category || category.is_virtual) return pageCopy.shop
+  if (!category || category.is_virtual) return shopCopyOf(content)
 
   return {
     eyebrow: category.name,
@@ -608,7 +156,9 @@ const categoryPageCopy = (taxonomy, slug) => {
   }
 }
 
-const activePageMeta = ({ taxonomy, route, categorySlug, activeShopperPath, currentProduct, page }) => {
+const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperPath, currentProduct, page }) => {
+  const pageTitle = title => pageTitleOf(content, title)
+
   if (currentProduct) {
     return {
       title: pageTitle(currentProduct.name),
@@ -627,32 +177,34 @@ const activePageMeta = ({ taxonomy, route, categorySlug, activeShopperPath, curr
   }
 
   if (categorySlug) {
-    const copy = categoryPageCopy(taxonomy, categorySlug)
+    const copy = categoryPageCopy(content, taxonomy, categorySlug)
     return {
       title: pageTitle(copy.title),
       description: copy.description,
-      image: taxonomy.imageOf(categorySlug) || media('logo.png'),
+      image: taxonomy.imageOf(categorySlug) || media('salty-lamps-og-card.jpg'),
     }
   }
 
-  if (route === '/shop') return { title: pageTitle('Shop'), description: pageCopy.shop.description, image: img('lamp-sphere-gemini.jpg') }
+  if (route === '/shop') return { title: pageTitle('Shop'), description: shopCopyOf(content).description, image: img('lamp-sphere-gemini.jpg') }
   if (route === '/gallery') return { title: pageTitle('Gallery'), description: 'Browse Salty Lamps product details, lifestyle scenes, and trade-use references.', image: media('yoga-room.png') }
-  if (route.startsWith('/admin')) return { title: pageTitle('Admin'), description: 'Salty Lamps admin portal.', image: media('logo.png'), robots: 'noindex,nofollow' }
+  if (route.startsWith('/admin')) return { title: pageTitle('Admin'), description: 'Salty Lamps admin portal.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,nofollow' }
   if (route === '/process') return { title: pageTitle('Manufacturing Process'), description: 'See how Salty Lamps products move from mined rock salt to cut, finished, packed products.', image: media('video/salty-lamps-manufacturing-process-poster-16x9.jpg') }
   if (route === '/reviews') return { title: pageTitle('Customer Reviews'), description: 'Read verified Salty Lamps guestbook feedback by customer theme.', image: img('lamp-natural-gemini.jpg') }
-  if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('logo.png') }
-  if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('logo.png'), robots: 'noindex,follow' }
-  if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('logo.png'), robots: 'noindex,follow' }
-  if (page) return { title: pageTitle(page.title), description: page.body[0], image: media('logo.png') }
-  if (route === '/') return { title: siteTitle, description: siteDescription, image: media('video/salty-lamps-homepage-hero-poster-16x9.jpg') }
-  return { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
+  if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('salty-lamps-og-card.jpg') }
+  if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
+  if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
+  // noindex like the checkout routes, and for the same reason: a form that needs an
+  // order reference is useless to a search visitor, and it is deliberately absent
+  // from staticRoutes in scripts/generate-seo.mjs so it never enters a sitemap.
+  if (route === '/refund-request') return { title: pageTitle('Request a Refund or Return'), description: 'Start a Salty Lamps return or refund request.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
+  // meta_description is an override; falling back to the first paragraph reproduces
+  // exactly what this did before the column existed.
+  if (page) return { title: pageTitle(page.title), description: page.metaDescription || page.body[0], image: media('salty-lamps-og-card.jpg') }
+  if (route === '/') return { title: siteTitleOf(content), description: siteDescriptionOf(content), image: media('video/salty-lamps-homepage-hero-poster-16x9.jpg') }
+  const notFound = notFoundCopyOf(content)
+  return { title: pageTitle(notFound.title), description: notFound.description, image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
 }
 
-// These take the theme string rather than the product, so they need no taxonomy at
-// all — which keeps most of the churn out of the marketing-copy helpers.
-const productReassurance = theme => reassuranceByTheme[theme] || reassuranceByTheme.lamp
-
-const productProof = theme => proofByTheme[theme] || featuredReviews[0]
 
 const CART_STORAGE_KEY = 'salty-lamps-cart'
 
@@ -759,6 +311,21 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
   )
 }
 
+// A field no human ever sees or tabs into. Bots fill every input they find, so a
+// non-empty value is the cheapest available bot signal — and the endpoints behind
+// these forms are public and send mail, which makes them spam-relay targets.
+// Positioned off-screen rather than display:none, which some bots specifically skip.
+function Honeypot() {
+  return (
+    <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+      <label>
+        Website
+        <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </label>
+    </div>
+  )
+}
+
 function ChatModule({ onSubmit, message }) {
   const [open, setOpen] = useState(false)
 
@@ -785,6 +352,7 @@ function ChatModule({ onSubmit, message }) {
             Message
             <textarea name="message" rows="4" placeholder="Tell us what you are looking for..." required />
           </label>
+          <Honeypot />
           <button type="submit">Send message</button>
           <a href="mailto:info@saltylamps.co.uk?subject=Website%20chat%20request">Open email instead</a>
           {message && <p className="success">{message}</p>}
@@ -798,36 +366,12 @@ function ChatModule({ onSubmit, message }) {
 }
 
 
-const collectionTradeCopy = {
-  'home-gifts': {
-    eyebrow: 'Shops, salons and interior buyers',
-    heading: 'Trade accounts for retail and hospitality.',
-    body: 'We supply boutique gift shops, hotel amenities buyers, and salon chains. Contact us for trade pricing, minimum orders, and lead times.',
-    cta: 'Open a trade enquiry',
-  },
-  'kitchen-food': {
-    eyebrow: 'Restaurants, caterers and chefs',
-    heading: 'Case and pallet supply for professional kitchens.',
-    body: 'Culinary-grade Himalayan salt, cooking platters, and serving pieces at trade pricing for restaurants, food service, and hospitality.',
-    cta: 'Request catering trade pricing',
-  },
-  'horses-farm': {
-    eyebrow: 'Yards, equestrian centres and farms',
-    heading: 'Bulk salt lick supply for busy yards.',
-    body: 'Trade pricing on pallet quantities for equestrian centres, livery yards, and farms with multiple horses, cattle, or sheep.',
-    cta: 'Ask about bulk lick pricing',
-  },
-  'trade-spa': {
-    eyebrow: 'Spas, wellness rooms and interiors',
-    heading: 'Specification, project quoting, and repeat supply.',
-    body: 'Salt wall bricks, massage stones, and bath salts for spa specification, wellness room fit-outs, and high-volume treatment centres.',
-    cta: 'Request a project quote',
-  },
-}
-
+// The trade panel is 1:1 with the collection and comes down inside it, so an absent
+// panel is simply a null `trade` — exactly what the old `collectionTradeCopy[slug]`
+// lookup returned for a collection with no trade copy.
 function CollectionTradeCta({ path }) {
-  const content = collectionTradeCopy[path.slug]
-  if (!content) return null
+  const content = path.trade
+  if (!content || !content.heading) return null
   return (
     <aside className={`collection-trade-cta theme-${path.theme}`}>
       <div>
@@ -847,14 +391,21 @@ function CollectionTradeCta({ path }) {
 
 export default function App() {
   const [route, setRoute] = useState(getRoute)
+  const [refund, setRefund] = useState({ status: 'idle', errors: {} })
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('featured')
   // 'loading' | 'ready' | 'error'. Products used to be a bare array whose fetch
   // failure was swallowed into [], which the shop rendered as "No matching products.
   // Try another search term." — telling customers they had searched wrong during an
   // outage. The three states are now distinct and rendered differently.
-  const [catalog, setCatalog] = useState({ status: 'loading', products: [], categories: [], aliases: {} })
+  const [catalog, setCatalog] = useState({ status: 'loading', products: [], categories: [], aliases: {}, content: SNAPSHOT_CONTENT })
   const { products } = catalog
+  // Never null: the committed snapshot stands in until /api/content lands, so every
+  // heading and every piece of selling copy has a real value on the first paint.
+  const content = catalog.content || SNAPSHOT_CONTENT
+  // The guestbook corpus is only needed by /reviews, so it is fetched on demand
+  // rather than shipped in the bundle or bolted onto /api/content.
+  const [reviewCorpus, setReviewCorpus] = useState(null)
   const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
@@ -877,22 +428,29 @@ export default function App() {
     return () => window.removeEventListener('popstate', updateRoute)
   }, [])
 
-  // Both requests go out together, so the cost is max(a, b) rather than a + b, and
-  // one state transition covers both. loadCatalog is also the Retry handler.
+  // All three requests go out together, so the cost is max(a, b, c) rather than the
+  // sum, and one state transition covers all of them. loadCatalog is the Retry handler.
+  //
+  // Content is deliberately NOT allowed to fail the whole load. A products outage must
+  // show the error panel, but a content outage should not blank the shop — the
+  // committed snapshot is real, last-deployed copy, so falling back to it degrades to
+  // slightly stale wording instead of a page with no headings.
   const loadCatalog = React.useCallback(() => {
     let alive = true
     setCatalog(current => ({ ...current, status: 'loading' }))
     Promise.all([
       fetch('/api/products').then(readJsonOrThrow),
       fetch('/api/categories').then(readJsonOrThrow),
+      fetch('/api/content').then(readJsonOrThrow).catch(() => null),
     ])
-      .then(([productData, categoryData]) => {
+      .then(([productData, categoryData, contentData]) => {
         if (!alive) return
         setCatalog({
           status: 'ready',
           products: productData.products || [],
           categories: categoryData.categories || [],
           aliases: categoryData.aliases || {},
+          content: contentData ? { ...EMPTY_CONTENT, ...contentData } : SNAPSHOT_CONTENT,
         })
       })
       .catch(() => alive && setCatalog(current => ({ ...current, status: 'error' })))
@@ -901,12 +459,32 @@ export default function App() {
 
   useEffect(() => loadCatalog(), [loadCatalog])
 
+  useEffect(() => {
+    if (route !== '/reviews' || reviewCorpus) return
+    let alive = true
+    fetch('/api/reviews')
+      .then(readJsonOrThrow)
+      .then(data => alive && setReviewCorpus(data.reviews || []))
+      .catch(() => alive && setReviewCorpus([]))
+    return () => { alive = false }
+  }, [route, reviewCorpus])
+
   // Falls back to the build-time snapshot until the live taxonomy lands, so the nav
   // and category names never render blank or flash.
   const taxonomy = useMemo(
     () => (catalog.categories.length ? makeTaxonomy(catalog.categories, catalog.aliases) : SNAPSHOT_TAXONOMY),
     [catalog.categories, catalog.aliases],
   )
+
+  const collections = content.collections || []
+  const featuredReviews = content.featuredReviews || []
+  const reviewSignals = content.lists?.['review-signals'] || []
+  // Counted server-side so the home page can state it without pulling 185 rows, and
+  // so the figure is the number actually shown rather than the raw archive size.
+  const reviewCount = content.reviewCount ?? 0
+  // The featured quotes are rendered separately above the grid, so they are excluded
+  // here rather than appearing twice.
+  const corpus = (reviewCorpus || []).filter(review => !review.featured)
 
   // The order is placed, so the cart must not survive it — otherwise the same items
   // reappear the moment the customer navigates back into the shop.
@@ -954,7 +532,7 @@ export default function App() {
   const collectionMatch = route.match(/^\/collection\/([^/]+)(?:\/([^/]+))?$/)
   const collectionSlug = collectionMatch?.[1] || null
   const collectionCategorySlug = collectionMatch?.[2] ? taxonomy.resolve(collectionMatch[2]) : null
-  const activeShopperPath = shopperPaths.find(path => path.slug === collectionSlug)
+  const activeShopperPath = collections.find(path => path.slug === collectionSlug)
 
   // Reset video state whenever the collection changes.
   useEffect(() => {
@@ -970,7 +548,7 @@ export default function App() {
   const productSlug = route.startsWith('/product-page/') ? route.replace('/product-page/', '') : null
   const currentProduct = products.find(product => product.slug === productSlug)
   const quickViewProduct = products.find(product => product.id === quickViewId)
-  const page = pages[route]
+  const page = content.pages?.[route]
   // A category route is valid if the taxonomy knows the slug OR any product claims
   // it. The second clause is what makes the site genuinely data-driven: assign a new
   // slug to a product in the admin and its page works immediately, rather than 404ing
@@ -998,10 +576,11 @@ export default function App() {
     route !== '/return-refund-policy' &&
     route !== '/checkout/success' &&
     route !== '/checkout/cancelled' &&
+    route !== '/refund-request' &&
     !(categorySlug && isKnownCategoryRoute)
   const meta = notFound
-    ? { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
-    : activePageMeta({ taxonomy, route, categorySlug, activeShopperPath, currentProduct, page })
+    ? { title: pageTitleOf(content, notFoundCopyOf(content).title), description: notFoundCopyOf(content).description, image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
+    : activePageMeta({ content, taxonomy, route, categorySlug, activeShopperPath, currentProduct, page })
   const canonicalPath = currentProduct
     ? `/product-page/${currentProduct.slug}`
     : collectionSlug
@@ -1098,7 +677,9 @@ export default function App() {
   // The collection landing (no sub-category, no search) shows the hero + grouped
   // sections; any drill-down or search falls back to the flat result grid.
   const isCollectionRoot = Boolean(activeShopperPath) && categoryFilter === 'all' && !query.trim()
-  const collectionSections = isCollectionRoot ? buildCollectionSections(activeShopperPath.slug, visibleProducts) : []
+  const collectionSections = isCollectionRoot
+    ? buildCollectionSections(activeShopperPath.sections || [], visibleProducts, snippet(content, 'collection.leftover_title', 'More in this range'))
+    : []
   const collectionSectionKey = collectionSections
     .map(section => `${section.id || ''}:${section.categorySlug || ''}`)
     .join('|')
@@ -1116,11 +697,11 @@ export default function App() {
     setMeta('meta[property="og:title"]', { property: 'og:title' }, 'content', meta.title)
     setMeta('meta[property="og:description"]', { property: 'og:description' }, 'content', meta.description)
     setMeta('meta[property="og:url"]', { property: 'og:url' }, 'content', canonicalUrl)
-    setMeta('meta[property="og:image"]', { property: 'og:image' }, 'content', absoluteUrl(meta.image || media('logo.png')))
+    setMeta('meta[property="og:image"]', { property: 'og:image' }, 'content', absoluteUrl(meta.image || media('salty-lamps-og-card.jpg')))
     setMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'content', 'summary_large_image')
     setMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, 'content', meta.title)
     setMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, 'content', meta.description)
-    setMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, 'content', absoluteUrl(meta.image || media('logo.png')))
+    setMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, 'content', absoluteUrl(meta.image || media('salty-lamps-og-card.jpg')))
     document.querySelector('script[data-prerender-jsonld]')?.remove()
   }, [canonicalPath, meta.description, meta.image, meta.robots, meta.title, meta.type])
 
@@ -1207,66 +788,61 @@ export default function App() {
     setNotice('')
   }
 
+  // Each handler captures the form element BEFORE awaiting. React nulls
+  // event.currentTarget once the handler returns, so reading it after an await
+  // throws and the form silently never clears.
   const handleTradeSubmit = async event => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    const payload = {
-      name: data.get('name'),
-      email: data.get('email'),
-      interest: data.get('interest'),
-      message: data.get('message'),
-      source: 'trade-form',
-    }
+    const form = event.currentTarget
+    const data = new FormData(form)
+    const interest = data.get('interest')
 
     try {
-      await persistSubmission('trade_enquiries', payload)
+      await persistSubmission('trade', {
+        name: data.get('name'),
+        email: data.get('email'),
+        // The endpoint takes one message field, so the interest dropdown is folded
+        // in rather than dropped — it is the most useful line in a trade enquiry.
+        message: [interest ? `Interested in: ${interest}` : '', data.get('message')].filter(Boolean).join('\n\n'),
+        website: data.get('website'),
+      })
     } finally {
-      setFormMessage(
-        hasSupabase
-          ? 'Thanks for submitting. We will come back to you shortly.'
-          : 'Thanks — your enquiry is saved. We will come back to you shortly.',
-      )
-      event.currentTarget.reset()
+      setFormMessage('Thanks for submitting. We will come back to you shortly.')
+      form.reset()
     }
   }
 
   const handleNewsletterSubmit = async event => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
+    const form = event.currentTarget
+    const data = new FormData(form)
 
     try {
-      await persistSubmission('newsletter_signups', {
+      await persistSubmission('newsletter', {
         email: data.get('email'),
-        source: 'footer-newsletter',
+        website: data.get('website'),
       })
     } finally {
-      setNewsletterMessage(
-        hasSupabase
-          ? 'Thanks for subscribing.'
-          : 'Thanks for subscribing.',
-      )
-      event.currentTarget.reset()
+      setNewsletterMessage('Thanks for subscribing.')
+      form.reset()
     }
   }
 
   const handleChatSubmit = async event => {
     event.preventDefault()
-    const data = new FormData(event.currentTarget)
+    const form = event.currentTarget
+    const data = new FormData(form)
 
     try {
-      await persistSubmission('chat_messages', {
+      await persistSubmission('chat', {
         name: data.get('name'),
         email: data.get('email'),
         message: data.get('message'),
-        source: 'floating-chat',
+        website: data.get('website'),
       })
     } finally {
-      setChatMessage(
-        hasSupabase
-          ? 'Message saved. We will reply as soon as possible.'
-          : 'Thanks — your message is saved. We will reply as soon as possible.',
-      )
-      event.currentTarget.reset()
+      setChatMessage('Thanks — your message is with us. We will reply as soon as possible.')
+      form.reset()
     }
   }
 
@@ -1315,7 +891,7 @@ export default function App() {
     url: `${siteUrl}/`,
     telephone: '01782970001',
     email: 'info@saltylamps.co.uk',
-    image: absoluteUrl(media('logo.png')),
+    image: absoluteUrl(media('salty-lamps-og-card.jpg')),
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Unit 41, Imex Business Park, Ormonde Street',
@@ -1389,8 +965,8 @@ export default function App() {
   }
 
   const renderShop = () => {
-    const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(taxonomy, categorySlug) : pageCopy.shop
-    const selectedCategoryCopy = categoryFilter !== 'all' ? categoryPageCopy(taxonomy, categoryFilter) : null
+    const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(content, taxonomy, categorySlug) : shopCopyOf(content)
+    const selectedCategoryCopy = categoryFilter !== 'all' ? categoryPageCopy(content, taxonomy, categoryFilter) : null
     const shopHeadingEyebrow = selectedCategoryCopy
       ? selectedCategoryCopy.eyebrow
       : activeShopperPath
@@ -1600,7 +1176,32 @@ export default function App() {
             ))}
           </nav>
         )}
-        {isCollectionRoot ? (
+        {isCollectionRoot && !collectionSections.length ? (
+          /* A collection can legitimately have nothing in it — the Aura panels are
+             hidden until they are priced. Without this the page simply stopped after
+             the filter rail, with no explanation. Same three states as the shop grid
+             below, so an outage never reads as "this range is empty". */
+          <div className="product-grid">
+            {catalog.status === 'loading' ? (
+              <div className="empty-state">
+                <h3>Loading the range…</h3>
+                <p>One moment while we fetch the latest products and stock.</p>
+              </div>
+            ) : catalog.status === 'error' ? (
+              <div className="empty-state">
+                <h3>We can’t load this range right now</h3>
+                <p>This is a problem at our end, not with your search. Please try again in a moment.</p>
+                <button className="button secondary" type="button" onClick={loadCatalog}>Try again</button>
+              </div>
+            ) : (
+              <div className="empty-state">
+                <h3>Nothing in this range just yet</h3>
+                <p>These products are on their way. In the meantime, the rest of the Salty Lamps range is ready to browse.</p>
+                <Link className="button secondary" href="/shop">View all products</Link>
+              </div>
+            )}
+          </div>
+        ) : isCollectionRoot ? (
           <>
             <nav className="collection-path-cards" aria-label={`Shop ${activeShopperPath.name} by need`}>
               {collectionSections.map(section => (
@@ -1764,7 +1365,7 @@ export default function App() {
           <p className="eyebrow">Shop by what you need</p>
           <h2>Choose the range that fits your buyer journey.</h2>
         </div>
-        {shopperPaths.map(path => (
+        {collections.map(path => (
           <Link key={path.slug} href={`/collection/${path.slug}`} className={`shopper-card theme-${path.theme}`}>
             <img className="shopper-card-bg" src={path.background} alt="" loading="lazy" />
             <span className="shopper-card-copy">
@@ -1816,8 +1417,14 @@ export default function App() {
           </label>
           <label>
             Message
-            <textarea name="message" rows="4" />
+            {/* Required here because /api/support/enquiry requires it for a trade
+                enquiry. This form reports success in a `finally`, so a rejected
+                submission would otherwise say "Thanks for submitting" and drop the
+                lead — client and server have to agree on the rule, not just the
+                endpoint know it. */}
+            <textarea name="message" rows="4" required />
           </label>
+          <Honeypot />
           <button type="submit">Send trade enquiry</button>
           {formMessage && <p className="success">{formMessage}</p>}
         </form>
@@ -1829,11 +1436,11 @@ export default function App() {
             <p className="eyebrow">Customer proof</p>
             <h2>Warm light, helpful service, and natural products people can inspect.</h2>
             <p>
-              Based on {reviews.length} customer guestbook notes, with the strongest themes surfaced from the real wording customers left after buying.
+              Based on {reviewCount} customer guestbook notes, with the strongest themes surfaced from the real wording customers left after buying.
             </p>
           </div>
           <div className="review-score">
-            <strong>5.0</strong>
+            <strong>{snippet(content, 'reviews.headline_score', '')}</strong>
             <span>
               <span className="review-stars" aria-label="5 star featured reviews">★★★★★</span>
               <small>Featured guestbook rating</small>
@@ -1855,13 +1462,13 @@ export default function App() {
               <svg width="38" height="38" viewBox="0 0 40 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <polygon points="20,4 24.1,14.3 35.2,15.1 26.7,22.2 29.4,33 20,27 10.6,33 13.3,22.2 4.8,15.1 15.9,14.3" />
               </svg>
-              Read all {reviews.length} reviews
+              Read all {reviewCount} reviews
             </Link>
           </div>
         </div>
         <div className="featured-reviews">
           {featuredReviews.map(review => (
-            <article className="featured-review" key={`${review.name}-${review.date}`}>
+            <article className="featured-review" key={review.id}>
               <div className="review-card-header">
                 <span className="review-avatar" aria-hidden="true">{initialsFor(review.name)}</span>
                 <span>
@@ -1885,11 +1492,11 @@ export default function App() {
 
   const renderProductPage = product => {
     const theme = taxonomy.themeForProduct(product)
-    const detailImages = detailImagesFor(product, theme)
-    const reassurance = productReassurance(theme)
-    const proof = productProof(theme)
-    const selling = productSellingContent(taxonomy, product)
-    const visibleReviews = productVisibleReviews(theme)
+    const detailImages = detailImagesFor(content, product, theme)
+    const reassurance = productReassurance(content, theme)
+    const proof = productProof(content, theme)
+    const selling = productSellingContent(content, taxonomy, product)
+    const visibleReviews = productVisibleReviews(content, theme)
     const eyebrow = product.tags.join(' / ')
 
     return (
@@ -1976,7 +1583,7 @@ export default function App() {
                 <p className="eyebrow">Customer proof</p>
                 <h2>Real buyer notes before you add to cart.</h2>
               </div>
-              <Link className="text-link" href="/reviews">Read all {reviews.length} reviews</Link>
+              <Link className="text-link" href="/reviews">Read all {reviewCount} reviews</Link>
             </div>
             <div className="product-review-grid">
               {visibleReviews.map(review => (
@@ -2105,7 +1712,10 @@ export default function App() {
         <p>For defective or damaged products, contact Salty Lamps so the team can arrange a refund or exchange.</p>
       </div>
       <div className="hero-actions">
-        <a className="button primary" href="mailto:info@saltylamps.co.uk?subject=Return%20or%20exchange%20request">Start a return</a>
+        {/* The form route rather than a mailto: it captures the order reference and
+            verifies it against the order book before anyone is emailed, which a
+            free-text mail cannot. The mailto stays as the secondary path. */}
+        <Link className="button primary" href="/refund-request">Start a return</Link>
         <a className="button secondary" href="tel:+441782970001">Call 01782 970001</a>
       </div>
     </section>
@@ -2122,7 +1732,7 @@ export default function App() {
           </p>
         </div>
         <div className="process-visual" aria-label="Manufacturing process visual">
-          {processSteps.map((step, index) => (
+          {(content.lists?.['process-steps'] || []).map((step, index) => (
             <span key={step.title}>
               <strong>{index + 1}</strong>
               {step.label}
@@ -2186,7 +1796,7 @@ export default function App() {
           </p>
         </div>
         <div className="process-range-grid">
-          {processProductRanges.map(item => (
+          {(content.lists?.['process-product-ranges'] || []).map(item => (
             <article key={item.title}>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
@@ -2195,9 +1805,9 @@ export default function App() {
         </div>
       </div>
       <div className="process-proof" aria-label="What the manufacturing film shows">
-        {processProofPoints.map(point => (
+        {(content.lists?.['process-proof-points'] || []).map(point => (
           <article key={point.title}>
-            <span>{point.stat}</span>
+            <span>{point.label}</span>
             <h2>{point.title}</h2>
             <p>{point.text}</p>
           </article>
@@ -2215,9 +1825,9 @@ export default function App() {
           <p>Every note is left by a verified buyer through the post-purchase guestbook. Start with the strongest themes, then browse a representative set of real customer wording.</p>
         </div>
         <div className="reviews-page-score">
-          <strong>5.0</strong>
+          <strong>{snippet(content, 'reviews.headline_score', '')}</strong>
           <span className="review-stars" aria-hidden="true">★★★★★</span>
-          <small>{reviews.length} verified reviews</small>
+          <small>{reviewCount} verified reviews</small>
         </div>
       </header>
       <div className="review-theme-grid" aria-label="Customer review themes">
@@ -2231,7 +1841,7 @@ export default function App() {
       </div>
       <div className="review-feature-grid" aria-label="Featured customer proof">
         {featuredReviews.map(review => (
-          <article key={`${review.name}-${review.date}`}>
+          <article key={review.id}>
             <div className="review-card-header">
               <span className="review-avatar" aria-hidden="true">{initialsFor(review.name)}</span>
               <span>
@@ -2250,10 +1860,10 @@ export default function App() {
           <p className="eyebrow">Representative guestbook notes</p>
           <h2>Recent proof without the endless scroll.</h2>
         </div>
-        <p>Showing {Math.min(36, displayableReviews.length)} of {reviews.length} verified notes. The full archive can stay available behind a “load more” control when the live site needs it.</p>
+        <p>Showing {Math.min(36, corpus.length)} of {reviewCount} verified notes. The full archive can stay available behind a “load more” control when the live site needs it.</p>
       </div>
       <div className="reviews-grid">
-        {displayableReviews.slice(0, 36).map(review => (
+        {corpus.slice(0, 36).map(review => (
           <article key={review.id}>
             <div className="review-card-header">
               <span className="review-avatar" aria-hidden="true">{initialsFor(review.name)}</span>
@@ -2263,7 +1873,7 @@ export default function App() {
               </span>
             </div>
             <p className="review-stars-line" aria-label="5 star review">★★★★★</p>
-            <p>{review.feedback}</p>
+            <p>{review.quote}</p>
             <em>Verified buyer</em>
           </article>
         ))}
@@ -2299,11 +1909,93 @@ export default function App() {
     </section>
   )
 
+  const handleRefundSubmit = async event => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const data = new FormData(form)
+    setRefund({ status: 'sending', errors: {} })
+
+    try {
+      const res = await fetch('/api/support/refund-request', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          order_ref: data.get('order_ref'),
+          email: data.get('email'),
+          reason: data.get('reason'),
+          website: data.get('website'),
+        }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setRefund({ status: 'idle', errors: payload?.error?.fields || { form: payload?.error?.message || 'Something went wrong. Please try again.' } })
+        return
+      }
+      setRefund({ status: 'sent', errors: {} })
+      form.reset()
+    } catch {
+      setRefund({ status: 'idle', errors: { form: 'Could not reach us just now. Please try again, or email info@saltylamps.co.uk.' } })
+    }
+  }
+
+  const renderRefundRequest = () => (
+    <section className="policy-page checkout-status-page">
+      <p className="eyebrow">Returns and refunds</p>
+      <h1>Request a refund or return.</h1>
+      {refund.status === 'sent' ? (
+        <>
+          {/* Deliberately non-committal. The endpoint answers identically whether or
+              not the reference and email matched an order, so that a stranger cannot
+              use this form to discover whether an order exists. Promising "we have
+              your request" here would leak exactly what that hides. */}
+          <p>
+            Thank you. If those details match an order, our team has been notified and will be in touch by
+            email within two working days. If you do not hear from us, check the order reference against your
+            confirmation email, or write to us directly.
+          </p>
+          <div className="hero-actions">
+            <Link className="button primary" href="/shop">Back to shop</Link>
+            <a className="button secondary" href="mailto:info@saltylamps.co.uk">Email us instead</a>
+          </div>
+        </>
+      ) : (
+        <>
+          <p>
+            Tell us which order and what went wrong. Use the order reference from your confirmation email —
+            it looks like <strong>#A1B2C3D4</strong> — and the email address you ordered with.
+          </p>
+          <form className="contact-card" onSubmit={handleRefundSubmit}>
+            <label>
+              Order reference
+              <input name="order_ref" type="text" placeholder="#A1B2C3D4" required />
+            </label>
+            {refund.errors.order_ref && <p className="notice">{refund.errors.order_ref}</p>}
+            <label>
+              Email you ordered with
+              <input name="email" type="email" autoComplete="email" required />
+            </label>
+            {refund.errors.email && <p className="notice">{refund.errors.email}</p>}
+            <label>
+              What is wrong?
+              <textarea name="reason" rows="5" placeholder="Tell us what happened and what you would like us to do." required />
+            </label>
+            {refund.errors.reason && <p className="notice">{refund.errors.reason}</p>}
+            <Honeypot />
+            <button type="submit" disabled={refund.status === 'sending'}>
+              {refund.status === 'sending' ? 'Sending…' : 'Send request'}
+            </button>
+            {refund.errors.form && <p className="notice">{refund.errors.form}</p>}
+          </form>
+        </>
+      )}
+    </section>
+  )
+
   const renderNotFound = () => (
     <section className="policy-page not-found-page">
-      <p className="eyebrow">{pageCopy.notFound.eyebrow}</p>
-      <h1>{pageCopy.notFound.title}</h1>
-      <p>{pageCopy.notFound.description}</p>
+      <p className="eyebrow">{notFoundCopyOf(content).eyebrow}</p>
+      <h1>{notFoundCopyOf(content).title}</h1>
+      <p>{notFoundCopyOf(content).description}</p>
       <div className="hero-actions">
         <Link className="button primary" href="/shop">Shop the range</Link>
         <Link className="button secondary" href="/">Return home</Link>
@@ -2328,7 +2020,11 @@ export default function App() {
       <div className="announce">Bulk and trade orders available</div>
       <header className="site-header">
         <Link className="brand" href="/" aria-label="Salty Lamps home">
-          <img src="/media/logo.png" alt="" />
+          {/* The emblem is a square JPEG on a solid black field. No transparent
+              variant is needed: .brand img already clips it with border-radius:50%
+              and object-fit:cover, so only black corner is removed, and the
+              existing amber box-shadow reads as the lamp's glow. */}
+          <img src="/salty-lamp-logo.jpeg" alt="" />
           <span>Salty Lamps</span>
         </Link>
         <nav aria-label="Primary navigation">
@@ -2354,6 +2050,8 @@ export default function App() {
             ? renderCheckoutSuccess()
           : route === '/checkout/cancelled'
             ? renderCheckoutCancelled()
+          : route === '/refund-request'
+            ? renderRefundRequest()
           : route === '/process'
             ? renderProcessPage()
             : route === '/reviews'
@@ -2410,6 +2108,7 @@ export default function App() {
               <input name="email" type="email" placeholder="Email address" required />
             </span>
           </label>
+          <Honeypot />
           <button type="submit">Subscribe</button>
           {newsletterMessage && <span className="newsletter-message">{newsletterMessage}</span>}
         </form>

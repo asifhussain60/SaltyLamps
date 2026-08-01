@@ -10,6 +10,32 @@
 
 import Stripe from 'stripe'
 
+// Makes Stripe's hosted checkout look like the rest of the shop rather than a
+// stranger's payment page. Applied per session, so it needs no dashboard access
+// and follows the code between environments.
+//
+// Colours are the storefront's own tokens from src/styles/saltylamps.css:
+// --paper for the page surround and --ember for the primary button. Corner style
+// matches --radius: 10px.
+//
+// FONT IS A SUBSTITUTION, NOT A MATCH. Stripe accepts a fixed list and the site's
+// own faces (Urbanist, DM Sans, Outfit, Manrope) are not on it. Inter is the
+// closest available in weight and proportion to DM Sans, which sets the site's
+// body copy. The permitted list is in the API error for an invalid value.
+//
+// THE LOGO IS NOT HERE, AND CANNOT BE. branding_settings[logo] rejects a
+// Files-API id on this account — the same "Invalid object" it returns for a
+// nonsense id — so the mark has to be uploaded once under Stripe → Settings →
+// Branding. Checkout falls back to the dashboard value for any field omitted
+// here, so the logo appears on every session once it is set, with no code change.
+const BRANDING = {
+  display_name: 'Salty Lamps',
+  background_color: '#f7efe6',
+  button_color: '#9b4328',
+  font_family: 'inter',
+  border_style: 'rounded',
+}
+
 export async function onRequestPost({ request, env }) {
   let body
   try {
@@ -63,6 +89,7 @@ export async function onRequestPost({ request, env }) {
     mode: 'payment',
     line_items: lineItems,
     shipping_address_collection: { allowed_countries: ['GB'] },
+    branding_settings: BRANDING,
     success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}/checkout/cancelled`,
   })

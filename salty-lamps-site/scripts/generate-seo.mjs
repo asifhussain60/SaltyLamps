@@ -15,8 +15,24 @@ const today = new Date().toISOString().slice(0, 10)
 // source layout of App.jsx three separate ways — the exact `const <name> = ` text,
 // the next const following immediately, and an eval sandbox exposing only
 // img/media — so renaming or reordering a const broke `npm run build` outright.
+//
+// Snapshot v2 moved the taxonomy and the whole marketing layer into D1, so the
+// collections and policy pages now come out of `content` rather than being top-level
+// copies of hardcoded modules. Everything downstream reads the same field names, so
+// only this unpacking changed.
 const snapshot = readSnapshot()
-const { products, categories, shopperPaths, pages: policyPages, siteUrl, categoryAliases } = snapshot
+const { products, categories, siteUrl, categoryAliases } = snapshot
+const content = snapshot.content || {}
+const shopperPaths = content.collections || []
+const policyPages = content.pages || {}
+
+if (!shopperPaths.length) {
+  throw new Error(
+    'The snapshot has no collections.\n'
+    + '  Every /collection/* route and its sitemap entries would silently vanish.\n'
+    + '  Check that migration 004 is applied to the database the snapshot was taken from.',
+  )
+}
 
 function readSnapshot() {
   const snapshotPath = path.join(root, 'src/content/content-snapshot.json')
@@ -89,13 +105,13 @@ const staticRoutes = [
     title: 'Returns and Exchanges | Salty Lamps',
     description:
       'Review Salty Lamps return and exchange next steps, return conditions, authorisation process, and support contact details.',
-    image: '/media/logo.png',
+    image: '/media/salty-lamps-og-card.jpg',
   },
   ...Object.entries(policyPages).map(([pathName, page]) => ({
     path: pathName,
     title: `${page.title} | Salty Lamps`,
     description: page.body[0],
-    image: '/media/logo.png',
+    image: '/media/salty-lamps-og-card.jpg',
   })),
   // NOTE: /admin/* is intentionally excluded from prerender + sitemap (noindex).
   // The admin portal is a client-only, auth-gated SPA subtree; it must not be
@@ -247,7 +263,7 @@ function storeSchema() {
     url: siteUrl,
     telephone: '01782970001',
     email: 'info@saltylamps.co.uk',
-    image: asset('/media/logo.png'),
+    image: asset('/media/salty-lamps-og-card.jpg'),
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Unit 41, Imex Business Park, Ormonde Street',
@@ -271,7 +287,10 @@ function injectHead(html, route) {
   const description = htmlEscape(route.description)
   const title = htmlEscape(route.title)
   const canonical = absolute(route.path)
-  const image = asset(route.image || '/media/logo.png')
+  // Landscape 1200x630, not the square emblem: every platform that renders a share
+  // preview crops toward that ratio, so a square would be letterboxed or cropped
+  // through the wordmark. Regenerate with scripts/generate-brand-assets.py.
+  const image = asset(route.image || '/media/salty-lamps-og-card.jpg')
   const robots = route.robots || 'index,follow'
   const schemaJson = JSON.stringify(schemaFor(route)).replaceAll('</script', '<\\/script')
 
@@ -416,5 +435,51 @@ ${videos
 </urlset>
 `,
 )
+
+// ---------------------------------------------------------------------------
+// Every referenced media file must actually exist.
+//
+// This exists because it already went wrong. The manufacturing film was dropped from
+// the repo during an unrelated refactor while three references to it survived: the
+// play button on /process, the poster beside it, and — worst — a VideoObject in the
+// structured data telling Google the file was there. The build was perfectly happy.
+// The page shipped with a player that could never play, and stayed that way until
+// somebody clicked it.
+//
+// A missing image or video is invisible to every other check here: sitemaps still
+// generate, routes still render, nothing throws. So it gets its own assertion, and it
+// fails the build rather than warning, because a warning in a build log is exactly
+// what nobody read last time.
+function assertReferencedMediaExists() {
+  const referenced = new Set()
+  const collect = value => {
+    if (typeof value === 'string') {
+      if (value.startsWith('/media/')) referenced.add(value.split('?')[0])
+    } else if (Array.isArray(value)) {
+      value.forEach(collect)
+    } else if (value && typeof value === 'object') {
+      Object.values(value).forEach(collect)
+    }
+  }
+  collect(content)
+  collect(categories)
+  // The videos this script declares to search engines, which are the ones a broken
+  // reference costs the most.
+  collect(videos)
+
+  const missing = [...referenced].filter(ref => !fs.existsSync(path.join(root, 'public', ref)))
+  if (missing.length) {
+    throw new Error(
+      `${missing.length} referenced media file(s) do not exist in public/:\n`
+      + missing.map(m => `    ${m}`).join('\n')
+      + '\n  The page would render a broken image or an unplayable video, and any'
+      + '\n  structured data pointing at it would advertise a 404 to search engines.'
+      + '\n  Restore the file (check `git log --diff-filter=D -- <path>`) or remove the reference.',
+    )
+  }
+  console.log(`  ✓ all ${referenced.size} referenced media files present`)
+}
+
+assertReferencedMediaExists()
 
 console.log(`Generated SEO files and ${routes.length} route-specific HTML shells.`)

@@ -4,8 +4,12 @@
 // Function secret: wrangler pages secret put STRIPE_WEBHOOK_SECRET
 //
 // Requires: DB (D1 binding), STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+// Optional: RESEND_API_KEY (see functions/lib/mailer.mjs) — without it, order and
+//           admin emails are recorded as 'skipped' and nothing else changes.
 
 import Stripe from 'stripe'
+import { sendTemplated, orderTokens, orderBlocks, loadEmailConfig } from '../lib/mailer.mjs'
+import { lowStockThreshold } from '../lib/admin-helpers.mjs'
 
 export async function onRequestPost({ request, env }) {
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
@@ -25,7 +29,7 @@ export async function onRequestPost({ request, env }) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
-    await recordOrder(env.DB, stripe, session)
+    await recordOrder(env, stripe, session, new URL(request.url).origin)
   }
 
   return new Response(JSON.stringify({ received: true }), {
@@ -34,7 +38,8 @@ export async function onRequestPost({ request, env }) {
   })
 }
 
-async function recordOrder(db, stripe, session) {
+async function recordOrder(env, stripe, session, origin) {
+  const db = env.DB
   const existing = await db.prepare('SELECT id FROM orders WHERE id = ?').bind(session.id).first()
   if (existing) return // already processed (Stripe may retry webhooks)
 
@@ -44,8 +49,21 @@ async function recordOrder(db, stripe, session) {
   })
 
   // Capture the shipping address Stripe collected — needed to pack and post the
-  // order. Fall back to the customer's billing address if no shipping block.
-  const ship = session.shipping_details || {}
+  // order.
+  //
+  // READ BOTH LOCATIONS. Stripe moved this field: up to API version 2024-06-20 it
+  // is `session.shipping_details`; from 2025 onwards it is
+  // `session.collected_information.shipping_details`. The apiVersion passed to the
+  // Stripe constructor does NOT control this — a webhook event is serialised at the
+  // version pinned on the ENDPOINT in the Stripe dashboard, which is currently
+  // 2026-06-24.dahlia. Reading only the old path returned undefined and silently
+  // fell through to the BILLING address below, so any customer who unticked
+  // "billing info is same as shipping" would have had their parcel sent to the
+  // wrong address.
+  //
+  // The billing fallback stays, but it is now genuinely a fallback rather than the
+  // path every order took.
+  const ship = session.shipping_details || session.collected_information?.shipping_details || {}
   const addr = ship.address || session.customer_details?.address || {}
   const shipName = ship.name || session.customer_details?.name || null
 
@@ -69,11 +87,17 @@ async function recordOrder(db, stripe, session) {
     ),
   ]
 
+  // sku_id -> units ordered, collected while building the insert statements so the
+  // low-stock check below has the quantities without walking the Stripe payload twice.
+  const orderedBySkuId = new Map()
+
   for (const line of lineItems.data) {
     // sku_id was stamped into the Stripe product's metadata in checkout.js, straight
     // from the D1-verified row — more trustworthy than anything echoed from the client.
     const skuId = Number(line.price?.product?.metadata?.sku_id)
     if (!Number.isInteger(skuId)) continue // metadata missing — skip rather than write a bad row
+
+    orderedBySkuId.set(skuId, (orderedBySkuId.get(skuId) || 0) + line.quantity)
 
     statements.push(
       db.prepare(
@@ -93,5 +117,162 @@ async function recordOrder(db, stripe, session) {
     )
   }
 
+  // Stock levels BEFORE the decrement. Read here, not after, because the low-stock
+  // alert must fire on the CROSSING — the one order that takes an item from at-or-
+  // above the threshold to below it. Testing "is it below now" instead would re-fire
+  // the same alert on every subsequent order until the item was restocked.
+  const before = await readStockBefore(db, [...orderedBySkuId.keys()])
+
   await db.batch(statements)
+
+  // Everything past this point is best-effort. The order is committed; nothing
+  // below may throw, or Stripe retries and the idempotency check above swallows
+  // the reprocess. sendTemplated() never throws, and the rest is wrapped.
+  try {
+    await sendOrderEmails(env, db, session, orderedBySkuId, before, origin, stripe)
+  } catch {
+    // Deliberately silent: an order that is recorded but unannounced is a support
+    // problem, an order that is lost is a business one.
+  }
+}
+
+async function readStockBefore(db, skuIds) {
+  if (skuIds.length === 0) return new Map()
+  const placeholders = skuIds.map(() => '?').join(',')
+  const { results } = await db
+    .prepare(
+      `SELECT s.id, s.sku, s.variant_label, s.quantity, s.track_mode, p.name
+       FROM skus s JOIN products p ON p.id = s.product_id
+       WHERE s.id IN (${placeholders})`,
+    )
+    .bind(...skuIds)
+    .all()
+  return new Map((results || []).map(r => [r.id, r]))
+}
+
+async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin, stripe) {
+  const order = await db.prepare(`SELECT * FROM orders WHERE id = ?`).bind(session.id).first()
+  if (!order) return
+
+  const items = await db.prepare(
+    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name
+     FROM order_items oi
+     JOIN skus s ON s.id = oi.sku_id
+     JOIN products p ON p.id = s.product_id
+     WHERE oi.order_id = ?`,
+  ).bind(session.id).all()
+
+  const paymentMethod = await readPaymentMethod(stripe, session)
+  const tokens = orderTokens(order, { paymentMethod })
+  const blocks = orderBlocks(order, items.results || [])
+  const messages = []
+
+  if (order.customer_email) {
+    messages.push({
+      templateKey: 'order_confirmation',
+      to: order.customer_email,
+      orderId: order.id,
+      data: tokens,
+      // Address included: it is the last chance a customer has to spot a wrong
+      // delivery address while it is still cheap to change.
+      blocks,
+    })
+  }
+
+  const config = await loadEmailConfig(env, origin)
+  if (config.adminEmail) {
+    messages.push({
+      templateKey: 'admin_new_order',
+      to: config.adminEmail,
+      orderId: order.id,
+      replyTo: order.customer_email || undefined,
+      data: {
+        ...tokens,
+        ctaHref: `${config.siteUrl}/admin/orders/${order.id}`,
+      },
+      blocks: [
+        {
+          type: 'panel',
+          title: 'Customer',
+          rows: [
+            ['Name', order.ship_name || ''],
+            ['Email', order.customer_email || ''],
+            ['Payment method', paymentMethod],
+            ['Stripe reference', order.id],
+          ],
+        },
+        ...blocks,
+      ],
+    })
+
+    for (const message of lowStockMessages(before, orderedBySkuId, await lowStockThreshold(db), config)) {
+      messages.push(message)
+    }
+  }
+
+  await sendTemplated(env, messages, { origin })
+}
+
+// One alert per SKU that crossed the threshold on THIS order, and none for a SKU
+// that was already below it before the order was placed.
+//
+// Exported purely so this rule can be tested on its own. It is the difference
+// between one alert and an alert on every subsequent order until the item is
+// restocked, and it is not reachable through the HTTP surface — driving it needs a
+// signed Stripe webhook for a session that exists in Stripe's own records.
+export function lowStockMessages(before, orderedBySkuId, threshold, config) {
+  if (!config.lowStockAlerts || !config.adminEmail) return []
+
+  const out = []
+  for (const [skuId, ordered] of orderedBySkuId) {
+    const row = before.get(skuId)
+    if (!row || row.track_mode !== 'quantity') continue
+
+    const was = Number(row.quantity ?? 0)
+    const now = Math.max(was - ordered, 0)
+    if (!(was >= threshold && now < threshold)) continue
+
+    out.push({
+      templateKey: 'admin_low_stock',
+      to: config.adminEmail,
+      data: {
+        product_name: row.name,
+        sku: row.sku,
+        variant_label: row.variant_label || '',
+        quantity: String(now),
+        threshold: String(threshold),
+        ctaHref: `${config.siteUrl}/admin/inventory`,
+      },
+      blocks: [{
+        type: 'panel',
+        title: 'Stock',
+        rows: [
+          ['Product', row.name],
+          ['Variant', row.variant_label || ''],
+          ['SKU', row.sku],
+          ['Remaining', String(now)],
+          ['Threshold', String(threshold)],
+        ],
+      }],
+    })
+  }
+  return out
+}
+
+// The method the customer ACTUALLY paid with, which is on the charge rather than
+// the session — session.payment_method_types lists what was offered, and once
+// PayPal and the wallets are enabled that is no longer the same thing. Guarded:
+// an extra Stripe round-trip must not be able to cost us the notification, and the
+// panel drops the row when this comes back empty.
+async function readPaymentMethod(stripe, session) {
+  try {
+    if (!session.payment_intent) return ''
+    const intent = await stripe.paymentIntents.retrieve(session.payment_intent, {
+      expand: ['latest_charge'],
+    })
+    const type = intent?.latest_charge?.payment_method_details?.type || ''
+    return type ? type.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()) : ''
+  } catch {
+    return ''
+  }
 }

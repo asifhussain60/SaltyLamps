@@ -36,7 +36,10 @@ import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { PRODUCTS_QUERY, PRODUCT_IMAGES_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
-import { categories, shopperPaths, pages, siteUrl, categoryAliases } from '../src/content/site-content.mjs'
+import {
+  CATEGORIES_QUERY, CATEGORY_ALIASES_QUERY, CONTENT_QUERIES, CONTENT_QUERY_KEYS, shapeContent,
+} from '../functions/lib/content-queries.mjs'
+import { siteUrl } from '../src/content/site-content.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -84,7 +87,18 @@ function resolveDatabaseId() {
 // ---------------------------------------------------------------------------
 // Product sources
 
-async function productsFromRemote() {
+// Every query the snapshot needs, in one round trip. The D1 HTTP API accepts several
+// statements and returns one result set per statement, positionally — so this list
+// and the destructuring below must stay in step.
+const REMOTE_QUERIES = [
+  PRODUCTS_QUERY,
+  PRODUCT_IMAGES_QUERY,
+  CATEGORIES_QUERY,
+  CATEGORY_ALIASES_QUERY,
+  ...CONTENT_QUERIES,
+]
+
+async function fromRemote() {
   const token = process.env.CLOUDFLARE_D1_TOKEN
     || keychainSecret('salty-lamps-proposal-cloudflare-d1-token')
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
@@ -103,13 +117,26 @@ async function productsFromRemote() {
     {
       method: 'POST',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ sql: PRODUCTS_QUERY }),
+      body: JSON.stringify({ sql: REMOTE_QUERIES.map(q => q.trim().replace(/;\s*$/, '')).join(';\n') }),
     },
   )
   const body = await res.json()
   if (!body.success) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
-  ok(`products from remote D1 (database id via ${from})`)
-  return flattenProductRows(body.result[0].results)
+
+  const sets = body.result.map(r => r.results || [])
+  const [productRows, imageRows, categoryRows, aliasRows, ...contentSets] = sets
+  if (contentSets.length < CONTENT_QUERY_KEYS.length) {
+    throw new Error(`expected ${REMOTE_QUERIES.length} result sets, got ${sets.length} — is migration 004 applied?`)
+  }
+
+  ok(`products, taxonomy and content from remote D1 (database id via ${from})`)
+  return {
+    resolvedFrom: 'live',
+    products: flattenProductRows(productRows, imageRows),
+    categories: categoryRows,
+    categoryAliases: Object.fromEntries(aliasRows.map(r => [r.alias, r.slug])),
+    content: shapeContent(Object.fromEntries(CONTENT_QUERY_KEYS.map((k, i) => [k, contentSets[i]]))),
+  }
 }
 
 // Reads through the RUNNING dev server rather than `wrangler d1 execute --local`.
@@ -121,18 +148,30 @@ async function productsFromRemote() {
 // endpoint guarantees the snapshot sees exactly the database the site is serving.
 //
 // Requires `wrangler pages dev` to be running. That is a fair trade for correctness.
-async function productsFromLocal() {
+async function fromLocal() {
   const url = process.env.LOCAL_API || 'http://localhost:8788'
-  let res
-  try {
-    res = await fetch(`${url}/api/products`)
-  } catch {
-    throw new Error(`no dev server at ${url} — start \`wrangler pages dev dist --port 8788 --d1 DB=${DB_NAME}\` first`)
+  const get = async pathname => {
+    let res
+    try {
+      res = await fetch(`${url}${pathname}`)
+    } catch {
+      throw new Error(`no dev server at ${url} — start \`wrangler pages dev dist --port 8788 --d1 DB=${DB_NAME}\` first`)
+    }
+    if (!res.ok) throw new Error(`${url}${pathname} returned ${res.status}`)
+    return res.json()
   }
-  if (!res.ok) throw new Error(`${url}/api/products returned ${res.status}`)
-  const { products } = await res.json()
-  ok(`products from the running dev server at ${url}`)
-  return products
+
+  const [products, taxonomy, content] = await Promise.all([
+    get('/api/products'), get('/api/categories'), get('/api/content'),
+  ])
+  ok(`products, taxonomy and content from the running dev server at ${url}`)
+  return {
+    resolvedFrom: 'local',
+    products: products.products,
+    categories: taxonomy.categories,
+    categoryAliases: taxonomy.aliases,
+    content,
+  }
 }
 
 function committedSnapshot() {
@@ -146,23 +185,34 @@ function committedSnapshot() {
 
 // ---------------------------------------------------------------------------
 
-async function resolveProducts() {
+// `resolvedFrom` records what the snapshot ACTUALLY read, which is not always what
+// was asked for — a live fetch that falls back still has to say "committed", or the
+// file claims a freshness it does not have.
+const pickSnapshot = prev => ({
+  products: prev.products,
+  categories: prev.categories,
+  categoryAliases: prev.categoryAliases,
+  content: prev.content,
+  resolvedFrom: 'committed',
+})
+
+async function resolveSnapshot() {
   if (SOURCE === 'committed') {
     const prev = committedSnapshot()
     if (!prev) throw new Error('CONTENT_SNAPSHOT_SOURCE=committed but no snapshot exists yet')
-    ok(`products from the committed snapshot (${prev.products.length})`)
-    return prev.products
+    ok(`everything from the committed snapshot (${prev.products.length} products)`)
+    return pickSnapshot(prev)
   }
 
   try {
-    return SOURCE === 'local' ? await productsFromLocal() : await productsFromRemote()
+    return SOURCE === 'local' ? await fromLocal() : await fromRemote()
   } catch (err) {
     const prev = committedSnapshot()
     if (!prev) {
       // No fallback available. This is the one case worth failing on: a first build
-      // with no snapshot and no database would emit a sitemap with zero products,
-      // which is far worse for SEO than a failed build.
-      console.error(`\n\x1b[31m✘\x1b[0m Could not read products (${err.message}) and no committed snapshot exists.`)
+      // with no snapshot and no database would emit a sitemap with zero products and
+      // a site with no copy, which is far worse for SEO than a failed build.
+      console.error(`\n\x1b[31m✘\x1b[0m Could not read the catalogue (${err.message}) and no committed snapshot exists.`)
       console.error('  Set CLOUDFLARE_D1_TOKEN + CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_D1_DATABASE_ID,')
       console.error('  or run with CONTENT_SNAPSHOT_SOURCE=local against a seeded local D1.\n')
       process.exit(1)
@@ -170,27 +220,43 @@ async function resolveProducts() {
     const ageDays = Math.floor((Date.now() - new Date(prev.generatedAt).getTime()) / 86400000)
     warn(`Could not reach D1 (${err.message}).`)
     warn(`Falling back to the committed snapshot — ${prev.products.length} products, ${ageDays} day(s) old.`)
-    warn('The site will build and deploy, but the catalogue in the sitemap may be stale.')
-    return prev.products
+    warn('The site will build and deploy, but the catalogue and copy may be stale.')
+    return pickSnapshot(prev)
   }
 }
 
-const products = await resolveProducts()
+const resolved = await resolveSnapshot()
+
+// A partial snapshot is worse than a stale one: it would silently ship a site with no
+// collections or no selling copy and nothing would look obviously broken. Refuse.
+for (const [key, value] of Object.entries({
+  products: resolved.products, categories: resolved.categories, content: resolved.content,
+})) {
+  const empty = !value || (Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0)
+  if (empty) {
+    console.error(`\n\x1b[31m✘\x1b[0m The snapshot came back with no ${key}.`)
+    console.error('  Refusing to write a partial snapshot — it would ship a site with missing content')
+    console.error('  that looks intact. Check that migrations 003 and 004 are applied to the target database.\n')
+    process.exit(1)
+  }
+}
 
 const snapshot = {
-  // Bumped by hand when the snapshot's shape changes, so a stale committed file
-  // can be detected rather than silently mis-read.
-  schemaVersion: 1,
+  // Bumped by hand when the snapshot's shape changes, so a stale committed file can be
+  // detected rather than silently mis-read. v2 adds `content` and sources categories
+  // from D1 instead of the hardcoded module.
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   source: SOURCE,
+  resolvedFrom: resolved.resolvedFrom || SOURCE,
   siteUrl,
-  categoryAliases,
-  categories,
-  shopperPaths,
-  pages,
-  products,
+  ...resolved,
 }
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true })
 fs.writeFileSync(outPath, `${JSON.stringify(snapshot, null, 2)}\n`)
-ok(`Wrote ${path.relative(root, outPath)} (${products.length} products, ${categories.length} categories)`)
+ok(
+  `Wrote ${path.relative(root, outPath)} — ${resolved.products.length} products, ` +
+  `${resolved.categories.length} categories, ${resolved.content.collections.length} collections, ` +
+  `${Object.keys(resolved.content.themes).length} themes`,
+)

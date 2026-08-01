@@ -102,8 +102,13 @@ from stdin — never pass it as a CLI argument, it'd land in shell history):
 - `STRIPE_WEBHOOK_SECRET` — see [`stripe.md`](stripe.md)
 - `SITE_URL` — currently `https://salty-lamps-proposal.pages.dev`; used by `checkout.js` to build
   the Stripe success/cancel redirect URLs
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — pre-existing, unrelated to this work (used for
-  form submissions elsewhere in the site)
+- `RESEND_API_KEY` — transactional email sender; see `functions/lib/mailer.mjs`. Without it every
+  send is recorded in the admin as `skipped` and nothing else changes
+- `MAIL_DRY_RUN` — dev/UAT only; renders and logs every email without handing it to the provider
+
+(The former `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` pair is gone. The storefront form
+submissions they served now post to `/api/support/enquiry`, which stores to D1 and emails the
+owner.)
 
 **Important:** Cloudflare Pages binds secrets to a deployment at *deploy time*. Setting a new
 secret does not retroactively apply to the currently-live deployment — you must redeploy after

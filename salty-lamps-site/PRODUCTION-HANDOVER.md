@@ -28,7 +28,31 @@ Nothing here touches the dev environment. Production is a clean, separate stack.
 2. A **Cloudflare API token** on that account with these three permissions:
    `Account › Cloudflare Pages › Edit`, `Account › D1 › Edit`,
    `Account › Workers R2 Storage › Edit`.
-3. A **Stripe account** in the owner's name, activated for live payments.
+3. A **Stripe account** in the owner's name, activated for live payments, and
+   **registered in the United Kingdom** — see the warning below.
+4. **DNS access to `saltylamps.co.uk`**, to add the sending-domain records the
+   transactional emails require (see "Email" below).
+
+> ### ⚠️ The Stripe account MUST be registered in the United Kingdom
+>
+> This cannot be changed afterwards. A Stripe account's country is fixed at
+> creation; moving country means abandoning the account and starting again with
+> new keys, a new webhook, and no payment history.
+>
+> Two things depend on it:
+>
+> - **PayPal.** Stripe offers PayPal only to accounts based in the UK, the EU,
+>   Norway, Liechtenstein and Switzerland. On a non-UK account PayPal does not
+>   appear in the dashboard at all — it is not a setting that can be switched on.
+>   Verified on 2026-08-01 against the dev sandbox, which is a **US** account and
+>   has no `paypal` entry in its payment-method configuration.
+> - **Currency.** The shop prices and charges in GBP. A non-UK account converts
+>   every transaction and charges a currency fee on it.
+>
+> Apple Pay and Google Pay are unaffected by country, but **Google Pay must be
+> switched on** in Stripe → Settings → Payment methods; it is off by default.
+> Apple Pay needs no domain registration because this shop uses Stripe's *hosted*
+> checkout page rather than an embedded form.
 
 > **Why the owner creates the token and enters the Stripe keys, not Asif:** live
 > payment keys and account credentials must only ever be handled by the owner.
@@ -77,12 +101,18 @@ pastes each value when prompted:
 npx wrangler pages secret put STRIPE_SECRET_KEY      --project-name salty-lamps
 npx wrangler pages secret put STRIPE_WEBHOOK_SECRET  --project-name salty-lamps
 npx wrangler pages secret put SITE_URL               --project-name salty-lamps
+npx wrangler pages secret put RESEND_API_KEY         --project-name salty-lamps
 ```
 
 - `STRIPE_SECRET_KEY` — the owner's **live** secret key (`sk_live_…`) from
   Stripe → Developers → API keys.
 - `SITE_URL` — the production domain, e.g. `https://www.saltylamps.co.uk`.
 - `STRIPE_WEBHOOK_SECRET` — see Step 3.
+- `RESEND_API_KEY` — the transactional email sender. Without it the shop runs
+  normally and every email is recorded in admin → Emails → Activity as `skipped`.
+  Also add the sending-domain DNS records, then switch **Send transactional
+  email** on in admin → Settings *after* a successful test send from
+  admin → Emails → Templates.
 
 ---
 
@@ -92,6 +122,17 @@ In the **owner's** Stripe Dashboard → Developers → Webhooks → Add endpoint
 
 - Endpoint URL: `https://<owner-domain>/api/webhook`
 - Event to send: `checkout.session.completed`
+
+> **On the endpoint's API version.** Stripe serialises a webhook event at the
+> version pinned on the *endpoint*, not the one in the application's Stripe
+> client. The delivery address moved between versions — up to `2024-06-20` it is
+> `session.shipping_details`, from 2025 onwards it is
+> `session.collected_information.shipping_details`. `functions/api/webhook.js`
+> reads both, so either version records the correct address. Do not "simplify"
+> that to one path: on 2026-08-01 the dev endpoint was pinned to
+> `2026-06-24.dahlia`, and reading only the old path silently fell through to the
+> customer's **billing** address — meaning any order where billing and delivery
+> differ would have been posted to the wrong place.
 
 Copy the endpoint's **Signing secret** (`whsec_…`) and set it as
 `STRIPE_WEBHOOK_SECRET` (Step 2). This is what lets the site mark orders paid.

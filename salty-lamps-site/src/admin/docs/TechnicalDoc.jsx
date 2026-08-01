@@ -37,7 +37,7 @@ export default function TechnicalDoc() {
             <tr><td>Object storage</td><td>Cloudflare R2</td><td>Binding <code>IMAGES</code>; admin-uploaded photos</td></tr>
             <tr><td>Payments</td><td>Stripe Checkout + webhook</td><td>Server-side only; no card data touches the app</td></tr>
             <tr><td>Admin auth</td><td>Cloudflare Access (Zero Trust)</td><td>RS256 JWT verified in middleware</td></tr>
-            <tr><td>Peripheral</td><td>Supabase</td><td>Optional enquiry/notes persistence only — not the shop data</td></tr>
+            <tr><td>Transactional email</td><td>Resend, over HTTP</td><td>Order, fulfilment, enquiry and stock notifications</td></tr>
           </tbody>
         </table>
       </div>
@@ -54,7 +54,6 @@ export default function TechnicalDoc() {
 │  │  ├─ AdminApp.jsx         admin SPA (dashboard, orders, catalog, inventory, reports, docs)
 │  │  └─ docs/                these documentation pages
 │  ├─ components/             DonutChart (live); the rest is an older proposal deck (unused)
-│  ├─ lib/supabase.js         optional Supabase client
 │  └─ styles/                 saltylamps.css (storefront) + admin.css (portal)
 ├─ functions/
 │  ├─ api/                    Pages Functions (public + admin endpoints)
@@ -214,7 +213,8 @@ export default function TechnicalDoc() {
             <tr><td><code>SITE_URL</code></td><td>Stripe success/cancel redirects</td></tr>
             <tr><td><code>ACCESS_AUD</code>, <code>ACCESS_TEAM_DOMAIN</code></td><td>admin auth middleware</td></tr>
             <tr><td><code>DEV_ADMIN_BYPASS</code></td><td>dev/UAT admin bypass (never in prod)</td></tr>
-            <tr><td><code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_ANON_KEY</code></td><td>optional enquiry persistence (build-time, in <code>.env.local</code>)</td></tr>
+            <tr><td><code>RESEND_API_KEY</code></td><td>transactional email sender</td></tr>
+            <tr><td><code>MAIL_DRY_RUN</code></td><td>dev/UAT only — log and record every email without delivering it</td></tr>
           </tbody>
         </table>
       </div>

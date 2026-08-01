@@ -3,6 +3,18 @@
 import Stripe from 'stripe'
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
 import { validateOrderPatch } from '../../../lib/validation.mjs'
+import { sendTemplated, orderTokens, orderBlocks } from '../../../lib/mailer.mjs'
+
+// Which customer email a status change earns, and only on an ACTUAL change.
+// Re-saving an order that is already 'shipped' — which the admin form does every
+// time any other field is edited — must not send the customer a second despatch
+// notice, so each rule compares the new value against the row as it was before.
+const STATUS_EMAILS = [
+  { field: 'fulfilment_status', to: 'shipped', template: 'order_shipped' },
+  { field: 'fulfilment_status', to: 'delivered', template: 'order_delivered' },
+  { field: 'status', to: 'refunded', template: 'order_refunded' },
+  { field: 'status', to: 'cancelled', template: 'order_cancelled' },
+]
 
 export async function onRequestGet({ params, env }) {
   try {
@@ -77,8 +89,50 @@ export async function onRequestPatch({ params, request, env, data }) {
     ])
 
     const updated = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
+
+    // After the update has committed, never inside its batch: a mail failure must
+    // not undo a fulfilment change the admin has already been told succeeded.
+    // sendTemplated() does not throw, and this is wrapped regardless.
+    try {
+      await notifyStatusChange(env, request, order, updated, value)
+    } catch { /* the status change stands; the email is best-effort */ }
+
     return json({ order: updated })
   } catch (err) {
     return apiError(`Could not update order: ${err.message}`, 500, { code: 'server_error' })
   }
+}
+
+async function notifyStatusChange(env, request, before, after, patch) {
+  if (!after?.customer_email) return
+
+  const templates = STATUS_EMAILS
+    .filter(rule => patch[rule.field] === rule.to && before[rule.field] !== rule.to)
+    .map(rule => rule.template)
+  if (templates.length === 0) return
+
+  // Same join the GET handler above uses, so the despatch email lists the order
+  // exactly as the admin sees it on screen.
+  const items = await env.DB.prepare(
+    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name
+     FROM order_items oi
+     JOIN skus s ON s.id = oi.sku_id
+     JOIN products p ON p.id = s.product_id
+     WHERE oi.order_id = ?`,
+  ).bind(after.id).all()
+
+  const tokens = orderTokens(after)
+  const blocks = orderBlocks(after, items.results || [])
+
+  await sendTemplated(
+    env,
+    templates.map(templateKey => ({
+      templateKey,
+      to: after.customer_email,
+      orderId: after.id,
+      data: tokens,
+      blocks,
+    })),
+    { origin: new URL(request.url).origin },
+  )
 }

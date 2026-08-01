@@ -19,13 +19,27 @@
 const JWKS_TTL_MS = 60 * 60 * 1000 // 1 hour
 const jwksCache = new Map() // teamDomain -> { keys, fetchedAt }
 
+// Admin responses must never be stored by a cache — not the edge, not a proxy, not
+// the browser. Without this they carry no cache directive at all, and Cloudflare
+// will happily serve a previously-authorised 200 to a later unauthenticated caller:
+// removing the dev bypass closed sixteen endpoints instantly while the seventeenth
+// kept returning a cached copy of the whole catalogue. Applied here rather than in
+// each handler so no future endpoint can forget it.
+function sealResponse(response) {
+  const sealed = new Response(response.body, response)
+  sealed.headers.set('cache-control', 'no-store, no-cache, must-revalidate, private')
+  sealed.headers.set('pragma', 'no-cache')
+  sealed.headers.set('vary', 'Cookie, Cf-Access-Jwt-Assertion')
+  return sealed
+}
+
 export async function onRequest(context) {
   const { request, env, next, data } = context
 
   // --- local-only bypass -------------------------------------------------
   if (isTruthy(env.DEV_ADMIN_BYPASS)) {
     data.actorEmail = 'dev@localhost'
-    return next()
+    return sealResponse(await next())
   }
 
   // Fail closed if the gate isn't configured — never serve admin data open.
@@ -48,7 +62,7 @@ export async function onRequest(context) {
   if (!email) return unauthorized('Access token has no identity.')
 
   data.actorEmail = email
-  return next()
+  return sealResponse(await next())
 }
 
 // ---------------------------------------------------------------------------
@@ -134,8 +148,8 @@ async function verifyAccessJwt(token, teamDomain, expectedAud) {
 }
 
 function unauthorized(message, status = 401) {
-  return new Response(JSON.stringify({ error: { code: 'unauthorized', message } }), {
+  return sealResponse(new Response(JSON.stringify({ error: { code: 'unauthorized', message } }), {
     status,
     headers: { 'content-type': 'application/json' },
-  })
+  }))
 }

@@ -79,15 +79,14 @@ same way — the script and all data commands will then work headlessly.
 
 ## Build-time environment
 
-`src/lib/supabase.js` reads two `VITE_*` vars, baked into the bundle at build
-time. They live in `.env.local` (git-ignored) — already present in this repo:
+None. The build reads no `VITE_*` variables.
 
-| Variable | Purpose |
-|---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase publishable key (safe for the browser) |
-
-No Cloudflare Pages dashboard env vars are needed — Vite bakes these in.
+Until August 2026 this section documented `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY`, read by a Supabase client that the storefront's chat,
+trade and newsletter forms wrote to. Those forms now post to
+`/api/support/enquiry`, which stores to D1 and emails the owner, so the client,
+its two variables and the `@supabase/supabase-js` dependency are all gone. Any
+copy of `.env.local` still carrying those two keys is harmless and unread.
 
 ## Creating an API token (Option A)
 

@@ -26,10 +26,17 @@ CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(produ
 
 -- Backfill: every product's existing single image becomes image #0 of its gallery.
 -- '/api/images/' is 12 characters, so substr(image, 13) strips it to recover the R2 key.
+--
+-- The NOT EXISTS guard is load-bearing. deploy-production.sh loops over every file
+-- in d1/migrations/ on EVERY run, so an unguarded INSERT would re-add each product's
+-- primary image on the second deploy and every deploy after it, doubling the gallery
+-- each time. Skipping products that already have gallery rows also means a gallery
+-- the owner has since curated in admin is never touched.
 INSERT INTO product_images (product_id, key, path, sort_order)
 SELECT id,
        CASE WHEN image LIKE '/api/images/%' THEN substr(image, 13) ELSE NULL END,
        image,
        0
 FROM products
-WHERE image != '';
+WHERE image != ''
+  AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.product_id = products.id);

@@ -1,274 +1,13 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-08-01T14:04:17.068Z",
-  "source": "local",
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T19:51:02.337Z",
+  "source": "live",
+  "resolvedFrom": "live",
   "siteUrl": "https://www.saltylamps.co.uk",
-  "categoryAliases": {
-    "himalyan-salt-massage-relaxation-products": "himalayan-salt-massage-relaxation-products"
-  },
-  "categories": [
-    {
-      "slug": "all-products",
-      "name": "All products",
-      "description": "The full Salty Lamps range in one place.",
-      "image": "/media/live-site-products/lamp-sphere-gemini.jpg"
-    },
-    {
-      "slug": "salt-lamps",
-      "name": "Salt lamps",
-      "description": "Warm-glow lamps for bedrooms, counters, lounges, and gifts.",
-      "image": "/media/live-site-products/lamp-block-gemini.jpg"
-    },
-    {
-      "slug": "candle-holders",
-      "name": "Candle holders",
-      "description": "Giftable tealight holders for cosy rooms, spas, and tables.",
-      "image": "/media/live-site-products/holder-natural-gemini.jpg"
-    },
-    {
-      "slug": "rock-salt-pantry-items",
-      "name": "Kitchen saltware",
-      "description": "Platters, bowls, culinary salt, and salt barware.",
-      "image": "/media/live-site-products/salty-chef-family-live-site.png"
-    },
-    {
-      "slug": "rock-salt-bricks",
-      "name": "Salt bricks",
-      "description": "Salt wall bricks and feature-wall materials for trade buyers.",
-      "image": "/media/live-site-products/salt-bricks-clean-gemini.jpg"
-    },
-    {
-      "slug": "equestrian-salt-licks",
-      "name": "Equestrian salt licks",
-      "description": "Mineral salt licks for horses, cattle, fields, and yards.",
-      "image": "/media/live-site-products/lick-field-scene-gemini.jpg"
-    },
-    {
-      "slug": "himalayan-salt-massage-relaxation-products",
-      "name": "Massage and relaxation",
-      "description": "Spa, bath, massage, and body-care salt products.",
-      "image": "/media/live-site-products/massage-stones-gemini.jpg"
-    },
-    {
-      "slug": "accessories",
-      "name": "Accessories",
-      "description": "Replacement bulbs and cables for compatible salt lamps.",
-      "image": "/media/live-site-products/accessory-bulb-gemini.jpg"
-    },
-    {
-      "slug": "special-deal",
-      "name": "Special deals",
-      "description": "Bundle offers and starter sets for easy gifting.",
-      "image": "/media/live-site-products/holder-apple-gemini.jpg"
-    },
-    {
-      "slug": "salt-wall-panels",
-      "name": "Aura Collection",
-      "description": "Illuminated Himalayan salt wall art in hand-finished wood frames.",
-      "image": "/media/live-site-products/aura-collection-frame-detail-live-site.jpg"
-    }
-  ],
-  "shopperPaths": [
-    {
-      "slug": "home-gifts",
-      "name": "Home, gifts and glow",
-      "shortName": "Home and gifts",
-      "eyebrow": "Everyday warmth",
-      "heading": "Lamps, holders, gifts, and easy home glow.",
-      "description": "Warm-room products for bedrooms, desks, lounges, shelves, and simple gifting.",
-      "heroIntro": [
-        "There's a particular kind of calm that arrives when a room glows amber instead of glaring white. Our hand-finished ",
-        {
-          "hl": "salt lamps and candle holders"
-        },
-        " turn bedrooms, desks, and lounges into spaces that feel warmer the moment they're lit — and they make ",
-        {
-          "hl": "quietly thoughtful gifts"
-        },
-        ". Every piece is carved from natural Himalayan rock salt, so ",
-        {
-          "hl": "no two are ever quite alike"
-        },
-        "."
-      ],
-      "heroVideo": "/media/video/collection/home-gifts-hero-16x9.mp4",
-      "heroPoster": "/media/video/collection/home-gifts-hero-poster-16x9.jpg",
-      "categories": [
-        "special-deal",
-        "salt-lamps",
-        "candle-holders",
-        "accessories"
-      ],
-      "theme": "lamp",
-      "background": "/media/yoga-room.png",
-      "foreground": [
-        "/media/live-site-products/lamp-sphere-gemini.jpg",
-        "/media/live-site-products/holder-heart-gemini.jpg"
-      ]
-    },
-    {
-      "slug": "kitchen-food",
-      "name": "Kitchen and food",
-      "shortName": "Kitchen",
-      "eyebrow": "Cooking and serving",
-      "heading": "Saltware, platters, bowls, and pantry salt.",
-      "description": "Food and hosting products for kitchens, counters, table settings, and gifts.",
-      "heroIntro": [
-        "Salt should be something you can see, taste, and serve from. Our ",
-        {
-          "hl": "culinary-grade Himalayan salt"
-        },
-        ", hand-cut platters, and serving bowls bring ",
-        {
-          "hl": "genuine mineral character"
-        },
-        " to everyday cooking and unhurried hosting alike. Sear, chill, plate, and present on a material that is ",
-        {
-          "hl": "as striking on the table as in the pan"
-        },
-        "."
-      ],
-      "heroVideo": "/media/video/collection/kitchen-food-hero-16x9.mp4",
-      "heroPoster": "/media/video/collection/kitchen-food-hero-poster-16x9.jpg",
-      "categories": [
-        "rock-salt-pantry-items"
-      ],
-      "theme": "kitchen",
-      "background": "/media/kitchen-setup.png",
-      "foreground": [
-        "/media/live-site-products/salty-chef-family-live-site.png",
-        "/media/live-site-products/platter-kitchen-gemini.jpg"
-      ]
-    },
-    {
-      "slug": "horses-farm",
-      "name": "Horses and farm",
-      "shortName": "Horses and farm",
-      "eyebrow": "Field and yard supply",
-      "heading": "Salt licks and bulk-ready animal mineral products.",
-      "description": "Simple routes for horse owners, yards, smallholders, and equestrian suppliers.",
-      "heroIntro": [
-        "Animals know what they need. A ",
-        {
-          "hl": "natural Himalayan salt lick"
-        },
-        " gives horses, ponies, and cattle a simple mineral source they can return to in the field or yard — ",
-        {
-          "hl": "no fuss, no additives"
-        },
-        ", just natural rock salt for everyday routines. Single licks or bulk-ready supply for busy yards."
-      ],
-      "heroVideo": "/media/video/collection/horses-farm-hero-16x9.mp4",
-      "heroPoster": "/media/video/collection/horses-farm-hero-poster-16x9.jpg",
-      "categories": [
-        "equestrian-salt-licks"
-      ],
-      "theme": "equestrian",
-      "background": "/media/home-horse-salt-lick-generated.png",
-      "foreground": [
-        "/media/live-site-products/lick-product-clean-gemini.jpg"
-      ]
-    },
-    {
-      "slug": "trade-spa",
-      "name": "Trade supply",
-      "shortName": "Trade and wellness",
-      "eyebrow": "Projects and repeat supply",
-      "heading": "Salt walls, spa products, and trade-friendly ranges.",
-      "description": "Bulk supply for spas, retailers, and interiors projects.",
-      "heroIntro": [
-        "Wellness spaces sell a feeling before they sell anything else. ",
-        {
-          "hl": "Backlit salt-brick walls"
-        },
-        ", warm massage stones, and mineral bath salts let spas, treatment rooms, and interiors projects build that ",
-        {
-          "hl": "sense of calm"
-        },
-        " into the room itself. ",
-        {
-          "hl": "Trade-friendly pricing and repeat supply"
-        },
-        " make it easy to specify once and reorder with confidence."
-      ],
-      "heroVideo": "/media/video/collection/trade-spa-hero-16x9.mp4",
-      "heroPoster": "/media/video/collection/trade-spa-hero-poster-16x9.jpg",
-      "categories": [
-        "rock-salt-bricks",
-        "himalayan-salt-massage-relaxation-products"
-      ],
-      "theme": "bricks",
-      "background": "/media/home-spa-salt-room-generated.png",
-      "foreground": [
-        "/media/live-site-products/salt-bricks-clean-gemini.jpg",
-        "/media/live-site-products/massage-stones-gemini.jpg"
-      ]
-    },
-    {
-      "slug": "aura-collection",
-      "name": "The Aura Collection",
-      "shortName": "Aura Collection",
-      "eyebrow": "Illuminated wall art",
-      "heading": "Illuminated Himalayan salt wall art, framed by hand.",
-      "description": "Luxury backlit salt panels in hand-finished wood frames — warm, unique wall art for homes, gyms, and studios.",
-      "heroIntro": [
-        "The Aura Collection is ",
-        {
-          "hl": "illuminated Himalayan salt wall art"
-        },
-        " — carved from ancient rock salt formed over millions of years, so ",
-        {
-          "hl": "every panel is unique"
-        },
-        ", with natural mineral veining from pale pink to deep orange. Each piece is set in a ",
-        {
-          "hl": "hand-finished solid-wood frame"
-        },
-        " with mitred corners, pairs beautifully with wood, stone, linen, and plants, and comes in a range of sizes — from a single accent panel to a full statement wall, at home, in the studio, or in reception."
-      ],
-      "heroVideo": "/media/video/collection/aura-collection-hero-16x9.mp4",
-      "heroPoster": "/media/video/collection/aura-collection-hero-poster-16x9.jpg",
-      "categories": [
-        "salt-wall-panels"
-      ],
-      "theme": "panel",
-      "background": "/media/aura-collection-lifestyle.jpg",
-      "foreground": [
-        "/media/live-site-products/aura-collection-frame-detail-live-site.jpg",
-        "/media/live-site-products/aura-collection-workshop-real-live-site.jpg"
-      ]
-    }
-  ],
-  "pages": {
-    "/privacy-policy": {
-      "title": "Privacy Policy",
-      "body": [
-        "Salty Lamps Ltd only collects the information needed to answer enquiries, process orders, and send requested updates.",
-        "Newsletter subscribers can opt out of marketing emails at any time by contacting info@saltylamps.co.uk.",
-        "Customer details are handled carefully and are not sold to third parties."
-      ]
-    },
-    "/terms-and-conditions": {
-      "title": "Terms and Conditions",
-      "body": [
-        "Orders are subject to product availability, confirmed pricing, and successful payment or agreed invoice terms.",
-        "Natural Himalayan salt products vary in tone, texture, and shape because every piece is cut from natural rock salt.",
-        "Use products according to the care guidance supplied and keep salt items away from excess moisture."
-      ]
-    },
-    "/return-refund-policy": {
-      "title": "Returns and Refund Policy",
-      "body": [
-        "If an item arrives damaged or incorrect, contact Salty Lamps Ltd promptly with your order details and photographs where relevant.",
-        "Returns and exchanges are reviewed against product condition, timing, and the nature of the item ordered.",
-        "Trade, custom, and bulk orders may require separate return arrangements."
-      ]
-    }
-  },
   "products": [
     {
-      "id": "sku-44",
-      "skuId": 44,
+      "id": "sku-121",
+      "skuId": 121,
       "productId": "product_1b92dfb0-dae3-eb06-66b7-2e5977e45712",
       "slug": "angel-shape-himalayan-rock-salt-lamp",
       "name": "Angel Shape Himalayan Rock Salt Lamp",
@@ -289,8 +28,8 @@
       "tags": []
     },
     {
-      "id": "sku-58",
-      "skuId": 58,
+      "id": "sku-135",
+      "skuId": 135,
       "productId": "product_0d1e2d90-db7b-c2d4-19d4-1beddec6b44a",
       "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-small",
       "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Small",
@@ -311,8 +50,8 @@
       "tags": []
     },
     {
-      "id": "sku-59",
-      "skuId": 59,
+      "id": "sku-136",
+      "skuId": 136,
       "productId": "product_0d1e2d90-db7b-c2d4-19d4-1beddec6b44a",
       "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-large",
       "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large",
@@ -333,8 +72,8 @@
       "tags": []
     },
     {
-      "id": "sku-42",
-      "skuId": 42,
+      "id": "sku-119",
+      "skuId": 119,
       "productId": "product_260249e0-7013-2160-075e-357aa0283c57",
       "slug": "block-shape-himalayan-rock-salt-lamp",
       "name": "Block Shape Himalayan Rock Salt Lamp",
@@ -355,8 +94,8 @@
       "tags": []
     },
     {
-      "id": "sku-33",
-      "skuId": 33,
+      "id": "sku-110",
+      "skuId": 110,
       "productId": "product_9c0fe076-e77b-b119-4f49-0642a88bd3f0",
       "slug": "cable-for-salt-lamp",
       "name": "Cable for Salt Lamp",
@@ -377,8 +116,8 @@
       "tags": []
     },
     {
-      "id": "sku-35",
-      "skuId": 35,
+      "id": "sku-112",
+      "skuId": 112,
       "productId": "product_b7ee9a81-2449-0c05-2555-b5910e2d97ee",
       "slug": "cable-for-salt-lamp",
       "name": "Cable for Salt Lamp",
@@ -399,8 +138,8 @@
       "tags": []
     },
     {
-      "id": "sku-43",
-      "skuId": 43,
+      "id": "sku-120",
+      "skuId": 120,
       "productId": "product_79f86bda-e4f2-a942-d587-81628e0a3b01",
       "slug": "dolphin-shape-himalayan-rock-salt-lamp",
       "name": "Dolphin Shape Himalayan Rock Salt Lamp",
@@ -421,8 +160,8 @@
       "tags": []
     },
     {
-      "id": "sku-50",
-      "skuId": 50,
+      "id": "sku-127",
+      "skuId": 127,
       "productId": "product_d8f2a678-0866-3530-90ea-e7b4da6b62a6",
       "slug": "dove-shape-himalayan-rock-salt-lamp",
       "name": "Dove Shape Himalayan Rock Salt Lamp",
@@ -443,8 +182,8 @@
       "tags": []
     },
     {
-      "id": "sku-77",
-      "skuId": 77,
+      "id": "sku-154",
+      "skuId": 154,
       "productId": "product_c8539b66-7a44-fe18-affc-afec4be8562a",
       "slug": "fire-basket-himalayan-rock-salt-lamp",
       "name": "Fire Basket Himalayan Rock Salt Lamp",
@@ -465,8 +204,8 @@
       "tags": []
     },
     {
-      "id": "sku-65",
-      "skuId": 65,
+      "id": "sku-142",
+      "skuId": 142,
       "productId": "product_fb78f6bc-88bc-9a61-7c0c-21af775b496f",
       "slug": "fire-bowl-himalayan-rock-salt-lamp-small",
       "name": "Fire Bowl Himalayan Rock Salt Lamp — Small",
@@ -487,8 +226,8 @@
       "tags": []
     },
     {
-      "id": "sku-66",
-      "skuId": 66,
+      "id": "sku-143",
+      "skuId": 143,
       "productId": "product_fb78f6bc-88bc-9a61-7c0c-21af775b496f",
       "slug": "fire-bowl-himalayan-rock-salt-lamp-large",
       "name": "Fire Bowl Himalayan Rock Salt Lamp — Large",
@@ -509,8 +248,8 @@
       "tags": []
     },
     {
-      "id": "sku-2",
-      "skuId": 2,
+      "id": "sku-79",
+      "skuId": 79,
       "productId": "product_2f15bfa7-2bf7-ae5f-bfc4-ad8a5f703cce",
       "slug": "flower-shape-himalayan-rock-salt-lamp",
       "name": "Flower Shape Himalayan Rock Salt Lamp",
@@ -531,8 +270,8 @@
       "tags": []
     },
     {
-      "id": "sku-52",
-      "skuId": 52,
+      "id": "sku-129",
+      "skuId": 129,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Fine",
@@ -553,8 +292,8 @@
       "tags": []
     },
     {
-      "id": "sku-53",
-      "skuId": 53,
+      "id": "sku-130",
+      "skuId": 130,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Coarse",
@@ -575,8 +314,8 @@
       "tags": []
     },
     {
-      "id": "sku-54",
-      "skuId": 54,
+      "id": "sku-131",
+      "skuId": 131,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Fine",
@@ -597,8 +336,8 @@
       "tags": []
     },
     {
-      "id": "sku-55",
-      "skuId": 55,
+      "id": "sku-132",
+      "skuId": 132,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Coarse",
@@ -619,8 +358,8 @@
       "tags": []
     },
     {
-      "id": "sku-56",
-      "skuId": 56,
+      "id": "sku-133",
+      "skuId": 133,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Fine",
@@ -641,8 +380,8 @@
       "tags": []
     },
     {
-      "id": "sku-57",
-      "skuId": 57,
+      "id": "sku-134",
+      "skuId": 134,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Coarse",
@@ -663,8 +402,8 @@
       "tags": []
     },
     {
-      "id": "sku-72",
-      "skuId": 72,
+      "id": "sku-149",
+      "skuId": 149,
       "productId": "product_ff66797a-a149-bcce-6f40-148918543489",
       "slug": "himalayan-crystal-rock-salt-candle-holder-goblet-shape",
       "name": "Himalayan Crystal Rock Salt Candle Holder / Goblet Shape",
@@ -685,8 +424,8 @@
       "tags": []
     },
     {
-      "id": "sku-14",
-      "skuId": 14,
+      "id": "sku-91",
+      "skuId": 91,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-8-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 8\" Dia",
@@ -707,8 +446,8 @@
       "tags": []
     },
     {
-      "id": "sku-15",
-      "skuId": 15,
+      "id": "sku-92",
+      "skuId": 92,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-10-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 10\" Dia",
@@ -729,8 +468,8 @@
       "tags": []
     },
     {
-      "id": "sku-16",
-      "skuId": 16,
+      "id": "sku-93",
+      "skuId": 93,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-2-5-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 2.5\" Dia",
@@ -751,8 +490,8 @@
       "tags": []
     },
     {
-      "id": "sku-17",
-      "skuId": 17,
+      "id": "sku-94",
+      "skuId": 94,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-6-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 6\" Dia",
@@ -773,8 +512,8 @@
       "tags": []
     },
     {
-      "id": "sku-3",
-      "skuId": 3,
+      "id": "sku-80",
+      "skuId": 80,
       "productId": "product_d9e5764d-48cf-f535-2c58-300a07f3ae7d",
       "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-842",
       "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-842",
@@ -795,8 +534,8 @@
       "tags": []
     },
     {
-      "id": "sku-4",
-      "skuId": 4,
+      "id": "sku-81",
+      "skuId": 81,
       "productId": "product_d9e5764d-48cf-f535-2c58-300a07f3ae7d",
       "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-841",
       "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-841",
@@ -817,8 +556,8 @@
       "tags": []
     },
     {
-      "id": "sku-7",
-      "skuId": 7,
+      "id": "sku-84",
+      "skuId": 84,
       "productId": "product_0b00a2a3-b2c1-3a42-23e4-3c35749dfb19",
       "slug": "himalayan-rock-salt-candle-holder-ball-sphere-shape",
       "name": "Himalayan Rock Salt Candle Holder (Ball / Sphere Shape)",
@@ -839,8 +578,8 @@
       "tags": []
     },
     {
-      "id": "sku-5",
-      "skuId": 5,
+      "id": "sku-82",
+      "skuId": 82,
       "productId": "product_c76fac9b-0b1d-e462-efb5-77dd795df761",
       "slug": "himalayan-rock-salt-candle-holder-block-square-shape-large",
       "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Large",
@@ -861,8 +600,8 @@
       "tags": []
     },
     {
-      "id": "sku-6",
-      "skuId": 6,
+      "id": "sku-83",
+      "skuId": 83,
       "productId": "product_c76fac9b-0b1d-e462-efb5-77dd795df761",
       "slug": "himalayan-rock-salt-candle-holder-block-square-shape-small",
       "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Small",
@@ -883,8 +622,8 @@
       "tags": []
     },
     {
-      "id": "sku-34",
-      "skuId": 34,
+      "id": "sku-111",
+      "skuId": 111,
       "productId": "product_0bb26b6a-e51a-6ac1-bbb7-6ae828c6112a",
       "slug": "himalayan-rock-salt-candle-holder-heart-shape",
       "name": "Himalayan Rock Salt Candle Holder (Heart Shape)",
@@ -905,8 +644,8 @@
       "tags": []
     },
     {
-      "id": "sku-70",
-      "skuId": 70,
+      "id": "sku-147",
+      "skuId": 147,
       "productId": "product_fc4519da-2c43-8eb4-3c02-5e05d0c750aa",
       "slug": "himalayan-rock-salt-candle-holder-natural-shape-small",
       "name": "Himalayan Rock Salt Candle Holder Natural Shape — Small",
@@ -927,8 +666,8 @@
       "tags": []
     },
     {
-      "id": "sku-71",
-      "skuId": 71,
+      "id": "sku-148",
+      "skuId": 148,
       "productId": "product_fc4519da-2c43-8eb4-3c02-5e05d0c750aa",
       "slug": "himalayan-rock-salt-candle-holder-natural-shape-large",
       "name": "Himalayan Rock Salt Candle Holder Natural Shape — Large",
@@ -949,8 +688,8 @@
       "tags": []
     },
     {
-      "id": "sku-21",
-      "skuId": 21,
+      "id": "sku-98",
+      "skuId": 98,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 4pc",
@@ -971,8 +710,8 @@
       "tags": []
     },
     {
-      "id": "sku-22",
-      "skuId": 22,
+      "id": "sku-99",
+      "skuId": 99,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 4pc",
@@ -993,8 +732,8 @@
       "tags": []
     },
     {
-      "id": "sku-23",
-      "skuId": 23,
+      "id": "sku-100",
+      "skuId": 100,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 12pc",
@@ -1015,8 +754,8 @@
       "tags": []
     },
     {
-      "id": "sku-24",
-      "skuId": 24,
+      "id": "sku-101",
+      "skuId": 101,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 2pc",
@@ -1037,8 +776,8 @@
       "tags": []
     },
     {
-      "id": "sku-25",
-      "skuId": 25,
+      "id": "sku-102",
+      "skuId": 102,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 1pc",
@@ -1059,8 +798,8 @@
       "tags": []
     },
     {
-      "id": "sku-26",
-      "skuId": 26,
+      "id": "sku-103",
+      "skuId": 103,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 12pc",
@@ -1081,8 +820,8 @@
       "tags": []
     },
     {
-      "id": "sku-27",
-      "skuId": 27,
+      "id": "sku-104",
+      "skuId": 104,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 12pc",
@@ -1103,8 +842,8 @@
       "tags": []
     },
     {
-      "id": "sku-28",
-      "skuId": 28,
+      "id": "sku-105",
+      "skuId": 105,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 2pc",
@@ -1125,8 +864,8 @@
       "tags": []
     },
     {
-      "id": "sku-29",
-      "skuId": 29,
+      "id": "sku-106",
+      "skuId": 106,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 1pc",
@@ -1147,8 +886,8 @@
       "tags": []
     },
     {
-      "id": "sku-30",
-      "skuId": 30,
+      "id": "sku-107",
+      "skuId": 107,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 2pc",
@@ -1169,8 +908,8 @@
       "tags": []
     },
     {
-      "id": "sku-31",
-      "skuId": 31,
+      "id": "sku-108",
+      "skuId": 108,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 1pc",
@@ -1191,8 +930,8 @@
       "tags": []
     },
     {
-      "id": "sku-32",
-      "skuId": 32,
+      "id": "sku-109",
+      "skuId": 109,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 4pc",
@@ -1213,8 +952,8 @@
       "tags": []
     },
     {
-      "id": "sku-45",
-      "skuId": 45,
+      "id": "sku-122",
+      "skuId": 122,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-heart",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Heart",
@@ -1235,8 +974,8 @@
       "tags": []
     },
     {
-      "id": "sku-46",
-      "skuId": 46,
+      "id": "sku-123",
+      "skuId": 123,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-ball",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Ball",
@@ -1257,8 +996,8 @@
       "tags": []
     },
     {
-      "id": "sku-47",
-      "skuId": 47,
+      "id": "sku-124",
+      "skuId": 124,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-disk",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Disk",
@@ -1279,8 +1018,8 @@
       "tags": []
     },
     {
-      "id": "sku-48",
-      "skuId": 48,
+      "id": "sku-125",
+      "skuId": 125,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-stick",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Stick",
@@ -1301,8 +1040,8 @@
       "tags": []
     },
     {
-      "id": "sku-8",
-      "skuId": 8,
+      "id": "sku-85",
+      "skuId": 85,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-12-x8-x1-5-rectangle",
       "name": "Himalayan Rock Salt Platters — 12\"x8\"x1.5\" Rectangle",
@@ -1323,8 +1062,8 @@
       "tags": []
     },
     {
-      "id": "sku-9",
-      "skuId": 9,
+      "id": "sku-86",
+      "skuId": 86,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x1-5-round",
       "name": "Himalayan Rock Salt Platters — 8\"x1.5\" Round",
@@ -1345,8 +1084,8 @@
       "tags": []
     },
     {
-      "id": "sku-10",
-      "skuId": 10,
+      "id": "sku-87",
+      "skuId": 87,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x8-x1-square",
       "name": "Himalayan Rock Salt Platters — 8\"x8\"x1\" Square",
@@ -1367,8 +1106,8 @@
       "tags": []
     },
     {
-      "id": "sku-11",
-      "skuId": 11,
+      "id": "sku-88",
+      "skuId": 88,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x4-x1-rectangle",
       "name": "Himalayan Rock Salt Platters — 8\"x4\"x1\" Rectangle",
@@ -1389,8 +1128,8 @@
       "tags": []
     },
     {
-      "id": "sku-12",
-      "skuId": 12,
+      "id": "sku-89",
+      "skuId": 89,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x8-x1-5-square",
       "name": "Himalayan Rock Salt Platters — 8\"x8\"x1.5\" Square",
@@ -1411,8 +1150,8 @@
       "tags": []
     },
     {
-      "id": "sku-74",
-      "skuId": 74,
+      "id": "sku-151",
+      "skuId": 151,
       "productId": "product_df19c1f7-07d8-a265-42f8-e8dfa824cc6e",
       "slug": "himalayan-rock-salt-soap-bar-scrub-bar-regular",
       "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Regular",
@@ -1433,8 +1172,8 @@
       "tags": []
     },
     {
-      "id": "sku-75",
-      "skuId": 75,
+      "id": "sku-152",
+      "skuId": 152,
       "productId": "product_df19c1f7-07d8-a265-42f8-e8dfa824cc6e",
       "slug": "himalayan-rock-salt-soap-bar-scrub-bar-leaf",
       "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Leaf",
@@ -1455,8 +1194,8 @@
       "tags": []
     },
     {
-      "id": "sku-13",
-      "skuId": 13,
+      "id": "sku-90",
+      "skuId": 90,
       "productId": "product_3fdc1a9e-5ceb-b63c-f6fb-0037df447e40",
       "slug": "himalayan-salt-shot-glass-hand-carved-tequila-glass-from-natural-rock-salt",
       "name": "Himalayan Salt Shot Glass – Hand Carved Tequila Glass from Natural Rock Salt",
@@ -1477,8 +1216,8 @@
       "tags": []
     },
     {
-      "id": "sku-76",
-      "skuId": 76,
+      "id": "sku-153",
+      "skuId": 153,
       "productId": "product_cd59cd36-b6d2-2cf3-9d48-81793a7bdbbd",
       "slug": "mushroom-shape-himalayan-rock-salt-lamp",
       "name": "Mushroom Shape Himalayan Rock Salt Lamp",
@@ -1499,8 +1238,8 @@
       "tags": []
     },
     {
-      "id": "sku-61",
-      "skuId": 61,
+      "id": "sku-138",
+      "skuId": 138,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-x-small",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — X-Small",
@@ -1521,8 +1260,8 @@
       "tags": []
     },
     {
-      "id": "sku-62",
-      "skuId": 62,
+      "id": "sku-139",
+      "skuId": 139,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-small",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Small",
@@ -1543,8 +1282,8 @@
       "tags": []
     },
     {
-      "id": "sku-63",
-      "skuId": 63,
+      "id": "sku-140",
+      "skuId": 140,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-medium",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Medium",
@@ -1565,8 +1304,8 @@
       "tags": []
     },
     {
-      "id": "sku-64",
-      "skuId": 64,
+      "id": "sku-141",
+      "skuId": 141,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-large",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Large",
@@ -1587,8 +1326,8 @@
       "tags": []
     },
     {
-      "id": "sku-49",
-      "skuId": 49,
+      "id": "sku-126",
+      "skuId": 126,
       "productId": "product_c3ca8d50-6b3e-3785-24c3-9fa41490a817",
       "slug": "pyramid-shape-himalayan-rock-salt-lamp",
       "name": "Pyramid Shape Himalayan Rock Salt Lamp",
@@ -1609,8 +1348,8 @@
       "tags": []
     },
     {
-      "id": "sku-73",
-      "skuId": 73,
+      "id": "sku-150",
+      "skuId": 150,
       "productId": "product_71c7a15b-5f85-7657-ed2b-5de75ce8cab3",
       "slug": "rock-salt-candle-holder-apple-shape",
       "name": "Rock Salt Candle Holder (Apple Shape)",
@@ -1631,8 +1370,8 @@
       "tags": []
     },
     {
-      "id": "sku-36",
-      "skuId": 36,
+      "id": "sku-113",
+      "skuId": 113,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-2pc",
       "name": "Salt Lamp Bulb — 15 Watts / 2pc",
@@ -1653,8 +1392,8 @@
       "tags": []
     },
     {
-      "id": "sku-37",
-      "skuId": 37,
+      "id": "sku-114",
+      "skuId": 114,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-1pc",
       "name": "Salt Lamp Bulb — 25 Watts / 1pc",
@@ -1675,8 +1414,8 @@
       "tags": []
     },
     {
-      "id": "sku-38",
-      "skuId": 38,
+      "id": "sku-115",
+      "skuId": 115,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-3pc",
       "name": "Salt Lamp Bulb — 15 Watts / 3pc",
@@ -1697,8 +1436,8 @@
       "tags": []
     },
     {
-      "id": "sku-39",
-      "skuId": 39,
+      "id": "sku-116",
+      "skuId": 116,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-3pc",
       "name": "Salt Lamp Bulb — 25 Watts / 3pc",
@@ -1719,8 +1458,8 @@
       "tags": []
     },
     {
-      "id": "sku-40",
-      "skuId": 40,
+      "id": "sku-117",
+      "skuId": 117,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-2pc",
       "name": "Salt Lamp Bulb — 25 Watts / 2pc",
@@ -1741,8 +1480,8 @@
       "tags": []
     },
     {
-      "id": "sku-41",
-      "skuId": 41,
+      "id": "sku-118",
+      "skuId": 118,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-1pc",
       "name": "Salt Lamp Bulb — 15 Watts / 1pc",
@@ -1763,8 +1502,8 @@
       "tags": []
     },
     {
-      "id": "sku-18",
-      "skuId": 18,
+      "id": "sku-95",
+      "skuId": 95,
       "productId": "product_a197ccb4-1208-6b6f-a57e-bd2bcb1fcb9e",
       "slug": "salty-licks-for-horses-cattle-himalayan-rock-salt-licks",
       "name": "Salty Licks for Horses & Cattle, Himalayan Rock Salt Licks",
@@ -1786,8 +1525,8 @@
       "tags": []
     },
     {
-      "id": "sku-19",
-      "skuId": 19,
+      "id": "sku-96",
+      "skuId": 96,
       "productId": "product_33d0afbf-8e89-ad52-9f91-e12b592c5a67",
       "slug": "special-offer-himalayan-crystal-rock-salt-candle-holders",
       "name": "Special Offer - Himalayan Crystal Rock Salt Candle Holders",
@@ -1809,8 +1548,8 @@
       "tags": []
     },
     {
-      "id": "sku-20",
-      "skuId": 20,
+      "id": "sku-97",
+      "skuId": 97,
       "productId": "product_3ce67eac-b04e-d569-050e-747f76fd40b8",
       "slug": "special-offer-himalayan-rock-salt-lamp-candle-holders",
       "name": "Special Offer - Himalayan Rock Salt Lamp & Candle Holders",
@@ -1831,8 +1570,8 @@
       "tags": []
     },
     {
-      "id": "sku-60",
-      "skuId": 60,
+      "id": "sku-137",
+      "skuId": 137,
       "productId": "product_6487b67b-4e18-52bb-9e19-5cb9bb9cd0fd",
       "slug": "tear-drop-shape-himalayan-rock-salt-lamp",
       "name": "Tear Drop Shape Himalayan Rock Salt Lamp",
@@ -1853,8 +1592,8 @@
       "tags": []
     },
     {
-      "id": "sku-51",
-      "skuId": 51,
+      "id": "sku-128",
+      "skuId": 128,
       "productId": "product_ed7c376b-02f4-3c8e-674e-49a236eec265",
       "slug": "wooden-basket-himalayan-rock-salt-lamp",
       "name": "Wooden Basket Himalayan Rock Salt Lamp",
@@ -1874,5 +1613,1098 @@
       "description": "Wooden Basket Himalayan Rock Salt Lamp Size: 6\" x 6\" x 7.5\" The Crystal Rocks are housed in a wood basket which is made using finest quality Wood (Sheesham). Sheesham wood, also known as Indian…",
       "tags": []
     }
-  ]
+  ],
+  "categories": [
+    {
+      "slug": "all-products",
+      "name": "All products",
+      "description": "The full Salty Lamps range in one place.",
+      "image": "/media/live-site-products/lamp-sphere-gemini.jpg",
+      "theme": "lamp",
+      "sort_order": 0,
+      "is_virtual": 1
+    },
+    {
+      "slug": "salt-lamps",
+      "name": "Salt lamps",
+      "description": "Warm-glow lamps for bedrooms, counters, lounges, and gifts.",
+      "image": "/media/live-site-products/lamp-block-gemini.jpg",
+      "theme": "lamp",
+      "sort_order": 20,
+      "is_virtual": 0
+    },
+    {
+      "slug": "candle-holders",
+      "name": "Candle holders",
+      "description": "Giftable tealight holders for cosy rooms, spas, and tables.",
+      "image": "/media/live-site-products/holder-natural-gemini.jpg",
+      "theme": "holder",
+      "sort_order": 30,
+      "is_virtual": 0
+    },
+    {
+      "slug": "rock-salt-pantry-items",
+      "name": "Kitchen saltware",
+      "description": "Platters, bowls, culinary salt, and salt barware.",
+      "image": "/media/live-site-products/salty-chef-family-live-site.png",
+      "theme": "kitchen",
+      "sort_order": 40,
+      "is_virtual": 0
+    },
+    {
+      "slug": "rock-salt-bricks",
+      "name": "Salt bricks",
+      "description": "Salt wall bricks and feature-wall materials for trade buyers.",
+      "image": "/media/live-site-products/salt-bricks-clean-gemini.jpg",
+      "theme": "bricks",
+      "sort_order": 50,
+      "is_virtual": 0
+    },
+    {
+      "slug": "equestrian-salt-licks",
+      "name": "Equestrian salt licks",
+      "description": "Mineral salt licks for horses, cattle, fields, and yards.",
+      "image": "/media/live-site-products/lick-field-scene-gemini.jpg",
+      "theme": "equestrian",
+      "sort_order": 60,
+      "is_virtual": 0
+    },
+    {
+      "slug": "himalayan-salt-massage-relaxation-products",
+      "name": "Massage and relaxation",
+      "description": "Spa, bath, massage, and body-care salt products.",
+      "image": "/media/live-site-products/massage-stones-gemini.jpg",
+      "theme": "relaxation",
+      "sort_order": 70,
+      "is_virtual": 0
+    },
+    {
+      "slug": "accessories",
+      "name": "Accessories",
+      "description": "Replacement bulbs and cables for compatible salt lamps.",
+      "image": "/media/live-site-products/accessory-bulb-gemini.jpg",
+      "theme": "accessory",
+      "sort_order": 80,
+      "is_virtual": 0
+    },
+    {
+      "slug": "special-deal",
+      "name": "Special deals",
+      "description": "Bundle offers and starter sets for easy gifting.",
+      "image": "/media/live-site-products/holder-apple-gemini.jpg",
+      "theme": "deal",
+      "sort_order": 90,
+      "is_virtual": 0
+    }
+  ],
+  "categoryAliases": {
+    "himalyan-salt-massage-relaxation-products": "himalayan-salt-massage-relaxation-products"
+  },
+  "content": {
+    "collections": [
+      {
+        "slug": "home-gifts",
+        "name": "Home, gifts and glow",
+        "shortName": "Home and gifts",
+        "eyebrow": "Everyday warmth",
+        "heading": "Lamps, holders, gifts, and easy home glow.",
+        "description": "Warm-room products for bedrooms, desks, lounges, shelves, and simple gifting.",
+        "heroIntro": [
+          "There's a particular kind of calm that arrives when a room glows amber instead of glaring white. Our hand-finished ",
+          {
+            "hl": "salt lamps and candle holders"
+          },
+          " turn bedrooms, desks, and lounges into spaces that feel warmer the moment they're lit — and they make ",
+          {
+            "hl": "quietly thoughtful gifts"
+          },
+          ". Every piece is carved from natural Himalayan rock salt, so ",
+          {
+            "hl": "no two are ever quite alike"
+          },
+          "."
+        ],
+        "heroVideo": "/media/video/collection/home-gifts-hero-16x9.mp4",
+        "heroPoster": "/media/video/collection/home-gifts-hero-poster-16x9.jpg",
+        "theme": "lamp",
+        "background": "/media/yoga-room.png",
+        "categories": [
+          "special-deal",
+          "salt-lamps",
+          "candle-holders",
+          "accessories"
+        ],
+        "sections": [
+          {
+            "id": "home-gifts:gift-sets-offers",
+            "collection_slug": "home-gifts",
+            "parent_id": null,
+            "anchor_id": "gift-sets-offers",
+            "title": "Gift sets & offers",
+            "descriptor": "Starter bundles and easy gift buys with a clear value story.",
+            "card_text": "Best for shoppers who want a complete present without comparing every shape.",
+            "recommendation": "Lead with bundles because gift-led visitors usually need confidence and speed more than a deep catalogue.",
+            "image": "/media/live-site-products/deal-lamp-candle-gemini.jpg",
+            "theme": "deal",
+            "category_slug": "special-deal",
+            "rule": {
+              "categories": {
+                "any": [
+                  "special-deal"
+                ]
+              }
+            },
+            "sort_order": 10
+          },
+          {
+            "id": "home-gifts:salt-lamps:band1",
+            "collection_slug": "home-gifts",
+            "parent_id": "home-gifts:salt-lamps",
+            "anchor_id": null,
+            "title": "Natural, classic & bestselling",
+            "descriptor": "",
+            "card_text": "",
+            "recommendation": "",
+            "image": "",
+            "theme": "",
+            "category_slug": "",
+            "rule": {
+              "tags": {
+                "any": [
+                  "bestseller",
+                  "classic",
+                  "premium"
+                ]
+              }
+            },
+            "sort_order": 10
+          },
+          {
+            "id": "home-gifts:salt-lamps",
+            "collection_slug": "home-gifts",
+            "parent_id": null,
+            "anchor_id": "salt-lamps",
+            "title": "Salt lamps",
+            "descriptor": "Warm-glow lamps for bedrooms, counters, lounges, and gifts.",
+            "card_text": "Choose the main glow piece for a bedside table, desk, shelf, or cosy corner.",
+            "recommendation": "Make natural and bestseller lamps the anchor, then let shaped lamps act as decorative alternatives.",
+            "image": "/media/live-site-products/lamp-natural-gemini.jpg",
+            "theme": "lamp",
+            "category_slug": "salt-lamps",
+            "rule": {
+              "categories": {
+                "any": [
+                  "salt-lamps"
+                ],
+                "none": [
+                  "special-deal"
+                ]
+              }
+            },
+            "sort_order": 20
+          },
+          {
+            "id": "home-gifts:salt-lamps:band2",
+            "collection_slug": "home-gifts",
+            "parent_id": "home-gifts:salt-lamps",
+            "anchor_id": null,
+            "title": "Decorative, sculptural & gift shapes",
+            "descriptor": "",
+            "card_text": "",
+            "recommendation": "",
+            "image": "",
+            "theme": "",
+            "category_slug": "",
+            "rule": {},
+            "sort_order": 20
+          },
+          {
+            "id": "home-gifts:candle-holders",
+            "collection_slug": "home-gifts",
+            "parent_id": null,
+            "anchor_id": "candle-holders",
+            "title": "Candle holders",
+            "descriptor": "Giftable tealight holders for cosy rooms, spas, and tables.",
+            "card_text": "Small amber accents for dinner tables, shelves, gift boxes, and quiet evenings.",
+            "recommendation": "Treat holders as affordable add-ons and small gifts, not as direct competitors to lamps.",
+            "image": "/media/live-site-products/holder-heart-gemini.jpg",
+            "theme": "holder",
+            "category_slug": "candle-holders",
+            "rule": {
+              "categories": {
+                "any": [
+                  "candle-holders"
+                ],
+                "none": [
+                  "special-deal"
+                ]
+              }
+            },
+            "sort_order": 30
+          },
+          {
+            "id": "home-gifts:accessories",
+            "collection_slug": "home-gifts",
+            "parent_id": null,
+            "anchor_id": "accessories",
+            "title": "Accessories",
+            "descriptor": "Replacement bulbs and cables for compatible salt lamps.",
+            "card_text": "Keep an existing lamp lit with the right cable or replacement bulb.",
+            "recommendation": "Keep accessories at the end so they support owners without interrupting gift and decor browsing.",
+            "image": "/media/live-site-products/accessory-bulb-gemini.jpg",
+            "theme": "accessory",
+            "category_slug": "accessories",
+            "rule": {
+              "categories": {
+                "any": [
+                  "accessories"
+                ]
+              }
+            },
+            "sort_order": 40
+          }
+        ],
+        "trade": {
+          "eyebrow": "Shops, salons and interior buyers",
+          "heading": "Trade accounts for retail and hospitality.",
+          "body": "We supply boutique gift shops, hotel amenities buyers, and salon chains. Contact us for trade pricing, minimum orders, and lead times.",
+          "cta": "Open a trade enquiry"
+        }
+      },
+      {
+        "slug": "kitchen-food",
+        "name": "Kitchen and food",
+        "shortName": "Kitchen",
+        "eyebrow": "Cooking and serving",
+        "heading": "Saltware, platters, bowls, and pantry salt.",
+        "description": "Food and hosting products for kitchens, counters, table settings, and gifts.",
+        "heroIntro": [
+          "Salt should be something you can see, taste, and serve from. Our ",
+          {
+            "hl": "culinary-grade Himalayan salt"
+          },
+          ", hand-cut platters, and serving bowls bring ",
+          {
+            "hl": "genuine mineral character"
+          },
+          " to everyday cooking and unhurried hosting alike. Sear, chill, plate, and present on a material that is ",
+          {
+            "hl": "as striking on the table as in the pan"
+          },
+          "."
+        ],
+        "heroVideo": "/media/video/collection/kitchen-food-hero-16x9.mp4",
+        "heroPoster": "/media/video/collection/kitchen-food-hero-poster-16x9.jpg",
+        "theme": "kitchen",
+        "background": "/media/kitchen-setup.png",
+        "categories": [
+          "rock-salt-pantry-items"
+        ],
+        "sections": [
+          {
+            "id": "kitchen-food:cookware-serving",
+            "collection_slug": "kitchen-food",
+            "parent_id": null,
+            "anchor_id": "cookware-serving",
+            "title": "Cookware & serving",
+            "descriptor": "Platters and bowls to cook, chill, and serve on pure salt.",
+            "card_text": "Saltware for grazing boards, searing, chilling, and table presentation.",
+            "recommendation": "Start with serving pieces because they are visual, giftable, and easier to understand at a glance.",
+            "image": "/media/live-site-products/platter-kitchen-gemini.jpg",
+            "theme": "kitchen",
+            "category_slug": "rock-salt-pantry-items",
+            "rule": {
+              "tags": {
+                "any": [
+                  "hosting",
+                  "serving"
+                ]
+              }
+            },
+            "sort_order": 10
+          },
+          {
+            "id": "kitchen-food:pantry-barware",
+            "collection_slug": "kitchen-food",
+            "parent_id": null,
+            "anchor_id": "pantry-barware",
+            "title": "Pantry & barware",
+            "descriptor": "Culinary salt and salt barware for everyday cooking and hosting.",
+            "card_text": "Pink mineral salt and smaller pieces for seasoning, drinks, and easy hosting.",
+            "recommendation": "Use pantry items as lower-friction add-ons after the shopper understands the food range.",
+            "image": "/media/live-site-products/salty-chef-pouch-gemini.jpg",
+            "theme": "kitchen",
+            "category_slug": "rock-salt-pantry-items",
+            "rule": {
+              "categories": {
+                "any": [
+                  "rock-salt-pantry-items"
+                ]
+              }
+            },
+            "sort_order": 20
+          }
+        ],
+        "trade": {
+          "eyebrow": "Restaurants, caterers and chefs",
+          "heading": "Case and pallet supply for professional kitchens.",
+          "body": "Culinary-grade Himalayan salt, cooking platters, and serving pieces at trade pricing for restaurants, food service, and hospitality.",
+          "cta": "Request catering trade pricing"
+        }
+      },
+      {
+        "slug": "horses-farm",
+        "name": "Horses and farm",
+        "shortName": "Horses and farm",
+        "eyebrow": "Field and yard supply",
+        "heading": "Salt licks and bulk-ready animal mineral products.",
+        "description": "Simple routes for horse owners, yards, smallholders, and equestrian suppliers.",
+        "heroIntro": [
+          "Animals know what they need. A ",
+          {
+            "hl": "natural Himalayan salt lick"
+          },
+          " gives horses, ponies, and cattle a simple mineral source they can return to in the field or yard — ",
+          {
+            "hl": "no fuss, no additives"
+          },
+          ", just natural rock salt for everyday routines. Single licks or bulk-ready supply for busy yards."
+        ],
+        "heroVideo": "/media/video/collection/horses-farm-hero-16x9.mp4",
+        "heroPoster": "/media/video/collection/horses-farm-hero-poster-16x9.jpg",
+        "theme": "equestrian",
+        "background": "/media/home-horse-salt-lick-generated.png",
+        "categories": [
+          "equestrian-salt-licks"
+        ],
+        "sections": [
+          {
+            "id": "horses-farm:stable-field-licks",
+            "collection_slug": "horses-farm",
+            "parent_id": null,
+            "anchor_id": "stable-field-licks",
+            "title": "Stable & field licks",
+            "descriptor": "Single mineral salt licks for horses, cattle, fields, and yards.",
+            "card_text": "A simple natural lick for a paddock, stable, pony, or smallholding routine.",
+            "recommendation": "Show the single lick first because it answers the basic buyer need before pack-size decisions.",
+            "image": "/media/live-site-products/lick-product-clean-gemini.jpg",
+            "theme": "equestrian",
+            "category_slug": "equestrian-salt-licks",
+            "rule": {
+              "categories": {
+                "any": [
+                  "equestrian-salt-licks"
+                ],
+                "none": [
+                  "special-deal"
+                ]
+              }
+            },
+            "sort_order": 10
+          },
+          {
+            "id": "horses-farm:yard-bulk-supply",
+            "collection_slug": "horses-farm",
+            "parent_id": null,
+            "anchor_id": "yard-bulk-supply",
+            "title": "Yard & bulk supply",
+            "descriptor": "Bulk-ready salt lick supply for busier yards and repeat orders.",
+            "card_text": "A practical route for keepers who need dependable repeat stock.",
+            "recommendation": "Separate bulk supply so trade and yard buyers see repeat-order value without confusing single-item shoppers.",
+            "image": "/media/live-site-products/lick-field-scene-gemini.jpg",
+            "theme": "equestrian",
+            "category_slug": "equestrian-salt-licks",
+            "rule": {
+              "categories": {
+                "all": [
+                  "equestrian-salt-licks",
+                  "special-deal"
+                ]
+              }
+            },
+            "sort_order": 20
+          }
+        ],
+        "trade": {
+          "eyebrow": "Yards, equestrian centres and farms",
+          "heading": "Bulk salt lick supply for busy yards.",
+          "body": "Trade pricing on pallet quantities for equestrian centres, livery yards, and farms with multiple horses, cattle, or sheep.",
+          "cta": "Ask about bulk lick pricing"
+        }
+      },
+      {
+        "slug": "trade-spa",
+        "name": "Trade supply",
+        "shortName": "Trade and wellness",
+        "eyebrow": "Projects and repeat supply",
+        "heading": "Salt walls, spa products, and trade-friendly ranges.",
+        "description": "Bulk supply for spas, retailers, and interiors projects.",
+        "heroIntro": [
+          "Wellness spaces sell a feeling before they sell anything else. ",
+          {
+            "hl": "Backlit salt-brick walls"
+          },
+          ", warm massage stones, and mineral bath salts let spas, treatment rooms, and interiors projects build that ",
+          {
+            "hl": "sense of calm"
+          },
+          " into the room itself. ",
+          {
+            "hl": "Trade-friendly pricing and repeat supply"
+          },
+          " make it easy to specify once and reorder with confidence."
+        ],
+        "heroVideo": "/media/video/collection/trade-spa-hero-16x9.mp4",
+        "heroPoster": "/media/video/collection/trade-spa-hero-poster-16x9.jpg",
+        "theme": "bricks",
+        "background": "/media/home-spa-salt-room-generated.png",
+        "categories": [
+          "rock-salt-bricks",
+          "himalayan-salt-massage-relaxation-products"
+        ],
+        "sections": [
+          {
+            "id": "trade-spa:salt-bricks-walls",
+            "collection_slug": "trade-spa",
+            "parent_id": null,
+            "anchor_id": "salt-bricks-walls",
+            "title": "Salt bricks & walls",
+            "descriptor": "Salt wall bricks and feature-wall materials for trade buyers.",
+            "card_text": "Create a glowing wall feature for reception areas, treatment rooms, and projects.",
+            "recommendation": "Lead with project materials because trade buyers need specification clarity before browsing spa retail pieces.",
+            "image": "/media/live-site-products/salt-bricks-clean-gemini.jpg",
+            "theme": "bricks",
+            "category_slug": "rock-salt-bricks",
+            "rule": {
+              "categories": {
+                "any": [
+                  "rock-salt-bricks"
+                ]
+              }
+            },
+            "sort_order": 10
+          },
+          {
+            "id": "trade-spa:spa-relaxation",
+            "collection_slug": "trade-spa",
+            "parent_id": null,
+            "anchor_id": "spa-relaxation",
+            "title": "Spa & relaxation",
+            "descriptor": "Massage, bath, and body-care salt for wellness spaces.",
+            "card_text": "Retail-friendly wellness pieces for treatment rooms, bath rituals, and shelves.",
+            "recommendation": "Place relaxation products after salt walls so they feel like retail add-ons for wellness and spa buyers.",
+            "image": "/media/live-site-products/massage-stones-gemini.jpg",
+            "theme": "relaxation",
+            "category_slug": "himalayan-salt-massage-relaxation-products",
+            "rule": {
+              "categories": {
+                "any": [
+                  "himalayan-salt-massage-relaxation-products"
+                ]
+              }
+            },
+            "sort_order": 20
+          }
+        ],
+        "trade": {
+          "eyebrow": "Spas, wellness rooms and interiors",
+          "heading": "Specification, project quoting, and repeat supply.",
+          "body": "Salt wall bricks, massage stones, and bath salts for spa specification, wellness room fit-outs, and high-volume treatment centres.",
+          "cta": "Request a project quote"
+        }
+      },
+      {
+        "slug": "aura-collection",
+        "name": "The Aura Collection",
+        "shortName": "Aura Collection",
+        "eyebrow": "Illuminated wall art",
+        "heading": "Illuminated Himalayan salt wall art, framed by hand.",
+        "description": "Luxury backlit salt panels in hand-finished wood frames — warm, unique wall art for homes, gyms, and studios.",
+        "heroIntro": [
+          "The Aura Collection is ",
+          {
+            "hl": "illuminated Himalayan salt wall art"
+          },
+          " — carved from ancient rock salt formed over millions of years, so ",
+          {
+            "hl": "every panel is unique"
+          },
+          ", with natural mineral veining from pale pink to deep orange. Each piece is set in a ",
+          {
+            "hl": "hand-finished solid-wood frame"
+          },
+          " with mitred corners, pairs beautifully with wood, stone, linen, and plants, and comes in a range of sizes — from a single accent panel to a full statement wall, at home, in the studio, or in reception."
+        ],
+        "heroVideo": "/media/video/collection/aura-collection-hero-16x9.mp4",
+        "heroPoster": "/media/video/collection/aura-collection-hero-poster-16x9.jpg",
+        "theme": "panel",
+        "background": "/media/aura-collection-lifestyle.jpg",
+        "categories": [
+          "salt-wall-panels"
+        ],
+        "sections": [],
+        "trade": null
+      }
+    ],
+    "themes": {
+      "lamp": {
+        "lede": "{name} brings a warm amber glow to bedrooms, lounges, desks, treatment rooms, and gift shelves. Each piece is cut from natural Himalayan rock salt, so the colour, shape, and surface character feel individual rather than factory-perfect.",
+        "useTitle": "Where it works best",
+        "uses": [
+          "Bedside tables, shelves, desks, lounges, and calm corners.",
+          "Gift buying when the recipient likes warm, natural decor.",
+          "Spa, wellness, or reception areas that need softer ambient light."
+        ],
+        "careTitle": "Care and setup",
+        "care": [
+          "Keep the salt dry and away from damp rooms or wet surfaces.",
+          "Use compatible lamp parts and check bulbs or cables before replacing.",
+          "Expect natural variation in tone, texture, and weight."
+        ],
+        "promise": "A simple way to add warmth, texture, and atmosphere without making the room feel overly decorated.",
+        "reassurance": [
+          "Includes the lamp parts listed on the product card where applicable.",
+          "Natural rock salt varies in colour, texture, and weight.",
+          "Keep dry and use with compatible bulbs and cables."
+        ],
+        "proofReviewId": "featured-2",
+        "images": [
+          {
+            "src": "/media/live-site-products/lamp-sphere-gemini.jpg",
+            "alt": "Glowing Himalayan salt lamp"
+          },
+          {
+            "src": "/media/live-site-products/lamp-block-gemini.jpg",
+            "alt": "Block Himalayan salt lamp"
+          },
+          {
+            "src": "/media/live-site-products/lamp-tear-drop-gemini.jpg",
+            "alt": "Tear drop Himalayan salt lamp"
+          }
+        ]
+      },
+      "holder": {
+        "lede": "{name} is made for small moments of glow: dining tables, bedside shelves, spa rooms, gifting, and relaxed evening settings. The natural salt surface gives every holder its own tone and mineral texture.",
+        "useTitle": "Best used for",
+        "uses": [
+          "Tealight ambience for dining tables, shelves, bedrooms, and spa spaces.",
+          "Low-risk gifting when you want something natural and decorative.",
+          "Grouped displays with lamps, bowls, or other saltware."
+        ],
+        "careTitle": "Care and safety",
+        "care": [
+          "Keep dry and wipe with a soft cloth when needed.",
+          "Use suitable tealights and place on a stable, heat-safe surface.",
+          "Colour and surface markings vary because the holder is natural rock salt."
+        ],
+        "promise": "Small, giftable pieces that create an immediate warm glow without needing a large lamp.",
+        "reassurance": [
+          "Made from natural Himalayan rock salt, so every holder is slightly different.",
+          "Designed for tealight-style ambience and giftable table settings.",
+          "Keep dry and wipe clean with a soft cloth."
+        ],
+        "proofReviewId": "featured-1",
+        "images": [
+          {
+            "src": "/media/live-site-products/holder-natural-gemini.jpg",
+            "alt": "Natural Himalayan salt candle holder"
+          },
+          {
+            "src": "/media/live-site-products/holder-sphere-gemini.jpg",
+            "alt": "Sphere Himalayan salt candle holder"
+          }
+        ]
+      },
+      "kitchen": {
+        "lede": "{name} is designed for kitchens, serving, food display, and thoughtful hosting. It gives food presentation a natural pink salt character while still feeling practical for counters, tables, and giftable kitchen ranges.",
+        "useTitle": "How to use it",
+        "uses": [
+          "Serve, present, chill, or display food depending on the selected shape and size.",
+          "Use for kitchen counters, table settings, food gifting, or hospitality presentation.",
+          "Pair with culinary salt, bowls, or serving pieces for a fuller saltware set."
+        ],
+        "careTitle": "Care before buying",
+        "care": [
+          "Rinse or wipe according to the supplied care guidance and dry thoroughly.",
+          "Saltware naturally changes with heat, moisture, food contact, and repeated use.",
+          "Choose the size, grade, or shape that matches how you plan to serve or cook."
+        ],
+        "promise": "A more memorable kitchen piece for buyers who want food presentation to feel tactile, natural, and conversation-worthy.",
+        "reassurance": [
+          "Food and serving items should be rinsed or wiped according to the supplied care guidance.",
+          "Saltware naturally changes with use, moisture, and heat.",
+          "Choose a size or grade before adding when selectors are shown."
+        ],
+        "proofReviewId": "featured-3",
+        "images": [
+          {
+            "src": "/media/live-site-products/salty-chef-family-live-site.png",
+            "alt": "Salty Chef Himalayan salt range"
+          },
+          {
+            "src": "/media/live-site-products/platter-kitchen-gemini.jpg",
+            "alt": "Himalayan salt platter in a kitchen setting"
+          }
+        ]
+      },
+      "bricks": {
+        "lede": "{name} is suited to salt wall features, wellness rooms, spa projects, interiors work, and repeat trade supply. It is a practical route for buyers who need natural salt material with a project or display purpose.",
+        "useTitle": "Project fit",
+        "uses": [
+          "Salt wall features, wellness rooms, spa areas, and interior displays.",
+          "Retail, trade, or hospitality buyers planning repeat supply.",
+          "Specification conversations where size, quantity, and finish matter."
+        ],
+        "careTitle": "Planning notes",
+        "care": [
+          "Confirm sizes, quantities, and lead times before large orders.",
+          "Keep salt materials dry before installation or display.",
+          "Ask for trade support when matching a project schedule or repeat stock need."
+        ],
+        "promise": "Built for buyers who need confidence before committing to a larger project or repeat order.",
+        "reassurance": [
+          "Suitable for project enquiries, salt wall features, and repeat trade supply.",
+          "Confirm size, quantity, and lead time before large orders.",
+          "Trade buyers can ask for project quoting before checkout."
+        ],
+        "proofReviewId": "featured-1",
+        "images": [
+          {
+            "src": "/media/live-site-products/salt-bricks-clean-gemini.jpg",
+            "alt": "Himalayan salt bricks"
+          },
+          {
+            "src": "/media/live-site-products/salt-wall-installation-live-site.png",
+            "alt": "Backlit Himalayan salt wall installation"
+          }
+        ]
+      },
+      "equestrian": {
+        "lede": "{name} gives horses, cattle, fields, yards, and smallholdings a simple natural salt option. It is made for practical repeat buying rather than decorative display.",
+        "useTitle": "Yard and field use",
+        "uses": [
+          "Fields, stables, yards, smallholdings, and animal mineral routines.",
+          "Single purchases or repeat supply for busier yards.",
+          "Buyers who want a simple natural salt lick without complicated presentation."
+        ],
+        "careTitle": "Buying notes",
+        "care": [
+          "Choose the correct size or pack quantity where options are shown.",
+          "Store dry before use and place appropriately for the animal and setting.",
+          "Ask about bulk supply if you are buying for a yard, field, or repeat routine."
+        ],
+        "promise": "A straightforward mineral-salt product for buyers who care more about reliability than decoration.",
+        "reassurance": [
+          "Choose size and pack quantity before adding when selectors are shown.",
+          "Suitable for horses, cattle, fields, yards, and smallholding routines.",
+          "Bulk enquiries are available for repeat yard supply."
+        ],
+        "proofReviewId": "featured-5",
+        "images": [
+          {
+            "src": "/media/live-site-products/lick-product-clean-gemini.jpg",
+            "alt": "Himalayan rock salt lick product"
+          },
+          {
+            "src": "/media/live-site-products/lick-field-scene-gemini.jpg",
+            "alt": "Himalayan salt licks for horses and cattle"
+          }
+        ]
+      },
+      "relaxation": {
+        "lede": "{name} supports spa, bath, massage, body-care, and sensory routines with the natural mineral character of Himalayan salt. It works well for personal use, wellness gifts, and treatment-room ranges.",
+        "useTitle": "Wellness use",
+        "uses": [
+          "Spa, bath, massage, relaxation, or body-care routines depending on the item.",
+          "Gift bundles for buyers who want calm, tactile, natural products.",
+          "Treatment rooms or wellness retail displays."
+        ],
+        "careTitle": "Care guidance",
+        "care": [
+          "Keep dry between uses and follow the supplied care notes.",
+          "Texture, colour, and finish vary naturally from piece to piece.",
+          "Choose the format that matches the intended routine or treatment."
+        ],
+        "promise": "A tactile wellness product with enough natural variation to feel personal and giftable.",
+        "reassurance": [
+          "Made for sensory, spa, bath, or body-care use depending on the selected item.",
+          "Natural salt products vary in texture and finish.",
+          "Keep products dry between uses and follow supplied care guidance."
+        ],
+        "proofReviewId": "featured-4",
+        "images": [
+          {
+            "src": "/media/live-site-products/massage-stones-gemini.jpg",
+            "alt": "Himalayan salt massage stones"
+          },
+          {
+            "src": "/media/live-site-products/soap-scrub-bars-gemini.jpg",
+            "alt": "Himalayan salt soap and scrub bars"
+          }
+        ]
+      },
+      "accessory": {
+        "lede": "{name} helps keep compatible salt lamps working safely and conveniently. It is a practical replacement item for buyers who already own a lamp or need spare parts for repeat use.",
+        "useTitle": "Compatibility first",
+        "uses": [
+          "Replacement parts for compatible salt lamps.",
+          "Keeping spare bulbs or cables ready for home, retail, or trade use.",
+          "Solving a practical lamp issue without replacing the full product."
+        ],
+        "careTitle": "Before ordering",
+        "care": [
+          "Check compatibility with your lamp before buying.",
+          "Match bulb, cable, plug, and holder requirements carefully.",
+          "Ask the team if you are unsure which fitting you need."
+        ],
+        "promise": "A practical support item that protects the value of the lamp you already own.",
+        "reassurance": [
+          "Check compatibility with your lamp before ordering.",
+          "Bulbs and cables are practical replacement parts for existing lamps.",
+          "Ask the team if you are unsure which fitting you need."
+        ],
+        "proofReviewId": "featured-5",
+        "images": [
+          {
+            "src": "/media/live-site-products/accessory-bulb-gemini.jpg",
+            "alt": "Salt lamp replacement bulb"
+          },
+          {
+            "src": "/media/live-site-products/accessory-cable-premium-gemini.jpg",
+            "alt": "Salt lamp replacement cable"
+          }
+        ]
+      },
+      "deal": {
+        "lede": "{name} is made for easy gifting, starter sets, and better-value bundles. It helps buyers choose quickly when they want a warm salt product without comparing every individual item.",
+        "useTitle": "Why choose the bundle",
+        "uses": [
+          "Quick gift buying when you want a ready-made salt product set.",
+          "Starter purchases for homes, desks, lounges, and shelves.",
+          "Better value when buying more than one piece."
+        ],
+        "careTitle": "What to expect",
+        "care": [
+          "Check the included items before ordering.",
+          "Natural salt pieces vary in colour, texture, and weight.",
+          "Keep items dry and follow the care notes for the product type included."
+        ],
+        "promise": "A simpler route for buyers who want the Salty Lamps look with less decision fatigue.",
+        "reassurance": [
+          "Bundle offers make gift buying simpler.",
+          "Check included items before ordering.",
+          "Natural salt pieces vary, so each bundle has its own tone and texture."
+        ],
+        "proofReviewId": "featured-2",
+        "images": [
+          {
+            "src": "/media/live-site-products/holder-apple-gemini.jpg",
+            "alt": "Giftable Himalayan salt candle holder"
+          },
+          {
+            "src": "/media/live-site-products/lamp-sphere-gemini.jpg",
+            "alt": "Himalayan salt lamp gift set"
+          }
+        ]
+      },
+      "panel": {
+        "lede": "{name} is illuminated Himalayan salt wall art — ancient rock salt carved into a hand-finished solid-wood frame. Each panel is a unique piece of nature, with mineral veining that ranges from pale pink to deep orange, and a warm glow that changes the feel of a room the moment it is lit.",
+        "useTitle": "Where it works best",
+        "uses": [
+          "Living rooms, bedrooms, and home offices that want a warmer, calmer feel.",
+          "Gyms, yoga studios, and wellness spaces where a soft glow sets the tone.",
+          "Reception areas and interiors projects that want a natural statement piece."
+        ],
+        "careTitle": "Setup and care",
+        "care": [
+          "Keep the panel dry and wipe gently with a dry cloth.",
+          "Avoid prolonged exposure to humidity — mount securely with the supplied fittings.",
+          "Natural variation in colour, veining, and texture is normal; no two panels are alike."
+        ],
+        "promise": "A unique piece of nature, framed by hand, bringing warmth and timeless character to any wall.",
+        "reassurance": [],
+        "proofReviewId": "featured-1",
+        "images": [
+          {
+            "src": "/media/live-site-products/aura-collection-livingroom-live-site.jpg",
+            "alt": "Framed Himalayan salt wall panels in a living room"
+          },
+          {
+            "src": "/media/live-site-products/aura-collection-hotel-lobby-live-site.jpg",
+            "alt": "Framed Himalayan salt wall panels in a hotel lobby"
+          }
+        ]
+      }
+    },
+    "pages": {
+      "/privacy-policy": {
+        "title": "Privacy Policy",
+        "body": [
+          "Salty Lamps Ltd only collects the information needed to answer enquiries, process orders, and send requested updates.",
+          "Newsletter subscribers can opt out of marketing emails at any time by contacting info@saltylamps.co.uk.",
+          "Customer details are handled carefully and are not sold to third parties."
+        ],
+        "metaDescription": ""
+      },
+      "/terms-and-conditions": {
+        "title": "Terms and Conditions",
+        "body": [
+          "Orders are subject to product availability, confirmed pricing, and successful payment or agreed invoice terms.",
+          "Natural Himalayan salt products vary in tone, texture, and shape because every piece is cut from natural rock salt.",
+          "Use products according to the care guidance supplied and keep salt items away from excess moisture."
+        ],
+        "metaDescription": ""
+      },
+      "/return-refund-policy": {
+        "title": "Returns and Refund Policy",
+        "body": [
+          "If an item arrives damaged or incorrect, contact Salty Lamps Ltd promptly with your order details and photographs where relevant.",
+          "Returns and exchanges are reviewed against product condition, timing, and the nature of the item ordered.",
+          "Trade, custom, and bulk orders may require separate return arrangements."
+        ],
+        "metaDescription": ""
+      }
+    },
+    "snippets": {
+      "site.title": "Salty Lamps | Himalayan Salt Lamps, Gifts, Saltware and Trade Supply",
+      "site.description": "Shop Himalayan salt lamps, candle holders, kitchen saltware, salt bricks, salt licks, and trade stock from Salty Lamps Ltd in Stoke-on-Trent.",
+      "shop.eyebrow": "Shop Salty Lamps",
+      "shop.title": "Shop Himalayan salt lamps, candle holders, saltware, and salt licks.",
+      "shop.description": "Browse the full Salty Lamps range, or use the buyer paths and filters to narrow the choice quickly.",
+      "not_found.eyebrow": "Page not found",
+      "not_found.title": "This page is not available.",
+      "not_found.description": "The product or page may have moved. Start with the full shop or choose a buyer path from the home page.",
+      "collection.leftover_title": "More in this range",
+      "reviews.headline_score": "5.0"
+    },
+    "lists": {
+      "process-product-ranges": [
+        {
+          "label": "",
+          "title": "Rock salt lamps",
+          "text": "Warm amber lighting for bedrooms, lounges, desks, treatment rooms, and gift shelves.",
+          "href": "/category/salt-lamps",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Candle holders",
+          "text": "Natural tealight pieces for tables, baths, shelves, spa corners, and calming evening settings.",
+          "href": "/category/candle-holders",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Bowls and kitchen saltware",
+          "text": "Serving, cooking, and presentation pieces that bring mineral texture into everyday food moments.",
+          "href": "/category/rock-salt-pantry-items",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Culinary and bath salts",
+          "text": "Pure Himalayan salt formats for cooking, bathing, gifting, and simple personal-care routines.",
+          "href": "/category/rock-salt-pantry-items",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Cooking platters",
+          "text": "Salt slabs for grilling, chilling, serving, and adding a gentle natural salt character to food.",
+          "href": "/category/rock-salt-pantry-items",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Bricks and curing tiles",
+          "text": "Trade-ready salt blocks for butchers, dry-ageing, display, interiors, and specialist supply.",
+          "href": "/category/rock-salt-bricks",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Spa salt walls",
+          "text": "Custom salt wall installations for spas, wellness rooms, yoga studios, and treatment spaces.",
+          "href": "/category/rock-salt-bricks",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "",
+          "title": "Horse and cattle licks",
+          "text": "Natural mineral salt blocks and loose forms for yards, fields, livestock, and repeat rural supply.",
+          "href": "/category/equestrian-salt-licks",
+          "count": null,
+          "percent": null
+        }
+      ],
+      "process-proof-points": [
+        {
+          "label": "Handled",
+          "title": "Real labour at every stage",
+          "text": "The film shows the physical movement behind the product: lifting, rinsing, sorting, cutting, finishing, and packing.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Checked",
+          "title": "Natural material, judged piece by piece",
+          "text": "Colour, clarity, size, grain, and fractures all affect what each piece can become.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Finished",
+          "title": "Machine cut, human refined",
+          "text": "The work keeps the irregular mineral character while making each item ready for use or display.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Arrived",
+          "title": "From workshop to home",
+          "text": "The close is not another step list: it brings the journey home as a finished object with warmth and presence.",
+          "href": "",
+          "count": null,
+          "percent": null
+        }
+      ],
+      "process-steps": [
+        {
+          "label": "Mine",
+          "title": "Mined rock salt",
+          "text": "Raw rock salt is extracted from mines and loaded onto trucks for the first leg of the journey.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Sort",
+          "title": "Warehouse sorting",
+          "text": "The material reaches the Karachi warehouse, where it is washed, dried, and separated by colour and quality.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Cut",
+          "title": "Cut and shaped",
+          "text": "Rock salt is cut into natural lamps, specific shapes, bowls, bricks, tiles, and other product forms.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Finish",
+          "title": "Hand finished",
+          "text": "Each cut piece is carefully hand-crafted by skilled workmen so the natural material keeps its character.",
+          "href": "",
+          "count": null,
+          "percent": null
+        },
+        {
+          "label": "Pack",
+          "title": "Packed for export",
+          "text": "Finished pieces are shrink wrapped, boxed, palletized, and sent to the port for export.",
+          "href": "",
+          "count": null,
+          "percent": null
+        }
+      ],
+      "review-signals": [
+        {
+          "label": "Product quality",
+          "title": "",
+          "text": "",
+          "href": "",
+          "count": 122,
+          "percent": 63
+        },
+        {
+          "label": "Delivery speed",
+          "title": "",
+          "text": "",
+          "href": "",
+          "count": 96,
+          "percent": 49
+        },
+        {
+          "label": "Helpful service",
+          "title": "",
+          "text": "",
+          "href": "",
+          "count": 88,
+          "percent": 45
+        },
+        {
+          "label": "Repeat buyers",
+          "title": "",
+          "text": "",
+          "href": "",
+          "count": 62,
+          "percent": 32
+        },
+        {
+          "label": "Careful packaging",
+          "title": "",
+          "text": "",
+          "href": "",
+          "count": 24,
+          "percent": 12
+        }
+      ]
+    },
+    "featuredReviews": [
+      {
+        "id": "featured-1",
+        "name": "Carmela Ranieri",
+        "date": "Wed 14th May 2014",
+        "quote": "I am very impressed with the quality of these items. As an interior designer, I would say that they would complement any scheme.",
+        "proof": "Interior-quality products",
+        "rating": null
+      },
+      {
+        "id": "featured-2",
+        "name": "Keri",
+        "date": "Thu 20th Oct 2016",
+        "quote": "Very quick delivery and extremely well packaged. The lamp and candle holder are absolutely beautiful and very calming.",
+        "proof": "Fast delivery and packaging",
+        "rating": null
+      },
+      {
+        "id": "featured-3",
+        "name": "Stephanie Wilson",
+        "date": "Thu 9th Mar 2017",
+        "quote": "Absolutely beautiful and everything I was hoping it would be. Superb quality and super fast delivery.",
+        "proof": "Product quality",
+        "rating": null
+      },
+      {
+        "id": "featured-4",
+        "name": "Jennie",
+        "date": "Wed 22nd Dec 2010",
+        "quote": "Simple to order, excellent communications, quick responses, and a lovely glow to any room.",
+        "proof": "Customer service",
+        "rating": null
+      },
+      {
+        "id": "featured-5",
+        "name": "C Jones",
+        "date": "Wed 5th Dec 2012",
+        "quote": "Brilliant service. Goods delivered today, packed well, and left exactly where instructed.",
+        "proof": "Careful fulfilment",
+        "rating": null
+      }
+    ],
+    "reviewCount": 185
+  }
 }

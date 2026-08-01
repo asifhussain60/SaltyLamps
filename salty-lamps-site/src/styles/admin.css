@@ -47,7 +47,11 @@
   font-size: 1.1rem;
   color: #fff;
 }
-.admin-brand img { width: 34px; height: 34px; border-radius: 9px; background: #fff; padding: 3px; }
+/* Circular, not a rounded square on white. The old white plate + padding suited a
+   logo drawn on a transparent field; the brand emblem is a circle on solid black,
+   so a white plate framed it in a bright ring against the dark sidebar. Clipping
+   to a circle drops the black corners and lets it sit on the sidebar directly. */
+.admin-brand img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
 .admin-nav { display: flex; flex-direction: column; gap: 2px; }
 .admin-nav-link {
   display: flex;
@@ -556,3 +560,10 @@
 .admin-doc__list { margin: 10px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 .admin-doc__list li { font-size: 0.94rem; }
 .admin-doc__foot { margin-top: 24px; color: var(--muted); font-size: 0.85rem; }
+
+/* Emails — the template editor opens inline under its table row, so it needs to
+   read as a nested panel rather than as another table cell. */
+.admin-email-editor { padding: 18px 4px 8px; display: flex; flex-direction: column; gap: 4px; }
+.admin-email-editor .admin-modal-actions { justify-content: flex-start; flex-wrap: wrap; gap: 10px; margin: 14px 0 4px; }
+.admin-email-editor .admin-modal-actions .admin-input { max-width: 260px; }
+.admin-email-preview { display: block; }

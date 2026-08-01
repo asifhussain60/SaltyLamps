@@ -99,6 +99,8 @@ const ICON_PATHS = {
   chevronDown: <polyline points="6 9 12 15 18 9" />,
   transfer: <><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></>,
   toggleLeft: <><rect x="1" y="6" width="22" height="12" rx="6" /><circle cx="8" cy="12" r="3" fill="currentColor" stroke="none" /></>,
+  mail: <><rect x="2" y="4" width="20" height="16" rx="2" /><polyline points="2.5 6 12 13 21.5 6" /></>,
+  send: <><path d="M21 3L10.5 13.5" /><polygon points="21 3 14.5 21 10.5 13.5 3 9.5 21 3" /></>,
 }
 
 function Icon({ name, size = 16, solid = false, tone, className = '' }) {
@@ -1695,6 +1697,326 @@ function Reports() {
 
 // Was three lines of static text showing a compile-time constant. The low-stock
 // threshold is now a real setting the dashboard, inventory and reports all read.
+// ---------------------------------------------------------------------------
+// Emails
+// ---------------------------------------------------------------------------
+// Three tabs: the wording of each email, the send log, and the enquiries the
+// storefront forms produce.
+//
+// The editor changes WORDING ONLY. Layout, palette, logo and the mail-client-safe
+// markup live in functions/lib/email-render.mjs, where an edit here cannot reach
+// them — so a careless change alters what an email says, never whether it renders.
+// The preview is rendered by the SERVER through that same module for exactly this
+// reason: a second copy of the renderer in this bundle would drift, and a preview
+// of the wrong thing is worse than none.
+
+const EMAIL_FIELD_LABELS = {
+  subject: 'Subject line',
+  preheader: 'Preview text',
+  heading: 'Heading',
+  intro: 'Opening paragraph',
+  cta_label: 'Button label',
+  outro: 'Closing paragraph',
+}
+
+const EMAIL_FIELD_HINTS = {
+  preheader: 'The grey line mail clients show next to the subject in the inbox list.',
+  cta_label: 'Leave blank to hide the button entirely.',
+  outro: 'Sits below the order details, above the footer.',
+}
+
+const LONG_EMAIL_FIELDS = ['intro', 'outro']
+
+function EmailTemplateEditor({ template, fields, onSaved }) {
+  const [draft, setDraft] = useState(() => Object.fromEntries(fields.map(f => [f, template[f] || ''])))
+  const [enabled, setEnabled] = useState(template.enabled)
+  const [preview, setPreview] = useState({ loading: true, html: '', error: null })
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState(null)
+  const [note, setNote] = useState('')
+  const [testTo, setTestTo] = useState('')
+
+  const key = template.key
+  const dirty = fields.some(f => (draft[f] || '') !== (template[f] || '')) || enabled !== template.enabled
+
+  // Debounced so typing does not fire a render per keystroke.
+  useEffect(() => {
+    let alive = true
+    const timer = setTimeout(() => {
+      api('/api/admin/emails/preview', { method: 'POST', body: { key, template: draft } })
+        .then(d => alive && setPreview({ loading: false, html: d.html, error: null }))
+        .catch(e => alive && setPreview({ loading: false, html: '', error: e }))
+    }, 400)
+    return () => { alive = false; clearTimeout(timer) }
+  }, [key, draft])
+
+  const save = async () => {
+    setSaving(true); setErr(null); setNote('')
+    try {
+      await api('/api/admin/emails/templates', { method: 'PUT', body: { templates: { [key]: { ...draft, enabled } } } })
+      setNote('Saved.')
+      await onSaved()
+    } catch (e) { setErr(e) } finally { setSaving(false) }
+  }
+
+  const sendTest = async () => {
+    setSaving(true); setErr(null); setNote('')
+    try {
+      const res = await api('/api/admin/emails/test', { method: 'POST', body: { key, template: draft, to: testTo || undefined } })
+      setNote(res.status === 'sent'
+        ? `Test sent to ${res.to}.`
+        : `Not sent — ${res.error || 'sending is not configured yet.'}`)
+    } catch (e) { setErr(e) } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="admin-email-editor">
+      <div className="admin-card-head">
+        <h3 className="admin-subhead">{template.label}</h3>
+        <Toggle inline checked={enabled} onChange={e => setEnabled(e.target.checked)} label={enabled ? 'Sending' : 'Paused'} />
+      </div>
+
+      {err && <ErrorState error={err} />}
+      {note && <p className="admin-note">{note}</p>}
+
+      <p className="admin-muted">
+        Placeholders you can use here: {template.tokens.map(t => `{{${t}}}`).join('  ')}
+      </p>
+
+      {fields.map(field => (
+        <Field
+          key={field}
+          label={EMAIL_FIELD_LABELS[field] || field}
+          hint={EMAIL_FIELD_HINTS[field]}
+          error={err?.fields?.[`${key}.${field}`]}
+        >
+          {LONG_EMAIL_FIELDS.includes(field) ? (
+            <textarea
+              className="admin-input"
+              rows={4}
+              value={draft[field]}
+              onChange={e => setDraft(d => ({ ...d, [field]: e.target.value }))}
+            />
+          ) : (
+            <input
+              className="admin-input"
+              value={draft[field]}
+              onChange={e => setDraft(d => ({ ...d, [field]: e.target.value }))}
+            />
+          )}
+        </Field>
+      ))}
+
+      <div className="admin-modal-actions">
+        <input
+          className="admin-input"
+          type="email"
+          placeholder="Send a test to…"
+          value={testTo}
+          onChange={e => setTestTo(e.target.value)}
+        />
+        <button className="admin-btn admin-btn--ghost" disabled={saving} onClick={sendTest}>
+          <Icon name="send" size={14} />Send test
+        </button>
+        <button className="admin-btn admin-btn--primary" disabled={saving || !dirty} onClick={save}>
+          <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+
+      <h3 className="admin-subhead admin-subhead--spaced">Preview</h3>
+      {preview.error
+        ? <ErrorState error={preview.error} />
+        : (
+          // sandbox with no allow-scripts: the preview is admin-authored content
+          // rendered as HTML, and there is no reason for it to be able to run
+          // anything. srcDoc keeps it same-document-free without a second endpoint.
+          <iframe
+            className="admin-email-preview"
+            title={`Preview of ${template.label}`}
+            sandbox=""
+            srcDoc={preview.html}
+            style={{ width: '100%', height: '620px', border: '1px solid var(--admin-line, #e4d8cc)', borderRadius: '10px', background: '#fff' }}
+          />
+        )}
+    </div>
+  )
+}
+
+function EmailTemplates() {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/emails/templates'))
+  const [openKey, setOpenKey] = useState(null)
+
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+  if (!data.templates.length) {
+    return <EmptyState>No email templates yet — apply the email migration (<code>d1/migrations/005-email.sql</code>) to this database.</EmptyState>
+  }
+
+  return (
+    <>
+      <table className="admin-table">
+        <thead><tr><th>Email</th><th>Goes to</th><th>Subject</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {data.templates.map(t => (
+            <React.Fragment key={t.key}>
+              <tr>
+                <td>{t.label}</td>
+                <td className="admin-muted">{t.audience === 'admin' ? 'You' : 'Customer'}</td>
+                <td className="admin-muted">{t.subject}</td>
+                <td>{t.enabled ? 'Sending' : 'Paused'}</td>
+                <td>
+                  <button className="admin-btn admin-btn--ghost" onClick={() => setOpenKey(openKey === t.key ? null : t.key)}>
+                    {openKey === t.key ? 'Close' : 'Edit'}
+                  </button>
+                </td>
+              </tr>
+              {openKey === t.key && (
+                <tr><td colSpan={5}>
+                  <EmailTemplateEditor template={t} fields={data.fields} onSaved={reload} />
+                </td></tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
+
+function EmailActivity() {
+  const [filter, setFilter] = useState('')
+  const { loading, error, data, reload } = usePageData(
+    () => api(`/api/admin/emails/outbox?limit=100${filter ? `&status=${filter}` : ''}`),
+    [filter],
+  )
+  const [busyId, setBusyId] = useState(null)
+  const [note, setNote] = useState('')
+
+  const resend = async id => {
+    setBusyId(id); setNote('')
+    try {
+      const res = await api(`/api/admin/emails/outbox/${id}/resend`, { method: 'POST' })
+      setNote(res.status === 'sent' ? `Resent to ${res.to}.` : `Not sent — ${res.error || 'sending is not configured.'}`)
+      await reload()
+    } catch (e) {
+      setNote(e.message)
+    } finally { setBusyId(null) }
+  }
+
+  return (
+    <>
+      <p className="admin-muted">
+        Every email the shop has tried to send. There is no automatic retry — Cloudflare Pages has no
+        scheduler — so anything that failed is listed here and resent with one click.
+      </p>
+      <div className="admin-modal-actions">
+        {['', 'sent', 'failed', 'skipped'].map(s => (
+          <button
+            key={s || 'all'}
+            className={`admin-btn ${filter === s ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
+            onClick={() => setFilter(s)}
+          >
+            {s || 'All'}
+          </button>
+        ))}
+      </div>
+      {note && <p className="admin-note">{note}</p>}
+      {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data.rows.length ? (
+        <EmptyState>Nothing sent yet.</EmptyState>
+      ) : (
+        <table className="admin-table">
+          <thead><tr><th>When</th><th>Email</th><th>To</th><th>Status</th><th>Detail</th><th></th></tr></thead>
+          <tbody>
+            {data.rows.map(row => (
+              <tr key={row.id}>
+                <td className="admin-muted">{row.created_at}</td>
+                <td>{row.template_key}</td>
+                <td className="admin-muted">{row.to_address}</td>
+                <td>{row.status}</td>
+                <td className="admin-muted">{row.error || row.subject}</td>
+                <td>
+                  <button className="admin-btn admin-btn--ghost" disabled={busyId === row.id} onClick={() => resend(row.id)}>
+                    {busyId === row.id ? 'Sending…' : 'Resend'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </>
+  )
+}
+
+function EmailEnquiries() {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/enquiries?limit=100'))
+
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+  if (!data.rows.length) return <EmptyState>No enquiries yet.</EmptyState>
+
+  return (
+    <table className="admin-table">
+      <thead><tr><th>When</th><th>Type</th><th>Name</th><th>Email</th><th>Message</th></tr></thead>
+      <tbody>
+        {data.rows.map(row => (
+          <tr key={row.id}>
+            <td className="admin-muted">{row.created_at}</td>
+            <td>{row.source}</td>
+            <td>{row.name || '—'}</td>
+            <td><a className="admin-link" href={`mailto:${row.email}`}>{row.email}</a></td>
+            <td style={{ whiteSpace: 'pre-wrap' }}>{row.message || '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+const EMAIL_TABS = [
+  { key: 'templates', label: 'Templates' },
+  { key: 'activity', label: 'Activity' },
+  { key: 'enquiries', label: 'Enquiries' },
+]
+
+function Emails() {
+  const [tab, setTab] = useState('templates')
+
+  return (
+    <section className="admin-card">
+      <div className="admin-card-head">
+        <h2><Icon name="mail" tone="amber" className="admin-card-icon" />Emails</h2>
+        <div className="admin-modal-actions">
+          {EMAIL_TABS.map(t => (
+            <button
+              key={t.key}
+              className={`admin-btn ${tab === t.key ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {tab === 'templates' && <EmailTemplates />}
+      {tab === 'activity' && <EmailActivity />}
+      {tab === 'enquiries' && <EmailEnquiries />}
+    </section>
+  )
+}
+
+// Plain-English guidance for the settings whose consequence is not obvious from the
+// label. Keyed by setting, so a new key without a hint simply falls back to the
+// type-derived one rather than breaking the form.
+const SETTING_HINTS = {
+  email_enabled: 'Off until the sending domain records are in place. Send yourself a test from Emails first, then switch this on.',
+  email_from_address: 'The address customers see and reply to. It must be on a domain verified with the email provider.',
+  admin_notify_email: 'Where new orders, enquiries, refund requests and low-stock alerts are sent.',
+  low_stock_alerts_enabled: 'Emails you once when a sale takes an item below the threshold above.',
+}
+
+const hintForType = s => (s.type === 'int' ? `Whole number between ${s.min ?? 0} and ${s.max ?? 1000}` : undefined)
+
 function Settings() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/settings'))
   const [edits, setEdits] = useState({})
@@ -1740,19 +2062,26 @@ function Settings() {
           key={s.key}
           label={s.label}
           error={saveErr?.fields?.[s.key]}
-          hint={s.editable
-            ? (s.type === 'int' ? `Whole number between ${s.min ?? 0} and ${s.max ?? 1000}` : undefined)
-            : 'Read-only — changing this here would have no effect elsewhere.'}
+          hint={s.editable ? SETTING_HINTS[s.key] || hintForType(s) : 'Read-only — changing this here would have no effect elsewhere.'}
         >
-          {s.editable ? (
+          {!s.editable ? (
+            <strong>{String(s.value)}</strong>
+          ) : s.type === 'bool' ? (
+            // A boolean rendered into a text input shows the word "true" and saves
+            // the string back, which coerces to true whatever the admin types.
+            <Toggle
+              inline
+              checked={valueOf(s) === true || valueOf(s) === '1'}
+              onChange={e => setEdits(v => ({ ...v, [s.key]: e.target.checked ? '1' : '0' }))}
+              label={valueOf(s) === true || valueOf(s) === '1' ? 'On' : 'Off'}
+            />
+          ) : (
             <input
               className="admin-input"
-              type={s.type === 'int' ? 'number' : 'text'}
+              type={s.type === 'int' ? 'number' : s.type === 'email' ? 'email' : 'text'}
               value={valueOf(s)}
               onChange={e => setEdits(v => ({ ...v, [s.key]: e.target.value }))}
             />
-          ) : (
-            <strong>{String(s.value)}</strong>
           )}
         </Field>
       ))}
@@ -1923,6 +2252,7 @@ const NAV = [
   { key: 'categories', label: 'Categories', href: '/admin/categories', icon: 'tag' },
   { key: 'inventory', label: 'Inventory', href: '/admin/inventory', icon: 'warehouse' },
   { key: 'reports', label: 'Reports', href: '/admin/reports', icon: 'barChart' },
+  { key: 'emails', label: 'Emails', href: '/admin/emails', icon: 'mail' },
   { key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'sliders' },
   {
     key: 'docs',
@@ -1944,6 +2274,7 @@ const TITLES = {
   categories: 'Categories',
   inventory: 'Inventory',
   reports: 'Reports',
+  emails: 'Emails',
   settings: 'Settings',
   docs: 'Documentation',
   'docs/infrastructure': 'Infrastructure',
@@ -1978,6 +2309,7 @@ export default function AdminApp({ route }) {
   else if (section === 'categories') page = <CategoriesList />
   else if (section === 'inventory') page = <Inventory />
   else if (section === 'reports') page = <Reports />
+  else if (section === 'emails') page = <Emails />
   else if (section === 'settings') page = <Settings />
   else if (section === 'docs' && params[0] === 'infrastructure') page = <InfrastructureDoc />
   else if (section === 'docs' && params[0] === 'technical') page = <TechnicalDoc />
@@ -1990,7 +2322,7 @@ export default function AdminApp({ route }) {
     <div className={`admin-shell ${navOpen ? 'admin-shell--nav-open' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <img src="/media/logo.png" alt="" />
+          <img src="/salty-lamp-logo.jpeg" alt="" />
           <span>Salty Lamps</span>
         </div>
         <nav className="admin-nav">

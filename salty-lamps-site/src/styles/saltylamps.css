@@ -256,8 +256,18 @@ textarea {
   margin-left: auto;
 }
 
-.site-header nav a:hover {
+.site-header nav a:hover,
+.site-header nav a:focus-visible {
   color: var(--ember);
+}
+
+/* Every other interactive surface pairs :focus-visible with :hover and rings in
+   --amber; the header links were the one set that fell through to the browser's
+   default blue outline, which reads as foreign against the warm palette. */
+.site-header nav a:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .cart-button,
@@ -3153,8 +3163,15 @@ label {
   transition: color 0.15s;
 }
 
-.site-footer nav a:hover {
+.site-footer nav a:hover,
+.site-footer nav a:focus-visible {
   color: var(--amber);
+}
+
+.site-footer nav a:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .site-footer nav a.footer-link-accent {
