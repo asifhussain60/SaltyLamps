@@ -12,6 +12,39 @@ CREATE TABLE IF NOT EXISTS products (
   visible INTEGER NOT NULL DEFAULT 1
 );
 
+-- Category display metadata — the taxonomy the storefront used to hardcode.
+-- See d1/migrations/003-categories-and-settings.sql for the rationale, and note
+-- that a fresh install still needs that file's INSERTs: an empty categories table
+-- renders a 404 for every /category/* URL.
+CREATE TABLE IF NOT EXISTS categories (
+  slug TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  image TEXT NOT NULL DEFAULT '',
+  theme TEXT NOT NULL DEFAULT 'lamp',   -- one of the nine theme sets in src/styles/saltylamps.css
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  visible INTEGER NOT NULL DEFAULT 1,
+  is_virtual INTEGER NOT NULL DEFAULT 0, -- 1 = catch-all bucket ('all-products'), not merchandising
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_categories_visible ON categories(visible, sort_order);
+
+-- Old category slugs that must keep resolving (301 targets).
+CREATE TABLE IF NOT EXISTS category_aliases (
+  alias TEXT PRIMARY KEY,
+  slug TEXT NOT NULL REFERENCES categories(slug)
+);
+
+-- Typed operational settings (low-stock threshold, currency, site URL). Kept apart
+-- from marketing copy so a copy edit can never change a business rule.
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  value_type TEXT NOT NULL DEFAULT 'string' CHECK (value_type IN ('string', 'int', 'bool', 'json')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- NOTE: sku is NOT declared UNIQUE. The live Wix catalog currently reuses two SKU
 -- codes across unrelated products (ST-841, SL-2) — a data problem worth fixing at
 -- the source, not something this schema should silently assume can't happen.

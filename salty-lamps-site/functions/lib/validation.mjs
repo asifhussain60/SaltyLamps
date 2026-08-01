@@ -19,6 +19,24 @@ export const TRACK_MODES = ['quantity', 'binary']
 export const PAYMENT_STATUSES = ['pending', 'paid', 'refunded', 'cancelled']
 export const FULFILMENT_STATUSES = ['unfulfilled', 'packed', 'shipped', 'delivered']
 
+// Display labels for the enums above. They live next to their values so the admin
+// UI stops keeping its own copies (it had three separate hand-written lists, one of
+// which silently omitted the 'pending' payment status).
+export const TRACK_MODE_LABELS = { quantity: 'Quantity', binary: 'In / out' }
+export const PAYMENT_STATUS_LABELS = {
+  pending: 'Pending', paid: 'Paid', refunded: 'Refunded', cancelled: 'Cancelled',
+}
+export const FULFILMENT_LABELS = {
+  unfulfilled: 'Unfulfilled', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered',
+}
+
+// The nine theme token sets defined in src/styles/saltylamps.css (.theme-lamp,
+// .theme-holder, ...). NOT free text: each one is three CSS custom properties, so a
+// category carrying an unknown theme renders with no accent colour at all.
+export const CATEGORY_THEMES = [
+  'lamp', 'holder', 'kitchen', 'bricks', 'equestrian', 'relaxation', 'accessory', 'deal', 'panel',
+]
+
 // ---- primitives -----------------------------------------------------------
 
 export function poundsToPence(pounds) {
@@ -90,6 +108,109 @@ export function validateProduct(input = {}) {
   value.tags = tags || ''
 
   value.visible = input.visible === false || input.visible === 0 || input.visible === '0' ? 0 : 1
+
+  return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+// ---- category -------------------------------------------------------------
+// Display metadata only. Product membership lives in products.categories and is
+// checked for existence at the endpoint by assertCategoriesExist() in
+// admin-helpers.mjs — this module must stay DB-free.
+
+export function validateCategory(input = {}, { isNew = false } = {}) {
+  const errors = {}
+  const value = {}
+
+  const name = trimStr(input.name)
+  if (!name) errors.name = 'Name is required.'
+  else if (name.length > 120) errors.name = 'Name must be 120 characters or fewer.'
+  value.name = name
+
+  // The slug is the primary key AND the public URL, and products reference it by
+  // string. Renaming one would need a data migration across products.categories,
+  // so it is settable on create and immutable afterwards.
+  if (isNew) {
+    const slug = slugify(input.slug || input.name)
+    if (!slug) errors.slug = 'Slug is required (letters, numbers and hyphens).'
+    else if (slug.length > 120) errors.slug = 'Slug must be 120 characters or fewer.'
+    value.slug = slug
+  }
+
+  const description = trimStr(input.description)
+  if (description.length > 500) errors.description = 'Description must be 500 characters or fewer.'
+  value.description = description
+
+  const image = trimStr(input.image)
+  if (image.length > 500) errors.image = 'Image path is too long.'
+  value.image = image
+
+  const theme = trimStr(input.theme) || 'lamp'
+  if (!CATEGORY_THEMES.includes(theme)) {
+    errors.theme = `Theme must be one of: ${CATEGORY_THEMES.join(', ')}.`
+  }
+  value.theme = theme
+
+  const sortOrder = input.sort_order == null || input.sort_order === '' ? 0 : Number(input.sort_order)
+  if (!isIntInRange(sortOrder, 0, 100000)) errors.sort_order = 'Sort order must be a whole number.'
+  else value.sort_order = sortOrder
+
+  value.visible = input.visible === false || input.visible === 0 || input.visible === '0' ? 0 : 1
+
+  return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+// ---- settings -------------------------------------------------------------
+// A whitelist, not a free-form store. Anything not listed here is rejected, so a
+// compromised or careless write cannot invent a key that some future reader trusts.
+
+export const SETTING_SPECS = {
+  low_stock_threshold: { type: 'int', min: 0, max: 1000, editable: true, label: 'Low-stock threshold' },
+  currency: { type: 'string', editable: false, label: 'Currency' },
+  site_url: { type: 'string', editable: true, label: 'Site URL', maxLength: 200 },
+}
+
+export function coerceSetting(key, raw) {
+  const spec = SETTING_SPECS[key]
+  if (!spec) return undefined
+  if (spec.type === 'int') return Number(raw)
+  if (spec.type === 'bool') return raw === '1' || raw === 'true' || raw === true
+  return String(raw)
+}
+
+export function validateSettings(input = {}) {
+  const errors = {}
+  const value = {}
+
+  for (const [key, raw] of Object.entries(input)) {
+    const spec = SETTING_SPECS[key]
+    if (!spec) {
+      errors[key] = 'Unknown setting.'
+      continue
+    }
+    if (!spec.editable) {
+      errors[key] = `${spec.label} is read-only.`
+      continue
+    }
+    if (spec.type === 'int') {
+      const n = raw === '' || raw == null ? NaN : Number(raw)
+      if (!isIntInRange(n, spec.min ?? 0, spec.max ?? 1000000)) {
+        errors[key] = `${spec.label} must be a whole number between ${spec.min ?? 0} and ${spec.max ?? 1000000}.`
+      } else {
+        value[key] = String(n)
+      }
+    } else {
+      const s = trimStr(raw)
+      if (spec.maxLength && s.length > spec.maxLength) {
+        errors[key] = `${spec.label} must be ${spec.maxLength} characters or fewer.`
+      } else {
+        value[key] = s
+      }
+    }
+  }
+
+  if (Object.keys(value).length === 0 && Object.keys(errors).length === 0) {
+    errors.form = 'Nothing to update.'
+  }
 
   return { ok: Object.keys(errors).length === 0, errors, value }
 }

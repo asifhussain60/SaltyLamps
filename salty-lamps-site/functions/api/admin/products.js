@@ -1,6 +1,6 @@
 // GET  /api/admin/products — every product (incl. hidden) with its SKUs nested.
 // POST /api/admin/products — create a product plus at least one SKU.
-import { json, apiError, validationError, readJson, auditStmt } from '../../lib/admin-helpers.mjs'
+import { json, apiError, validationError, readJson, auditStmt, assertCategoriesExist } from '../../lib/admin-helpers.mjs'
 import { validateProduct, validateSku } from '../../lib/validation.mjs'
 
 export async function onRequestGet({ env }) {
@@ -37,6 +37,9 @@ export async function onRequestPost({ request, env, data }) {
 
   const product = validateProduct(body.product || {})
   if (!product.ok) return validationError(product.errors)
+
+  const badCategories = await assertCategoriesExist(env.DB, product.value.categories)
+  if (badCategories) return badCategories
 
   const skuInputs = Array.isArray(body.skus) ? body.skus : []
   if (skuInputs.length === 0) return apiError('A product needs at least one SKU.', 400, { code: 'validation' })

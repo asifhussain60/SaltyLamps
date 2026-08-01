@@ -1,6 +1,6 @@
 // PATCH  /api/admin/products/:id — update product fields.
 // DELETE /api/admin/products/:id — delete, but only when no order references its SKUs.
-import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
+import { json, apiError, validationError, readJson, auditStmt, assertCategoriesExist } from '../../../lib/admin-helpers.mjs'
 import { validateProduct } from '../../../lib/validation.mjs'
 
 export async function onRequestPatch({ params, request, env, data }) {
@@ -9,6 +9,9 @@ export async function onRequestPatch({ params, request, env, data }) {
 
   const { ok, errors, value } = validateProduct(body)
   if (!ok) return validationError(errors)
+
+  const badCategories = await assertCategoriesExist(env.DB, value.categories)
+  if (badCategories) return badCategories
 
   try {
     const existing = await env.DB.prepare(`SELECT id FROM products WHERE id = ?`).bind(params.id).first()
