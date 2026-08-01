@@ -5,16 +5,26 @@ import { validateProduct, validateSku } from '../../lib/validation.mjs'
 
 export async function onRequestGet({ env }) {
   try {
-    const [products, skus] = await env.DB.batch([
+    const [products, skus, images] = await env.DB.batch([
       env.DB.prepare(`SELECT * FROM products ORDER BY name`),
       env.DB.prepare(`SELECT * FROM skus ORDER BY product_id, id`),
+      env.DB.prepare(`SELECT * FROM product_images ORDER BY product_id, sort_order, id`),
     ])
     const byProduct = new Map()
     for (const s of skus.results || []) {
       if (!byProduct.has(s.product_id)) byProduct.set(s.product_id, [])
       byProduct.get(s.product_id).push(s)
     }
-    const rows = (products.results || []).map(p => ({ ...p, skus: byProduct.get(p.id) || [] }))
+    const imagesByProduct = new Map()
+    for (const im of images.results || []) {
+      if (!imagesByProduct.has(im.product_id)) imagesByProduct.set(im.product_id, [])
+      imagesByProduct.get(im.product_id).push(im)
+    }
+    const rows = (products.results || []).map(p => ({
+      ...p,
+      skus: byProduct.get(p.id) || [],
+      images: imagesByProduct.get(p.id) || [],
+    }))
     return json({ products: rows })
   } catch (err) {
     return apiError(`Could not load products: ${err.message}`, 500, { code: 'server_error' })

@@ -217,7 +217,9 @@
 
 /* ---- badges ---- */
 .admin-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 3px 9px;
   border-radius: 999px;
   font-family: var(--ui);
@@ -238,6 +240,8 @@
 .admin-badge--fulfilment-delivered { background: rgba(45, 123, 95, 0.16); color: var(--admin-green); }
 .admin-badge--stock-out { background: rgba(232, 161, 139, 0.22); color: var(--ember); text-transform: none; }
 .admin-badge--stock-low { background: rgba(216, 138, 53, 0.16); color: var(--amber); text-transform: none; }
+.admin-badge--mode-quantity { background: rgba(45, 111, 159, 0.12); color: var(--admin-blue); text-transform: none; }
+.admin-badge--mode-binary { background: rgba(34, 86, 73, 0.12); color: var(--pine); text-transform: none; }
 .admin-badges { display: flex; gap: 6px; }
 
 /* ---- pagination ---- */
@@ -288,8 +292,37 @@
 .admin-input:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
 .admin-input--sm { width: 90px; padding: 6px 8px; }
 .admin-field--error .admin-input { border-color: var(--ember); }
-.admin-checkbox { display: flex; align-items: center; gap: 8px; font-family: var(--ui); font-size: 0.9rem; cursor: pointer; }
-.admin-checkbox--inline { margin: 0; }
+/* ---- toggle switch (replaces the raw browser checkbox) ----
+   The bare `label` selector in saltylamps.css (storefront forms) sets uppercase,
+   muted, letter-spaced text for every <label> on the site, admin included. Reset
+   it explicitly here so the toggle's own text reads as normal UI copy. */
+.admin-switch { display: inline-flex; align-items: center; gap: 10px; font-family: var(--ui); font-size: 0.9rem; font-weight: 500; color: var(--ink); text-transform: none; letter-spacing: normal; cursor: pointer; }
+.admin-switch--inline { margin: 0; }
+.admin-switch-input { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.admin-switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(31, 25, 21, 0.18);
+  transition: background 0.15s ease;
+}
+.admin-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--raised);
+  box-shadow: 0 1px 3px rgba(31, 25, 21, 0.35);
+  transition: transform 0.15s ease;
+}
+.admin-switch-input:checked + .admin-switch-track { background: var(--amber); }
+.admin-switch-input:checked + .admin-switch-track .admin-switch-thumb { transform: translateX(16px); }
+.admin-switch-input:focus-visible + .admin-switch-track { outline: 2px solid var(--amber); outline-offset: 2px; }
+.admin-switch-label { color: var(--ink); }
 .admin-filters { display: flex; gap: 10px; flex-wrap: wrap; }
 .admin-filters .admin-input { width: auto; min-width: 160px; flex: 1 1 160px; }
 .admin-search { position: relative; flex: 1.6 1 220px; min-width: 200px; }
@@ -348,10 +381,67 @@
 .admin-sku-remove { align-self: center; white-space: nowrap; }
 .admin-sku-error { grid-column: 1 / -1; }
 
-/* ---- image editor ---- */
-.admin-image-editor { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-.admin-image-preview { width: 100%; max-width: 260px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line); }
-.admin-image-preview--empty { display: flex; align-items: center; justify-content: center; color: var(--muted); background: var(--paper); border-style: dashed; }
+/* ---- product image gallery ---- */
+.admin-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 12px; }
+.admin-gallery-item, .admin-gallery-add {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.admin-gallery-item--busy { opacity: 0.5; pointer-events: none; }
+.admin-gallery-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+.admin-gallery-primary-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(31, 25, 21, 0.72);
+  color: #fff;
+  border: 0;
+}
+.admin-gallery-actions {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 6px;
+  background: linear-gradient(to top, rgba(31, 25, 21, 0.55), transparent);
+}
+.admin-gallery-action {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 250, 244, 0.92);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.admin-gallery-action:hover { background: #fff; }
+.admin-gallery-action:disabled { opacity: 0.6; cursor: not-allowed; }
+.admin-gallery-action--danger { color: var(--ember); }
+.admin-gallery-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted);
+  background: var(--paper);
+  border-style: dashed;
+  cursor: pointer;
+  font-family: var(--ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  transition: border-color 0.15s, color 0.15s;
+}
+.admin-gallery-add:hover { border-color: var(--amber); color: var(--amber); }
 
 /* ---- sales trend chart ---- */
 .admin-trend-chart { width: 100%; height: auto; }
@@ -431,7 +521,7 @@
 }
 
 /* ---- documentation pages ---- */
-.admin-doc { max-width: none; padding: clamp(20px, 3vw, 40px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); line-height: 1.62; color: var(--ink); }
+.admin-doc { max-width: none; min-width: 0; padding: clamp(20px, 3vw, 40px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); line-height: 1.62; color: var(--ink); }
 .admin-doc > p, .admin-doc__lead, .admin-doc__callout { max-width: 78ch; }
 .admin-doc__lead { margin: 0 0 8px; font-size: 1.05rem; color: var(--ink); }
 .admin-doc h2 { font-family: var(--modern); font-size: 1.3rem; font-weight: 800; margin: 32px 0 10px; padding-top: 20px; border-top: 1px solid var(--line); }

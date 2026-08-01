@@ -91,6 +91,7 @@ const ICON_PATHS = {
   fileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="13" y2="17" /></>,
   chevronDown: <polyline points="6 9 12 15 18 9" />,
   transfer: <><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></>,
+  toggleLeft: <><rect x="1" y="6" width="22" height="12" rx="6" /><circle cx="8" cy="12" r="3" fill="currentColor" stroke="none" /></>,
 }
 
 function Icon({ name, size = 16, solid = false, tone, className = '' }) {
@@ -303,6 +304,49 @@ function Field({ label, error, children, hint }) {
       {hint && !error && <span className="admin-field-hint">{hint}</span>}
       {error && <span className="admin-field-error">{error}</span>}
     </label>
+  )
+}
+
+// Toggle switch — replaces the raw browser checkbox everywhere in the admin (product
+// visibility, SKU in-stock, inventory in-stock). Still a real <input type="checkbox">
+// under the hood (visually hidden, not display:none) so it keeps native semantics,
+// keyboard operation and screen-reader behaviour; only the look is custom CSS.
+function Toggle({ checked, onChange, label, inline }) {
+  return (
+    <label className={`admin-switch ${inline ? 'admin-switch--inline' : ''}`}>
+      <input type="checkbox" className="admin-switch-input" checked={checked} onChange={onChange} />
+      <span className="admin-switch-track"><span className="admin-switch-thumb" /></span>
+      {label && <span className="admin-switch-label">{label}</span>}
+    </label>
+  )
+}
+
+// One tile in a product's image gallery — shows the image, a "Primary" badge on
+// the cover image, and small replace/delete actions. Used only for already-saved
+// images (a new product's staged files render inline in ProductEdit instead, since
+// they have no server id to replace/delete against yet).
+function GalleryThumb({ src, primary, busy, onReplace, onDelete }) {
+  const fileRef = useRef(null)
+  return (
+    <div className={`admin-gallery-item ${busy ? 'admin-gallery-item--busy' : ''}`}>
+      <img className="admin-gallery-thumb" src={src} alt="" />
+      {primary && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
+      <div className="admin-gallery-actions">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          hidden
+          onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) onReplace(f) }}
+        />
+        <button type="button" className="admin-gallery-action" title="Replace" disabled={busy} onClick={() => fileRef.current?.click()}>
+          <Icon name="image" size={13} />
+        </button>
+        <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Delete" disabled={busy} onClick={onDelete}>
+          <Icon name="trash" size={13} />
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -1102,10 +1146,13 @@ function ProductEdit({ id }) {
   const [errs, setErrs] = useState({})
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState('')
-  const [uploading, setUploading] = useState(false)
-  const fileRef = useRef(null)
+  // Existing product: the live gallery, [{id, path}] ordered primary-first.
+  const [images, setImages] = useState([])
+  // New (not-yet-created) product: files staged locally, uploaded after create.
+  const [pendingImages, setPendingImages] = useState([])
+  const [imageBusyId, setImageBusyId] = useState(null)
+  const [imageErr, setImageErr] = useState('')
+  const [confirmDeleteImage, setConfirmDeleteImage] = useState(null)
 
   useEffect(() => {
     if (isNew) {
@@ -1126,6 +1173,7 @@ function ProductEdit({ id }) {
         quantity: s.quantity == null ? '0' : String(s.quantity), in_stock: !!s.in_stock,
       })))
       setOriginalSkuIds(p.skus.map(s => s.id))
+      setImages((p.images || []).map(im => ({ id: im.id, path: im.path })))
     }
   }, [data, id, isNew])
 
@@ -1137,31 +1185,79 @@ function ProductEdit({ id }) {
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const setSku = (i, k, v) => setSkus(list => list.map((s, j) => (j === i ? { ...s, [k]: v } : s)))
 
-  const onPickImage = async e => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > MAX_IMAGE_BYTES * 4) {
-      setErrs(x => ({ ...x, image: 'That file is far too large. Choose an image under 2 MB.' }))
-      return
+  const MAX_PICK_BYTES = MAX_IMAGE_BYTES * 4
+
+  // Existing product: each add/delete/replace hits its own endpoint immediately —
+  // the gallery isn't deferred to "Save changes" the way Details/SKUs are.
+  const addImages = async fileList => {
+    const files = Array.from(fileList || [])
+    if (files.length === 0) return
+    setImageErr('')
+    for (const file of files) {
+      if (file.size > MAX_PICK_BYTES) {
+        setImageErr('One of those files is far too large. Choose images under 2 MB.')
+        continue
+      }
+      const resized = await resizeImage(file)
+      if (isNew) {
+        setPendingImages(list => [...list, { key: crypto.randomUUID(), file: resized, previewUrl: URL.createObjectURL(resized) }])
+        continue
+      }
+      setImageBusyId('new')
+      try {
+        const fd = new FormData()
+        fd.append('image', resized)
+        const res = await api(`/api/admin/products/${id}/images`, { method: 'POST', body: fd, isForm: true })
+        setImages(list => [...list, { id: res.id, path: res.path }])
+        setField('image', res.primary_path)
+      } catch (e) {
+        setImageErr(e.message)
+      } finally {
+        setImageBusyId(null)
+      }
     }
-    setErrs(x => ({ ...x, image: undefined }))
-    const resized = await resizeImage(file)
-    setImageFile(resized)
-    setImagePreview(URL.createObjectURL(resized))
   }
 
-  const uploadImageTo = async productId => {
-    if (!imageFile) return
-    const fd = new FormData()
-    fd.append('image', imageFile)
-    setUploading(true)
+  const removePendingImage = key => {
+    setPendingImages(list => {
+      const found = list.find(p => p.key === key)
+      if (found) URL.revokeObjectURL(found.previewUrl)
+      return list.filter(p => p.key !== key)
+    })
+  }
+
+  const deleteImage = async imgId => {
+    setImageErr('')
+    setImageBusyId(imgId)
     try {
-      const res = await api(`/api/admin/products/${productId}/image`, { method: 'POST', body: fd, isForm: true })
-      setField('image', res.image)
-      setImageFile(null)
-      setImagePreview('')
+      const res = await api(`/api/admin/products/${id}/images/${imgId}`, { method: 'DELETE' })
+      setImages(list => list.filter(im => im.id !== imgId))
+      setField('image', res.primary_path)
+    } catch (e) {
+      setImageErr(e.message)
     } finally {
-      setUploading(false)
+      setImageBusyId(null)
+    }
+  }
+
+  const replaceImage = async (imgId, file) => {
+    if (file.size > MAX_PICK_BYTES) {
+      setImageErr('That file is far too large. Choose an image under 2 MB.')
+      return
+    }
+    setImageErr('')
+    setImageBusyId(imgId)
+    try {
+      const resized = await resizeImage(file)
+      const fd = new FormData()
+      fd.append('image', resized)
+      const res = await api(`/api/admin/products/${id}/images/${imgId}/replace`, { method: 'POST', body: fd, isForm: true })
+      setImages(list => list.map(im => (im.id === imgId ? { ...im, path: res.path } : im)))
+      setField('image', res.primary_path)
+    } catch (e) {
+      setImageErr(e.message)
+    } finally {
+      setImageBusyId(null)
     }
   }
 
@@ -1187,11 +1283,16 @@ function ProductEdit({ id }) {
           method: 'POST',
           body: { product: form, skus },
         })
-        if (imageFile) await uploadImageTo(res.id)
+        for (const pending of pendingImages) {
+          const fd = new FormData()
+          fd.append('image', pending.file)
+          await api(`/api/admin/products/${res.id}/images`, { method: 'POST', body: fd, isForm: true })
+        }
         navigate(`/admin/products/${res.id}`)
         return
       }
-      // Existing: update product, then reconcile SKUs.
+      // Existing: update product, then reconcile SKUs. Image gallery changes are
+      // already live — each add/delete/replace above hit their own endpoint.
       await api(`/api/admin/products/${id}`, { method: 'PATCH', body: form })
       for (const s of skus) {
         if (s.id) await api(`/api/admin/skus/${s.id}`, { method: 'PATCH', body: s })
@@ -1201,7 +1302,6 @@ function ProductEdit({ id }) {
       for (const oldId of originalSkuIds) {
         if (!keptIds.includes(oldId)) await api(`/api/admin/skus/${oldId}`, { method: 'DELETE' })
       }
-      if (imageFile) await uploadImageTo(id)
       await reload()
       setSaveErr({ message: 'Saved.', ok: true })
     } catch (e) {
@@ -1210,8 +1310,6 @@ function ProductEdit({ id }) {
       setSaving(false)
     }
   }
-
-  const currentImage = imagePreview || form.image
 
   return (
     <>
@@ -1239,25 +1337,61 @@ function ProductEdit({ id }) {
           <Field label="Tags" error={errs.tags} hint="Comma-separated slugs (optional)">
             <input className="admin-input" value={form.tags} onChange={e => setField('tags', e.target.value)} />
           </Field>
-          <label className="admin-checkbox">
-            <input type="checkbox" checked={form.visible} onChange={e => setField('visible', e.target.checked)} />
-            <span>Visible in the shop</span>
-          </label>
+          <Toggle checked={form.visible} onChange={e => setField('visible', e.target.checked)} label="Visible in the shop" />
         </section>
 
         <section className="admin-card">
-          <h2><Icon name="image" tone="amber" className="admin-card-icon" />Image</h2>
-          <div className="admin-image-editor">
-            {currentImage ? <img className="admin-image-preview" src={currentImage} alt="" /> : <div className="admin-image-preview admin-image-preview--empty">No image</div>}
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={onPickImage} hidden />
-            <button className="admin-btn admin-btn--ghost" type="button" onClick={() => fileRef.current?.click()}>
-              <Icon name="image" size={15} />{currentImage ? 'Choose replacement' : 'Choose image'}
-            </button>
-            {errs.image && <span className="admin-field-error">{errs.image}</span>}
-            {imageFile && <p className="admin-muted">{isNew ? 'Uploads after you save.' : uploading ? 'Uploading…' : 'Uploads when you save.'}</p>}
+          <h2><Icon name="image" tone="amber" className="admin-card-icon" />Images</h2>
+          <div className="admin-gallery-grid">
+            {isNew
+              ? pendingImages.map((p, i) => (
+                <div key={p.key} className="admin-gallery-item">
+                  <img className="admin-gallery-thumb" src={p.previewUrl} alt="" />
+                  {i === 0 && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
+                  <div className="admin-gallery-actions">
+                    <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Remove" onClick={() => removePendingImage(p.key)}>
+                      <Icon name="trash" size={13} />
+                    </button>
+                  </div>
+                </div>
+              ))
+              : images.map((im, i) => (
+                <GalleryThumb
+                  key={im.id}
+                  src={im.path}
+                  primary={i === 0}
+                  busy={imageBusyId === im.id}
+                  onReplace={file => replaceImage(im.id, file)}
+                  onDelete={() => setConfirmDeleteImage(im)}
+                />
+              ))}
+            <label className={`admin-gallery-add ${imageBusyId === 'new' ? 'admin-gallery-item--busy' : ''}`}>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                hidden
+                onChange={e => { addImages(e.target.files); e.target.value = '' }}
+              />
+              <Icon name="plus" size={18} />
+              <span>Add image</span>
+            </label>
           </div>
+          {images.length === 0 && pendingImages.length === 0 && <p className="admin-muted">No images yet.</p>}
+          {imageErr && <span className="admin-field-error">{imageErr}</span>}
+          {isNew && pendingImages.length > 0 && <p className="admin-muted">Uploads after you create the product.</p>}
         </section>
       </div>
+
+      <Confirm
+        open={!!confirmDeleteImage}
+        danger
+        title="Delete this image?"
+        message="This removes it from the gallery and deletes the uploaded file. This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { const img = confirmDeleteImage; setConfirmDeleteImage(null); deleteImage(img.id) }}
+        onCancel={() => setConfirmDeleteImage(null)}
+      />
 
       <section className="admin-card">
         <div className="admin-card-head">
@@ -1287,10 +1421,7 @@ function ProductEdit({ id }) {
                   <input className="admin-input" inputMode="numeric" value={s.quantity} onChange={e => setSku(i, 'quantity', e.target.value)} />
                 </Field>
               ) : (
-                <label className="admin-checkbox admin-checkbox--inline">
-                  <input type="checkbox" checked={s.in_stock} onChange={e => setSku(i, 'in_stock', e.target.checked)} />
-                  <span>In stock</span>
-                </label>
+                <Toggle inline checked={s.in_stock} onChange={e => setSku(i, 'in_stock', e.target.checked)} label="In stock" />
               )}
               <button
                 className="admin-link admin-link--danger admin-sku-remove"
@@ -1308,7 +1439,7 @@ function ProductEdit({ id }) {
       </section>
 
       <div className="admin-sticky-actions">
-        <button className="admin-btn admin-btn--primary" disabled={saving || uploading} onClick={save}>
+        <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
           <Icon name="check" size={15} />{saving ? 'Saving…' : isNew ? 'Create product' : 'Save changes'}
         </button>
       </div>
@@ -1322,7 +1453,17 @@ function StockBadge({ status }) {
   if (!status) return null
   return (
     <span className={`admin-badge admin-badge--stock-${status}`}>
+      <Icon name={status === 'out' ? 'xCircle' : 'alertTriangle'} size={11} />
       {status === 'out' ? 'Out of stock' : 'Low stock'}
+    </span>
+  )
+}
+
+function ModeBadge({ mode }) {
+  return (
+    <span className={`admin-badge admin-badge--mode-${mode}`}>
+      <Icon name={mode === 'quantity' ? 'box' : 'toggleLeft'} size={11} />
+      {mode === 'quantity' ? 'Quantity' : 'In / out'}
     </span>
   )
 }
@@ -1340,7 +1481,7 @@ function Inventory() {
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
-  const rows = data.products.flatMap(p => p.skus.map(s => ({ ...s, productName: p.name })))
+  const rows = data.products.flatMap(p => p.skus.map(s => ({ ...s, productName: p.name, productImage: p.image })))
   // Matches the low/out-of-stock definitions used on the dashboard (functions/api/admin/stats.js).
   const stockStatus = s => {
     if (s.track_mode === 'quantity') {
@@ -1382,11 +1523,17 @@ function Inventory() {
     return true
   })
   const { page: shownPage, pageCount, pageItems } = paginate(filtered, page)
+  const lowCount = rows.filter(s => stockStatus(s) === 'low').length
+  const outCount = rows.filter(s => stockStatus(s) === 'out').length
 
   return (
     <>
       <div className="admin-card-head admin-card-head--bare">
-        <p className="admin-muted">Low-stock threshold: {LOW_STOCK_THRESHOLD}</p>
+        <div className="admin-stock-legend">
+          <span className="admin-stock-legend-item"><span className="admin-dot admin-dot--low" />{lowCount} low stock</span>
+          <span className="admin-stock-legend-item"><span className="admin-dot admin-dot--out" />{outCount} out of stock</span>
+          <span className="admin-muted">· Threshold {LOW_STOCK_THRESHOLD}</span>
+        </div>
         <button className="admin-btn admin-btn--primary" disabled={saving || Object.keys(edits).length === 0} onClick={save}>
           <Icon name="check" size={15} />{saving ? 'Saving…' : `Save changes${Object.keys(edits).length ? ` (${Object.keys(edits).length})` : ''}`}
         </button>
@@ -1411,7 +1558,7 @@ function Inventory() {
         ) : (
           <table className="admin-table">
             <thead>
-              <tr><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Stock</th><th></th></tr>
+              <tr><th></th><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Stock</th><th></th></tr>
             </thead>
             <tbody>
               {pageItems.map(s => {
@@ -1419,10 +1566,11 @@ function Inventory() {
                 const status = stockStatus(s)
                 return (
                   <tr key={s.id} className={status ? 'admin-row--warn' : ''}>
+                    <td>{s.productImage ? <img className="admin-thumb" src={s.productImage} alt="" /> : <div className="admin-thumb admin-thumb--empty" />}</td>
                     <td>{s.productName}</td>
                     <td>{s.sku}</td>
                     <td>{s.variant_label || '—'}</td>
-                    <td>{s.track_mode}</td>
+                    <td><ModeBadge mode={s.track_mode} /></td>
                     <td>
                       {s.track_mode === 'quantity' ? (
                         <input
@@ -1432,14 +1580,12 @@ function Inventory() {
                           onChange={e => setQty(s.id, e.target.value)}
                         />
                       ) : (
-                        <label className="admin-checkbox admin-checkbox--inline">
-                          <input
-                            type="checkbox"
-                            checked={edit.in_stock != null ? edit.in_stock : !!s.in_stock}
-                            onChange={e => setInStock(s.id, e.target.checked)}
-                          />
-                          <span>In stock</span>
-                        </label>
+                        <Toggle
+                          inline
+                          checked={edit.in_stock != null ? edit.in_stock : !!s.in_stock}
+                          onChange={e => setInStock(s.id, e.target.checked)}
+                          label="In stock"
+                        />
                       )}
                     </td>
                     <td><StockBadge status={status} /></td>

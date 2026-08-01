@@ -30,6 +30,19 @@ CREATE TABLE IF NOT EXISTS skus (
 CREATE INDEX IF NOT EXISTS idx_skus_product_id ON skus(product_id);
 CREATE INDEX IF NOT EXISTS idx_skus_sku ON skus(sku);
 
+-- A product's image gallery. products.image always mirrors the primary image here
+-- (lowest sort_order) — see d1/migrations/002-product-gallery.sql for the rationale.
+CREATE TABLE IF NOT EXISTS product_images (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id TEXT NOT NULL REFERENCES products(id),
+  key TEXT,                          -- R2 object key; NULL for legacy static /media/... paths
+  path TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(product_id);
+
 CREATE TABLE IF NOT EXISTS orders (
   id TEXT PRIMARY KEY,              -- Stripe Checkout Session id
   payment_intent TEXT,
