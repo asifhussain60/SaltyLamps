@@ -182,6 +182,14 @@ export const SETTING_SPECS = {
   email_from_name: { type: 'string', editable: true, label: 'Sender name', maxLength: 100, headerSafe: true },
   email_from_address: { type: 'email', editable: true, label: 'Sender address', maxLength: 200 },
   admin_notify_email: { type: 'email', editable: true, label: 'Admin notification address', maxLength: 200 },
+  // SEPARATE FROM admin_notify_email ON PURPOSE. These were one setting until the
+  // owner pointed alerts at a personal Gmail to test them — which published that
+  // personal address on the shop's contact links and in its schema.org Store block,
+  // where search engines read it. "Where alerts land" is an operational choice that
+  // changes often; "what the shop publishes" is public identity that rarely does.
+  // Blank falls back to DEFAULT_CONTACT_EMAIL rather than to the alert address, so
+  // clearing it can never leak the alert destination onto the storefront.
+  public_contact_email: { type: 'email', editable: true, label: 'Public contact address', maxLength: 200 },
   low_stock_alerts_enabled: { type: 'bool', editable: true, label: 'Low-stock alerts' },
 }
 

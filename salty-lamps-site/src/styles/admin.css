@@ -375,7 +375,24 @@
 .admin-inline-form { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
 .admin-inline-form .admin-field { margin-bottom: 0; }
 .admin-danger-row { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
-.admin-sticky-actions { position: sticky; bottom: 0; display: flex; justify-content: flex-end; padding: 14px 0; }
+/* The one action row for a page-level form: bottom of the card, right-aligned.
+   Used by Product edit, Inventory, Settings and the category form so "where is
+   Save" has a single answer everywhere. Modals use .admin-modal-actions.
+
+   NOT sticky, deliberately. It carried `position: sticky; bottom: 0` for a long
+   time and never once stuck: .admin-card sets `overflow-x: auto` for wide tables,
+   which forces overflow-y to compute to `auto` as well, and a sticky child then
+   anchors to that scroll box rather than to the viewport. Re-adding the sticky
+   declaration will not work until the horizontal scrolling is moved off the card
+   and onto a wrapper around the table itself. */
+.admin-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
 
 /* ---- sku editor ---- */
 .admin-sku-list { display: flex; flex-direction: column; gap: 12px; }

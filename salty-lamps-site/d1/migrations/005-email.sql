@@ -228,3 +228,27 @@ INSERT OR IGNORE INTO email_templates (key, label, audience, subject, preheader,
    'Open inventory',
    '',
    110);
+
+-- --------------------------------------------------------------------------
+-- Added 2026-08-01 — the address the SHOP PUBLISHES, split from the address
+-- ADMIN ALERTS ARE SENT TO.
+-- --------------------------------------------------------------------------
+-- These were one setting (`admin_notify_email`), read both by the mailer and by
+-- /api/content for the storefront's contact links and its schema.org Store block.
+-- Pointing alerts at a personal mailbox to test them therefore published that
+-- personal address on a crawlable website — which is exactly what happened.
+--
+-- Seeded from whatever `admin_notify_email` holds at migration time so an existing
+-- database keeps rendering the address it already showed, then COALESCEd to the
+-- shop address so a database whose alerts had already been repointed does not
+-- inherit the personal one.
+INSERT OR IGNORE INTO settings (key, value, value_type)
+SELECT
+  'public_contact_email',
+  COALESCE(
+    (SELECT value FROM settings
+      WHERE key = 'admin_notify_email'
+        AND value LIKE '%@saltylamps.co.uk'),
+    'info@saltylamps.co.uk'
+  ),
+  'string';

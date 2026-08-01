@@ -1450,7 +1450,7 @@ function ProductEdit({ id }) {
         </div>
       </section>
 
-      <div className="admin-sticky-actions">
+      <div className="admin-form-actions">
         <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
           <Icon name="check" size={15} />{saving ? 'Saving…' : isNew ? 'Create product' : 'Save changes'}
         </button>
@@ -1550,9 +1550,6 @@ function Inventory() {
           <span className="admin-stock-legend-item"><span className="admin-dot admin-dot--out" />{outCount} out of stock</span>
           <span className="admin-muted">· Threshold {threshold}</span>
         </div>
-        <button className="admin-btn admin-btn--primary" disabled={saving || Object.keys(edits).length === 0} onClick={save}>
-          <Icon name="check" size={15} />{saving ? 'Saving…' : `Save changes${Object.keys(edits).length ? ` (${Object.keys(edits).length})` : ''}`}
-        </button>
       </div>
       <div className="admin-filters">
         <SearchInput
@@ -1612,6 +1609,12 @@ function Inventory() {
           </table>
         )}
         <Pagination page={shownPage} pageCount={pageCount} onChange={setPage} />
+
+        <div className="admin-form-actions">
+          <button className="admin-btn admin-btn--primary" disabled={saving || Object.keys(edits).length === 0} onClick={save}>
+            <Icon name="check" size={15} />{saving ? 'Saving…' : `Save changes${Object.keys(edits).length ? ` (${Object.keys(edits).length})` : ''}`}
+          </button>
+        </div>
       </section>
     </>
   )
@@ -2045,7 +2048,8 @@ function Emails() {
 const SETTING_HINTS = {
   email_enabled: 'Off until the sending domain records are in place. Send yourself a test from Emails first, then switch this on.',
   email_from_address: 'The address customers see and reply to. It must be on a domain verified with the email provider.',
-  admin_notify_email: 'Where new orders, enquiries, refund requests and low-stock alerts are sent.',
+  admin_notify_email: 'Where new orders, enquiries, refund requests and low-stock alerts are sent. Private — never shown on the shop, so it is safe to point at a personal inbox.',
+  public_contact_email: 'The address shown on the shop — Contact links, the footer, and what search engines list. Keep this a business address.',
   low_stock_alerts_enabled: 'Emails you once when a sale takes an item below the threshold above.',
 }
 
@@ -2084,9 +2088,6 @@ function Settings() {
     <section className="admin-card">
       <div className="admin-card-head">
         <h2><Icon name="sliders" tone="amber" className="admin-card-icon" />Settings</h2>
-        <button className="admin-btn admin-btn--primary" disabled={saving || !dirty} onClick={save}>
-          <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save changes'}
-        </button>
       </div>
       {saveErr && <ErrorState error={saveErr} />}
       {savedMsg && <p className="admin-note">{savedMsg}</p>}
@@ -2127,6 +2128,12 @@ function Settings() {
         would be misleading. Store details, shipping and payouts are managed in Stripe and
         Cloudflare.
       </p>
+
+      <div className="admin-form-actions">
+        <button className="admin-btn admin-btn--primary" disabled={saving || !dirty} onClick={save}>
+          <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
     </section>
   )
 }
@@ -2237,7 +2244,7 @@ function CategoriesList() {
           <Field label="Visible" error={errs.visible} hint="Hidden categories disappear from the shop but keep their products and their address.">
             <Toggle checked={form.visible} onChange={v => setField('visible', v)} />
           </Field>
-          <div className="admin-card-head admin-card-head--bare">
+          <div className="admin-form-actions">
             <button className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
             <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
               <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save'}

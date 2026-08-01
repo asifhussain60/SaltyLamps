@@ -48,9 +48,11 @@ export const CONTENT_QUERIES = [
   // old copy quoted while silently filtering ten of them out.
   `SELECT COUNT(*) AS n FROM reviews WHERE display = 1 AND featured = 0`,
   // ONE KEY BY NAME, never `SELECT * FROM settings`. This result set is served to the
-  // public by /api/content, and the settings table also holds the sender address and
-  // the operational switches — none of which a visitor has any business reading.
-  `SELECT value FROM settings WHERE key = 'admin_notify_email'`,
+  // public by /api/content, and the settings table also holds the sender address, the
+  // admin alert destination and the operational switches — none of which a visitor has
+  // any business reading. Reading `public_contact_email` specifically is what keeps a
+  // personal alert address from ever reaching the storefront.
+  `SELECT value FROM settings WHERE key = 'public_contact_email'`,
 ]
 
 export const CATEGORIES_QUERY =
