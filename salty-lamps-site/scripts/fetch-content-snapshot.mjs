@@ -253,10 +253,30 @@ const snapshot = {
   ...resolved,
 }
 
-fs.mkdirSync(path.dirname(outPath), { recursive: true })
-fs.writeFileSync(outPath, `${JSON.stringify(snapshot, null, 2)}\n`)
-ok(
-  `Wrote ${path.relative(root, outPath)} — ${resolved.products.length} products, ` +
-  `${resolved.categories.length} categories, ${resolved.content.collections.length} collections, ` +
-  `${Object.keys(resolved.content.themes).length} themes`,
-)
+// Write ONLY when the content actually changed.
+//
+// This file is tracked on purpose — it is the committed fallback that lets a deploy
+// succeed when D1 or its token is unavailable, and src/App.jsx imports it directly.
+// But `generatedAt` moves on every run, so an unconditional write left `npm run build`
+// dirtying the working tree every single time: a one-line diff with no change in it.
+// That trains everyone to ignore a dirty tree after a build, which is exactly when you
+// most want to notice one.
+//
+// Comparing everything EXCEPT generatedAt means the timestamp still records when the
+// content last genuinely changed, rather than when a build last ran.
+const serialised = `${JSON.stringify(snapshot, null, 2)}\n`
+const withoutTimestamp = ({ generatedAt, ...rest }) => JSON.stringify(rest)
+const previous = committedSnapshot()
+const unchanged = previous && withoutTimestamp(previous) === withoutTimestamp(snapshot)
+
+const summary =
+  `${resolved.products.length} products, ${resolved.categories.length} categories, ` +
+  `${resolved.content.collections.length} collections, ${Object.keys(resolved.content.themes).length} themes`
+
+if (unchanged) {
+  ok(`${path.relative(root, outPath)} already current — ${summary} (not rewritten)`)
+} else {
+  fs.mkdirSync(path.dirname(outPath), { recursive: true })
+  fs.writeFileSync(outPath, serialised)
+  ok(`Wrote ${path.relative(root, outPath)} — ${summary}`)
+}
