@@ -2,16 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import reviews from './data/reviews.json'
 import { hasSupabase, supabase } from './lib/supabase'
 import AdminApp from './admin/AdminApp.jsx'
-import {
-  categories,
-  categoryAliases,
-  groupThemes,
-  img,
-  media,
-  pages,
-  shopperPaths,
-  siteUrl,
-} from './content/site-content.mjs'
+import { img, media, pages, shopperPaths, siteUrl } from './content/site-content.mjs'
+import { makeTaxonomy } from './content/taxonomy.mjs'
+import snapshot from './content/content-snapshot.json'
 
 const money = value =>
   new Intl.NumberFormat('en-GB', {
@@ -19,24 +12,18 @@ const money = value =>
     currency: 'GBP',
   }).format(value)
 
-// Aura Collection pricing isn't finalised yet (see the size-ladder products
-// below) — priceTBD swaps the real number out for "TBD" everywhere a price
-// would otherwise display, and disables purchasing until it's confirmed.
-const priceLabel = product => (product.priceTBD ? 'TBD' : money(product.price))
+const priceLabel = product => money(product.price)
 
-
-
-const publicCategorySlug = slug => resolveCategorySlug(slug)
-const resolveCategorySlug = slug => categoryAliases[slug] || slug
-const categoryHref = slug => `/category/${publicCategorySlug(slug)}`
-const collectionCategoryHref = (collectionSlug, categorySlug) =>
-  `/collection/${collectionSlug}/${publicCategorySlug(categorySlug)}`
-
-const primaryCategory = product => product.categories.find(slug => slug !== 'all-products') || 'all-products'
-
-const themeForProduct = product => groupThemes[primaryCategory(product)] || 'lamp'
-
-const categoryName = slug => categories.find(category => category.slug === slug)?.name || 'All products'
+// First-paint taxonomy, from the snapshot committed at build time. The live values
+// arrive from /api/categories a moment later and replace this.
+//
+// This is why the shop has no category loading state: there is real content to
+// render immediately, with no network round-trip, and a failed fetch degrades to
+// the last deployed taxonomy rather than an empty nav.
+const SNAPSHOT_TAXONOMY = makeTaxonomy(
+  (snapshot.categories || []).map((c, i) => ({ ...c, sort_order: i * 10, is_virtual: c.slug === 'all-products' ? 1 : 0 })),
+  snapshot.categoryAliases || {},
+)
 
 const siteTitle = 'Salty Lamps | Himalayan Salt Lamps, Gifts, Saltware and Trade Supply'
 const siteDescription =
@@ -181,9 +168,14 @@ const supportImages = {
   ],
 }
 
-const supportImagesForProduct = product => {
-  const productSupport = supportImages[themeForProduct(product)] || supportImages.lamp
-  const seen = new Set([product.image])
+// Theme-generic stock photography, used ONLY as a fallback for a product whose own
+// gallery has nothing beyond its primary image. Every product currently has exactly
+// one gallery row, so this is still what most product pages show — but it is now the
+// exception rather than the rule, and it disappears per-product as real photographs
+// are uploaded through the admin gallery.
+const supportImagesForTheme = (theme, primaryImage) => {
+  const productSupport = supportImages[theme] || supportImages.lamp
+  const seen = new Set([primaryImage])
   return [...productSupport, ...supportImages.lamp]
     .filter(item => {
       if (seen.has(item.src)) return false
@@ -191,6 +183,15 @@ const supportImagesForProduct = product => {
       return true
     })
     .slice(0, 2)
+}
+
+// A product's detail thumbnails: its own gallery when it has one, theme stock photos
+// otherwise. The gallery's first entry is the primary image already shown large, so
+// it is dropped here.
+const detailImagesFor = (product, theme) => {
+  const gallery = (product.images || []).filter(src => src !== product.image)
+  if (gallery.length) return gallery.map(src => ({ src, alt: product.name }))
+  return supportImagesForTheme(theme, product.image)
 }
 
 const sellingContentByTheme = {
@@ -268,10 +269,10 @@ const sellingContentByTheme = {
   },
 }
 
-const productSellingContent = product => {
-  const theme = themeForProduct(product)
+const productSellingContent = (taxonomy, product) => {
+  const theme = taxonomy.themeForProduct(product)
   const content = sellingContentByTheme[theme] || sellingContentByTheme.lamp
-  const category = categoryName(primaryCategory(product))
+  const category = taxonomy.nameOf(taxonomy.primaryCategoryOf(product))
   return {
     ...content,
     category,
@@ -279,8 +280,8 @@ const productSellingContent = product => {
   }
 }
 
-const productVisibleReviews = product => {
-  const primary = productProof(product)
+const productVisibleReviews = theme => {
+  const primary = productProof(theme)
   return [primary, ...featuredReviews.filter(review => review.name !== primary.name)].slice(0, 3)
 }
 
@@ -398,7 +399,14 @@ const processProductRanges = [
 
 const productMatchesPath = (product, path) => product.categories.some(slug => path.categories.includes(slug))
 
-const hasTag = (product, tags) => (product.tags || []).some(tag => tags.includes(tag))
+const slugifyTag = value => String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+// Compares through slugify at BOTH ends. The rules below used TitleCase while the
+// admin validator stores lowercase slugs, so a tag typed in the admin could never
+// have matched a rule written in code.
+const hasTag = (product, tags) => {
+  const want = new Set(tags.map(slugifyTag))
+  return (product.tags || []).some(tag => want.has(slugifyTag(tag)))
+}
 
 // Declarative grouping for each collection landing. Sections render in order;
 // a section may split into labelled sub-bands. A subgroup without `match` is the
@@ -427,7 +435,7 @@ const collectionSectionConfig = {
       categorySlug: 'salt-lamps',
       match: product => product.categories.includes('salt-lamps') && !product.categories.includes('special-deal'),
       subgroups: [
-        { label: 'Natural, classic & bestselling', match: product => hasTag(product, ['Bestseller', 'Classic', 'Premium']) },
+        { label: 'Natural, classic & bestselling', match: product => hasTag(product, ['bestseller', 'classic', 'premium']) },
         { label: 'Decorative, sculptural & gift shapes' },
       ],
     },
@@ -464,7 +472,7 @@ const collectionSectionConfig = {
       image: img('platter-kitchen-gemini.jpg'),
       theme: 'kitchen',
       categorySlug: 'rock-salt-pantry-items',
-      match: product => hasTag(product, ['Hosting', 'Serving']),
+      match: product => hasTag(product, ['hosting', 'serving']),
     },
     {
       id: 'pantry-barware',
@@ -475,7 +483,10 @@ const collectionSectionConfig = {
       image: img('salty-chef-pouch-gemini.jpg'),
       theme: 'kitchen',
       categorySlug: 'rock-salt-pantry-items',
-      match: product => hasTag(product, ['Pantry', 'Barware']),
+      // Catch-all: with no tags set, everything kitchen lands here rather than in
+      // the unnamed "More in this range" sweep, so the page reads correctly with or
+      // without tag data.
+      match: product => product.categories.includes('rock-salt-pantry-items'),
     },
   ],
   'horses-farm': [
@@ -488,7 +499,7 @@ const collectionSectionConfig = {
       image: img('lick-product-clean-gemini.jpg'),
       theme: 'equestrian',
       categorySlug: 'equestrian-salt-licks',
-      match: product => product.categories.includes('equestrian-salt-licks') && product.id !== 'salty-licks-special',
+      match: product => product.categories.includes('equestrian-salt-licks') && !product.categories.includes('special-deal'),
     },
     {
       id: 'yard-bulk-supply',
@@ -499,7 +510,7 @@ const collectionSectionConfig = {
       image: img('lick-field-scene-gemini.jpg'),
       theme: 'equestrian',
       categorySlug: 'equestrian-salt-licks',
-      match: product => product.id === 'salty-licks-special',
+      match: product => product.categories.includes('equestrian-salt-licks') && product.categories.includes('special-deal'),
     },
   ],
   'trade-spa': [
@@ -586,9 +597,9 @@ const buildCollectionSections = (slug, items) => {
 }
 
 
-const categoryPageCopy = slug => {
-  const category = categories.find(item => item.slug === slug)
-  if (!category || slug === 'all-products') return pageCopy.shop
+const categoryPageCopy = (taxonomy, slug) => {
+  const category = taxonomy.get(slug)
+  if (!category || category.is_virtual) return pageCopy.shop
 
   return {
     eyebrow: category.name,
@@ -597,7 +608,7 @@ const categoryPageCopy = slug => {
   }
 }
 
-const activePageMeta = ({ route, categorySlug, activeShopperPath, currentProduct, page }) => {
+const activePageMeta = ({ taxonomy, route, categorySlug, activeShopperPath, currentProduct, page }) => {
   if (currentProduct) {
     return {
       title: pageTitle(currentProduct.name),
@@ -616,12 +627,11 @@ const activePageMeta = ({ route, categorySlug, activeShopperPath, currentProduct
   }
 
   if (categorySlug) {
-    const category = categories.find(item => item.slug === categorySlug)
-    const copy = categoryPageCopy(categorySlug)
+    const copy = categoryPageCopy(taxonomy, categorySlug)
     return {
       title: pageTitle(copy.title),
       description: copy.description,
-      image: category?.image || media('logo.png'),
+      image: taxonomy.imageOf(categorySlug) || media('logo.png'),
     }
   }
 
@@ -638,9 +648,40 @@ const activePageMeta = ({ route, categorySlug, activeShopperPath, currentProduct
   return { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
 }
 
-const productReassurance = product => reassuranceByTheme[themeForProduct(product)] || reassuranceByTheme.lamp
+// These take the theme string rather than the product, so they need no taxonomy at
+// all — which keeps most of the churn out of the marketing-copy helpers.
+const productReassurance = theme => reassuranceByTheme[theme] || reassuranceByTheme.lamp
 
-const productProof = product => proofByTheme[themeForProduct(product)] || featuredReviews[0]
+const productProof = theme => proofByTheme[theme] || featuredReviews[0]
+
+const CART_STORAGE_KEY = 'salty-lamps-cart'
+
+// A non-OK response, or one whose body isn't JSON, must reject rather than resolve to
+// something empty — an empty catalogue is indistinguishable from a real "no results"
+// once it reaches the grid.
+async function readJsonOrThrow(res) {
+  if (!res.ok) throw new Error(`Request failed (${res.status})`)
+  return res.json()
+}
+
+// Only { skuId, qty } survives a refresh; the product itself is re-attached from the
+// live catalogue once it loads, so a stored line can never show a stale price.
+function readStoredCart() {
+  try {
+    const raw = window.sessionStorage.getItem(CART_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .filter(line => Number.isInteger(line?.skuId) && Number.isInteger(line?.qty) && line.qty > 0)
+      // A placeholder product, replaced by the real one on rehydrate. Priced at 0 so
+      // that if anything ever rendered before rehydration it would look obviously
+      // wrong rather than plausibly wrong.
+      .map(line => ({ key: `sku-${line.skuId}`, qty: line.qty, product: { skuId: line.skuId, price: 0, stock: true } }))
+  } catch {
+    return []
+  }
+}
 
 function getRoute() {
   return window.location.pathname === '/index.html' ? '/' : window.location.pathname
@@ -685,16 +726,19 @@ function Link({ href, children, className, onClick, ...props }) {
   )
 }
 
-function ProductCard({ product, onQuickView, onAdd, variant = '' }) {
-  const groupSlug = primaryCategory(product)
-  const groupName = categoryName(groupSlug)
+function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
+  const groupName = taxonomy.nameOf(taxonomy.primaryCategoryOf(product))
   const variantClass = variant ? ` product-card--${variant}` : ''
+  // Only render the badge when there is something to say. It is absolutely
+  // positioned with padding and a dark background, so an empty one drew a small
+  // dark rectangle on every in-stock card — every product has an empty tags list.
+  const badge = product.stock ? product.tags[0] : 'Out of stock'
 
   return (
-    <article className={`product-card theme-${themeForProduct(product)}${variantClass}${product.stock ? '' : ' is-soldout'}`}>
+    <article className={`product-card theme-${taxonomy.themeForProduct(product)}${variantClass}${product.stock ? '' : ' is-soldout'}`}>
       <Link className="product-image" href={`/product-page/${product.slug}`} aria-label={`View ${product.name}`}>
         <img src={product.image} alt={product.name} />
-        <span>{product.stock ? product.tags[0] : 'Out of stock'}</span>
+        {badge && <span>{badge}</span>}
       </Link>
       <div className="product-body">
         <p>{groupName}</p>
@@ -707,8 +751,8 @@ function ProductCard({ product, onQuickView, onAdd, variant = '' }) {
       </div>
       <div className="product-actions">
         <button type="button" onClick={() => onQuickView(product.id)}>View</button>
-        <button type="button" onClick={() => onAdd(product)} disabled={!product.stock || product.priceTBD}>
-          {product.options?.length ? 'Choose' : 'Add'}
+        <button type="button" onClick={() => onAdd(product)} disabled={!product.stock}>
+          Add
         </button>
       </div>
     </article>
@@ -753,31 +797,6 @@ function ChatModule({ onSubmit, message }) {
   )
 }
 
-function OptionSelectors({ product, selected, onSelect }) {
-  if (!product.options?.length) return null
-
-  return (
-    <div className="option-stack">
-      {product.options.map(option => (
-        <label key={option.name}>
-          {option.name}
-          <select
-            value={selected[option.name] || ''}
-            onChange={event => onSelect(option.name, event.target.value)}
-            required
-          >
-            <option value="">Select {option.name}</option>
-            {option.values.map(value => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
-    </div>
-  )
-}
 
 const collectionTradeCopy = {
   'home-gifts': {
@@ -830,12 +849,16 @@ export default function App() {
   const [route, setRoute] = useState(getRoute)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('featured')
-  const [products, setProducts] = useState([])
-  const [cart, setCart] = useState([])
+  // 'loading' | 'ready' | 'error'. Products used to be a bare array whose fetch
+  // failure was swallowed into [], which the shop rendered as "No matching products.
+  // Try another search term." — telling customers they had searched wrong during an
+  // outage. The three states are now distinct and rendered differently.
+  const [catalog, setCatalog] = useState({ status: 'loading', products: [], categories: [], aliases: {} })
+  const { products } = catalog
+  const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
-  const [selectedOptions, setSelectedOptions] = useState({})
   const [formMessage, setFormMessage] = useState('')
   const [newsletterMessage, setNewsletterMessage] = useState('')
   const [chatMessage, setChatMessage] = useState('')
@@ -854,17 +877,83 @@ export default function App() {
     return () => window.removeEventListener('popstate', updateRoute)
   }, [])
 
-  useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => setProducts(data.products || []))
-      .catch(() => setProducts([]))
+  // Both requests go out together, so the cost is max(a, b) rather than a + b, and
+  // one state transition covers both. loadCatalog is also the Retry handler.
+  const loadCatalog = React.useCallback(() => {
+    let alive = true
+    setCatalog(current => ({ ...current, status: 'loading' }))
+    Promise.all([
+      fetch('/api/products').then(readJsonOrThrow),
+      fetch('/api/categories').then(readJsonOrThrow),
+    ])
+      .then(([productData, categoryData]) => {
+        if (!alive) return
+        setCatalog({
+          status: 'ready',
+          products: productData.products || [],
+          categories: categoryData.categories || [],
+          aliases: categoryData.aliases || {},
+        })
+      })
+      .catch(() => alive && setCatalog(current => ({ ...current, status: 'error' })))
+    return () => { alive = false }
   }, [])
 
-  const categorySlug = route.startsWith('/category/') ? resolveCategorySlug(route.replace('/category/', '')) : null
+  useEffect(() => loadCatalog(), [loadCatalog])
+
+  // Falls back to the build-time snapshot until the live taxonomy lands, so the nav
+  // and category names never render blank or flash.
+  const taxonomy = useMemo(
+    () => (catalog.categories.length ? makeTaxonomy(catalog.categories, catalog.aliases) : SNAPSHOT_TAXONOMY),
+    [catalog.categories, catalog.aliases],
+  )
+
+  // The order is placed, so the cart must not survive it — otherwise the same items
+  // reappear the moment the customer navigates back into the shop.
+  useEffect(() => {
+    if (route === '/checkout/success') setCart([])
+  }, [route])
+
+  // Persist the cart across the Stripe round-trip. Only { skuId, qty } is stored —
+  // never price or name, so a stale entry can never render a wrong subtotal. Lines
+  // are rehydrated against the live catalogue below, and sessionStorage rather than
+  // localStorage because a cart surviving for days is its own bug.
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(cart.map(item => ({ skuId: item.product.skuId, qty: item.qty }))),
+      )
+    } catch {
+      // Private browsing or a full quota. A cart that isn't persisted is a much
+      // smaller problem than a checkout that throws.
+    }
+  }, [cart])
+
+  // Re-attach stored lines to real products once the catalogue is in, dropping
+  // anything that has since been deleted or sold out. Without this, a stale skuId
+  // would reach /api/checkout and come back as a 400.
+  useEffect(() => {
+    if (catalog.status !== 'ready') return
+    setCart(items => {
+      const bySkuId = new Map(catalog.products.map(p => [p.skuId, p]))
+      const rehydrated = items
+        .map(item => {
+          const fresh = bySkuId.get(item.product.skuId)
+          if (!fresh || !fresh.stock) return null
+          return { ...item, product: fresh, qty: Math.min(item.qty, fresh.stockQty ?? item.qty) }
+        })
+        .filter(Boolean)
+      const unchanged = rehydrated.length === items.length
+        && rehydrated.every((item, i) => item.product === items[i].product && item.qty === items[i].qty)
+      return unchanged ? items : rehydrated
+    })
+  }, [catalog.status, catalog.products])
+
+  const categorySlug = route.startsWith('/category/') ? taxonomy.resolve(route.replace('/category/', '')) : null
   const collectionMatch = route.match(/^\/collection\/([^/]+)(?:\/([^/]+))?$/)
   const collectionSlug = collectionMatch?.[1] || null
-  const collectionCategorySlug = collectionMatch?.[2] ? resolveCategorySlug(collectionMatch[2]) : null
+  const collectionCategorySlug = collectionMatch?.[2] ? taxonomy.resolve(collectionMatch[2]) : null
   const activeShopperPath = shopperPaths.find(path => path.slug === collectionSlug)
 
   // Reset video state whenever the collection changes.
@@ -882,8 +971,20 @@ export default function App() {
   const currentProduct = products.find(product => product.slug === productSlug)
   const quickViewProduct = products.find(product => product.id === quickViewId)
   const page = pages[route]
-  const isKnownCategoryRoute = !categorySlug || categories.some(category => category.slug === categorySlug)
+  // A category route is valid if the taxonomy knows the slug OR any product claims
+  // it. The second clause is what makes the site genuinely data-driven: assign a new
+  // slug to a product in the admin and its page works immediately, rather than 404ing
+  // until someone edits the code.
+  const isKnownCategoryRoute = !categorySlug
+    || taxonomy.has(categorySlug)
+    || products.some(product => product.categories.includes(categorySlug))
+
+  // Nothing can be declared missing until the catalogue has actually loaded.
+  // Previously this was computed on first render, when products was still empty, so
+  // EVERY product page flashed "This page is not available." before its data arrived.
+  const catalogSettled = catalog.status !== 'loading'
   const notFound =
+    catalogSettled &&
     !currentProduct &&
     !activeShopperPath &&
     !page &&
@@ -900,15 +1001,15 @@ export default function App() {
     !(categorySlug && isKnownCategoryRoute)
   const meta = notFound
     ? { title: pageTitle(pageCopy.notFound.title), description: pageCopy.notFound.description, image: media('logo.png'), robots: 'noindex,follow' }
-    : activePageMeta({ route, categorySlug, activeShopperPath, currentProduct, page })
+    : activePageMeta({ taxonomy, route, categorySlug, activeShopperPath, currentProduct, page })
   const canonicalPath = currentProduct
     ? `/product-page/${currentProduct.slug}`
     : collectionSlug
       ? collectionCategorySlug
-        ? collectionCategoryHref(collectionSlug, collectionCategorySlug)
+        ? taxonomy.collectionHref(collectionSlug, collectionCategorySlug)
         : `/collection/${collectionSlug}`
       : categorySlug
-        ? categoryHref(categorySlug)
+        ? taxonomy.href(categorySlug)
         : route === '/returns-exchanges'
           ? '/return-refund-policy'
           : route
@@ -919,19 +1020,19 @@ export default function App() {
         name: product.name,
         image: product.image,
         href: `/product-page/${product.slug}`,
-        label: categoryName(primaryCategory(product)),
+        label: taxonomy.nameOf(taxonomy.primaryCategoryOf(product)),
         variant: index % 7 === 0 ? 'wide' : index % 5 === 0 ? 'tall' : '',
       })),
-      ...categories.slice(1, 7).map((category, index) => ({
+      ...taxonomy.navList.slice(0, 6).map((category, index) => ({
         key: category.slug,
         name: category.name,
         image: category.image,
-        href: categoryHref(category.slug),
+        href: taxonomy.href(category.slug),
         label: category.name,
         variant: index % 3 === 0 ? 'wide' : '',
       })),
     ],
-    [products],
+    [products, taxonomy],
   )
   const galleryShowcaseItems = useMemo(
     () => [
@@ -974,8 +1075,8 @@ export default function App() {
   const categoryFilter =
     collectionCategorySlug || (categorySlug && categorySlug !== 'all-products' ? categorySlug : 'all')
   const sidebarCategories = activeShopperPath
-    ? categories.filter(category => activeShopperPath.categories.includes(category.slug))
-    : categories
+    ? taxonomy.list.filter(category => activeShopperPath.categories.includes(category.slug))
+    : taxonomy.list
   const collectionProducts = activeShopperPath ? products.filter(product => productMatchesPath(product, activeShopperPath)) : products
 
   const visibleProducts = useMemo(() => {
@@ -1079,44 +1180,28 @@ export default function App() {
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
   const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.qty, 0)
 
-  const selectOption = (productId, optionName, value) => {
-    setSelectedOptions(current => ({
-      ...current,
-      [productId]: {
-        ...(current[productId] || {}),
-        [optionName]: value,
-      },
-    }))
-    setNotice('')
-  }
-
-  const hasRequiredOptions = product => {
-    if (!product.options?.length) return true
-    const selected = selectedOptions[product.id] || {}
-    return product.options.every(option => selected[option.name])
-  }
-
-  const addProduct = (product, context = 'grid') => {
+  const addProduct = product => {
     if (!product.stock) return
 
-    if (product.options?.length && !hasRequiredOptions(product)) {
-      setNotice(`Select ${product.options[0].name} before adding this item.`)
-      if (context === 'grid') {
-        setQuickViewId(product.id)
-      }
+    const key = String(product.id)
+    // A UX affordance only. The checkout endpoint re-reads stock from the database
+    // and still returns a 409 — this just means the shopper finds out here rather
+    // than at the highest-intent click, and the published depth can be a little
+    // stale because of the 60s cache.
+    const cap = product.stockQty ?? Infinity
+    const existing = cart.find(item => item.key === key)
+
+    if (existing && existing.qty >= cap) {
+      setNotice(`Only ${cap} of ${product.name} ${cap === 1 ? 'is' : 'are'} available.`)
+      setCartOpen(true)
       return
     }
 
-    const options = selectedOptions[product.id] || {}
-    const key = `${product.id}:${JSON.stringify(options)}`
-
-    setCart(items => {
-      const existing = items.find(item => item.key === key)
-      if (existing) {
-        return items.map(item => (item.key === key ? { ...item, qty: item.qty + 1 } : item))
-      }
-      return [...items, { key, product, options, qty: 1 }]
-    })
+    setCart(items => (
+      items.some(item => item.key === key)
+        ? items.map(item => (item.key === key ? { ...item, qty: item.qty + 1 } : item))
+        : [...items, { key, product, qty: 1 }]
+    ))
     setCartOpen(true)
     setQuickViewId(null)
     setNotice('')
@@ -1139,7 +1224,7 @@ export default function App() {
       setFormMessage(
         hasSupabase
           ? 'Thanks for submitting. We will come back to you shortly.'
-          : 'Your enquiry is captured in this dev build. Connect the Wix form before launch.',
+          : 'Thanks — your enquiry is saved. We will come back to you shortly.',
       )
       event.currentTarget.reset()
     }
@@ -1158,7 +1243,7 @@ export default function App() {
       setNewsletterMessage(
         hasSupabase
           ? 'Thanks for subscribing.'
-          : 'Signup checked locally. Connect Wix Contacts before launch.',
+          : 'Thanks for subscribing.',
       )
       event.currentTarget.reset()
     }
@@ -1179,16 +1264,23 @@ export default function App() {
       setChatMessage(
         hasSupabase
           ? 'Message saved. We will reply as soon as possible.'
-          : 'Message checked locally. Connect Wix Smart Chat before launch.',
+          : 'Thanks — your message is saved. We will reply as soon as possible.',
       )
       event.currentTarget.reset()
     }
   }
 
   const changeQty = (key, delta) => {
+    const line = cart.find(item => item.key === key)
+    const cap = line?.product.stockQty ?? Infinity
+    if (line && delta > 0 && line.qty >= cap) {
+      setNotice(`Only ${cap} of ${line.product.name} ${cap === 1 ? 'is' : 'are'} available.`)
+      return
+    }
+    setNotice('')
     setCart(items =>
       items
-        .map(item => (item.key === key ? { ...item, qty: Math.max(0, item.qty + delta) } : item))
+        .map(item => (item.key === key ? { ...item, qty: Math.min(cap, Math.max(0, item.qty + delta)) } : item))
         .filter(item => item.qty > 0),
     )
   }
@@ -1246,7 +1338,7 @@ export default function App() {
     },
     // Omit the Offer entirely when pricing is TBD — publishing a placeholder
     // price to search engines would be worse than publishing none.
-    offers: currentProduct.priceTBD ? undefined : {
+    offers: {
       '@type': 'Offer',
       url: absoluteUrl(`/product-page/${currentProduct.slug}`),
       price: currentProduct.price,
@@ -1297,8 +1389,8 @@ export default function App() {
   }
 
   const renderShop = () => {
-    const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(categorySlug) : pageCopy.shop
-    const selectedCategoryCopy = categoryFilter !== 'all' ? categoryPageCopy(categoryFilter) : null
+    const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(taxonomy, categorySlug) : pageCopy.shop
+    const selectedCategoryCopy = categoryFilter !== 'all' ? categoryPageCopy(taxonomy, categoryFilter) : null
     const shopHeadingEyebrow = selectedCategoryCopy
       ? selectedCategoryCopy.eyebrow
       : activeShopperPath
@@ -1318,12 +1410,13 @@ export default function App() {
         : shopCopy.description
     const spotlightCategories = (
       activeShopperPath
-        ? categories.filter(category => activeShopperPath.categories.includes(category.slug))
-        : categories.filter(category => category.slug !== 'all-products')
+        ? taxonomy.navList.filter(category => activeShopperPath.categories.includes(category.slug))
+        : taxonomy.navList
     ).slice(0, 3)
     const renderCard = (product, variant) => (
       <ProductCard
         key={product.id}
+        taxonomy={taxonomy}
         product={product}
         variant={variant}
         onQuickView={id => {
@@ -1410,14 +1503,14 @@ export default function App() {
             <div className="shop-layout-aside" aria-label="Shop highlights">
               <div className="shop-layout-stats">
                 <span><strong>{visibleProducts.length}</strong> shown</span>
-                <span><strong>{activeShopperPath ? activeShopperPath.shortName : categories.length - 1}</strong> {activeShopperPath ? 'buyer path' : 'categories'}</span>
+                <span><strong>{activeShopperPath ? activeShopperPath.shortName : taxonomy.navList.length}</strong> {activeShopperPath ? 'buyer path' : 'categories'}</span>
                 <span><strong>Trade</strong> bulk supply</span>
               </div>
               <div className="shop-layout-rail" aria-label="Featured categories">
                 {spotlightCategories.map(category => (
                   <Link
                     key={category.slug}
-                    href={activeShopperPath ? collectionCategoryHref(activeShopperPath.slug, category.slug) : categoryHref(category.slug)}
+                    href={activeShopperPath ? taxonomy.collectionHref(activeShopperPath.slug, category.slug) : taxonomy.href(category.slug)}
                   >
                     <img src={category.image} alt="" loading="lazy" />
                     <span>{category.name}</span>
@@ -1477,11 +1570,11 @@ export default function App() {
               </a>
             ))
           ) : (
-            sidebarCategories.filter(category => category.slug !== 'all-products').map(category => (
+            sidebarCategories.filter(category => !category.is_virtual).map(category => (
               <Link
                 key={category.slug}
-                href={activeShopperPath ? collectionCategoryHref(activeShopperPath.slug, category.slug) : categoryHref(category.slug)}
-                className={`${categoryFilter === category.slug ? 'active' : ''} theme-${groupThemes[category.slug] || 'lamp'}`}
+                href={activeShopperPath ? taxonomy.collectionHref(activeShopperPath.slug, category.slug) : taxonomy.href(category.slug)}
+                className={`${categoryFilter === category.slug ? 'active' : ''} theme-${taxonomy.themeOf(category.slug)}`}
               >
                 <span>{category.name}</span>
                 <small>
@@ -1496,10 +1589,10 @@ export default function App() {
         {!isCollectionRoot && (
           <nav className="shop-mobile-jump" aria-label="Quick category links">
             <Link href="/shop" className={categoryFilter === 'all' ? 'active' : ''}>All</Link>
-            {sidebarCategories.filter(category => category.slug !== 'all-products').map(category => (
+            {sidebarCategories.filter(category => !category.is_virtual).map(category => (
               <Link
                 key={category.slug}
-                href={activeShopperPath ? collectionCategoryHref(activeShopperPath.slug, category.slug) : categoryHref(category.slug)}
+                href={activeShopperPath ? taxonomy.collectionHref(activeShopperPath.slug, category.slug) : taxonomy.href(category.slug)}
                 className={categoryFilter === category.slug ? 'active' : ''}
               >
                 {category.name}
@@ -1543,7 +1636,7 @@ export default function App() {
                       {section.categorySlug && (
                         <Link
                           className="shop-section-link"
-                          href={collectionCategoryHref(activeShopperPath.slug, section.categorySlug)}
+                          href={taxonomy.collectionHref(activeShopperPath.slug, section.categorySlug)}
                         >
                           View only {section.title}
                         </Link>
@@ -1567,7 +1660,21 @@ export default function App() {
           </>
         ) : (
           <div className="product-grid">
-            {visibleProducts.length ? (
+            {catalog.status === 'loading' ? (
+              <div className="empty-state">
+                <h3>Loading the range…</h3>
+                <p>One moment while we fetch the latest products and stock.</p>
+              </div>
+            ) : catalog.status === 'error' ? (
+              /* Distinct from "no results" on purpose. This used to render the
+                 search message below, so during an outage the shop told customers
+                 they had searched wrong. */
+              <div className="empty-state">
+                <h3>We can’t load the shop right now</h3>
+                <p>This is a problem at our end, not with your search. Please try again in a moment.</p>
+                <button className="button secondary" type="button" onClick={loadCatalog}>Try again</button>
+              </div>
+            ) : visibleProducts.length ? (
               visibleProducts.map(renderCard)
             ) : (
               <div className="empty-state">
@@ -1777,15 +1884,16 @@ export default function App() {
   )
 
   const renderProductPage = product => {
-    const selected = selectedOptions[product.id] || {}
-    const detailImages = supportImagesForProduct(product)
-    const reassurance = productReassurance(product)
-    const proof = productProof(product)
-    const selling = productSellingContent(product)
-    const visibleReviews = productVisibleReviews(product)
+    const theme = taxonomy.themeForProduct(product)
+    const detailImages = detailImagesFor(product, theme)
+    const reassurance = productReassurance(theme)
+    const proof = productProof(theme)
+    const selling = productSellingContent(taxonomy, product)
+    const visibleReviews = productVisibleReviews(theme)
+    const eyebrow = product.tags.join(' / ')
 
     return (
-      <section className={`product-page theme-${themeForProduct(product)}`}>
+      <section className={`product-page theme-${theme}`}>
         <div className="product-gallery">
           <div className="product-gallery-main">
             <img src={product.image} alt={product.name} />
@@ -1799,22 +1907,22 @@ export default function App() {
         </div>
         <div className="product-detail">
           <div className="product-buy-panel">
-            <p className="eyebrow">{product.tags.join(' / ')}</p>
+            {/* No product has tags yet, and an empty eyebrow still reserves its
+                bottom margin — so render it only when there is something in it. */}
+            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
             <h1>{product.name}</h1>
             <p className="product-lede">{selling.lede}</p>
             <div className="detail-meta">
               <strong>{priceLabel(product)}</strong>
               <span>{product.stock ? 'In stock' : 'Out of stock'}</span>
               {product.sku && <span>SKU {product.sku}</span>}
+              {product.stock && product.stockQty != null && product.stockQty <= 5 && (
+                <span>Only {product.stockQty} left</span>
+              )}
             </div>
-            <OptionSelectors
-              product={product}
-              selected={selected}
-              onSelect={(name, value) => selectOption(product.id, name, value)}
-            />
             {notice && (quickViewId === product.id || currentProduct?.id === product.id) && <p className="notice">{notice}</p>}
             <div className="hero-actions product-cta-row">
-              <button className="button primary" type="button" onClick={() => addProduct(product, 'product-page')} disabled={!product.stock || product.priceTBD}>
+              <button className="button primary" type="button" onClick={() => addProduct(product)} disabled={!product.stock}>
                 Add to cart
               </button>
               <a className="button secondary" href={`mailto:info@saltylamps.co.uk?subject=${encodeURIComponent(product.name)}`}>
@@ -2335,9 +2443,6 @@ export default function App() {
               <img src={item.product.image} alt="" />
               <div>
                 <strong>{item.product.name}</strong>
-                {Object.entries(item.options).map(([name, value]) => (
-                  <span key={name}>{name}: {value}</span>
-                ))}
                 <small>{money(item.product.price)}</small>
               </div>
               <div className="qty">
@@ -2377,18 +2482,13 @@ export default function App() {
             <button className="close-button" type="button" onClick={() => setQuickViewId(null)}>Close</button>
             <img src={quickViewProduct.image} alt={quickViewProduct.name} />
             <div>
-              <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>
+              {quickViewProduct.tags.length > 0 && <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>}
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>
               <p>{quickViewProduct.description}</p>
               <strong>{priceLabel(quickViewProduct)}</strong>
-              <OptionSelectors
-                product={quickViewProduct}
-                selected={selectedOptions[quickViewProduct.id] || {}}
-                onSelect={(name, value) => selectOption(quickViewProduct.id, name, value)}
-              />
               {notice && quickViewId === quickViewProduct.id && <p className="notice">{notice}</p>}
               <div className="hero-actions">
-                <button className="button primary" type="button" onClick={() => addProduct(quickViewProduct, 'quick-view')} disabled={!quickViewProduct.stock || quickViewProduct.priceTBD}>
+                <button className="button primary" type="button" onClick={() => addProduct(quickViewProduct)} disabled={!quickViewProduct.stock}>
                   Add to cart
                 </button>
                 <Link className="button secondary" href={`/product-page/${quickViewProduct.slug}`} onClick={() => setQuickViewId(null)}>
