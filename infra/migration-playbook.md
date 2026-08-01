@@ -17,8 +17,17 @@ D1 and Stripe don't need to change at all.
    new domain, then delete the old one once cut over) to `https://<new-domain>/api/webhook`. If
    you create a *new* endpoint rather than editing the existing one, it gets a new signing secret
    — update `STRIPE_WEBHOOK_SECRET` to match.
-4. Redeploy (`./deploy-cloudflare.sh`) — secrets only take effect on a fresh deployment.
-5. Repeat the live verification steps in [`stripe.md`](stripe.md#test-mode-verification-performed)
+4. Change the build-time site address in **`salty-lamps-site/src/content/site-content.mjs`**
+   (`export const siteUrl`). This is easy to miss and nothing fails loudly when it's wrong: it is
+   the source of every `<link rel="canonical">`, every `og:url`, all six sitemaps, the
+   `Sitemap:` line in `robots.txt`, and the `url` in the schema.org Store block. Leave it stale and
+   the new site tells Google it is really the old one.
+5. Update the `site_url` setting in Admin → Settings to the new domain — it is the link base for
+   emails when `SITE_URL` is unset.
+6. Email: the sender domain must be verified with Resend before any customer mail sends. See
+   [`email.md`](email.md).
+7. Redeploy (`./deploy-cloudflare.sh`) — secrets only take effect on a fresh deployment.
+8. Repeat the live verification steps in [`stripe.md`](stripe.md#test-mode-verification-performed)
    against the new domain.
 
 ## Scenario B — same domain, going from Stripe test mode to Stripe live mode
@@ -65,10 +74,61 @@ Everything in [`cloudflare.md`](cloudflare.md) needs recreating from scratch:
 6. Set the three Pages secrets (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SITE_URL`).
 7. Then follow Scenario A for the domain and, if applicable, Scenario B for going live on Stripe.
 
+## Scenario D — a NEW domain alongside the existing Wix site
+
+The chosen direction as of 2026-08-01. Buy a second domain, host this site on it, leave
+`saltylamps.co.uk` and its Wix site completely untouched, and add a redirect from old to new later.
+
+Scenario A is the mechanical checklist; everything below is what is *different* because the old
+site stays live.
+
+### Before you start — decide the canonical question
+
+Two live shops serving the same catalogue is the real risk here, and it is not a technical failure
+that shows up in a log. Today every built page carries
+`<link rel="canonical" href="https://www.saltylamps.co.uk/">` and a `robots.txt` advertising a
+sitemap at that domain, because `siteUrl` in `src/content/site-content.mjs` still says so. That
+means the new site would launch telling search engines it is really the Wix site.
+
+Pick one deliberately:
+
+- **New domain is the real shop** → set `siteUrl` to the new domain (Scenario A step 4). Accept
+  that the two sites now compete until the redirect lands, and land the redirect quickly.
+- **Not ready to compete yet** → keep the new site out of the index entirely (`robots.txt`
+  `Disallow: /`, or `noindex`) until the redirect is in place. Safer, and reversible in one build.
+
+Leaving it as-is is the one option that is wrong either way.
+
+### Steps
+
+1. Register the domain anywhere, but **point its nameservers at Cloudflare on day one.** This is
+   the whole reason this scenario unblocks email: Cloudflare has no trouble with MX records on a
+   subdomain, which is exactly what Wix cannot do (see [`email.md`](email.md)).
+2. Follow Scenario A steps 1–8 against the new domain.
+3. Verify `send.<new-domain>` with Resend, region **Ireland (`eu-west-1`)**, and set Sender Address
+   to `orders@send.<new-domain>`. Until this is done the shop is still on the `resend.dev` test
+   sender and cannot email anyone but the account owner.
+4. Only then consider the redirect from `saltylamps.co.uk`.
+
+### The redirect — unverified, check before relying on it
+
+Wix's redirect tooling handles page-level redirects *within* a Wix site. Redirecting an entire
+domain to an external one normally needs registrar or DNS control, which is precisely what this
+scenario is avoiding. **This has not been confirmed.** Check what Wix actually permits before
+promising anyone the old URLs will forward — if it cannot, the redirect needs the DNS move that
+Scenario A describes, and the two scenarios collapse back into one.
+
+### What does NOT need to change
+
+D1, the catalogue, Stripe keys, and the Cloudflare account all stay as they are. The Wix site is
+not touched at any point.
+
 ## Things that never need to change, in any scenario
 
 - `salty-lamps-site/functions/*` — the Functions code has no hardcoded account/domain identifiers
-  except the one noted in Scenario C step 5.
+  except the one noted in Scenario C step 5. **The storefront is not equally clean**:
+  `src/content/site-content.mjs` hardcodes `siteUrl` and drives all SEO output from it (Scenario A
+  step 4).
 - `salty-lamps-site/d1/schema.sql` — the table structure itself is account-independent.
 - The cart/checkout flow in `src/App.jsx` — it only ever calls relative paths (`/api/products`,
   `/api/checkout`), never an absolute URL, so it moves with the domain automatically.

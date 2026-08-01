@@ -67,7 +67,26 @@ See [`stripe.md`](stripe.md#api-key-in-use) — a deliberate choice for test-mod
 worth revisiting before live mode (Scenario B in the migration playbook already recommends the
 restricted key for the live-mode key).
 
-## 7. ~~Post-checkout success/cancel pages 404~~ — fixed 2026-07-10
+## 7. The UAT site tells search engines it is the Wix site
+
+Verified in the built output on 2026-08-01: every page deployed to
+`salty-lamps-proposal.pages.dev` carries `<link rel="canonical" href="https://www.saltylamps.co.uk/">`
+and `<meta property="og:url">` pointing at the same place, `robots.txt` advertises
+`https://www.saltylamps.co.uk/sitemap.xml`, and crawling is allowed (`Allow: /`, only `/admin/`
+disallowed). All six sitemaps list `www.saltylamps.co.uk` URLs.
+
+The cause is `siteUrl` in `salty-lamps-site/src/content/site-content.mjs`, a build-time constant
+that has always said `https://www.saltylamps.co.uk` regardless of where the build is deployed.
+
+Harmless while UAT is unknown to Google, and it fails silently — nothing in any log will ever
+mention it. It stops being harmless the moment a second real domain exists, which is
+[`migration-playbook.md`](migration-playbook.md) Scenario D. **Decide the canonical question before
+that domain goes public**, not after.
+
+**Cheapest fix if UAT should simply never be indexed:** emit `Disallow: /` in `robots.txt` for any
+build that isn't the production domain.
+
+## 8. ~~Post-checkout success/cancel pages 404~~ — fixed 2026-07-10
 
 `functions/api/checkout.js` sets `success_url` to `${siteUrl}/checkout/success?session_id=...` and
 `cancel_url` to `${siteUrl}/checkout/cancelled`, but the SPA router in `src/App.jsx` had no case for

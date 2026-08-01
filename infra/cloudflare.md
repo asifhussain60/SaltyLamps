@@ -102,8 +102,10 @@ from stdin — never pass it as a CLI argument, it'd land in shell history):
 - `STRIPE_WEBHOOK_SECRET` — see [`stripe.md`](stripe.md)
 - `SITE_URL` — currently `https://salty-lamps-proposal.pages.dev`; used by `checkout.js` to build
   the Stripe success/cancel redirect URLs
-- `RESEND_API_KEY` — transactional email sender; see `functions/lib/mailer.mjs`. Without it every
-  send is recorded in the admin as `skipped` and nothing else changes
+- `RESEND_API_KEY` — transactional email sender; see `functions/lib/mailer.mjs`. **Set 2026-08-01.**
+  Without it every send is recorded in the admin as `skipped` and nothing else changes. Full detail
+  — account, current UAT sender, and what still blocks customer email — in [`email.md`](email.md).
+  Cloudflare cannot send this mail itself; that question is settled in `email.md`, don't re-open it
 - `MAIL_DRY_RUN` — dev/UAT only; renders and logs every email without handing it to the provider
 
 (The former `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` pair is gone. The storefront form

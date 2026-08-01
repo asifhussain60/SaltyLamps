@@ -12,6 +12,8 @@ is public.
 
 - [`cloudflare.md`](cloudflare.md) — Pages project, D1 database, API tokens, secrets, Functions
 - [`stripe.md`](stripe.md) — account, API key, webhook endpoint
+- [`email.md`](email.md) — Resend account, why not Cloudflare, current UAT state, what unblocks
+  customer email
 - [`migration-playbook.md`](migration-playbook.md) — step-by-step: new domain, new Stripe account, or both
 - [`known-issues.md`](known-issues.md) — things to fix before this goes live for real
 
@@ -35,6 +37,8 @@ calls.
 | Pages project | `salty-lamps-proposal` → https://salty-lamps-proposal.pages.dev |
 | D1 database | `salty-lamps-db`, id `e8e40717-628d-481d-9175-e9c473620125` |
 | Stripe account | Test mode "New business sandbox", id `acct_1TbPB1FXfoyPTVZN` |
+| Email provider | Resend, account `asifhussain60@gmail.com` — see [`email.md`](email.md) |
+| Domain registrar | `saltylamps.co.uk` is at **123-Reg**; its nameservers point at **Wix** |
 | Deploy script | `salty-lamps-site/deploy-cloudflare.sh` |
 | D1 schema | `salty-lamps-site/d1/schema.sql` |
 | D1 seed (generated) | `salty-lamps-site/d1/seed.sql`, produced by `salty-lamps-site/scripts/generate-d1-seed.mjs` |
