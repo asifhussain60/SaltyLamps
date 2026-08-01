@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-01T13:49:35.391Z",
-  "source": "live",
+  "generatedAt": "2026-08-01T14:04:17.068Z",
+  "source": "local",
   "siteUrl": "https://www.saltylamps.co.uk",
   "categoryAliases": {
     "himalyan-salt-massage-relaxation-products": "himalayan-salt-massage-relaxation-products"
@@ -267,15 +267,15 @@
   },
   "products": [
     {
-      "id": "sku-121",
-      "skuId": 121,
+      "id": "sku-44",
+      "skuId": 44,
       "productId": "product_1b92dfb0-dae3-eb06-66b7-2e5977e45712",
       "slug": "angel-shape-himalayan-rock-salt-lamp",
       "name": "Angel Shape Himalayan Rock Salt Lamp",
       "sku": "RSL-A",
       "price": 29.99,
       "stock": true,
-      "stockQty": 9,
+      "stockQty": 10,
       "trackMode": "quantity",
       "categories": [
         "all-products",
@@ -289,8 +289,8 @@
       "tags": []
     },
     {
-      "id": "sku-135",
-      "skuId": 135,
+      "id": "sku-58",
+      "skuId": 58,
       "productId": "product_0d1e2d90-db7b-c2d4-19d4-1beddec6b44a",
       "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-small",
       "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Small",
@@ -311,13 +311,13 @@
       "tags": []
     },
     {
-      "id": "sku-136",
-      "skuId": 136,
+      "id": "sku-59",
+      "skuId": 59,
       "productId": "product_0d1e2d90-db7b-c2d4-19d4-1beddec6b44a",
       "slug": "ball-sphere-shaped-himalayan-rock-salt-lamp-large",
       "name": "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large",
       "sku": "RSL-BB",
-      "price": 24.99,
+      "price": 35.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -333,8 +333,8 @@
       "tags": []
     },
     {
-      "id": "sku-119",
-      "skuId": 119,
+      "id": "sku-42",
+      "skuId": 42,
       "productId": "product_260249e0-7013-2160-075e-357aa0283c57",
       "slug": "block-shape-himalayan-rock-salt-lamp",
       "name": "Block Shape Himalayan Rock Salt Lamp",
@@ -355,8 +355,8 @@
       "tags": []
     },
     {
-      "id": "sku-110",
-      "skuId": 110,
+      "id": "sku-33",
+      "skuId": 33,
       "productId": "product_9c0fe076-e77b-b119-4f49-0642a88bd3f0",
       "slug": "cable-for-salt-lamp",
       "name": "Cable for Salt Lamp",
@@ -377,8 +377,8 @@
       "tags": []
     },
     {
-      "id": "sku-112",
-      "skuId": 112,
+      "id": "sku-35",
+      "skuId": 35,
       "productId": "product_b7ee9a81-2449-0c05-2555-b5910e2d97ee",
       "slug": "cable-for-salt-lamp",
       "name": "Cable for Salt Lamp",
@@ -399,8 +399,8 @@
       "tags": []
     },
     {
-      "id": "sku-120",
-      "skuId": 120,
+      "id": "sku-43",
+      "skuId": 43,
       "productId": "product_79f86bda-e4f2-a942-d587-81628e0a3b01",
       "slug": "dolphin-shape-himalayan-rock-salt-lamp",
       "name": "Dolphin Shape Himalayan Rock Salt Lamp",
@@ -421,8 +421,8 @@
       "tags": []
     },
     {
-      "id": "sku-127",
-      "skuId": 127,
+      "id": "sku-50",
+      "skuId": 50,
       "productId": "product_d8f2a678-0866-3530-90ea-e7b4da6b62a6",
       "slug": "dove-shape-himalayan-rock-salt-lamp",
       "name": "Dove Shape Himalayan Rock Salt Lamp",
@@ -443,8 +443,8 @@
       "tags": []
     },
     {
-      "id": "sku-154",
-      "skuId": 154,
+      "id": "sku-77",
+      "skuId": 77,
       "productId": "product_c8539b66-7a44-fe18-affc-afec4be8562a",
       "slug": "fire-basket-himalayan-rock-salt-lamp",
       "name": "Fire Basket Himalayan Rock Salt Lamp",
@@ -461,12 +461,12 @@
       "images": [
         "/media/live-site-products/wix-c8539b66-7a4.png"
       ],
-      "description": "Himalayan Crystal Rock Salt Lamp Fire Basket Metal Wire basket filled with rock salt chunks. Rocks lit up when the bulb is switched on and give a worm glow, at the same time improving the air quality…\nBasket Dimension:  (H)15cm x (W)20cm",
+      "description": "Himalayan Crystal Rock Salt Lamp Fire Basket Metal Wire basket filled with rock salt chunks. Rocks lit up when the bulb is switched on and give a worm glow, at the same time improving the air quality…",
       "tags": []
     },
     {
-      "id": "sku-142",
-      "skuId": 142,
+      "id": "sku-65",
+      "skuId": 65,
       "productId": "product_fb78f6bc-88bc-9a61-7c0c-21af775b496f",
       "slug": "fire-bowl-himalayan-rock-salt-lamp-small",
       "name": "Fire Bowl Himalayan Rock Salt Lamp — Small",
@@ -487,13 +487,13 @@
       "tags": []
     },
     {
-      "id": "sku-143",
-      "skuId": 143,
+      "id": "sku-66",
+      "skuId": 66,
       "productId": "product_fb78f6bc-88bc-9a61-7c0c-21af775b496f",
       "slug": "fire-bowl-himalayan-rock-salt-lamp-large",
       "name": "Fire Bowl Himalayan Rock Salt Lamp — Large",
       "sku": "RSL-B3",
-      "price": 24.99,
+      "price": 29.99,
       "stock": true,
       "stockQty": 9,
       "trackMode": "quantity",
@@ -509,8 +509,8 @@
       "tags": []
     },
     {
-      "id": "sku-79",
-      "skuId": 79,
+      "id": "sku-2",
+      "skuId": 2,
       "productId": "product_2f15bfa7-2bf7-ae5f-bfc4-ad8a5f703cce",
       "slug": "flower-shape-himalayan-rock-salt-lamp",
       "name": "Flower Shape Himalayan Rock Salt Lamp",
@@ -531,13 +531,13 @@
       "tags": []
     },
     {
-      "id": "sku-129",
-      "skuId": 129,
+      "id": "sku-52",
+      "skuId": 52,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Fine",
       "sku": "CUL-1000",
-      "price": 2.8,
+      "price": 2.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -553,13 +553,13 @@
       "tags": []
     },
     {
-      "id": "sku-130",
-      "skuId": 130,
+      "id": "sku-53",
+      "skuId": 53,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-1kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 1Kg / Coarse",
       "sku": "CUL-1000C",
-      "price": 2.8,
+      "price": 2.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -575,13 +575,13 @@
       "tags": []
     },
     {
-      "id": "sku-131",
-      "skuId": 131,
+      "id": "sku-54",
+      "skuId": 54,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Fine",
       "sku": "CUL-5000",
-      "price": 2.8,
+      "price": 13.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -597,13 +597,13 @@
       "tags": []
     },
     {
-      "id": "sku-132",
-      "skuId": 132,
+      "id": "sku-55",
+      "skuId": 55,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-5kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 5Kg / Coarse",
       "sku": "CUL-5000C",
-      "price": 2.8,
+      "price": 13.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -619,13 +619,13 @@
       "tags": []
     },
     {
-      "id": "sku-133",
-      "skuId": 133,
+      "id": "sku-56",
+      "skuId": 56,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-fine",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Fine",
       "sku": "CUL-10",
-      "price": 2.8,
+      "price": 27.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -641,13 +641,13 @@
       "tags": []
     },
     {
-      "id": "sku-134",
-      "skuId": 134,
+      "id": "sku-57",
+      "skuId": 57,
       "productId": "product_39183349-a084-a1a8-5ccb-a3e0ecbcd35b",
       "slug": "himalayan-crystal-rock-salt-culinary-salt-10kg-coarse",
       "name": "Himalayan Crystal Rock Salt / Culinary Salt — 10Kg / Coarse",
       "sku": "CUL-10C",
-      "price": 2.8,
+      "price": 27.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -663,8 +663,8 @@
       "tags": []
     },
     {
-      "id": "sku-149",
-      "skuId": 149,
+      "id": "sku-72",
+      "skuId": 72,
       "productId": "product_ff66797a-a149-bcce-6f40-148918543489",
       "slug": "himalayan-crystal-rock-salt-candle-holder-goblet-shape",
       "name": "Himalayan Crystal Rock Salt Candle Holder / Goblet Shape",
@@ -685,13 +685,13 @@
       "tags": []
     },
     {
-      "id": "sku-91",
-      "skuId": 91,
+      "id": "sku-14",
+      "skuId": 14,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-8-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 8\" Dia",
       "sku": "SB-04",
-      "price": 5,
+      "price": 19.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -707,13 +707,13 @@
       "tags": []
     },
     {
-      "id": "sku-92",
-      "skuId": 92,
+      "id": "sku-15",
+      "skuId": 15,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-10-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 10\" Dia",
       "sku": "SB-06",
-      "price": 5,
+      "price": 23.99,
       "stock": true,
       "stockQty": 19,
       "trackMode": "quantity",
@@ -729,13 +729,13 @@
       "tags": []
     },
     {
-      "id": "sku-93",
-      "skuId": 93,
+      "id": "sku-16",
+      "skuId": 16,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-2-5-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 2.5\" Dia",
       "sku": "SB-05",
-      "price": 5,
+      "price": 4.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -751,13 +751,13 @@
       "tags": []
     },
     {
-      "id": "sku-94",
-      "skuId": 94,
+      "id": "sku-17",
+      "skuId": 17,
       "productId": "product_0408c683-5d23-83ba-40a5-3066340979c9",
       "slug": "himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-6-dia",
       "name": "Himalayan Rock Salt Bowl – Natural Pink Salt Serving Bowl for Salads, Soups etc. — 6\" Dia",
       "sku": "SB-03",
-      "price": 5,
+      "price": 15.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -773,13 +773,13 @@
       "tags": []
     },
     {
-      "id": "sku-80",
-      "skuId": 80,
+      "id": "sku-3",
+      "skuId": 3,
       "productId": "product_d9e5764d-48cf-f535-2c58-300a07f3ae7d",
       "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-842",
       "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-842",
       "sku": "ST-842",
-      "price": 5,
+      "price": 7.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -795,13 +795,13 @@
       "tags": []
     },
     {
-      "id": "sku-81",
-      "skuId": 81,
+      "id": "sku-4",
+      "skuId": 4,
       "productId": "product_d9e5764d-48cf-f535-2c58-300a07f3ae7d",
       "slug": "himalayan-rock-salt-bricks-for-salt-walls-st-841",
       "name": "Himalayan Rock Salt Bricks for Salt Walls — ST-841",
       "sku": "ST-841",
-      "price": 5,
+      "price": 6.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -817,8 +817,8 @@
       "tags": []
     },
     {
-      "id": "sku-84",
-      "skuId": 84,
+      "id": "sku-7",
+      "skuId": 7,
       "productId": "product_0b00a2a3-b2c1-3a42-23e4-3c35749dfb19",
       "slug": "himalayan-rock-salt-candle-holder-ball-sphere-shape",
       "name": "Himalayan Rock Salt Candle Holder (Ball / Sphere Shape)",
@@ -839,8 +839,8 @@
       "tags": []
     },
     {
-      "id": "sku-82",
-      "skuId": 82,
+      "id": "sku-5",
+      "skuId": 5,
       "productId": "product_c76fac9b-0b1d-e462-efb5-77dd795df761",
       "slug": "himalayan-rock-salt-candle-holder-block-square-shape-large",
       "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Large",
@@ -861,13 +861,13 @@
       "tags": []
     },
     {
-      "id": "sku-83",
-      "skuId": 83,
+      "id": "sku-6",
+      "skuId": 6,
       "productId": "product_c76fac9b-0b1d-e462-efb5-77dd795df761",
       "slug": "himalayan-rock-salt-candle-holder-block-square-shape-small",
       "name": "Himalayan Rock Salt Candle Holder (Block / Square Shape) — Small",
       "sku": "TCC",
-      "price": 7.99,
+      "price": 6.99,
       "stock": true,
       "stockQty": null,
       "trackMode": "binary",
@@ -883,8 +883,8 @@
       "tags": []
     },
     {
-      "id": "sku-111",
-      "skuId": 111,
+      "id": "sku-34",
+      "skuId": 34,
       "productId": "product_0bb26b6a-e51a-6ac1-bbb7-6ae828c6112a",
       "slug": "himalayan-rock-salt-candle-holder-heart-shape",
       "name": "Himalayan Rock Salt Candle Holder (Heart Shape)",
@@ -905,13 +905,13 @@
       "tags": []
     },
     {
-      "id": "sku-147",
-      "skuId": 147,
+      "id": "sku-70",
+      "skuId": 70,
       "productId": "product_fc4519da-2c43-8eb4-3c02-5e05d0c750aa",
       "slug": "himalayan-rock-salt-candle-holder-natural-shape-small",
       "name": "Himalayan Rock Salt Candle Holder Natural Shape — Small",
       "sku": "TC-1",
-      "price": 5.99,
+      "price": 4.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -927,8 +927,8 @@
       "tags": []
     },
     {
-      "id": "sku-148",
-      "skuId": 148,
+      "id": "sku-71",
+      "skuId": 71,
       "productId": "product_fc4519da-2c43-8eb4-3c02-5e05d0c750aa",
       "slug": "himalayan-rock-salt-candle-holder-natural-shape-large",
       "name": "Himalayan Rock Salt Candle Holder Natural Shape — Large",
@@ -949,13 +949,13 @@
       "tags": []
     },
     {
-      "id": "sku-98",
-      "skuId": 98,
+      "id": "sku-21",
+      "skuId": 21,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 4pc",
       "sku": "SL-3 (4)",
-      "price": 3.99,
+      "price": 39.99,
       "stock": true,
       "stockQty": 8,
       "trackMode": "quantity",
@@ -971,13 +971,13 @@
       "tags": []
     },
     {
-      "id": "sku-99",
-      "skuId": 99,
+      "id": "sku-22",
+      "skuId": 22,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 4pc",
       "sku": "SL-1 (4)",
-      "price": 3.99,
+      "price": 19.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -993,13 +993,13 @@
       "tags": []
     },
     {
-      "id": "sku-100",
-      "skuId": 100,
+      "id": "sku-23",
+      "skuId": 23,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 12pc",
       "sku": "SL-1 (12)",
-      "price": 3.99,
+      "price": 59.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -1015,13 +1015,13 @@
       "tags": []
     },
     {
-      "id": "sku-101",
-      "skuId": 101,
+      "id": "sku-24",
+      "skuId": 24,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 2pc",
       "sku": "SL-1 (2)",
-      "price": 3.99,
+      "price": 9.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -1037,13 +1037,13 @@
       "tags": []
     },
     {
-      "id": "sku-102",
-      "skuId": 102,
+      "id": "sku-25",
+      "skuId": 25,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 1pc",
       "sku": "SL-3",
-      "price": 3.99,
+      "price": 9.99,
       "stock": true,
       "stockQty": 10,
       "trackMode": "quantity",
@@ -1059,13 +1059,13 @@
       "tags": []
     },
     {
-      "id": "sku-103",
-      "skuId": 103,
+      "id": "sku-26",
+      "skuId": 26,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 12pc",
       "sku": "SL-2 (12)",
-      "price": 3.99,
+      "price": 83.99,
       "stock": true,
       "stockQty": 5,
       "trackMode": "quantity",
@@ -1081,13 +1081,13 @@
       "tags": []
     },
     {
-      "id": "sku-104",
-      "skuId": 104,
+      "id": "sku-27",
+      "skuId": 27,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-12pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 12pc",
       "sku": "SL-3 (12)",
-      "price": 3.99,
+      "price": 119.99,
       "stock": true,
       "stockQty": 4,
       "trackMode": "quantity",
@@ -1103,13 +1103,13 @@
       "tags": []
     },
     {
-      "id": "sku-105",
-      "skuId": 105,
+      "id": "sku-28",
+      "skuId": 28,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-4-5kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 4-5Kg / 2pc",
       "sku": "SL-3 (2)",
-      "price": 3.99,
+      "price": 19.99,
       "stock": true,
       "stockQty": 10,
       "trackMode": "quantity",
@@ -1125,13 +1125,13 @@
       "tags": []
     },
     {
-      "id": "sku-106",
-      "skuId": 106,
+      "id": "sku-29",
+      "skuId": 29,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-1-1-5kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 1-1.5Kg / 1pc",
       "sku": "SL-1",
-      "price": 3.99,
+      "price": 4.99,
       "stock": true,
       "stockQty": 10,
       "trackMode": "quantity",
@@ -1147,13 +1147,13 @@
       "tags": []
     },
     {
-      "id": "sku-107",
-      "skuId": 107,
+      "id": "sku-30",
+      "skuId": 30,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-2pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 2pc",
       "sku": "SL-2 (2)",
-      "price": 3.99,
+      "price": 13.99,
       "stock": true,
       "stockQty": 9,
       "trackMode": "quantity",
@@ -1169,13 +1169,13 @@
       "tags": []
     },
     {
-      "id": "sku-108",
-      "skuId": 108,
+      "id": "sku-31",
+      "skuId": 31,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-1pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 1pc",
       "sku": "SL-2",
-      "price": 3.99,
+      "price": 6.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1191,13 +1191,13 @@
       "tags": []
     },
     {
-      "id": "sku-109",
-      "skuId": 109,
+      "id": "sku-32",
+      "skuId": 32,
       "productId": "product_197a2dbf-710a-5331-7cc6-0f676974f33f",
       "slug": "himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-4pc",
       "name": "Himalayan Rock Salt Lick for Equestrian & Cattle — 2-3Kg / 4pc",
       "sku": "SL-2 (4)",
-      "price": 3.99,
+      "price": 27.99,
       "stock": true,
       "stockQty": 10,
       "trackMode": "quantity",
@@ -1213,8 +1213,8 @@
       "tags": []
     },
     {
-      "id": "sku-122",
-      "skuId": 122,
+      "id": "sku-45",
+      "skuId": 45,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-heart",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Heart",
@@ -1235,8 +1235,8 @@
       "tags": []
     },
     {
-      "id": "sku-123",
-      "skuId": 123,
+      "id": "sku-46",
+      "skuId": 46,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-ball",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Ball",
@@ -1257,8 +1257,8 @@
       "tags": []
     },
     {
-      "id": "sku-124",
-      "skuId": 124,
+      "id": "sku-47",
+      "skuId": 47,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-disk",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Disk",
@@ -1279,13 +1279,13 @@
       "tags": []
     },
     {
-      "id": "sku-125",
-      "skuId": 125,
+      "id": "sku-48",
+      "skuId": 48,
       "productId": "product_e3f1eb3d-20e9-dda7-8ed9-51abc145d503",
       "slug": "himalayan-rock-salt-massage-stones-sticks-stick",
       "name": "Himalayan Rock Salt Massage Stones / Sticks — Stick",
       "sku": "SS-01",
-      "price": 3.99,
+      "price": 4.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1301,13 +1301,13 @@
       "tags": []
     },
     {
-      "id": "sku-85",
-      "skuId": 85,
+      "id": "sku-8",
+      "skuId": 8,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-12-x8-x1-5-rectangle",
       "name": "Himalayan Rock Salt Platters — 12\"x8\"x1.5\" Rectangle",
       "sku": "SPR-12",
-      "price": 8,
+      "price": 24.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -1323,13 +1323,13 @@
       "tags": []
     },
     {
-      "id": "sku-86",
-      "skuId": 86,
+      "id": "sku-9",
+      "skuId": 9,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x1-5-round",
       "name": "Himalayan Rock Salt Platters — 8\"x1.5\" Round",
       "sku": "SPC-8",
-      "price": 8,
+      "price": 19.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1345,8 +1345,8 @@
       "tags": []
     },
     {
-      "id": "sku-87",
-      "skuId": 87,
+      "id": "sku-10",
+      "skuId": 10,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x8-x1-square",
       "name": "Himalayan Rock Salt Platters — 8\"x8\"x1\" Square",
@@ -1367,8 +1367,8 @@
       "tags": []
     },
     {
-      "id": "sku-88",
-      "skuId": 88,
+      "id": "sku-11",
+      "skuId": 11,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x4-x1-rectangle",
       "name": "Himalayan Rock Salt Platters — 8\"x4\"x1\" Rectangle",
@@ -1389,13 +1389,13 @@
       "tags": []
     },
     {
-      "id": "sku-89",
-      "skuId": 89,
+      "id": "sku-12",
+      "skuId": 12,
       "productId": "product_5a2f41f6-b0dd-5903-63ca-7e38e104298d",
       "slug": "himalayan-rock-salt-platters-8-x8-x1-5-square",
       "name": "Himalayan Rock Salt Platters — 8\"x8\"x1.5\" Square",
       "sku": "SPS-8",
-      "price": 8,
+      "price": 19.99,
       "stock": true,
       "stockQty": 19,
       "trackMode": "quantity",
@@ -1411,8 +1411,8 @@
       "tags": []
     },
     {
-      "id": "sku-151",
-      "skuId": 151,
+      "id": "sku-74",
+      "skuId": 74,
       "productId": "product_df19c1f7-07d8-a265-42f8-e8dfa824cc6e",
       "slug": "himalayan-rock-salt-soap-bar-scrub-bar-regular",
       "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Regular",
@@ -1433,8 +1433,8 @@
       "tags": []
     },
     {
-      "id": "sku-152",
-      "skuId": 152,
+      "id": "sku-75",
+      "skuId": 75,
       "productId": "product_df19c1f7-07d8-a265-42f8-e8dfa824cc6e",
       "slug": "himalayan-rock-salt-soap-bar-scrub-bar-leaf",
       "name": "Himalayan Rock Salt Soap Bar / Scrub Bar — Leaf",
@@ -1455,8 +1455,8 @@
       "tags": []
     },
     {
-      "id": "sku-90",
-      "skuId": 90,
+      "id": "sku-13",
+      "skuId": 13,
       "productId": "product_3fdc1a9e-5ceb-b63c-f6fb-0037df447e40",
       "slug": "himalayan-salt-shot-glass-hand-carved-tequila-glass-from-natural-rock-salt",
       "name": "Himalayan Salt Shot Glass – Hand Carved Tequila Glass from Natural Rock Salt",
@@ -1477,8 +1477,8 @@
       "tags": []
     },
     {
-      "id": "sku-153",
-      "skuId": 153,
+      "id": "sku-76",
+      "skuId": 76,
       "productId": "product_cd59cd36-b6d2-2cf3-9d48-81793a7bdbbd",
       "slug": "mushroom-shape-himalayan-rock-salt-lamp",
       "name": "Mushroom Shape Himalayan Rock Salt Lamp",
@@ -1499,8 +1499,8 @@
       "tags": []
     },
     {
-      "id": "sku-138",
-      "skuId": 138,
+      "id": "sku-61",
+      "skuId": 61,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-x-small",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — X-Small",
@@ -1521,13 +1521,13 @@
       "tags": []
     },
     {
-      "id": "sku-139",
-      "skuId": 139,
+      "id": "sku-62",
+      "skuId": 62,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-small",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Small",
       "sku": "RSL-1",
-      "price": 11.99,
+      "price": 14.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1543,13 +1543,13 @@
       "tags": []
     },
     {
-      "id": "sku-140",
-      "skuId": 140,
+      "id": "sku-63",
+      "skuId": 63,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-medium",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Medium",
       "sku": "RSL-2",
-      "price": 11.99,
+      "price": 24.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1565,13 +1565,13 @@
       "tags": []
     },
     {
-      "id": "sku-141",
-      "skuId": 141,
+      "id": "sku-64",
+      "skuId": 64,
       "productId": "product_e11b5bf5-f5fe-93da-e1ef-a57b5f4b9a25",
       "slug": "natural-shape-himalayan-crystal-rock-salt-lamp-large",
       "name": "Natural Shape Himalayan Crystal Rock Salt Lamp — Large",
       "sku": "RSL-3",
-      "price": 11.99,
+      "price": 27.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1587,8 +1587,8 @@
       "tags": []
     },
     {
-      "id": "sku-126",
-      "skuId": 126,
+      "id": "sku-49",
+      "skuId": 49,
       "productId": "product_c3ca8d50-6b3e-3785-24c3-9fa41490a817",
       "slug": "pyramid-shape-himalayan-rock-salt-lamp",
       "name": "Pyramid Shape Himalayan Rock Salt Lamp",
@@ -1609,8 +1609,8 @@
       "tags": []
     },
     {
-      "id": "sku-150",
-      "skuId": 150,
+      "id": "sku-73",
+      "skuId": 73,
       "productId": "product_71c7a15b-5f85-7657-ed2b-5de75ce8cab3",
       "slug": "rock-salt-candle-holder-apple-shape",
       "name": "Rock Salt Candle Holder (Apple Shape)",
@@ -1631,13 +1631,13 @@
       "tags": []
     },
     {
-      "id": "sku-113",
-      "skuId": 113,
+      "id": "sku-36",
+      "skuId": 36,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-2pc",
       "name": "Salt Lamp Bulb — 15 Watts / 2pc",
       "sku": "E14-1",
-      "price": 1,
+      "price": 2.99,
       "stock": true,
       "stockQty": 19,
       "trackMode": "quantity",
@@ -1653,13 +1653,13 @@
       "tags": []
     },
     {
-      "id": "sku-114",
-      "skuId": 114,
+      "id": "sku-37",
+      "skuId": 37,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-1pc",
       "name": "Salt Lamp Bulb — 25 Watts / 1pc",
       "sku": "E14-2",
-      "price": 1,
+      "price": 1.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1675,13 +1675,13 @@
       "tags": []
     },
     {
-      "id": "sku-115",
-      "skuId": 115,
+      "id": "sku-38",
+      "skuId": 38,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-3pc",
       "name": "Salt Lamp Bulb — 15 Watts / 3pc",
       "sku": "E14-1 (3)",
-      "price": 1,
+      "price": 4.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1697,13 +1697,13 @@
       "tags": []
     },
     {
-      "id": "sku-116",
-      "skuId": 116,
+      "id": "sku-39",
+      "skuId": 39,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-3pc",
       "name": "Salt Lamp Bulb — 25 Watts / 3pc",
       "sku": "E14-2 (3)",
-      "price": 1,
+      "price": 4.99,
       "stock": true,
       "stockQty": 2,
       "trackMode": "quantity",
@@ -1719,13 +1719,13 @@
       "tags": []
     },
     {
-      "id": "sku-117",
-      "skuId": 117,
+      "id": "sku-40",
+      "skuId": 40,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-25-watts-2pc",
       "name": "Salt Lamp Bulb — 25 Watts / 2pc",
       "sku": "E14-1",
-      "price": 1,
+      "price": 3.99,
       "stock": false,
       "stockQty": 0,
       "trackMode": "quantity",
@@ -1741,13 +1741,13 @@
       "tags": []
     },
     {
-      "id": "sku-118",
-      "skuId": 118,
+      "id": "sku-41",
+      "skuId": 41,
       "productId": "product_0c2dfc77-19c2-b5d9-7862-db204978fbbe",
       "slug": "salt-lamp-bulb-15-watts-1pc",
       "name": "Salt Lamp Bulb — 15 Watts / 1pc",
       "sku": "E14-1",
-      "price": 1,
+      "price": 1.99,
       "stock": true,
       "stockQty": 20,
       "trackMode": "quantity",
@@ -1763,8 +1763,8 @@
       "tags": []
     },
     {
-      "id": "sku-95",
-      "skuId": 95,
+      "id": "sku-18",
+      "skuId": 18,
       "productId": "product_a197ccb4-1208-6b6f-a57e-bd2bcb1fcb9e",
       "slug": "salty-licks-for-horses-cattle-himalayan-rock-salt-licks",
       "name": "Salty Licks for Horses & Cattle, Himalayan Rock Salt Licks",
@@ -1786,8 +1786,8 @@
       "tags": []
     },
     {
-      "id": "sku-96",
-      "skuId": 96,
+      "id": "sku-19",
+      "skuId": 19,
       "productId": "product_33d0afbf-8e89-ad52-9f91-e12b592c5a67",
       "slug": "special-offer-himalayan-crystal-rock-salt-candle-holders",
       "name": "Special Offer - Himalayan Crystal Rock Salt Candle Holders",
@@ -1809,8 +1809,8 @@
       "tags": []
     },
     {
-      "id": "sku-97",
-      "skuId": 97,
+      "id": "sku-20",
+      "skuId": 20,
       "productId": "product_3ce67eac-b04e-d569-050e-747f76fd40b8",
       "slug": "special-offer-himalayan-rock-salt-lamp-candle-holders",
       "name": "Special Offer - Himalayan Rock Salt Lamp & Candle Holders",
@@ -1821,19 +1821,18 @@
       "trackMode": "quantity",
       "categories": [
         "all-products",
-        "special-deal",
-        "salt-lamps"
+        "special-deal"
       ],
       "image": "/media/live-site-products/wix-3ce67eac-b04.png",
       "images": [
         "/media/live-site-products/wix-3ce67eac-b04.png"
       ],
-      "description": "Included in this offer is : 1 x Himalayan Rock Salt Lamp, 3-5Kg weight approx. 2 x Himalayan Rock Salt Tealight Candle Holder, 800-1200gms weight approx. Also included is UK Cable and bulb for Rock…",
+      "description": "Special Offer: Buy one Himalayan Rock Salt Lamp and get two Himalayan Rock Salt Candle Holders absolutely free! Elevate your space with the soothing glow of our handcrafted salt lamp, known for…",
       "tags": []
     },
     {
-      "id": "sku-137",
-      "skuId": 137,
+      "id": "sku-60",
+      "skuId": 60,
       "productId": "product_6487b67b-4e18-52bb-9e19-5cb9bb9cd0fd",
       "slug": "tear-drop-shape-himalayan-rock-salt-lamp",
       "name": "Tear Drop Shape Himalayan Rock Salt Lamp",
@@ -1854,8 +1853,8 @@
       "tags": []
     },
     {
-      "id": "sku-128",
-      "skuId": 128,
+      "id": "sku-51",
+      "skuId": 51,
       "productId": "product_ed7c376b-02f4-3c8e-674e-49a236eec265",
       "slug": "wooden-basket-himalayan-rock-salt-lamp",
       "name": "Wooden Basket Himalayan Rock Salt Lamp",

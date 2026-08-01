@@ -23,7 +23,7 @@
 // SOURCES  (env CONTENT_SNAPSHOT_SOURCE, default 'live')
 //   live       Cloudflare D1 HTTP API. Needs CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_D1_TOKEN
 //              + a database id (see resolveDatabaseId below). Falls back on any failure.
-//   local      `wrangler d1 execute salty-lamps-db --local --json` — no cloud creds.
+//   local      the running `wrangler pages dev` server — no cloud credentials needed.
 //   committed  Use the checked-in file as-is. Never touches the network.
 //
 // USAGE
@@ -112,18 +112,27 @@ async function productsFromRemote() {
   return flattenProductRows(body.result[0].results)
 }
 
-function productsFromLocal() {
-  const raw = execFileSync(
-    'npx',
-    ['wrangler', 'd1', 'execute', DB_NAME, '--local', '--json', '--command', PRODUCTS_QUERY],
-    { encoding: 'utf8', cwd: root, stdio: ['ignore', 'pipe', 'pipe'] },
-  )
-  // wrangler prints banner lines before the JSON; take from the first bracket.
-  const jsonStart = raw.indexOf('[')
-  if (jsonStart === -1) throw new Error('no JSON in wrangler output')
-  const parsed = JSON.parse(raw.slice(jsonStart))
-  ok(`products from local D1 (${DB_NAME})`)
-  return flattenProductRows(parsed[0].results)
+// Reads through the RUNNING dev server rather than `wrangler d1 execute --local`.
+//
+// This is not a stylistic choice. Those two commands can bind DIFFERENT sqlite files
+// under .wrangler/state/v3/d1/miniflare-D1DatabaseObject/, keyed by an opaque hash —
+// a documented Cloudflare quirk that bit this build once already, producing a snapshot
+// full of stale prices that looked entirely plausible. Going through the server's own
+// endpoint guarantees the snapshot sees exactly the database the site is serving.
+//
+// Requires `wrangler pages dev` to be running. That is a fair trade for correctness.
+async function productsFromLocal() {
+  const url = process.env.LOCAL_API || 'http://localhost:8788'
+  let res
+  try {
+    res = await fetch(`${url}/api/products`)
+  } catch {
+    throw new Error(`no dev server at ${url} — start \`wrangler pages dev dist --port 8788 --d1 DB=${DB_NAME}\` first`)
+  }
+  if (!res.ok) throw new Error(`${url}/api/products returned ${res.status}`)
+  const { products } = await res.json()
+  ok(`products from the running dev server at ${url}`)
+  return products
 }
 
 function committedSnapshot() {
@@ -146,7 +155,7 @@ async function resolveProducts() {
   }
 
   try {
-    return SOURCE === 'local' ? productsFromLocal() : await productsFromRemote()
+    return SOURCE === 'local' ? await productsFromLocal() : await productsFromRemote()
   } catch (err) {
     const prev = committedSnapshot()
     if (!prev) {
