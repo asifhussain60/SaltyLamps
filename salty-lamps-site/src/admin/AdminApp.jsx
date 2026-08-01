@@ -14,6 +14,13 @@ import {
   ALLOWED_IMAGE_TYPES,
   LOW_STOCK_THRESHOLD,
   FULFILMENT_STATUSES,
+  FULFILMENT_LABELS,
+  PAYMENT_STATUSES,
+  PAYMENT_STATUS_LABELS,
+  TRACK_MODES,
+  TRACK_MODE_LABELS,
+  CATEGORY_THEMES,
+  validateCategory,
 } from '../../functions/lib/validation.mjs'
 import DonutChart from '../components/DonutChart.jsx'
 import InfrastructureDoc from './docs/InfrastructureDoc.jsx'
@@ -470,8 +477,11 @@ function StockAlertBar({ low, out }) {
   )
 }
 
-const FULFIL_STAGES = ['unfulfilled', 'packed', 'shipped', 'delivered']
-const FULFIL_LABELS = { unfulfilled: 'Unfulfilled', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered' }
+// Both of these used to be local copies of lists that already exist in
+// validation.mjs, alongside the database CHECK constraints. Three sources of truth
+// for one enum; now one.
+const FULFIL_STAGES = FULFILMENT_STATUSES
+const FULFIL_LABELS = FULFILMENT_LABELS
 
 // Share of all paid orders currently at each fulfilment stage — same segmented-bar language as
 // StockAlertBar above, colored to match the existing fulfilment StatusBadge palette.
@@ -840,14 +850,15 @@ function OrdersList() {
       <div className="admin-filters">
         <SearchInput placeholder="Search email or order id…" value={q} onChange={setFilter(setQ)} />
         <select className="admin-input" value={status} onChange={setFilter(setStatus)}>
+          {/* Hand-written before, and it silently omitted "pending" — so pending
+              orders were unreachable through this filter even though the endpoint
+              accepted the value. Driven from the shared enum now. */}
           <option value="">All payments</option>
-          <option value="paid">Paid</option>
-          <option value="refunded">Refunded</option>
-          <option value="cancelled">Cancelled</option>
+          {PAYMENT_STATUSES.map(s => <option key={s} value={s}>{PAYMENT_STATUS_LABELS[s]}</option>)}
         </select>
         <select className="admin-input" value={fulfilment} onChange={setFilter(setFulfilment)}>
           <option value="">All fulfilment</option>
-          {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+          {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{FULFILMENT_LABELS[s]}</option>)}
         </select>
       </div>
 
@@ -983,7 +994,7 @@ function OrderDetail({ id }) {
         <div className="admin-inline-form">
           <Field label="Fulfilment status">
             <select className="admin-input" value={fulfil} onChange={e => setFulfil(e.target.value)}>
-              {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{FULFILMENT_LABELS[s]}</option>)}
             </select>
           </Field>
           <Field label="Tracking number">
@@ -1412,8 +1423,7 @@ function ProductEdit({ id }) {
               </Field>
               <Field label="Stock mode">
                 <select className="admin-input" value={s.track_mode} onChange={e => setSku(i, 'track_mode', e.target.value)}>
-                  <option value="quantity">Quantity</option>
-                  <option value="binary">In / out</option>
+                  {TRACK_MODES.map(m => <option key={m} value={m}>{TRACK_MODE_LABELS[m]}</option>)}
                 </select>
               </Field>
               {s.track_mode === 'quantity' ? (
@@ -1463,13 +1473,16 @@ function ModeBadge({ mode }) {
   return (
     <span className={`admin-badge admin-badge--mode-${mode}`}>
       <Icon name={mode === 'quantity' ? 'box' : 'toggleLeft'} size={11} />
-      {mode === 'quantity' ? 'Quantity' : 'In / out'}
+      {TRACK_MODE_LABELS[mode] || mode}
     </span>
   )
 }
 
 function Inventory() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/products'))
+  // The threshold is a setting now, so read it rather than importing the constant.
+  // The constant remains the fallback for a database predating the settings table.
+  const { data: stats } = usePageData(() => api('/api/admin/stats'))
   const [edits, setEdits] = useState({}) // skuId -> { quantity? , in_stock? }
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
@@ -1481,12 +1494,13 @@ function Inventory() {
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
+  const threshold = stats?.stock?.low_stock_threshold ?? LOW_STOCK_THRESHOLD
   const rows = data.products.flatMap(p => p.skus.map(s => ({ ...s, productName: p.name, productImage: p.image })))
   // Matches the low/out-of-stock definitions used on the dashboard (functions/api/admin/stats.js).
   const stockStatus = s => {
     if (s.track_mode === 'quantity') {
       if (s.quantity <= 0) return 'out'
-      if (s.quantity <= LOW_STOCK_THRESHOLD) return 'low'
+      if (s.quantity <= threshold) return 'low'
     } else if (!s.in_stock) {
       return 'out'
     }
@@ -1532,7 +1546,7 @@ function Inventory() {
         <div className="admin-stock-legend">
           <span className="admin-stock-legend-item"><span className="admin-dot admin-dot--low" />{lowCount} low stock</span>
           <span className="admin-stock-legend-item"><span className="admin-dot admin-dot--out" />{outCount} out of stock</span>
-          <span className="admin-muted">· Threshold {LOW_STOCK_THRESHOLD}</span>
+          <span className="admin-muted">· Threshold {threshold}</span>
         </div>
         <button className="admin-btn admin-btn--primary" disabled={saving || Object.keys(edits).length === 0} onClick={save}>
           <Icon name="check" size={15} />{saving ? 'Saving…' : `Save changes${Object.keys(edits).length ? ` (${Object.keys(edits).length})` : ''}`}
@@ -1679,17 +1693,224 @@ function Reports() {
 
 // ---- settings -------------------------------------------------------------
 
+// Was three lines of static text showing a compile-time constant. The low-stock
+// threshold is now a real setting the dashboard, inventory and reports all read.
 function Settings() {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/settings'))
+  const [edits, setEdits] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [saveErr, setSaveErr] = useState(null)
+  const [savedMsg, setSavedMsg] = useState('')
+
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+
+  const valueOf = s => (s.key in edits ? edits[s.key] : s.value)
+  const dirty = Object.keys(edits).length > 0
+
+  const save = async () => {
+    setSaving(true)
+    setSaveErr(null)
+    setSavedMsg('')
+    try {
+      await api('/api/admin/settings', { method: 'PUT', body: { settings: edits } })
+      setEdits({})
+      setSavedMsg('Settings saved.')
+      await reload()
+    } catch (e) {
+      setSaveErr(e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <section className="admin-card">
-      <h2><Icon name="sliders" tone="amber" className="admin-card-icon" />Settings</h2>
-      <p className="admin-kv"><span>Low-stock threshold</span><strong>{LOW_STOCK_THRESHOLD} units</strong></p>
-      <p className="admin-kv"><span>Currency</span><strong>GBP (£)</strong></p>
+      <div className="admin-card-head">
+        <h2><Icon name="sliders" tone="amber" className="admin-card-icon" />Settings</h2>
+        <button className="admin-btn admin-btn--primary" disabled={saving || !dirty} onClick={save}>
+          <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
+      {saveErr && <ErrorState error={saveErr} />}
+      {savedMsg && <p className="admin-note">{savedMsg}</p>}
+
+      {data.settings.map(s => (
+        <Field
+          key={s.key}
+          label={s.label}
+          error={saveErr?.fields?.[s.key]}
+          hint={s.editable
+            ? (s.type === 'int' ? `Whole number between ${s.min ?? 0} and ${s.max ?? 1000}` : undefined)
+            : 'Read-only — changing this here would have no effect elsewhere.'}
+        >
+          {s.editable ? (
+            <input
+              className="admin-input"
+              type={s.type === 'int' ? 'number' : 'text'}
+              value={valueOf(s)}
+              onChange={e => setEdits(v => ({ ...v, [s.key]: e.target.value }))}
+            />
+          ) : (
+            <strong>{String(s.value)}</strong>
+          )}
+        </Field>
+      ))}
+
       <p className="admin-muted">
-        Store details, shipping, and payout settings are managed in Stripe and Cloudflare.
-        Product, stock, and order operations live in the sections on the left.
+        The low-stock threshold drives the dashboard alerts, the Inventory badges and the
+        low-stock report. Currency is fixed to GBP because checkout, the shop and this
+        portal all format in pounds and the Stripe account is GBP — showing it as editable
+        would be misleading. Store details, shipping and payouts are managed in Stripe and
+        Cloudflare.
       </p>
     </section>
+  )
+}
+
+// Manage the category taxonomy: the display name, description, hero image, colour
+// theme and ordering that the shop renders. Before this existed, the only way to add
+// a category was to edit the storefront source and redeploy.
+function CategoriesList() {
+  const { loading, error, data, reload } = usePageData(() => api('/api/admin/categories'))
+  const [editing, setEditing] = useState(null) // slug, or '__new__'
+  const [form, setForm] = useState(null)
+  const [errs, setErrs] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [saveErr, setSaveErr] = useState(null)
+
+  if (loading) return <Loading />
+  if (error) return <ErrorState error={error} onRetry={reload} />
+
+  const startNew = () => {
+    setEditing('__new__')
+    setForm({ slug: '', name: '', description: '', image: '', theme: 'lamp', sort_order: '', visible: true })
+    setErrs({})
+    setSaveErr(null)
+  }
+
+  const startEdit = c => {
+    setEditing(c.slug)
+    setForm({ ...c, visible: !!c.visible })
+    setErrs({})
+    setSaveErr(null)
+  }
+
+  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const save = async () => {
+    const isNew = editing === '__new__'
+    // Same validator the endpoint runs, so the feedback here can never contradict
+    // what the server accepts.
+    const res = validateCategory(form, { isNew })
+    if (!res.ok) return setErrs(res.errors)
+    setErrs({})
+    setSaving(true)
+    setSaveErr(null)
+    try {
+      if (isNew) await api('/api/admin/categories', { method: 'POST', body: form })
+      else await api(`/api/admin/categories/${editing}`, { method: 'PATCH', body: form })
+      setEditing(null)
+      await reload()
+    } catch (e) {
+      setSaveErr(e)
+      if (e.fields) setErrs(e.fields)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const remove = async c => {
+    if (!window.confirm(`Delete "${c.name}"? This cannot be undone.`)) return
+    setSaveErr(null)
+    try {
+      await api(`/api/admin/categories/${c.slug}`, { method: 'DELETE' })
+      await reload()
+    } catch (e) {
+      setSaveErr(e)
+    }
+  }
+
+  return (
+    <>
+      <div className="admin-card-head admin-card-head--bare">
+        <span className="admin-muted">{data.categories.length} categories</span>
+        <button className="admin-btn admin-btn--primary" onClick={startNew}>
+          <Icon name="plus" size={15} />New category
+        </button>
+      </div>
+
+      {saveErr && <ErrorState error={saveErr} />}
+
+      {editing && (
+        <section className="admin-card">
+          <h2>{editing === '__new__' ? 'New category' : `Edit ${form.name}`}</h2>
+          {editing === '__new__' ? (
+            <Field label="Slug" error={errs.slug} hint="Lowercase, hyphenated. Becomes the page address and cannot be changed later.">
+              <input className="admin-input" value={form.slug} onChange={e => setField('slug', e.target.value)} />
+            </Field>
+          ) : (
+            <Field label="Slug" hint="Fixed after creation — products reference it by name, so renaming would need a data migration. Hide the category instead.">
+              <strong>{form.slug}</strong>
+            </Field>
+          )}
+          <Field label="Name" error={errs.name}>
+            <input className="admin-input" value={form.name} onChange={e => setField('name', e.target.value)} />
+          </Field>
+          <Field label="Description" error={errs.description} hint="Shown on the category page and used as its search-engine description.">
+            <textarea className="admin-input" rows={2} value={form.description} onChange={e => setField('description', e.target.value)} />
+          </Field>
+          <Field label="Hero image" error={errs.image} hint="Site path, e.g. /media/live-site-products/lamp-block-gemini.jpg">
+            <input className="admin-input" value={form.image} onChange={e => setField('image', e.target.value)} />
+          </Field>
+          <Field label="Colour theme" error={errs.theme} hint="Sets the accent colour the shop uses for this category.">
+            <select className="admin-input" value={form.theme} onChange={e => setField('theme', e.target.value)}>
+              {CATEGORY_THEMES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </Field>
+          <Field label="Sort order" error={errs.sort_order} hint="Lower numbers come first. Existing categories are spaced by ten.">
+            <input className="admin-input" type="number" value={form.sort_order} onChange={e => setField('sort_order', e.target.value)} />
+          </Field>
+          <Field label="Visible" error={errs.visible} hint="Hidden categories disappear from the shop but keep their products and their address.">
+            <Toggle checked={form.visible} onChange={v => setField('visible', v)} />
+          </Field>
+          <div className="admin-card-head admin-card-head--bare">
+            <button className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
+            <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
+              <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </section>
+      )}
+
+      <section className="admin-card">
+        <table className="admin-table">
+          <thead>
+            <tr><th>Name</th><th>Slug</th><th>Theme</th><th>Products</th><th>Order</th><th>Visible</th><th /></tr>
+          </thead>
+          <tbody>
+            {data.categories.map(c => (
+              <tr key={c.slug}>
+                <td>{c.name}</td>
+                <td><code>{c.slug}</code></td>
+                <td>{c.theme}</td>
+                <td>{c.product_count === 0 ? <span className="admin-muted">none</span> : c.product_count}</td>
+                <td>{c.sort_order}</td>
+                <td>{c.visible ? 'Yes' : <span className="admin-muted">Hidden</span>}</td>
+                <td>
+                  <button className="admin-btn" onClick={() => startEdit(c)}>Edit</button>
+                  {!c.is_virtual && (
+                    <button className="admin-btn" disabled={c.product_count > 0} title={c.product_count > 0 ? 'Reassign its products first, or hide it instead.' : undefined} onClick={() => remove(c)}>
+                      Delete
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </>
   )
 }
 
@@ -1699,6 +1920,7 @@ const NAV = [
   { key: '', label: 'Dashboard', href: '/admin', icon: 'home' },
   { key: 'orders', label: 'Orders', href: '/admin/orders', icon: 'receipt' },
   { key: 'products', label: 'Products', href: '/admin/products', icon: 'box' },
+  { key: 'categories', label: 'Categories', href: '/admin/categories', icon: 'tag' },
   { key: 'inventory', label: 'Inventory', href: '/admin/inventory', icon: 'warehouse' },
   { key: 'reports', label: 'Reports', href: '/admin/reports', icon: 'barChart' },
   { key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'sliders' },
@@ -1719,6 +1941,7 @@ const TITLES = {
   '': 'Dashboard',
   orders: 'Orders',
   products: 'Products',
+  categories: 'Categories',
   inventory: 'Inventory',
   reports: 'Reports',
   settings: 'Settings',
@@ -1752,6 +1975,7 @@ export default function AdminApp({ route }) {
   if (section === '') page = <Dashboard />
   else if (section === 'orders') page = params[0] ? <OrderDetail id={params[0]} /> : <OrdersList />
   else if (section === 'products') page = params[0] ? <ProductEdit id={params[0]} /> : <ProductsList />
+  else if (section === 'categories') page = <CategoriesList />
   else if (section === 'inventory') page = <Inventory />
   else if (section === 'reports') page = <Reports />
   else if (section === 'settings') page = <Settings />

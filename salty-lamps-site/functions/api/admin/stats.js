@@ -1,10 +1,10 @@
 // GET /api/admin/stats — dashboard KPIs, recent orders, top products, sales series.
-import { json, apiError, fillDailySeries } from '../../lib/admin-helpers.mjs'
-import { LOW_STOCK_THRESHOLD } from '../../lib/validation.mjs'
+import { json, apiError, fillDailySeries, lowStockThreshold } from '../../lib/admin-helpers.mjs'
 
 export async function onRequestGet({ env }) {
   const db = env.DB
   const today = new Date()
+  const lowStock = await lowStockThreshold(db)
   const seriesFrom = new Date(today.getTime() - 13 * 86400000).toISOString().slice(0, 10)
   const seriesToExclusive = new Date(today.getTime() + 86400000).toISOString().slice(0, 10)
   try {
@@ -14,7 +14,7 @@ export async function onRequestGet({ env }) {
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= date('now','start of month')`),
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid'`),
       db.prepare(`SELECT COUNT(*) c FROM orders WHERE status='paid' AND fulfilment_status='unfulfilled'`),
-      db.prepare(`SELECT COUNT(*) c FROM skus WHERE track_mode='quantity' AND quantity > 0 AND quantity <= ?`).bind(LOW_STOCK_THRESHOLD),
+      db.prepare(`SELECT COUNT(*) c FROM skus WHERE track_mode='quantity' AND quantity > 0 AND quantity <= ?`).bind(lowStock),
       db.prepare(`SELECT COUNT(*) c FROM skus WHERE (track_mode='quantity' AND quantity <= 0) OR (track_mode='binary' AND in_stock=0)`),
       db.prepare(`SELECT id, created_at, customer_email, amount_total_pence, status, fulfilment_status FROM orders ORDER BY created_at DESC LIMIT 5`),
       db.prepare(`SELECT p.name, SUM(oi.quantity) qty, SUM(oi.quantity * oi.unit_price_pence) revenue_pence
@@ -70,7 +70,7 @@ export async function onRequestGet({ env }) {
       stock: {
         low_stock: one(5).c || 0,
         out_of_stock: one(6).c || 0,
-        low_stock_threshold: LOW_STOCK_THRESHOLD,
+        low_stock_threshold: lowStock,
       },
       recent_orders: r[7].results || [],
       top_products: r[8].results || [],

@@ -1,5 +1,6 @@
 // Shared helpers for the admin API endpoints — consistent JSON responses, error
 // shapes, and audit logging. Keeps each endpoint small and uniform.
+import { LOW_STOCK_THRESHOLD } from './validation.mjs'
 
 export function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -66,6 +67,21 @@ export async function assertCategoriesExist(db, categoriesCsv) {
     { categories: `Unknown ${unknown.length === 1 ? 'category' : 'categories'}: ${unknown.join(', ')}.` },
     'That product references a category that does not exist.',
   )
+}
+
+// Reads the low-stock threshold from settings, falling back to the shared constant.
+//
+// The fallback is what makes this safe to deploy ahead of the migration: a database
+// without a settings row behaves exactly as it did before. Callers that need it in
+// SQL should await this once and bind the result rather than embedding it.
+export async function lowStockThreshold(db) {
+  try {
+    const row = await db.prepare(`SELECT value FROM settings WHERE key = 'low_stock_threshold'`).first()
+    const n = Number(row?.value)
+    return Number.isInteger(n) && n >= 0 ? n : LOW_STOCK_THRESHOLD
+  } catch {
+    return LOW_STOCK_THRESHOLD
+  }
 }
 
 // Parse a JSON body defensively; returns [body, null] or [null, Response].
