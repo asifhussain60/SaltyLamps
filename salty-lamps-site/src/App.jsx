@@ -3,6 +3,7 @@ import AdminApp from './admin/AdminApp.jsx'
 import { img, media, siteUrl } from './content/site-content.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
+import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 import snapshot from './content/content-snapshot.json'
 
 const money = value =>
@@ -23,12 +24,23 @@ const SNAPSHOT_TAXONOMY = makeTaxonomy(snapshot.categories || [], snapshot.categ
 
 // Everything the marketing layer needs, with the same shape whether it came from the
 // snapshot or from /api/content. Nothing below reads a hardcoded string.
-const EMPTY_CONTENT = { collections: [], themes: {}, pages: {}, snippets: {}, lists: {}, featuredReviews: [], reviewCount: 0 }
+const EMPTY_CONTENT = {
+  collections: [], themes: {}, pages: {}, snippets: {}, lists: {}, featuredReviews: [], reviewCount: 0,
+  contactEmail: DEFAULT_CONTACT_EMAIL,
+}
 const SNAPSHOT_CONTENT = { ...EMPTY_CONTENT, ...(snapshot.content || {}) }
 
 // A missing snippet renders its key rather than an empty gap, so a copy row deleted by
 // accident is visible in testing instead of silently blanking a heading.
 const snippet = (content, key, fallback = '') => content.snippets?.[key] ?? fallback ?? key
+
+// The shop's own contact address, from the same admin setting the order and enquiry
+// alerts are sent to. Unlike a snippet this never falls back to its key: the value goes
+// straight into `mailto:` hrefs and into schema.org output, where a placeholder would be
+// a broken link and an invalid feed rather than an obvious missing-copy marker.
+const contactEmailOf = content => content.contactEmail || DEFAULT_CONTACT_EMAIL
+const contactMailto = (content, subject = '') =>
+  `mailto:${contactEmailOf(content)}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`
 
 const siteTitleOf = content => snippet(content, 'site.title', 'Salty Lamps')
 const siteDescriptionOf = content => snippet(content, 'site.description', '')
@@ -326,7 +338,10 @@ function Honeypot() {
   )
 }
 
-function ChatModule({ onSubmit, message }) {
+// `content` is passed in rather than read from a module-level constant so the widget
+// follows the live address the moment /api/content lands, exactly like every other
+// piece of copy on the page.
+function ChatModule({ onSubmit, message, content }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -354,7 +369,7 @@ function ChatModule({ onSubmit, message }) {
           </label>
           <Honeypot />
           <button type="submit">Send message</button>
-          <a href="mailto:info@saltylamps.co.uk?subject=Website%20chat%20request">Open email instead</a>
+          <a href={contactMailto(content, 'Website chat request')}>Open email instead</a>
           {message && <p className="success">{message}</p>}
         </form>
       )}
@@ -369,21 +384,18 @@ function ChatModule({ onSubmit, message }) {
 // The trade panel is 1:1 with the collection and comes down inside it, so an absent
 // panel is simply a null `trade` — exactly what the old `collectionTradeCopy[slug]`
 // lookup returned for a collection with no trade copy.
-function CollectionTradeCta({ path }) {
-  const content = path.trade
-  if (!content || !content.heading) return null
+function CollectionTradeCta({ path, content }) {
+  const trade = path.trade
+  if (!trade || !trade.heading) return null
   return (
     <aside className={`collection-trade-cta theme-${path.theme}`}>
       <div>
-        <p className="eyebrow">{content.eyebrow}</p>
-        <h3>{content.heading}</h3>
-        <p>{content.body}</p>
+        <p className="eyebrow">{trade.eyebrow}</p>
+        <h3>{trade.heading}</h3>
+        <p>{trade.body}</p>
       </div>
-      <a
-        className="button primary"
-        href={`mailto:info@saltylamps.co.uk?subject=${encodeURIComponent(content.cta)}`}
-      >
-        {content.cta}
+      <a className="button primary" href={contactMailto(content, trade.cta)}>
+        {trade.cta}
       </a>
     </aside>
   )
@@ -890,7 +902,7 @@ export default function App() {
     name: 'Salty Lamps',
     url: `${siteUrl}/`,
     telephone: '01782970001',
-    email: 'info@saltylamps.co.uk',
+    email: contactEmailOf(content),
     image: absoluteUrl(media('salty-lamps-og-card.jpg')),
     address: {
       '@type': 'PostalAddress',
@@ -1257,7 +1269,7 @@ export default function App() {
                 </section>
               ))}
             </div>
-            <CollectionTradeCta path={activeShopperPath} />
+            <CollectionTradeCta path={activeShopperPath} content={content} />
           </>
         ) : (
           <div className="product-grid">
@@ -1532,7 +1544,7 @@ export default function App() {
               <button className="button primary" type="button" onClick={() => addProduct(product)} disabled={!product.stock}>
                 Add to cart
               </button>
-              <a className="button secondary" href={`mailto:info@saltylamps.co.uk?subject=${encodeURIComponent(product.name)}`}>
+              <a className="button secondary" href={contactMailto(content, product.name)}>
                 Ask a question
               </a>
             </div>
@@ -1695,7 +1707,7 @@ export default function App() {
         <article>
           <span>RMA</span>
           <strong>Email before sending</strong>
-          <p>Email info@saltylamps.co.uk first so customer service can issue a return authorisation number.</p>
+          <p>Email {contactEmailOf(content)} first so customer service can issue a return authorisation number.</p>
         </article>
       </div>
       <div className="policy-steps">
@@ -1890,7 +1902,7 @@ export default function App() {
       </p>
       <div className="hero-actions">
         <Link className="button primary" href="/shop">Continue shopping</Link>
-        <a className="button secondary" href="mailto:info@saltylamps.co.uk">Contact us about this order</a>
+        <a className="button secondary" href={contactMailto(content)}>Contact us about this order</a>
       </div>
     </section>
   )
@@ -1904,7 +1916,7 @@ export default function App() {
       </p>
       <div className="hero-actions">
         <Link className="button primary" href="/shop">Return to shop</Link>
-        <a className="button secondary" href="mailto:info@saltylamps.co.uk">Contact us</a>
+        <a className="button secondary" href={contactMailto(content)}>Contact us</a>
       </div>
     </section>
   )
@@ -1934,7 +1946,7 @@ export default function App() {
       setRefund({ status: 'sent', errors: {} })
       form.reset()
     } catch {
-      setRefund({ status: 'idle', errors: { form: 'Could not reach us just now. Please try again, or email info@saltylamps.co.uk.' } })
+      setRefund({ status: 'idle', errors: { form: `Could not reach us just now. Please try again, or email ${contactEmailOf(content)}.` } })
     }
   }
 
@@ -1955,7 +1967,7 @@ export default function App() {
           </p>
           <div className="hero-actions">
             <Link className="button primary" href="/shop">Back to shop</Link>
-            <a className="button secondary" href="mailto:info@saltylamps.co.uk">Email us instead</a>
+            <a className="button secondary" href={contactMailto(content)}>Email us instead</a>
           </div>
         </>
       ) : (
@@ -2033,7 +2045,7 @@ export default function App() {
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
           <Link href="/admin">Admin</Link>
-          <a href="mailto:info@saltylamps.co.uk">Contact</a>
+          <a href={contactMailto(content)}>Contact</a>
           <Link className="nav-about" href="/process">About</Link>
         </nav>
         <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>
@@ -2084,7 +2096,7 @@ export default function App() {
                 <rect x="2" y="4" width="20" height="16" rx="2" />
                 <path d="m22 7-10 6L2 7" />
               </svg>
-              <a href="mailto:info@saltylamps.co.uk">info@saltylamps.co.uk</a>
+              <a href={contactMailto(content)}>{contactEmailOf(content)}</a>
             </li>
             <li>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2121,7 +2133,7 @@ export default function App() {
         </nav>
       </footer>
 
-      <ChatModule onSubmit={handleChatSubmit} message={chatMessage} />
+      <ChatModule onSubmit={handleChatSubmit} message={chatMessage} content={content} />
 
       <aside
         className={`cart-drawer ${cartOpen ? 'open' : ''}`}

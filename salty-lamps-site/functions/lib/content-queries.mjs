@@ -12,9 +12,20 @@
 //
 // MUST stay pure: no env, no fetch, no React. Just query text and a shaping function.
 
+// The address the shop publishes as its own — its Contact links, the "Ask a question"
+// button, the footer, and the schema.org Store block. It is the SAME setting the admin
+// notifications are sent to (admin_notify_email), so changing it in admin Settings
+// moves both together instead of leaving the website pointing at an old mailbox.
+//
+// The fallback is what the site published before this was wired up. It matters because
+// /api/content is allowed to fail without blanking the shop: a fetch failure must
+// degrade to a working mailto, never to `mailto:` with nothing after it.
+export const DEFAULT_CONTACT_EMAIL = 'info@saltylamps.co.uk'
+
 export const CONTENT_QUERY_KEYS = [
   'collections', 'collectionCategories', 'sections', 'themes',
   'themeImages', 'pages', 'snippets', 'listItems', 'featured', 'reviewCount',
+  'contact',
 ]
 
 // Order matches CONTENT_QUERY_KEYS. Both the batch and the HTTP API return result
@@ -36,6 +47,10 @@ export const CONTENT_QUERIES = [
   // honest: it is the number actually displayable, not the raw archive size that the
   // old copy quoted while silently filtering ten of them out.
   `SELECT COUNT(*) AS n FROM reviews WHERE display = 1 AND featured = 0`,
+  // ONE KEY BY NAME, never `SELECT * FROM settings`. This result set is served to the
+  // public by /api/content, and the settings table also holds the sender address and
+  // the operational switches — none of which a visitor has any business reading.
+  `SELECT value FROM settings WHERE key = 'admin_notify_email'`,
 ]
 
 export const CATEGORIES_QUERY =
@@ -63,7 +78,7 @@ const groupBy = (rows, key, make) => {
 }
 
 /**
- * Turn the nine raw result sets into the /api/content payload.
+ * Turn the raw result sets into the /api/content payload.
  * `sets` is keyed by CONTENT_QUERY_KEYS; each value is a plain array of rows.
  */
 export function shapeContent(sets) {
@@ -129,5 +144,9 @@ export function shapeContent(sets) {
       id: row.id, name: row.name, date: row.date_text, quote: row.quote, proof: row.proof, rating: row.rating,
     })),
     reviewCount: sets.reviewCount?.[0]?.n ?? 0,
+    // A row that exists but holds an empty string counts as unset: the setting is
+    // allowed to be blank ("not configured"), and a blank mailto on the shop would be
+    // worse than a slightly out-of-date one.
+    contactEmail: (sets.contact?.[0]?.value || '').trim() || DEFAULT_CONTACT_EMAIL,
   }
 }

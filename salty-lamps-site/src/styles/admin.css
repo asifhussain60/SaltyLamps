@@ -211,6 +211,15 @@
 }
 .admin-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: 0; }
+/* Two or more buttons in one cell, side by side on one line.
+   `width: 1%` + nowrap is the table idiom for "give this column only the width it
+   needs"; without it the Subject column squeezes the cell and the buttons stack,
+   doubling the height of every row. The buttons are laid out inline rather than with
+   flex on purpose — a flex container inside a 1%-width cell does not report its
+   intrinsic width to the table, so the buttons overflow and overlap the column
+   to their left. .admin-btn is already inline-flex, so spacing is all that is needed. */
+.admin-table td.admin-row-actions { width: 1%; white-space: nowrap; text-align: right; }
+.admin-row-actions .admin-btn + .admin-btn { margin-left: 8px; }
 .admin-table tbody tr:nth-child(even) { background: var(--paper); }
 .admin-row-link { cursor: pointer; }
 .admin-row-link:hover td { background: var(--theme-soft); }

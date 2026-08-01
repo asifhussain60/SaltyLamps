@@ -52,28 +52,30 @@ export async function onRequestPost({ request, env }) {
   try {
     const origin = new URL(request.url).origin
     const config = await loadEmailConfig(env, origin)
-    if (config.adminEmail) {
-      await sendTemplated(env, [{
-        templateKey: TEMPLATE_BY_SOURCE[value.source],
-        to: config.adminEmail,
-        // Replying to the notification replies to the person who wrote in, which is
-        // the whole point of routing these to a mailbox rather than a dashboard.
-        replyTo: value.email,
-        data: { name: value.name || 'Someone', email: value.email, message: value.message },
-        blocks: [
-          {
-            type: 'panel',
-            title: 'From',
-            rows: [
-              ['Name', value.name || ''],
-              ['Email', value.email],
-              ['Came from', SOURCE_LABEL[value.source] || value.source],
-            ],
-          },
-          { type: 'note', title: 'Message', text: value.message },
-        ],
-      }], { origin })
-    }
+    // Sent even with no admin address configured, so sendTemplated() can record a
+    // 'skipped' row explaining why nobody was notified. The enquiry itself is already
+    // safe in the table above; what a blank address must not do is disappear without
+    // a trace in Emails -> Activity.
+    await sendTemplated(env, [{
+      templateKey: TEMPLATE_BY_SOURCE[value.source],
+      to: config.adminEmail,
+      // Replying to the notification replies to the person who wrote in, which is
+      // the whole point of routing these to a mailbox rather than a dashboard.
+      replyTo: value.email,
+      data: { name: value.name || 'Someone', email: value.email, message: value.message },
+      blocks: [
+        {
+          type: 'panel',
+          title: 'From',
+          rows: [
+            ['Name', value.name || ''],
+            ['Email', value.email],
+            ['Came from', SOURCE_LABEL[value.source] || value.source],
+          ],
+        },
+        { type: 'note', title: 'Message', text: value.message },
+      ],
+    }], { origin })
   } catch { /* the enquiry is stored; notification is best-effort */ }
 
   return json({ ok: true })

@@ -8,7 +8,7 @@
 // path including the API key and the DNS records.
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
 import { validateEmailTemplates, EMAIL_TEMPLATE_SPECS } from '../../../lib/validation.mjs'
-import { sendTemplated } from '../../../lib/mailer.mjs'
+import { sendTemplated, loadEmailConfig } from '../../../lib/mailer.mjs'
 import { sampleFor } from '../../../lib/email-samples.mjs'
 
 export async function onRequestPost({ request, env, data }) {
@@ -25,12 +25,21 @@ export async function onRequestPost({ request, env, data }) {
     if (!ok) return validationError(errors)
   }
 
-  // Defaults to the signed-in admin's own verified Access identity. An explicit
-  // address is allowed because local development signs in as dev@localhost, which
-  // nothing can deliver to.
-  const to = String(body?.to || data.actorEmail || '').trim()
+  // RECIPIENT ORDER: an explicit address wins, then the configured admin address,
+  // then the signed-in identity.
+  //
+  // The admin address sits above the signed-in identity because it is the address the
+  // shop is actually configured to notify — testing it proves the delivery path the
+  // real alerts use, rather than a second address that happens to be logged in. It
+  // also has to come first for the test to work at all on a deployment using
+  // DEV_ADMIN_BYPASS, where the identity is the undeliverable dev@localhost.
+  const origin = new URL(request.url).origin
+  const config = await loadEmailConfig(env, origin)
+  const to = String(body?.to || config.adminEmail || data.actorEmail || '').trim()
   if (!to.includes('@')) {
-    return validationError({ to: 'Enter the address to send the test to.' })
+    return validationError({
+      to: 'No address to send to — set the admin notification address in Settings, or type one here.',
+    })
   }
 
   try {
@@ -42,7 +51,7 @@ export async function onRequestPost({ request, env, data }) {
       templateOverride: body?.template || null,
       data: sample.data,
       blocks: sample.blocks,
-    }], { origin: new URL(request.url).origin })
+    }], { origin })
 
     await auditStmt(env.DB, data.actorEmail, 'email.test', 'email_template', key, { to }).run()
 

@@ -179,35 +179,38 @@ async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin,
     })
   }
 
+  // Queued even when no admin address is configured. sendTemplated() resolves that
+  // to a 'skipped' outbox row reading "No recipient address", which is the whole
+  // point: an admin alert that goes nowhere because the address in Settings was
+  // cleared or mistyped has to leave a trace in Emails -> Activity. Guarding here
+  // instead would drop it silently, and the first anyone would know is a missed order.
   const config = await loadEmailConfig(env, origin)
-  if (config.adminEmail) {
-    messages.push({
-      templateKey: 'admin_new_order',
-      to: config.adminEmail,
-      orderId: order.id,
-      replyTo: order.customer_email || undefined,
-      data: {
-        ...tokens,
-        ctaHref: `${config.siteUrl}/admin/orders/${order.id}`,
+  messages.push({
+    templateKey: 'admin_new_order',
+    to: config.adminEmail,
+    orderId: order.id,
+    replyTo: order.customer_email || undefined,
+    data: {
+      ...tokens,
+      ctaHref: `${config.siteUrl}/admin/orders/${order.id}`,
+    },
+    blocks: [
+      {
+        type: 'panel',
+        title: 'Customer',
+        rows: [
+          ['Name', order.ship_name || ''],
+          ['Email', order.customer_email || ''],
+          ['Payment method', paymentMethod],
+          ['Stripe reference', order.id],
+        ],
       },
-      blocks: [
-        {
-          type: 'panel',
-          title: 'Customer',
-          rows: [
-            ['Name', order.ship_name || ''],
-            ['Email', order.customer_email || ''],
-            ['Payment method', paymentMethod],
-            ['Stripe reference', order.id],
-          ],
-        },
-        ...blocks,
-      ],
-    })
+      ...blocks,
+    ],
+  })
 
-    for (const message of lowStockMessages(before, orderedBySkuId, await lowStockThreshold(db), config)) {
-      messages.push(message)
-    }
+  for (const message of lowStockMessages(before, orderedBySkuId, await lowStockThreshold(db), config)) {
+    messages.push(message)
   }
 
   await sendTemplated(env, messages, { origin })
@@ -220,8 +223,12 @@ async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin,
 // between one alert and an alert on every subsequent order until the item is
 // restocked, and it is not reachable through the HTTP surface — driving it needs a
 // signed Stripe webhook for a session that exists in Stripe's own records.
+// lowStockAlerts is still checked here: switching the alerts off is a deliberate
+// choice by the owner, and there is nothing to report about mail they asked not to
+// receive. A missing admin address is the opposite — a misconfiguration — so it is
+// left for sendTemplated() to record rather than silently swallowed here.
 export function lowStockMessages(before, orderedBySkuId, threshold, config) {
-  if (!config.lowStockAlerts || !config.adminEmail) return []
+  if (!config.lowStockAlerts) return []
 
   const out = []
   for (const [skuId, ordered] of orderedBySkuId) {

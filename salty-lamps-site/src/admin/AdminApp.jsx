@@ -1811,7 +1811,7 @@ function EmailTemplateEditor({ template, fields, onSaved }) {
         <input
           className="admin-input"
           type="email"
-          placeholder="Send a test to…"
+          placeholder="Send a test to… (defaults to the admin address)"
           value={testTo}
           onChange={e => setTestTo(e.target.value)}
         />
@@ -1845,6 +1845,26 @@ function EmailTemplateEditor({ template, fields, onSaved }) {
 function EmailTemplates() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/emails/templates'))
   const [openKey, setOpenKey] = useState(null)
+  // Keyed by template rather than a single boolean so testing one row does not grey
+  // out the others, and two clicks in a row cannot leave the wrong button spinning.
+  const [testingKey, setTestingKey] = useState(null)
+  const [note, setNote] = useState('')
+
+  // Sends the SAVED wording, deliberately — the row button answers "what does the
+  // email the shop would send actually look like?". The editor's own test button is
+  // the one that sends an unsaved draft. No recipient is passed: the server resolves
+  // the admin notification address from Settings, so the address lives in one place.
+  const sendTest = async t => {
+    setTestingKey(t.key); setNote('')
+    try {
+      const res = await api('/api/admin/emails/test', { method: 'POST', body: { key: t.key } })
+      setNote(res.status === 'sent'
+        ? `“${t.label}” sent to ${res.to} — check that inbox.`
+        : `“${t.label}” was not sent — ${res.error || 'sending is not configured yet.'}`)
+    } catch (e) {
+      setNote(e.message)
+    } finally { setTestingKey(null) }
+  }
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
@@ -1854,6 +1874,13 @@ function EmailTemplates() {
 
   return (
     <>
+      <p className="admin-muted">
+        Test sends one real email of that template, filled with sample order details, to the
+        admin notification address in Settings. It works even while an email is paused or
+        sending is switched off, so you can see how each one looks before going live. Every
+        test is listed in Activity alongside real traffic.
+      </p>
+      {note && <p className="admin-note">{note}</p>}
       <table className="admin-table">
         <thead><tr><th>Email</th><th>Goes to</th><th>Subject</th><th>Status</th><th></th></tr></thead>
         <tbody>
@@ -1864,7 +1891,14 @@ function EmailTemplates() {
                 <td className="admin-muted">{t.audience === 'admin' ? 'You' : 'Customer'}</td>
                 <td className="admin-muted">{t.subject}</td>
                 <td>{t.enabled ? 'Sending' : 'Paused'}</td>
-                <td>
+                <td className="admin-row-actions">
+                  <button
+                    className="admin-btn admin-btn--ghost"
+                    disabled={testingKey !== null}
+                    onClick={() => sendTest(t)}
+                  >
+                    <Icon name="send" size={14} />{testingKey === t.key ? 'Sending…' : 'Test'}
+                  </button>
                   <button className="admin-btn admin-btn--ghost" onClick={() => setOpenKey(openKey === t.key ? null : t.key)}>
                     {openKey === t.key ? 'Close' : 'Edit'}
                   </button>

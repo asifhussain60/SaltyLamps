@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -23,6 +24,10 @@ const today = new Date().toISOString().slice(0, 10)
 const snapshot = readSnapshot()
 const { products, categories, siteUrl, categoryAliases } = snapshot
 const content = snapshot.content || {}
+// Falls back for a snapshot written before the address was part of the content layer.
+// The Store schema is consumed by search engines, so an absent address has to become
+// the previous published one rather than `undefined` in the JSON-LD.
+const contactEmail = content.contactEmail || DEFAULT_CONTACT_EMAIL
 const shopperPaths = content.collections || []
 const policyPages = content.pages || {}
 
@@ -262,7 +267,7 @@ function storeSchema() {
     name: 'Salty Lamps',
     url: siteUrl,
     telephone: '01782970001',
-    email: 'info@saltylamps.co.uk',
+    email: contactEmail,
     image: asset('/media/salty-lamps-og-card.jpg'),
     address: {
       '@type': 'PostalAddress',

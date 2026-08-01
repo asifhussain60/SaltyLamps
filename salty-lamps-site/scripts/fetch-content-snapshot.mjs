@@ -244,8 +244,10 @@ for (const [key, value] of Object.entries({
 const snapshot = {
   // Bumped by hand when the snapshot's shape changes, so a stale committed file can be
   // detected rather than silently mis-read. v2 adds `content` and sources categories
-  // from D1 instead of the hardcoded module.
-  schemaVersion: 2,
+  // from D1 instead of the hardcoded module. v3 adds `content.contactEmail`, the shop's
+  // published address, read from the admin_notify_email setting — additive, and every
+  // reader falls back to DEFAULT_CONTACT_EMAIL, so a v2 file still builds correctly.
+  schemaVersion: 3,
   generatedAt: new Date().toISOString(),
   source: SOURCE,
   resolvedFrom: resolved.resolvedFrom || SOURCE,

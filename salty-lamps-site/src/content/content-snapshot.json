@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-08-01T19:51:02.337Z",
+  "schemaVersion": 3,
+  "generatedAt": "2026-08-01T20:15:00.894Z",
   "source": "live",
   "resolvedFrom": "live",
   "siteUrl": "https://www.saltylamps.co.uk",
@@ -2705,6 +2705,7 @@
         "rating": null
       }
     ],
-    "reviewCount": 185
+    "reviewCount": 185,
+    "contactEmail": "info@saltylamps.co.uk"
   }
 }

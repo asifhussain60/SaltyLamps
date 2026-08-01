@@ -51,8 +51,13 @@ async function findOrder(db, reference, email) {
 async function notifyAdmin(env, request, order, reason) {
   const origin = new URL(request.url).origin
   const config = await loadEmailConfig(env, origin)
-  if (!config.adminEmail) return
 
+  // No early return when the admin address is blank. The send goes ahead so
+  // sendTemplated() records a 'skipped' row saying there was no recipient — a refund
+  // request that reached nobody is exactly the thing that must not vanish quietly.
+  // The rate limit below then counts that row too, which is the intended reading of
+  // "one per order per hour": one attempt, whatever became of it.
+  //
   // One request per order per hour. A frustrated customer clicking submit five
   // times should not fill the owner's inbox, and the outbox already records every
   // send, so this needs no table of its own.
