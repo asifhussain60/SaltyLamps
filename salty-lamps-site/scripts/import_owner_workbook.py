@@ -21,9 +21,26 @@ slip in. Recomputing from cost applies the same rule the sheet displays.
 Reports first, writes only with --apply. Nothing is ever deleted: a line marked
 "No" is hidden, not removed, because order history references it.
 
+TARGETING A SECOND DATABASE
+---------------------------
+skus.id is AUTOINCREMENT, so the Ref numbers mean nothing in any database other
+than the one the workbook was built from. The test site's ids happen to sit 77
+higher than the dev shop's, and matching Ref straight against it would attach one
+product's price to another. --ref-source therefore takes a snapshot of the shop the
+Refs came from and resolves each Ref through the pair (product id, code, size),
+which does travel. The snapshot must be taken BEFORE any import runs, because the
+import changes seven of the codes it matches on.
+
 USAGE
     python3 scripts/import_owner_workbook.py <file.xlsx>
     python3 scripts/import_owner_workbook.py <file.xlsx> --apply
+
+    --api=<url>            shop to write to        (default http://localhost:8788)
+    --ref-source=<path>    JSON snapshot of the shop the Ref column came from,
+                           as returned by GET /api/admin/products
+    --set-code=REF:CODE    override one row's product code (repeatable). For codes
+                           the owner was asked to fix and did not — the duplicate
+                           check below refuses to write while any remain.
 """
 
 import json
@@ -38,9 +55,14 @@ from openpyxl import load_workbook
 
 API = "http://localhost:8788"
 
+# Cloudflare answers 403 to urllib's default "Python-urllib/3.x", so every request
+# has to name itself. Without this the deployed site simply refuses to talk.
+HEADERS = {"user-agent": "salty-lamps-workbook-importer/1.0"}
+
 
 def fetch(path):
-    with urllib.request.urlopen(f"{API}{path}", timeout=20) as r:
+    req = urllib.request.Request(f"{API}{path}", headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
 
 
@@ -48,10 +70,10 @@ def patch(path, body):
     req = urllib.request.Request(
         f"{API}{path}", method="PATCH",
         data=json.dumps(body).encode(),
-        headers={"content-type": "application/json"},
+        headers={**HEADERS, "content-type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=30) as r:
             return True, json.load(r)
     except urllib.error.HTTPError as e:
         return False, e.read().decode()[:200]
@@ -62,13 +84,81 @@ def shop_pence(cost, pack):
     return math.ceil(cost * pack * 2) * 100 - 1
 
 
+def variant_key(product, sku):
+    """The identity of a variant that survives being copied into another database.
+
+    Not skus.id, which is AUTOINCREMENT and local. products.id is stable TEXT, and
+    the code and the size together separate the variants within a product — the same
+    pair catalogue-reset.mjs keys on, for the same reason.
+    """
+    return (
+        product["id"],
+        str(sku.get("sku") or "").strip(),
+        str(sku.get("variant_label") or "").strip(),
+    )
+
+
+def resolve_refs(target, ref_source):
+    """Map every Ref in the sheet to the row it means in the shop being written.
+
+    With no snapshot the Refs are this shop's own ids and stand for themselves. With
+    one, they name rows in a different database and are resolved through variant_key.
+    A product holding a single variant falls back to matching on the product alone,
+    which is what rescues the one line already renamed by hand on the test site.
+    """
+    if not ref_source:
+        return {s["id"]: (p, s) for p in target for s in p["skus"]}, []
+
+    source = json.loads(Path(ref_source).read_text())["products"]
+    by_key = {variant_key(p, s): (p, s) for p in target for s in p["skus"]}
+    only_child = {p["id"]: (p, p["skus"][0]) for p in target if len(p["skus"]) == 1}
+
+    resolved, problems = {}, []
+    for p in source:
+        for s in p["skus"]:
+            hit = by_key.get(variant_key(p, s))
+            if hit is None and len(p["skus"]) == 1:
+                hit = only_child.get(p["id"])
+            if hit is None:
+                problems.append(f"Ref {s['id']} ({s['sku']} — {p['name']}) has no matching "
+                                f"line at {API}")
+            else:
+                resolved[s["id"]] = hit
+    return resolved, problems
+
+
 def main():
-    if len(sys.argv) < 2:
-        sys.exit("usage: import_owner_workbook.py <file.xlsx> [--apply]")
-    path = Path(sys.argv[1])
-    apply = "--apply" in sys.argv
+    global API
+    argv = sys.argv[1:]
+    positional = [a for a in argv if not a.startswith("--")]
+    if not positional:
+        sys.exit("usage: import_owner_workbook.py <file.xlsx> [--apply] [--api=<url>] "
+                 "[--ref-source=<path>] [--set-code=REF:CODE]")
+    path = Path(positional[0])
+    apply = "--apply" in argv
+
+    def flag(name):
+        hit = next((a for a in argv if a.startswith(f"--{name}=")), None)
+        return hit.split("=", 1)[1] if hit else None
+
+    API = (flag("api") or API).rstrip("/")
+    ref_source = flag("ref-source")
+
+    # Codes the owner was asked to fix and did not. Supplied per row rather than
+    # hardcoded, so the script never carries a guess about anyone's product.
+    forced_codes = {}
+    for a in argv:
+        if a.startswith("--set-code="):
+            ref, _, code = a.split("=", 1)[1].partition(":")
+            try:
+                forced_codes[int(ref)] = code.strip()
+            except ValueError:
+                sys.exit(f"--set-code needs REF:CODE, got {a.split('=', 1)[1]!r}")
+
     if not path.exists():
         sys.exit(f"No such file: {path}")
+    if ref_source and not Path(ref_source).exists():
+        sys.exit(f"No such snapshot: {ref_source}")
 
     ws = load_workbook(path, data_only=False)["Products"]
 
@@ -102,27 +192,40 @@ def main():
         }
 
     live = fetch("/api/admin/products")["products"]
-    by_ref = {s["id"]: (p, s) for p in live for s in p["skus"]}
+    by_ref, map_problems = resolve_refs(live, ref_source)
+    problems.extend(map_problems)
 
     price_changes, stock_changes, code_changes, hide, missing, blank = [], [], [], [], [], []
+    size_changes, mode_switches = [], []
+
+    # A single row can change its price, its code, its size and its stock at once.
+    # The variant endpoint replaces the whole record, so one PATCH per field would
+    # quietly undo the fields written before it — the second call still carries the
+    # first call's stale values. Everything a row wants is merged here and sent once.
+    wanted = {}
+
+    def want(sku, field, value):
+        wanted.setdefault(sku["id"], {})[field] = value
 
     for ref, row in sheet.items():
         if ref not in by_ref:
             missing.append((ref, row))
             continue
         product, sku = by_ref[ref]
-        label = str(row["code"] or sku["sku"])
+        code = forced_codes.get(ref) or (str(row["code"]).strip() if row["code"] else None)
+        label = str(code or sku["sku"])
 
         # An explicit shop price always wins over the calculated one — that column
         # exists precisely so the owner can disagree with the formula.
         if row["override"] not in (None, ""):
             try:
-                want = round(float(row["override"]) * 100)
+                want_pence = round(float(row["override"]) * 100)
             except (TypeError, ValueError):
                 problems.append(f"row {row['row']}: your own shop price {row['override']!r} isn't a number")
                 continue
-            if want != sku["price_pence"]:
-                price_changes.append((label, sku, row, None, want))
+            if want_pence != sku["price_pence"]:
+                want(sku, "price_pence", want_pence)
+                price_changes.append((label, sku, row, None, want_pence))
         elif row["cost"] in (None, ""):
             blank.append((label, row))
         else:
@@ -134,12 +237,23 @@ def main():
             if cost <= 0:
                 problems.append(f"row {row['row']}: cost must be more than zero")
                 continue
-            want = shop_pence(cost, int(row["pack"]))
-            if want != sku["price_pence"]:
-                price_changes.append((label, sku, row, cost, want))
+            want_pence = shop_pence(cost, int(row["pack"]))
+            if want_pence != sku["price_pence"]:
+                want(sku, "price_pence", want_pence)
+                price_changes.append((label, sku, row, cost, want_pence))
 
-        if row["code"] and str(row["code"]).strip() != sku["sku"]:
-            code_changes.append((sku, sku["sku"], str(row["code"]).strip()))
+        if code and code != sku["sku"]:
+            want(sku, "sku", code)
+            code_changes.append((sku, sku["sku"], code, ref in forced_codes))
+
+        # The size column started as an em-dash for anything with no size. Where the
+        # owner replaced it with a real one, take it. Where he echoed the product code
+        # back into it, don't — that would put a code where a customer reads a size.
+        size = str(row["variant"] or "").strip()
+        if size and size not in ("—", "-") and size != str(row["code"] or "").strip():
+            if size != sku["variant_label"]:
+                want(sku, "variant_label", size)
+                size_changes.append((label, sku["variant_label"], size))
 
         if row["stock"] not in (None, ""):
             try:
@@ -147,7 +261,14 @@ def main():
             except (TypeError, ValueError):
                 problems.append(f"row {row['row']}: stock {row['stock']!r} is not a whole number")
             else:
-                if qty != sku["quantity"]:
+                # A count is a count. A line tracked as a plain yes/no throws the
+                # number away on save, so counting it means switching how it's tracked.
+                if sku["track_mode"] != "quantity":
+                    want(sku, "track_mode", "quantity")
+                    mode_switches.append((label, qty))
+                if qty != sku["quantity"] or sku["track_mode"] != "quantity":
+                    want(sku, "quantity", qty)
+                    want(sku, "in_stock", 1 if qty > 0 else 0)
                     stock_changes.append((label, sku, qty))
 
         if row["selling"] == "no":
@@ -164,9 +285,10 @@ def main():
     # product (pack sizes of the same item), so this compares across products only.
     code_to_products = {}
     for ref, row in sheet.items():
-        if ref not in by_ref or not row["code"]:
+        effective = forced_codes.get(ref) or (str(row["code"]).strip() if row["code"] else None)
+        if ref not in by_ref or not effective:
             continue
-        base = re.sub(r"\s*\(\d+\)\s*$", "", str(row["code"]).strip())
+        base = re.sub(r"\s*\(\d+\)\s*$", "", effective)
         code_to_products.setdefault(base, set()).add(by_ref[ref][0]["name"])
     for base, names in sorted(code_to_products.items()):
         if len(names) > 1:
@@ -174,10 +296,14 @@ def main():
                             + "; ".join(sorted(names)))
 
     g = lambda p: f"£{p / 100:.2f}"
-    print(f"\n=== {path.name} ===\n")
+    print(f"\n=== {path.name} → {API} ===\n")
+    if ref_source:
+        print(f"  refs resolved through  : {ref_source}")
     print(f"  rows read              : {len(sheet)}")
+    print(f"  lines to write         : {len(wanted)}")
     print(f"  price changes          : {len(price_changes)}")
     print(f"  product code changes   : {len(code_changes)}")
+    print(f"  size name changes      : {len(size_changes)}")
     print(f"  stock changes          : {len(stock_changes)}")
     print(f"  lines marked not selling: {len(hide)}")
     print(f"  costs left blank       : {len(blank)}")
@@ -190,14 +316,25 @@ def main():
 
     if price_changes:
         print("\n--- Price changes ---")
-        for code, sku, row, cost, want in price_changes:
+        for code, sku, row, cost, pence in price_changes:
             how = f"cost £{cost:>7.2f} x{row['pack']:<3}" if cost is not None else "price set by hand  "
-            print(f"  {code:<16} {how} → {g(want):>9}  (was {g(sku['price_pence'])})")
+            print(f"  {code:<16} {how} → {g(pence):>9}  (was {g(sku['price_pence'])})")
 
     if code_changes:
         print("\n--- Product code changes ---")
-        for sku, was, now in code_changes:
-            print(f"  {was:<40} → {now}")
+        for sku, was, now, forced in code_changes:
+            flag_text = "   << set here, NOT by the owner — needs confirming" if forced else ""
+            print(f"  {was:<40} → {now}{flag_text}")
+
+    if size_changes:
+        print("\n--- Size name changes ---")
+        for code, was, now in size_changes:
+            print(f"  {code:<16} {was or '(blank)':<28} → {now}")
+
+    if mode_switches:
+        print("\n--- Lines becoming counted stock (were a plain yes/no) ---")
+        for code, qty in mode_switches:
+            print(f"  {code:<16} now counted, starting at {qty}")
 
     if stock_changes:
         print("\n--- Stock changes ---")
@@ -228,24 +365,17 @@ def main():
         print("\nReport only. Re-run with --apply to write these through the admin API.\n")
         return
 
+    # One call per line, carrying everything that line changes. See `wanted` above for
+    # why this is not one call per field.
+    live_skus = {s["id"]: s for _, s in by_ref.values()}
     ok = 0
-    for code, sku, row, cost, want in price_changes:
-        good, err = patch(f"/api/admin/skus/{sku['id']}", {**sku, "price_pence": want})
+    for sku_id, fields in wanted.items():
+        sku = live_skus[sku_id]
+        good, err = patch(f"/api/admin/skus/{sku_id}", {**sku, **fields})
         ok += good
         if not good:
-            print(f"  FAILED {code}: {err}")
-    for code, sku, qty in stock_changes:
-        good, err = patch(f"/api/admin/skus/{sku['id']}",
-                          {**sku, "quantity": qty, "in_stock": 1 if qty > 0 else 0})
-        ok += good
-        if not good:
-            print(f"  FAILED {code}: {err}")
-    for sku, was, now in code_changes:
-        good, err = patch(f"/api/admin/skus/{sku['id']}", {**sku, "sku": now})
-        ok += good
-        if not good:
-            print(f"  FAILED {was}: {err}")
-    print(f"\n  {ok} change(s) written.")
+            print(f"  FAILED {sku['sku']}: {err}")
+    print(f"\n  {ok} of {len(wanted)} line(s) written.")
     if hide:
         print(f"  {len(hide)} line(s) marked not-selling were NOT changed — hiding a product is "
               "a bigger decision than a price, so do it in the admin.\n")
