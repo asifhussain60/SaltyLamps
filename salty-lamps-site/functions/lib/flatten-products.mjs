@@ -47,6 +47,12 @@ export function flattenProductRows(rows, imageRows = []) {
       productId: row.product_id,
       slug: hasVariant ? `${row.slug}-${variantSlug}` : row.slug,
       name: hasVariant ? `${row.name} — ${row.variant_label}` : row.name,
+      // The two halves of `name` kept separately. The storefront groups these flat
+      // cards back into one card per product and offers the variants as an option
+      // picker, which needs the product's own name and the bare label — not the
+      // joined string, which it would otherwise have to unpick with string surgery.
+      productName: row.name,
+      variantLabel: hasVariant ? row.variant_label : '',
       sku: row.sku,
       price: row.price_pence / 100,
       stock: inStock,

@@ -2176,6 +2176,80 @@ label {
   margin: 4px 0;
 }
 
+/* One card now stands for every variant a product comes in (see the grouping note in
+   src/App.jsx), so the choice is made here — on the product page and in the quick
+   view. Chips rather than a <select>, because each option carries its own price and a
+   native option row cannot show it. */
+.option-picker {
+  display: grid;
+  gap: 10px;
+}
+
+/* .product-buy-panel is a grid with its own gap, but .quick-view > div is not — its
+   children space themselves with margins, so without this the price sits flush
+   against the last option chip and reads as part of the chip row. */
+.quick-view .option-picker {
+  margin: 6px 0 12px;
+}
+
+.option-picker-label {
+  margin: 0;
+  color: var(--theme-deep);
+  font-family: var(--ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.option-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-choices button {
+  display: grid;
+  gap: 2px;
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.option-choices button small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.option-choices button:hover:not(:disabled) {
+  border-color: var(--theme-accent);
+  background: var(--theme-soft);
+}
+
+.option-choices button:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.option-choices button.is-selected {
+  border-color: var(--theme-deep);
+  background: color-mix(in srgb, var(--theme-accent) 18%, var(--surface));
+}
+
+.option-choices button.is-selected small {
+  color: var(--theme-deep);
+}
+
 .product-cta-row {
   justify-content: start;
   margin-top: 0;
@@ -3408,6 +3482,14 @@ label {
   z-index: 2;
 }
 
+/* The close button floats over the top-right corner, and it sits above the heading in
+   the stacking order — so the first line of a long product name ran underneath it and
+   was simply lost. Reserved space rather than a lower z-index: the button has to stay
+   clickable. Reset below 900px, where the button becomes a static grid item. */
+.quick-view h2 {
+  padding-right: 92px;
+}
+
 @media (max-width: 1180px) {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3727,9 +3809,21 @@ label {
     max-height: 360px;
   }
 
+  /* Once the panel stacks below the photo, three rows of option chips push the price
+     and Add to cart past the bottom of the modal, and the chip row is sliced through
+     its price line — which reads as clipping rather than as "scroll for more". The
+     photo gives up the height: someone who opened this came to make a choice. */
+  .quick-view--options > img {
+    max-height: 190px;
+  }
+
   .close-button {
     position: static;
     justify-self: end;
+  }
+
+  .quick-view h2 {
+    padding-right: 0;
   }
 }
 

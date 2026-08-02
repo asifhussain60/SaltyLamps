@@ -12,7 +12,57 @@ const money = value =>
     currency: 'GBP',
   }).format(value)
 
-const priceLabel = product => money(product.price)
+// A grouped card spans several prices, so it says "From £x" rather than naming one
+// option's price as if it were the product's. A product sold one way only, and any
+// individual variant, has no range and still prints its exact price.
+const priceLabel = product =>
+  product.priceTo != null && product.priceTo !== product.priceFrom
+    ? `From ${money(product.priceFrom)}`
+    : money(product.price)
+
+// /api/products returns one flat card per SKU (see functions/lib/flatten-products.mjs),
+// so a lamp sold in four sizes arrives as four cards carrying the same photo, the same
+// description, and four near-identical names. The shop rendered all four, which put the
+// 12-option equestrian salt lick on screen twelve times and made the shopper compare
+// duplicates instead of making a choice.
+//
+// Grouping happens HERE rather than in the API on purpose. Every option keeps its own
+// /product-page/<slug>, which is what the sitemap, the prerendered shells in
+// scripts/generate-seo.mjs, and any existing inbound link all point at — so this
+// changes what the shop shows without touching a single URL.
+const productGroupOf = variants => {
+  const inStock = variants.filter(variant => variant.stock)
+  // The card has to lead with something a shopper can actually buy, so the price and
+  // the photo come from the cheapest AVAILABLE option — falling back to the cheapest
+  // of all only when the whole product is sold out.
+  const sellable = inStock.length ? inStock : variants
+  const lead = sellable.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest), sellable[0])
+  const prices = sellable.map(variant => variant.price)
+
+  return {
+    ...lead,
+    name: lead.productName || lead.name,
+    stock: inStock.length > 0,
+    variants,
+    variantCount: variants.length,
+    inStockCount: inStock.length,
+    priceFrom: Math.min(...prices),
+    priceTo: Math.max(...prices),
+  }
+}
+
+// Options are offered cheapest first, which for this catalogue also reads as smallest
+// first — X-Small before Large, 1Kg before 10Kg, 1pc before 12pc.
+const groupProducts = products => {
+  const byProduct = new Map()
+  for (const product of products) {
+    if (!byProduct.has(product.productId)) byProduct.set(product.productId, [])
+    byProduct.get(product.productId).push(product)
+  }
+  return [...byProduct.values()].map(variants =>
+    productGroupOf([...variants].sort((a, b) => a.price - b.price)),
+  )
+}
 
 // First-paint taxonomy and copy, from the snapshot committed at build time. The live
 // values arrive from /api/categories and /api/content a moment later and replace it.
@@ -103,7 +153,11 @@ const productSellingContent = (content, taxonomy, product) => {
   return {
     ...themeCopy,
     category: taxonomy.nameOf(taxonomy.primaryCategoryOf(product)),
-    lede: String(themeCopy.lede || '').replace(/\{name\}/g, product.name),
+    // The product's own name, not the SKU's. The heading and the lede sit directly
+    // above the option picker, so interpolating the variant name made the page open
+    // "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large brings a warm glow…"
+    // — naming an option in the sentence before the shopper has been offered one.
+    lede: String(themeCopy.lede || '').replace(/\{name\}/g, product.productName || product.name),
   }
 }
 
@@ -290,9 +344,48 @@ function Link({ href, children, className, onClick, ...props }) {
   )
 }
 
+// Labelled "Option" rather than "Size" because a size is only what most of these are.
+// The licks, platters, bowls and lamps do vary by size, but the massage stones vary by
+// shape (Heart, Ball, Disk), the soap bars by form, and the bulbs by wattage — and
+// "Size: Heart" is simply wrong. One neutral word is right for all fourteen.
+//
+// Only the options that can actually be bought are offered, so nobody picks their way
+// into a dead end. The one exception is the option being shown right now: a sold-out
+// one still has its own indexed URL, so landing on that link directly has to show it
+// — disabled — rather than quietly swapping the shopper onto something other than what
+// the link promised.
+function OptionPicker({ group, active, onSelect }) {
+  const options = group.variants.filter(variant => variant.stock || variant.skuId === active.skuId)
+
+  return (
+    <div className="option-picker" role="group" aria-label="Option">
+      <p className="option-picker-label">Option</p>
+      <div className="option-choices">
+        {options.map(option => (
+          <button
+            key={option.skuId}
+            type="button"
+            className={option.skuId === active.skuId ? 'is-selected' : ''}
+            aria-pressed={option.skuId === active.skuId}
+            disabled={!option.stock}
+            onClick={() => onSelect(option)}
+          >
+            <span>{option.variantLabel}</span>
+            {/* Each option is priced separately and the spread is wide — £3.99 to
+                £77.99 on the salt lick — so the price belongs on the chip, not just
+                in the panel above it. */}
+            <small>{option.stock ? money(option.price) : 'Sold out'}</small>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
   const groupName = taxonomy.nameOf(taxonomy.primaryCategoryOf(product))
   const variantClass = variant ? ` product-card--${variant}` : ''
+  const hasOptions = product.variantCount > 1
   // Only render the badge when there is something to say. It is absolutely
   // positioned with padding and a dark background, so an empty one drew a small
   // dark rectangle on every in-stock card — every product has an empty tags list.
@@ -311,12 +404,25 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
       </div>
       <div className="product-meta">
         <strong>{priceLabel(product)}</strong>
-        <small>{product.stock ? 'In stock' : 'Currently unavailable'}</small>
+        <small>
+          {/* Singular is reachable: a two-option product with one of them sold out has
+              exactly one left to offer, and read "1 options". */}
+          {product.stock
+            ? hasOptions ? `${product.inStockCount} option${product.inStockCount === 1 ? '' : 's'}` : 'In stock'
+            : 'Currently unavailable'}
+        </small>
       </div>
       <div className="product-actions">
         <button type="button" onClick={() => onQuickView(product.id)}>View</button>
-        <button type="button" onClick={() => onAdd(product)} disabled={!product.stock}>
-          Add
+        {/* A product sold in several options cannot be added from the grid — there is
+            nothing on the card to say which one. The button opens the picker instead,
+            which is the same click for the shopper and one fewer wrong outcome.
+            One word, not "Choose an option": the four-column grid gives this button
+            81-90px and a longer label broke across two lines inside it while every
+            sibling button stayed on one. The count beside the price already says what
+            is being chosen. */}
+        <button type="button" onClick={() => (hasOptions ? onQuickView(product.id) : onAdd(product))} disabled={!product.stock}>
+          {hasOptions ? 'Choose' : 'Add'}
         </button>
       </div>
     </article>
@@ -422,6 +528,7 @@ export default function App() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
+  const [quickViewSkuId, setQuickViewSkuId] = useState(null)
   const [formMessage, setFormMessage] = useState('')
   const [newsletterMessage, setNewsletterMessage] = useState('')
   const [chatMessage, setChatMessage] = useState('')
@@ -557,9 +664,24 @@ export default function App() {
     if (route !== '/process') setProcessFilmPlaying(false)
   }, [route])
 
+  // One entry per product rather than per SKU. Everything the shop counts, filters,
+  // sorts, sections, or renders as a card works from this list, so the sidebar totals
+  // and the grid can never disagree about how many products there are.
+  const productGroups = useMemo(() => groupProducts(products), [products])
+
   const productSlug = route.startsWith('/product-page/') ? route.replace('/product-page/', '') : null
+  // The URL still names one option, and that option is what the page shows, prices,
+  // and publishes in its canonical tag and product schema. The group beside it is only
+  // what fills the picker.
   const currentProduct = products.find(product => product.slug === productSlug)
-  const quickViewProduct = products.find(product => product.id === quickViewId)
+  const currentGroup = currentProduct && productGroups.find(group => group.productId === currentProduct.productId)
+  const quickViewProduct = productGroups.find(group => group.id === quickViewId)
+  // The quick view is an overlay with no URL of its own, so unlike the product page it
+  // has to hold the choice in state. Until something is chosen it shows the same
+  // option the card led with.
+  const quickViewVariant = quickViewProduct
+    && (quickViewProduct.variants.find(variant => variant.skuId === quickViewSkuId)
+      || quickViewProduct.variants.find(variant => variant.skuId === quickViewProduct.skuId))
   const page = content.pages?.[route]
   // A category route is valid if the taxonomy knows the slug OR any product claims
   // it. The second clause is what makes the site genuinely data-driven: assign a new
@@ -668,23 +790,29 @@ export default function App() {
   const sidebarCategories = activeShopperPath
     ? taxonomy.list.filter(category => activeShopperPath.categories.includes(category.slug))
     : taxonomy.list
-  const collectionProducts = activeShopperPath ? products.filter(product => productMatchesPath(product, activeShopperPath)) : products
+  const collectionProducts = activeShopperPath ? productGroups.filter(product => productMatchesPath(product, activeShopperPath)) : productGroups
 
   const visibleProducts = useMemo(() => {
     const term = query.trim().toLowerCase()
-    let list = products.filter(product => {
+    let list = productGroups.filter(product => {
       const matchesCollection = !activeShopperPath || productMatchesPath(product, activeShopperPath)
       const matchesCategory = categoryFilter === 'all' || product.categories.includes(categoryFilter)
-      const haystack = `${product.name} ${product.description} ${product.tags.join(' ')}`.toLowerCase()
+      // Option labels are part of the haystack so a search for "5kg" or "12pc" still
+      // reaches the product now that only the product's own name is on the card.
+      const optionLabels = product.variants.map(variant => variant.variantLabel).join(' ')
+      const haystack = `${product.name} ${product.description} ${product.tags.join(' ')} ${optionLabels}`.toLowerCase()
       return matchesCollection && matchesCategory && haystack.includes(term)
     })
 
-    if (sort === 'price-low') list = [...list].sort((a, b) => a.price - b.price)
-    if (sort === 'price-high') list = [...list].sort((a, b) => b.price - a.price)
+    if (sort === 'price-low') list = [...list].sort((a, b) => a.priceFrom - b.priceFrom)
+    // Sorted on the DEAREST option, so a product whose range tops out at £77.99 ranks
+    // above one that stops at £29.99 — sorting a range on its cheapest end would put
+    // the most expensive product in the shop near the bottom of "price high to low".
+    if (sort === 'price-high') list = [...list].sort((a, b) => b.priceTo - a.priceTo)
     if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name))
 
     return list
-  }, [products, activeShopperPath, categoryFilter, query, sort])
+  }, [productGroups, activeShopperPath, categoryFilter, query, sort])
 
   // The collection landing (no sub-category, no search) shows the hero + grouped
   // sections; any drill-down or search falls back to the flat result grid.
@@ -773,6 +901,29 @@ export default function App() {
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
   const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.qty, 0)
 
+  const openQuickView = id => {
+    setQuickViewId(id)
+    setQuickViewSkuId(null)
+    setNotice('')
+  }
+
+  const closeQuickView = () => {
+    setQuickViewId(null)
+    setQuickViewSkuId(null)
+  }
+
+  // Picking an option on the product page rewrites the address rather than holding the
+  // choice in state, because every option already IS a page: the URL, the canonical
+  // tag, the product schema, and the panel then agree on what is being shown, and the
+  // link the shopper copies is the one they were looking at. replaceState rather than
+  // push, so trying three options does not bury the Back button behind them.
+  const selectVariant = product => {
+    const path = `/product-page/${product.slug}`
+    window.history.replaceState({}, '', path)
+    setRoute(path)
+    setNotice('')
+  }
+
   const addProduct = product => {
     if (!product.stock) return
 
@@ -796,7 +947,7 @@ export default function App() {
         : [...items, { key, product, qty: 1 }]
     ))
     setCartOpen(true)
-    setQuickViewId(null)
+    closeQuickView()
     setNotice('')
   }
 
@@ -1007,10 +1158,7 @@ export default function App() {
         taxonomy={taxonomy}
         product={product}
         variant={variant}
-        onQuickView={id => {
-          setQuickViewId(id)
-          setNotice('')
-        }}
+        onQuickView={openQuickView}
         onAdd={addProduct}
       />
     )
@@ -1502,7 +1650,11 @@ export default function App() {
     </>
   )
 
-  const renderProductPage = product => {
+  // `product` is the option named by the URL — the one this page prices, adds to the
+  // cart, and publishes in its schema. `group` is every option it comes in, and is
+  // what fills the picker. The heading drops the option suffix, because the choice is
+  // now made on the page rather than baked into which page you landed on.
+  const renderProductPage = (product, group) => {
     const theme = taxonomy.themeForProduct(product)
     const detailImages = detailImagesFor(content, product, theme)
     const reassurance = productReassurance(content, theme)
@@ -1529,8 +1681,11 @@ export default function App() {
             {/* No product has tags yet, and an empty eyebrow still reserves its
                 bottom margin — so render it only when there is something in it. */}
             {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-            <h1>{product.name}</h1>
+            <h1>{group.name}</h1>
             <p className="product-lede">{selling.lede}</p>
+            {group.variantCount > 1 && (
+              <OptionPicker group={group} active={product} onSelect={selectVariant} />
+            )}
             <div className="detail-meta">
               <strong>{priceLabel(product)}</strong>
               <span>{product.stock ? 'In stock' : 'Out of stock'}</span>
@@ -1539,7 +1694,7 @@ export default function App() {
                 <span>Only {product.stockQty} left</span>
               )}
             </div>
-            {notice && (quickViewId === product.id || currentProduct?.id === product.id) && <p className="notice">{notice}</p>}
+            {notice && <p className="notice">{notice}</p>}
             <div className="hero-actions product-cta-row">
               <button className="button primary" type="button" onClick={() => addProduct(product)} disabled={!product.stock}>
                 Add to cart
@@ -2057,7 +2212,7 @@ export default function App() {
         {notFound
           ? renderNotFound()
           : currentProduct
-          ? renderProductPage(currentProduct)
+          ? renderProductPage(currentProduct, currentGroup)
           : route === '/checkout/success'
             ? renderCheckoutSuccess()
           : route === '/checkout/cancelled'
@@ -2188,21 +2343,31 @@ export default function App() {
 
       {quickViewProduct && (
         <div className="modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
-          <button className="scrim" type="button" aria-label="Close quick view" onClick={() => setQuickViewId(null)} />
-          <div className="quick-view">
-            <button className="close-button" type="button" onClick={() => setQuickViewId(null)}>Close</button>
+          <button className="scrim" type="button" aria-label="Close quick view" onClick={closeQuickView} />
+          <div className={`quick-view${quickViewProduct.variantCount > 1 ? ' quick-view--options' : ''}`}>
+            <button className="close-button" type="button" onClick={closeQuickView}>Close</button>
             <img src={quickViewProduct.image} alt={quickViewProduct.name} />
             <div>
               {quickViewProduct.tags.length > 0 && <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>}
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>
               <p>{quickViewProduct.description}</p>
-              <strong>{priceLabel(quickViewProduct)}</strong>
+              {quickViewProduct.variantCount > 1 && (
+                <OptionPicker
+                  group={quickViewProduct}
+                  active={quickViewVariant}
+                  onSelect={option => {
+                    setQuickViewSkuId(option.skuId)
+                    setNotice('')
+                  }}
+                />
+              )}
+              <strong>{priceLabel(quickViewVariant)}</strong>
               {notice && quickViewId === quickViewProduct.id && <p className="notice">{notice}</p>}
               <div className="hero-actions">
-                <button className="button primary" type="button" onClick={() => addProduct(quickViewProduct)} disabled={!quickViewProduct.stock}>
+                <button className="button primary" type="button" onClick={() => addProduct(quickViewVariant)} disabled={!quickViewVariant.stock}>
                   Add to cart
                 </button>
-                <Link className="button secondary" href={`/product-page/${quickViewProduct.slug}`} onClick={() => setQuickViewId(null)}>
+                <Link className="button secondary" href={`/product-page/${quickViewVariant.slug}`} onClick={closeQuickView}>
                   Full details
                 </Link>
               </div>
