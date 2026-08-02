@@ -10,7 +10,9 @@
 // context.data.actorEmail for audit logging.
 //
 // Local dev: set DEV_ADMIN_BYPASS=1 in .dev.vars so `wrangler pages dev` can
-// exercise the admin API without an Access token. NEVER set it in production.
+// exercise the admin API without an Access token. Setting it anywhere else does
+// nothing — see the bypass block in onRequest for why that is now enforced rather
+// than merely documented.
 //
 // Required production secrets (wrangler pages secret put):
 //   ACCESS_TEAM_DOMAIN  e.g. "saltylamps" or "saltylamps.cloudflareaccess.com"
@@ -37,7 +39,16 @@ export async function onRequest(context) {
   const { request, env, next, data } = context
 
   // --- local-only bypass -------------------------------------------------
-  if (isTruthy(env.DEV_ADMIN_BYPASS)) {
+  // The flag on its own is not enough, and trusting it was a real incident: it was
+  // set as a production secret on the test site and left there, which served the
+  // whole catalogue, the whole order list, and the delete and refund routes to
+  // anyone who asked, with no token of any kind. A switch that opens the door
+  // whenever someone sets it in the wrong place is not a dev convenience, so the
+  // bypass now also requires the request to have arrived at a local hostname.
+  // Cloudflare routes to a Pages project by hostname, so a deployed Function never
+  // sees one — the flag goes inert the moment it leaves a laptop, whether or not
+  // anyone remembers to unset it.
+  if (isTruthy(env.DEV_ADMIN_BYPASS) && isLocalRequest(request)) {
     data.actorEmail = 'dev@localhost'
     return sealResponse(await next())
   }
@@ -69,6 +80,21 @@ export async function onRequest(context) {
 
 function isTruthy(v) {
   return v === true || v === 1 || v === '1' || v === 'true'
+}
+
+// `wrangler pages dev` serves on localhost; a deployed Function is reached through
+// the project's own hostnames and can never see one of these. `.localhost` suffixes
+// are included because they are a standard local-dev convention and resolve to the
+// loopback address by specification.
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0.0'])
+
+function isLocalRequest(request) {
+  try {
+    const { hostname } = new URL(request.url)
+    return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost')
+  } catch {
+    return false
+  }
 }
 
 function readCookie(request, name) {
