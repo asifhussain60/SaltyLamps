@@ -32,6 +32,7 @@ import InfrastructureDoc from './docs/InfrastructureDoc.jsx'
 import TechnicalDoc from './docs/TechnicalDoc.jsx'
 import PricingDoc from './docs/PricingDoc.jsx'
 import MigrationDoc from './docs/MigrationDoc.jsx'
+import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
 
@@ -2492,7 +2493,7 @@ export default function AdminApp({ route }) {
     <div className={`admin-shell ${navOpen ? 'admin-shell--nav-open' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <img src="/salty-lamp-logo.jpeg" alt="" />
+          <img src="/salty-lamp-logo-256.jpeg" alt="" decoding="async" />
           <span>Salty Lamps</span>
         </div>
         <nav className="admin-nav">

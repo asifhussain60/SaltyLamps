@@ -1,6 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import AdminApp from './admin/AdminApp.jsx'
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+
+// Loaded on demand rather than imported, because the admin portal is ~2,500 lines
+// that no shopper will ever run, and a static import puts every one of them in the
+// bundle the storefront downloads before it can paint. Largest Contentful Paint is
+// a ranking signal and, on a phone on mobile data, the difference between a sale
+// and a bounce — so the shop does not carry the back office around with it.
+const AdminApp = lazy(() => import('./admin/AdminApp.jsx'))
 import { img, media, siteUrl } from './content/site-content.mjs'
+import { combineSchemas, listSchema, productSchema, storeSchema } from './content/schema.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
 import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
@@ -394,7 +401,12 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
   return (
     <article className={`product-card theme-${taxonomy.themeForProduct(product)}${variantClass}${product.stock ? '' : ' is-soldout'}`}>
       <Link className="product-image" href={`/product-page/${product.slug}`} aria-label={`View ${product.name}`}>
-        <img src={product.image} alt={product.name} />
+        {/* Measured on a phone profile: /shop pulled 8.4 MB across 37 photographs,
+            all of them fetched before the shopper had scrolled. A lazy image that is
+            already in the viewport is still fetched immediately, so the cards on
+            screen — including whichever one is the page's largest element — load
+            exactly as before; only the ones below the fold wait their turn. */}
+        <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
         {badge && <span>{badge}</span>}
       </Link>
       <div className="product-body">
@@ -1047,67 +1059,33 @@ export default function App() {
     }
   }
 
-  const storeSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Store',
-    name: 'Salty Lamps',
-    url: `${siteUrl}/`,
-    telephone: '01782970001',
-    email: contactEmailOf(content),
-    image: absoluteUrl(media('salty-lamps-og-card.jpg')),
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Unit 41, Imex Business Park, Ormonde Street',
-      addressLocality: 'Stoke-on-Trent',
-      postalCode: 'ST4 3NP',
-      addressCountry: 'GB',
-    },
-  }
+  // The Store, Product and CollectionPage shapes come from src/content/schema.mjs,
+  // the same module the build script uses, so the tag this app maintains while a
+  // shopper navigates cannot drift from the one a crawler reads in the prerendered
+  // HTML. They already had: the two disagreed about whether the shop's own url
+  // carried a trailing slash.
+  const shopSchema = storeSchema({
+    siteUrl,
+    contactEmail: contactEmailOf(content),
+    imageUrl: absoluteUrl(media('salty-lamps-og-card.jpg')),
+  })
 
-  const productSchema = currentProduct && {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: currentProduct.name,
-    sku: currentProduct.sku || undefined,
-    image: [absoluteUrl(currentProduct.image)],
-    description: currentProduct.description,
-    brand: {
-      '@type': 'Brand',
-      name: 'Salty Lamps',
-    },
-    // Omit the Offer entirely when pricing is TBD — publishing a placeholder
-    // price to search engines would be worse than publishing none.
-    offers: {
-      '@type': 'Offer',
-      url: absoluteUrl(`/product-page/${currentProduct.slug}`),
-      price: currentProduct.price,
-      priceCurrency: 'GBP',
-      availability: currentProduct.stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: {
-        '@type': 'Organization',
-        name: 'Salty Lamps Ltd',
-      },
-    },
-  }
+  const itemSchema = currentProduct
+    ? productSchema(currentProduct, {
+        url: absoluteUrl(`/product-page/${currentProduct.slug}`),
+        imageUrl: absoluteUrl(currentProduct.image),
+        categoryName: taxonomy.nameOf(taxonomy.primaryCategoryOf(currentProduct)),
+      })
+    : null
 
-  const listSchema = (route === '/shop' || activeShopperPath || categorySlug) && visibleProducts.length
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
+  const collectionSchema = (route === '/shop' || activeShopperPath || categorySlug)
+    ? listSchema({
         name: meta.title.replace(' | Salty Lamps', ''),
         description: meta.description,
         url: absoluteUrl(canonicalPath),
-        mainEntity: {
-          '@type': 'ItemList',
-          itemListElement: visibleProducts.slice(0, 48).map((product, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            url: absoluteUrl(`/product-page/${product.slug}`),
-            name: product.name,
-          })),
-        },
-      }
+        products: visibleProducts,
+        urlOf: product => absoluteUrl(`/product-page/${product.slug}`),
+      })
     : null
 
   const processSchema = route === '/process'
@@ -1122,10 +1100,7 @@ export default function App() {
       }
     : null
 
-  const schema = {
-    '@context': 'https://schema.org',
-    '@graph': [storeSchema, productSchema, listSchema, processSchema].filter(Boolean),
-  }
+  const schema = combineSchemas([shopSchema, itemSchema, collectionSchema, processSchema])
 
   const renderShop = () => {
     const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(content, taxonomy, categorySlug) : shopCopyOf(content)
@@ -1198,6 +1173,8 @@ export default function App() {
                     className="video-facade__poster"
                     src={activeShopperPath.background}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                   />
                   <span className="video-facade__play" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
@@ -1667,12 +1644,14 @@ export default function App() {
       <section className={`product-page theme-${theme}`}>
         <div className="product-gallery">
           <div className="product-gallery-main">
-            <img src={product.image} alt={product.name} />
+            {/* The largest element on a product page, and therefore the one Google
+                times. Never lazy; asked for ahead of the thumbnails below it. */}
+            <img src={product.image} alt={product.name} fetchPriority="high" decoding="async" />
             <span>{selling.category}</span>
           </div>
           <div className="product-gallery-thumbs">
             {detailImages.map(item => (
-              <img key={item.src} src={item.src} alt={item.alt} />
+              <img key={item.src} src={item.src} alt={item.alt} loading="lazy" decoding="async" />
             ))}
           </div>
         </div>
@@ -1787,7 +1766,7 @@ export default function App() {
 
         <div className="gallery-showcase">
           <Link className="gallery-feature-card" href={featuredGalleryItem.href}>
-            <img src={featuredGalleryItem.image} alt={featuredGalleryItem.title} />
+            <img src={featuredGalleryItem.image} alt={featuredGalleryItem.title} fetchPriority="high" decoding="async" />
             <span>{featuredGalleryItem.label}</span>
             <div>
               <h2>{featuredGalleryItem.title}</h2>
@@ -2174,7 +2153,11 @@ export default function App() {
   // (sidebar + topbar) — render it instead of the storefront shell. Placed after
   // all hooks so React's rules-of-hooks hold.
   if (route.startsWith('/admin')) {
-    return <AdminApp route={route} />
+    return (
+      <Suspense fallback={<div className="admin-boot">Loading the admin…</div>}>
+        <AdminApp route={route} />
+      </Suspense>
+    )
   }
 
   return (
@@ -2193,7 +2176,7 @@ export default function App() {
               variant is needed: .brand img already clips it with border-radius:50%
               and object-fit:cover, so only black corner is removed, and the
               existing amber box-shadow reads as the lamp's glow. */}
-          <img src="/salty-lamp-logo.jpeg" alt="" />
+          <img src="/salty-lamp-logo-256.jpeg" alt="" width="38" height="38" decoding="async" />
           <span>Salty Lamps</span>
         </Link>
         <nav aria-label="Primary navigation">
@@ -2201,7 +2184,10 @@ export default function App() {
           <Link href="/shop">Shop</Link>
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
-          <Link href="/admin">Admin</Link>
+          {/* No Admin link. It sat here through UAT for convenience and shipped a
+              back-office entrance in the customer navigation of every page —
+              including, once the admin moved to its own hostname, one that no
+              longer answers. The owner reaches the admin at its own address. */}
           <a href={contactMailto(content)}>Contact</a>
           <Link className="nav-about" href="/process">About</Link>
         </nav>
@@ -2308,7 +2294,7 @@ export default function App() {
         <div className="cart-lines">
           {cart.length ? cart.map(item => (
             <article className="cart-line" key={item.key}>
-              <img src={item.product.image} alt="" />
+              <img src={item.product.image} alt="" loading="lazy" decoding="async" />
               <div>
                 <strong>{item.product.name}</strong>
                 <small>{money(item.product.price)}</small>
@@ -2348,7 +2334,7 @@ export default function App() {
           <button className="scrim" type="button" aria-label="Close quick view" onClick={closeQuickView} />
           <div className={`quick-view${quickViewProduct.variantCount > 1 ? ' quick-view--options' : ''}`}>
             <button className="close-button" type="button" onClick={closeQuickView}>Close</button>
-            <img src={quickViewProduct.image} alt={quickViewProduct.name} />
+            <img src={quickViewProduct.image} alt={quickViewProduct.name} decoding="async" />
             <div>
               {quickViewProduct.tags.length > 0 && <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>}
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>

@@ -4273,3 +4273,19 @@ label {
     transform: none;
   }
 }
+
+/* The moment between /admin being requested and the portal's chunk arriving.
+   The admin is lazy-loaded so the storefront bundle does not carry it (see the
+   import in App.jsx), which means there is now a frame where nothing is on
+   screen. On a fast connection it is invisible; on a slow one it is the
+   difference between "loading" and "broken". */
+.admin-boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: var(--ui, system-ui), system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--muted, #6d625b);
+  background: var(--paper, #f7efe6);
+}

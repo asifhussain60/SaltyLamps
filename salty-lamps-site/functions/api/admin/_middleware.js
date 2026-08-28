@@ -22,9 +22,19 @@
 // will not match it and the admin will be closed there by default, with no one
 // having to remember anything.
 //
+// Separate hostname: ADMIN_HOSTS names where the admin EXISTS, which is a different
+// question from who may use it. On any other hostname this API answers 404 before
+// it considers a token at all, so the customer-facing domain carries no admin
+// surface to probe. The hostname comparisons live in ../../lib/admin-hosts.mjs
+// because functions/_middleware.js — which does the same for the /admin HTML — has
+// to agree with this file exactly; two copies would eventually disagree, and the
+// disagreement would be a door.
+//
 // Required production secrets (wrangler pages secret put):
 //   ACCESS_TEAM_DOMAIN  e.g. "saltylamps" or "saltylamps.cloudflareaccess.com"
 //   ACCESS_AUD          the Access application Audience (AUD) tag
+
+import { hostMatches, hostnameOf, isAdminHost, isLocalHost, isTruthy } from '../../lib/admin-hosts.mjs'
 
 const JWKS_TTL_MS = 60 * 60 * 1000 // 1 hour
 const jwksCache = new Map() // teamDomain -> { keys, fetchedAt }
@@ -45,6 +55,19 @@ function sealResponse(response) {
 
 export async function onRequest(context) {
   const { request, env, next, data } = context
+  const hostname = hostnameOf(request)
+
+  // --- does the admin exist at this hostname at all? ----------------------
+  // Asked first, and answered with 404 rather than 401, because 401 confirms the
+  // endpoint is there — and on the customer-facing domain the honest answer is
+  // that it is not. Unset ADMIN_HOSTS means "everywhere", which is what this
+  // project did before the admin moved to its own subdomain, so a deployment that
+  // never sets it behaves exactly as it always has.
+  if (!isAdminHost(hostname, env)) {
+    return sealResponse(new Response(JSON.stringify({
+      error: { code: 'not_found', message: 'Not found.' },
+    }), { status: 404, headers: { 'content-type': 'application/json' } }))
+  }
 
   // --- no-sign-in access, scoped to named hostnames ----------------------
   // Trusting a bare on/off flag was a real incident: DEV_ADMIN_BYPASS was set as a
@@ -53,7 +76,7 @@ export async function onRequest(context) {
   // the delete and refund routes to anyone who asked. Both doors below are therefore
   // tied to WHERE the request arrived, not just to whether someone set a variable:
   // a flag travels with the code to production, a hostname does not.
-  const openAs = openAccessReason(request, env)
+  const openAs = openAccessReason(hostname, env)
   if (openAs) {
     data.actorEmail = openAs.actor
     const response = sealResponse(await next())
@@ -89,28 +112,13 @@ export async function onRequest(context) {
 
 // ---------------------------------------------------------------------------
 
-function isTruthy(v) {
-  return v === true || v === 1 || v === '1' || v === 'true'
-}
-
-// `wrangler pages dev` serves on localhost; a deployed Function is reached through
-// the project's own hostnames and can never see one of these. `.localhost` suffixes
-// are included because they are a standard local-dev convention and resolve to the
-// loopback address by specification.
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0.0'])
-
 // Why the door is open, or null when it is not. Two ways in, both pinned to the
-// hostname the request actually arrived at.
-function openAccessReason(request, env) {
-  let hostname
-  try {
-    hostname = new URL(request.url).hostname
-  } catch {
-    return null
-  }
+// hostname the request actually arrived at — see ../../lib/admin-hosts.mjs for why
+// that is the load-bearing detail rather than an implementation choice.
+function openAccessReason(hostname, env) {
+  if (!hostname) return null
 
-  if (isTruthy(env.DEV_ADMIN_BYPASS)
-      && (LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost'))) {
+  if (isTruthy(env.DEV_ADMIN_BYPASS) && isLocalHost(hostname)) {
     return { reason: 'local', actor: 'dev@localhost' }
   }
 
@@ -119,18 +127,6 @@ function openAccessReason(request, env) {
   }
 
   return null
-}
-
-// Comma-separated hostnames. An entry starting with a dot matches any subdomain of
-// it, which is what covers Cloudflare's per-deployment preview aliases
-// (<hash>.<project>.pages.dev) without listing each one.
-function hostMatches(hostname, list) {
-  for (const raw of String(list || '').split(',')) {
-    const entry = raw.trim().toLowerCase()
-    if (!entry) continue
-    if (entry.startsWith('.') ? hostname.endsWith(entry) : hostname === entry) return true
-  }
-  return false
 }
 
 function readCookie(request, name) {
