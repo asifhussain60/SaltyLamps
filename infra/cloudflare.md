@@ -71,6 +71,14 @@ separate Workers deploy):
 - `lib/flatten-products.mjs` — shared between the Worker runtime (`api/products.js`) and the Node
   build script (`scripts/generate-seo.mjs`, which queries D1's HTTP API directly at build time so
   sitemap/SEO generation doesn't depend on a deployment that hasn't happened yet).
+- `_middleware.js` (root) — runs on **every** request, including static assets, so it is written to
+  do two string comparisons and return on the common path. Two jobs: keep `/admin` off the shop's
+  hostname (`_redirects` cannot do this — its sources must be relative paths, so it never sees which
+  hostname a request arrived at), and keep duplicate hostnames out of search results.
+- `lib/admin-hosts.mjs` — the hostname comparisons, shared by the root middleware and the admin API
+  gate. One copy, because two would eventually disagree and the disagreement would be a door.
+- `lib/shop-time.mjs` — Europe/London day, week and month boundaries for the admin's figures. See
+  [`known-issues.md`](known-issues.md) §10 for what it fixed.
 
 ## Credentials
 
@@ -107,6 +115,16 @@ from stdin — never pass it as a CLI argument, it'd land in shell history):
   — account, current UAT sender, and what still blocks customer email — in [`email.md`](email.md).
   Cloudflare cannot send this mail itself; that question is settled in `email.md`, don't re-open it
 - `MAIL_DRY_RUN` — dev/UAT only; renders and logs every email without handing it to the provider
+- `ADMIN_HOSTS` — comma-separated hostnames where the admin exists. **Unset means everywhere**,
+  which is the behaviour this project had before the admin moved to its own subdomain, so an
+  existing deployment that never sets it is unaffected. Set it and `/admin` plus `/api/admin/*`
+  answer 404 on every other hostname. An entry beginning with a dot matches subdomains. Not a
+  secret, but set the same way for consistency. Logic in `functions/lib/admin-hosts.mjs`
+- `PUBLIC_HOST` — optional. The one hostname search engines should treat as the real shop; falls
+  back to the host in `SITE_URL`. Every other hostname serving the same build — the `.pages.dev`
+  address, preview aliases, the admin subdomain — gets `X-Robots-Tag: noindex` and a
+  `Disallow: /` robots.txt from `functions/_middleware.js`. When neither is set nothing is
+  noindexed, deliberately: being indexed by mistake is recoverable, de-indexing the shop is not
 
 (The former `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` pair is gone. The storefront form
 submissions they served now post to `/api/support/enquiry`, which stores to D1 and emails the

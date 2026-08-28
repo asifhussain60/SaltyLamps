@@ -120,3 +120,60 @@ Fixed by adding `renderCheckoutSuccess()` / `renderCheckoutCancelled()` and wiri
 `src/App.jsx`. Verified locally: both routes render the correct copy, title, and working
 "Continue shopping" / "Contact us" links. Not yet deployed to production — see the deploy step in
 [`cloudflare.md`](cloudflare.md).
+
+## 9. The apex redirect in `public/_redirects` has never worked
+
+`_redirects` line 23 is `https://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301`.
+Cloudflare **skips it**: sources in that file must be relative paths. `wrangler` says so on every
+single build and has been saying it all along —
+
+```
+▲ [WARNING] Found 2 invalid redirect rules:
+  ▶︎ Only relative URLs are allowed. Skipping absolute URL https://saltylamps.co.uk/*.
+      at dist/_redirects:23
+```
+
+The `http://` variants on lines 22 and 24 are skipped for the same reason. This is harmless today
+because the domain does not point here yet; it stops being harmless the moment it does, and the
+symptom is `saltylamps.co.uk` without the `www` reaching nothing.
+
+`_redirects` is only consulted once a request has already arrived at the right hostname, so it
+structurally cannot forward one hostname to another. **Fix:** a zone-level Redirect Rule
+(Cloudflare → Rules → Redirect Rules). The migration runbook checks for this at go-live.
+
+The second warning in that block — an "infinite loop" on the SPA catch-all `/* /index.html 200` —
+is a false positive from wrangler's own dev-mode checker and does not apply to a 200 rewrite.
+
+## 10. ~~Dashboard windows were computed in UTC on a UK shop~~ — fixed 2026-08-28
+
+`functions/api/admin/stats.js` used `date('now')`, `date('now','-6 days')` and
+`date('now','start of month')` inside its SQL. SQLite's `now` is UTC and the Worker runs UTC, so
+through British Summer Time the dashboard's "today" ran 01:00 to 01:00: an order taken at half past
+midnight was reported against **yesterday**, and "this month" was wrong for the first hour of every
+month. The same pattern was in `reports/sales.js`, `orders/by-month.js` and `orders/by-year.js`.
+
+Nothing failed and nothing was logged. The number was simply not the number.
+
+Fixed by `functions/lib/shop-time.mjs`, which computes Europe/London boundaries in JavaScript — DST
+rules included, via `Intl` — and passes them into SQL as bound values, so SQLite only ever compares
+two strings. Month and year groupings cannot be done in SQL at all (SQLite has no timezone
+database), so those endpoints ask for hourly totals and re-bucket them in JS. Covered by
+`test/shop-time.test.mjs`, including both clock-change days.
+
+## 11. The site logo was a 245 KB image displayed at 38 pixels
+
+`public/salty-lamp-logo.jpeg` is a 1254x1254 source. It was served verbatim in the storefront
+header, the admin sidebar and the header of **every transactional email** — a quarter of a megabyte,
+on every page load, for a 38px circle.
+
+It sits outside `public/media`, which is why `npm run media:optimise` never touched it.
+
+Fixed 2026-08-28 by adding `public/salty-lamp-logo-256.jpeg` (18 KB) and pointing the three display
+sites at it. **The 1254px original stays**: `scripts/generate-brand-assets.py` composites the
+1200x630 social card from it, so it is a source asset, not a display asset.
+
+Still open, and now the largest thing on the homepage: three collection photographs saved as PNG
+(`yoga-room.png` 960 KB, `home-horse-salt-lick-generated.png` 729 KB, `kitchen-setup.png` 667 KB).
+`optimise-media.mjs` has already quantised them; getting further means WebP, which needs the data
+migration described in §3.
+

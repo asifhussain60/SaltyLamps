@@ -33,11 +33,11 @@ Card details are only ever entered on Stripe's own page, never on the shop. Once
 
 ## How the admin area is protected
 
-The admin portal is separated from the public shop. In the real (production) setup, Cloudflare Access asks anyone trying to enter to sign in first, and the site double-checks that sign-in on every action.
+The admin portal is separated from the public shop — on the real shop, by hostname as well as by sign-in. It lives at its own address (`admin.saltylamps.co.uk`), Cloudflare Access asks anyone arriving there to sign in first, and the site double-checks that sign-in on every action. On the shop's own address the admin simply does not exist: it answers "not found" rather than "please sign in", and the customer-facing pages carry no link to it.
 
 ![Admin auth: Cloudflare Access signs the admin in and issues a pass, which the site verifies on every admin request.](diagrams/admin-auth.svg)
 
-> ⚠️ **Note about the current test site:** the current dev / UAT site has this lock switched off on purpose (`DEV_ADMIN_BYPASS`), so testers can try the admin freely. On the real shop this must be switched back on — see the Technical Documentation.
+> ⚠️ **Note about the current test site:** the test site deliberately leaves the admin open so testers can try it freely. That is done by naming the test site's hostname in a setting called `ADMIN_OPEN_HOSTS` — a list of addresses rather than an on/off switch, precisely so it cannot follow the code to the real shop. A hostname does not travel; a switch does, and one once did. On the real shop the admin is closed and behind Cloudflare Access — see the Technical Documentation.
 
 ## Two separate environments
 

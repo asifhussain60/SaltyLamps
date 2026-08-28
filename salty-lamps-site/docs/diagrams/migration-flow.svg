@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="940" height="360" viewBox="0 0 940 360" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="428" viewBox="0 0 940 428" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
   <defs>
     <marker id="mg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
@@ -6,59 +6,189 @@
     <style>
       .t   { font-size:20px; font-weight:700; fill:#0f172a; }
       .s   { font-size:12.5px; fill:#475569; }
-      .num { font-size:15px; font-weight:800; fill:#ffffff; }
+      .num { font-size:13px; font-weight:800; fill:#ffffff; }
       .ph  { font-size:12.5px; font-weight:700; fill:#0f172a; }
-      .sub { font-size:10.5px; fill:#475569; }
-      .band{ font-size:11px; font-weight:700; }
+      .sub { font-size:10px; fill:#475569; }
+      .band{ font-size:11px; font-weight:700; fill:#475569; }
     </style>
   </defs>
-  <rect x="0" y="0" width="940" height="360" fill="#f8fafc" rx="16"/>
-  <text x="30" y="42" class="t">Migration at a glance — seven phases</text>
-  <text x="30" y="64" class="s">Do them in order. Everything up to the domain switch can be prepared safely; the domain + email cutover is the one live, careful step.</text>
+  <rect width="940" height="428" fill="#ffffff"/>
+  <text class="t" x="20" y="34">Wix to Cloudflare, in seventeen phases</text>
+  <text class="s" x="20" y="56">Nothing a customer can see changes until phase 15. Everything before it can be undone.</text>
+  <text class="s" x="20" y="76">Green: nothing to break.  Amber: reversible, but think.  Red: the public switch.</text>
 
-  <!-- phase bands -->
-  <rect x="30" y="92" width="470" height="26" rx="8" fill="#dcfce7"/>
-  <text x="52" y="110" class="band" fill="#166534">✓ Prepare safely — no effect on the live Wix shop</text>
-  <rect x="512" y="92" width="230" height="26" rx="8" fill="#fee2e2"/>
-  <text x="530" y="110" class="band" fill="#991b1b">⚠ Live cutover — plan the timing</text>
-  <rect x="754" y="92" width="156" height="26" rx="8" fill="#e0e7ff"/>
-  <text x="772" y="110" class="band" fill="#3730a3">Finish up</text>
+  <g>
+    <rect x="20" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="37" cy="114" r="11" fill="#2d7b5f"/>
+    <text class="num" x="37" y="118" text-anchor="middle">1</text>
+    <text class="ph" x="54" y="118">Gather</text>
+    <text class="sub" x="30" y="140">what you need</text>
+  </g>
+  <line x1="152" y1="127" x2="169.6" y2="127" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
 
-  <!-- connector line -->
-  <line x1="80" y1="175" x2="880" y2="175" stroke="#cbd5e1" stroke-width="2" marker-end="url(#mg)"/>
+  <g>
+    <rect x="173.6" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="190.6" cy="114" r="11" fill="#2d7b5f"/>
+    <text class="num" x="190.6" y="118" text-anchor="middle">2</text>
+    <text class="ph" x="207.6" y="118">Back up</text>
+    <text class="sub" x="183.6" y="140">Wix + this shop</text>
+  </g>
+  <line x1="305.6" y1="127" x2="323.2" y2="127" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
 
-  <!-- nodes: 7 phases, x from ~80 to ~880 -->
-  <!-- 1 -->
-  <circle cx="80" cy="175" r="19" fill="#16a34a"/><text x="74" y="181" class="num">1</text>
-  <text x="80" y="215" class="ph" text-anchor="middle">Cloudflare</text>
-  <text x="80" y="230" class="sub" text-anchor="middle">account</text>
-  <!-- 2 -->
-  <circle cx="213" cy="175" r="19" fill="#16a34a"/><text x="207" y="181" class="num">2</text>
-  <text x="213" y="215" class="ph" text-anchor="middle">Provision</text>
-  <text x="213" y="230" class="sub" text-anchor="middle">D1 · R2 · Access</text>
-  <!-- 3 -->
-  <circle cx="346" cy="175" r="19" fill="#16a34a"/><text x="340" y="181" class="num">3</text>
-  <text x="346" y="215" class="ph" text-anchor="middle">Migrate data</text>
-  <text x="346" y="230" class="sub" text-anchor="middle">catalog · orders</text>
-  <!-- 4 -->
-  <circle cx="479" cy="175" r="19" fill="#16a34a"/><text x="473" y="181" class="num">4</text>
-  <text x="479" y="215" class="ph" text-anchor="middle">Stripe</text>
-  <text x="479" y="230" class="sub" text-anchor="middle">handoff</text>
-  <!-- 5 -->
-  <circle cx="612" cy="175" r="19" fill="#dc2626"/><text x="606" y="181" class="num">5</text>
-  <text x="612" y="215" class="ph" text-anchor="middle" fill="#991b1b">Domain + email</text>
-  <text x="612" y="230" class="sub" text-anchor="middle">DNS switch</text>
-  <!-- 6 -->
-  <circle cx="712" cy="175" r="19" fill="#dc2626"/><text x="706" y="181" class="num">6</text>
-  <text x="712" y="215" class="ph" text-anchor="middle" fill="#991b1b">Cutover</text>
-  <text x="712" y="230" class="sub" text-anchor="middle">test &amp; verify</text>
-  <!-- 7 -->
-  <circle cx="832" cy="175" r="19" fill="#4f46e5"/><text x="826" y="181" class="num">7</text>
-  <text x="832" y="215" class="ph" text-anchor="middle">Decommission</text>
-  <text x="832" y="230" class="sub" text-anchor="middle">cancel Wix</text>
+  <g>
+    <rect x="327.2" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="344.2" cy="114" r="11" fill="#2d7b5f"/>
+    <text class="num" x="344.2" y="118" text-anchor="middle">3</text>
+    <text class="ph" x="361.2" y="118">Cloudflare</text>
+    <text class="sub" x="337.2" y="140">owner's account</text>
+  </g>
+  <line x1="459.2" y1="127" x2="476.79999999999995" y2="127" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
 
-  <!-- footnote -->
-  <rect x="30" y="278" width="880" height="60" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" rx="12"/>
-  <text x="52" y="304" class="ph" font-size="13">The golden rule</text>
-  <text x="52" y="324" class="s">Keep the Wix shop live until the new site is fully tested on the real domain — then, and only then, cancel Wix. Never delete anything at Wix before the switch is confirmed working.</text>
+  <g>
+    <rect x="480.79999999999995" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="497.79999999999995" cy="114" r="11" fill="#d88a35"/>
+    <text class="num" x="497.79999999999995" y="118" text-anchor="middle">4</text>
+    <text class="ph" x="514.8" y="118">Domain</text>
+    <text class="sub" x="490.79999999999995" y="140">to Cloudflare</text>
+  </g>
+  <line x1="612.8" y1="127" x2="630.4" y2="127" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="634.4" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="651.4" cy="114" r="11" fill="#d88a35"/>
+    <text class="num" x="651.4" y="118" text-anchor="middle">5</text>
+    <text class="ph" x="668.4" y="118">Receive</text>
+    <text class="sub" x="644.4" y="140">email forwarding</text>
+  </g>
+  <line x1="766.4" y1="127" x2="784" y2="127" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="788" y="96" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="805" cy="114" r="11" fill="#d88a35"/>
+    <text class="num" x="805" y="118" text-anchor="middle">6</text>
+    <text class="ph" x="822" y="118">Send</text>
+    <text class="sub" x="798" y="140">order emails</text>
+  </g>
+  <path d="M920 127 H932 V173 H8 V219 H16"
+        fill="none" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="20" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="37" cy="206" r="11" fill="#2d7b5f"/>
+    <text class="num" x="37" y="210" text-anchor="middle">7</text>
+    <text class="ph" x="54" y="210">Build</text>
+    <text class="sub" x="30" y="232">the new shop</text>
+  </g>
+  <line x1="152" y1="219" x2="169.6" y2="219" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="173.6" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="190.6" cy="206" r="11" fill="#d88a35"/>
+    <text class="num" x="190.6" y="210" text-anchor="middle">8</text>
+    <text class="ph" x="207.6" y="210">Catalogue</text>
+    <text class="sub" x="183.6" y="232">today's prices</text>
+  </g>
+  <line x1="305.6" y1="219" x2="323.2" y2="219" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="327.2" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="344.2" cy="206" r="11" fill="#d88a35"/>
+    <text class="num" x="344.2" y="210" text-anchor="middle">9</text>
+    <text class="ph" x="361.2" y="210">Admin</text>
+    <text class="sub" x="337.2" y="232">own subdomain</text>
+  </g>
+  <line x1="459.2" y1="219" x2="476.79999999999995" y2="219" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="480.79999999999995" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="497.79999999999995" cy="206" r="11" fill="#d88a35"/>
+    <text class="num" x="497.79999999999995" y="210" text-anchor="middle">10</text>
+    <text class="ph" x="514.8" y="210">Payments</text>
+    <text class="sub" x="490.79999999999995" y="232">one real order</text>
+  </g>
+  <line x1="612.8" y1="219" x2="630.4" y2="219" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="634.4" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="651.4" cy="206" r="11" fill="#d88a35"/>
+    <text class="num" x="651.4" y="210" text-anchor="middle">11</text>
+    <text class="ph" x="668.4" y="210">Regression</text>
+    <text class="sub" x="644.4" y="232">test everything</text>
+  </g>
+  <line x1="766.4" y1="219" x2="784" y2="219" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="788" y="188" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="805" cy="206" r="11" fill="#d88a35"/>
+    <text class="num" x="805" y="210" text-anchor="middle">12</text>
+    <text class="ph" x="822" y="210">Email</text>
+    <text class="sub" x="798" y="232">all 11 messages</text>
+  </g>
+  <path d="M920 219 H932 V265 H8 V311 H16"
+        fill="none" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="20" y="280" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="37" cy="298" r="11" fill="#2d7b5f"/>
+    <text class="num" x="37" y="302" text-anchor="middle">13</text>
+    <text class="ph" x="54" y="302">Dashboards</text>
+    <text class="sub" x="30" y="324">tell the truth</text>
+  </g>
+  <line x1="152" y1="311" x2="169.6" y2="311" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="173.6" y="280" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="190.6" cy="298" r="11" fill="#d88a35"/>
+    <text class="num" x="190.6" y="302" text-anchor="middle">14</text>
+    <text class="ph" x="207.6" y="302">Search</text>
+    <text class="sub" x="183.6" y="324">prove it first</text>
+  </g>
+  <line x1="305.6" y1="311" x2="323.2" y2="311" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="327.2" y="280" width="132" height="62" rx="8"
+          fill="#fdf2ee" stroke="#9b4328" stroke-width="2.5"/>
+    <circle cx="344.2" cy="298" r="11" fill="#9b4328"/>
+    <text class="num" x="344.2" y="302" text-anchor="middle">15</text>
+    <text class="ph" x="361.2" y="302">GO LIVE</text>
+    <text class="sub" x="337.2" y="324">domain switches</text>
+  </g>
+  <line x1="459.2" y1="311" x2="476.79999999999995" y2="311" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="480.79999999999995" y="280" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#2d7b5f" stroke-width="1.4"/>
+    <circle cx="497.79999999999995" cy="298" r="11" fill="#2d7b5f"/>
+    <text class="num" x="497.79999999999995" y="302" text-anchor="middle">16</text>
+    <text class="ph" x="514.8" y="302">Google</text>
+    <text class="sub" x="490.79999999999995" y="324">register the shop</text>
+  </g>
+  <line x1="612.8" y1="311" x2="630.4" y2="311" stroke="#64748b" stroke-width="1.3" marker-end="url(#mg)"/>
+
+  <g>
+    <rect x="634.4" y="280" width="132" height="62" rx="8"
+          fill="#ffffff" stroke="#d88a35" stroke-width="1.4"/>
+    <circle cx="651.4" cy="298" r="11" fill="#d88a35"/>
+    <text class="num" x="651.4" y="302" text-anchor="middle">17</text>
+    <text class="ph" x="668.4" y="302">Close Wix</text>
+    <text class="sub" x="644.4" y="324">after two weeks</text>
+  </g>
+
+  <text class="band" x="20" y="402">Phases 1&#8211;14 run alongside the live Wix shop &#8212; it stays up and untouched throughout.</text>
+  <text class="band" x="20" y="418" fill="#9b4328">Phase 15 is the only step a customer can see. Phase 17 is the only one that cannot be undone.</text>
+  <rect x="322.2" y="275" width="142" height="72" rx="11" fill="none" stroke="#9b4328" stroke-width="1" stroke-dasharray="3 3"/>
 </svg>

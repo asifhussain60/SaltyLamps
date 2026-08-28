@@ -1,5 +1,11 @@
 # Migration playbook
 
+> **The runbook people actually follow is elsewhere.** The owner-facing, step-by-step
+> version lives at `/admin/docs/migration` (`salty-lamps-site/src/admin/docs/MigrationDoc.jsx`),
+> mirrored as `salty-lamps-site/docs/migration.md`. This file is the engineer's
+> scenario map — which of several possible moves you are making, and what each one
+> touches. Keep it; do not follow it instead of the runbook.
+
 Three separate scenarios, because "migrate to a different domain" and "migrate to a different
 Stripe account" pull on different threads. Pick the one that applies — most real moves are
 Scenario A alone (adding the real domain) or B alone (going from test to live Stripe).
@@ -25,7 +31,11 @@ D1 and Stripe don't need to change at all.
 5. Update the `site_url` setting in Admin → Settings to the new domain — it is the link base for
    emails when `SITE_URL` is unset.
 6. Email: the sender domain must be verified with Resend before any customer mail sends. See
-   [`email.md`](email.md).
+   [`email.md`](email.md). Resend's records go on the `send.` subdomain and do **not** replace the
+   mailbox provider's SPF on the plain domain — the two coexist.
+6b. If the admin is to live on its own hostname, add it as a second custom domain, front it with a
+   Cloudflare Access application, and set the `ADMIN_HOSTS` Pages secret. Unset, the admin is
+   served on every hostname the project answers on, which is the pre-split behaviour.
 7. Redeploy (`./deploy-cloudflare.sh`) — secrets only take effect on a fresh deployment.
 8. Repeat the live verification steps in [`stripe.md`](stripe.md#test-mode-verification-performed)
    against the new domain.

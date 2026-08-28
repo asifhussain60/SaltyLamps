@@ -129,9 +129,17 @@ Correcting the details afterwards does **not** re-send the email — the notice 
 
 ![Cloudflare Access issues a signed JWT; the admin middleware verifies it on every request.](diagrams/admin-auth.svg)
 
-`functions/api/admin/_middleware.js` runs on every `/api/admin/*` request. It reads the Access JWT (`Cf-Access-Jwt-Assertion` header or `CF_Authorization` cookie), requires **RS256**, fetches and caches the team **JWKS**, verifies the signature, issuer, expiry, and **audience** (`ACCESS_AUD`), then exposes the caller's email for audit logging. It **fails closed**: if `ACCESS_AUD` or `ACCESS_TEAM_DOMAIN` is missing it returns 503.
+`functions/api/admin/_middleware.js` runs on every `/api/admin/*` request. It answers three questions in order.
 
-> ⚠️ **DEV_ADMIN_BYPASS:** if the secret `DEV_ADMIN_BYPASS=1` is set, the middleware skips all checks and treats the caller as `dev@localhost`. For local dev and the DEV/UAT site only — **never set it in production**.
+**1. Does the admin exist at this hostname?** `ADMIN_HOSTS` (via `functions/lib/admin-hosts.mjs`) names where it lives. Anywhere else the answer is **404**, not 401 — 401 would confirm the endpoint is there, and on the customer-facing domain the honest answer is that it is not. **Unset means everywhere**, which is what this project did before the admin moved to its own subdomain, so a deployment that never sets it behaves exactly as it always has. The `/admin` HTML itself is handled by the root `functions/_middleware.js`, because `_redirects` sources must be relative paths and so can never match on hostname.
+
+**2. May this request skip the sign-in?** Two doors, both pinned to the hostname the request arrived at rather than to a flag: `DEV_ADMIN_BYPASS` **only** on localhost, and `ADMIN_OPEN_HOSTS` for named hostnames. Responses through either are stamped `x-admin-auth: open:<reason>` and attributed to a non-person in the audit log.
+
+**3. Who is this?** The Access JWT (`Cf-Access-Jwt-Assertion` header or `CF_Authorization` cookie), requiring **RS256**, verified against the cached team **JWKS** for signature, issuer, expiry and **audience** (`ACCESS_AUD`), then the caller's email exposed for audit logging. It **fails closed**: if `ACCESS_AUD` or `ACCESS_TEAM_DOMAIN` is missing it returns 503.
+
+> ⚠️ **`DEV_ADMIN_BYPASS` is not an on/off switch, and the difference matters.** It was once honoured wherever it was found, and had been left set as a *production* secret on the test site — which served the whole catalogue, the whole order list and the delete and refund routes to anyone who asked. It is now inert anywhere but a laptop, because it additionally requires the request to have arrived at a local address. A flag travels with the code to production; a hostname does not. Full account in `infra/admin-access.md`.
+
+Every admin response, including 401s and 404s, is stamped `cache-control: no-store`. Removing the bypass once closed sixteen endpoints instantly while the seventeenth kept serving an edge-cached copy of the catalogue. Do not remove that header.
 
 ## 10. Checkout & payments
 

@@ -47,6 +47,7 @@ Resend (settled in [`email.md`](email.md), not to be re-opened).
 | D1 database | `salty-lamps-db` | `DB` | Fresh and empty; catalogue seeded once, **never** demo orders |
 | R2 bucket | `salty-lamps-images` | `IMAGES` | Admin-uploaded product photos, served at `/api/images/<key>` |
 | Zone | `saltylamps.co.uk` | — | Moved from Wix nameservers, see §3 |
+| Custom domain | `admin.saltylamps.co.uk` | — | Second custom domain on the SAME Pages project. Cloudflare Access fronts the whole hostname; `ADMIN_HOSTS` makes `/admin` and `/api/admin/*` answer there and 404 everywhere else. Unset, the admin is served everywhere, exactly as before the split existed — so the code ships safely ahead of the cutover |
 
 R2 needs a **one-time account opt-in** in the dashboard before any bucket can be
 created; without it every create is refused with error `10042`. This caught the gmail
@@ -99,8 +100,14 @@ Two findings worth acting on rather than filing:
 
 - **No SPF record exists.** Any mail the domain sends today is unauthenticated. This
   is not a new problem the migration creates, but Resend verification is the natural
-  moment to fix it — and an SPF record must list Zoho *and* Resend, or verifying one
-  silently breaks the other.
+  moment to fix it.
+  **Corrected 2026-08-28:** an earlier version of this note said the root SPF record
+  had to list Zoho *and* Resend together. That is wrong for this setup and acting on
+  it would break the mailbox's own authentication. Resend places its SPF, DKIM and
+  bounce MX on the **`send.` subdomain**; the mailbox provider's SPF belongs on the
+  plain domain. They are separate records in separate places and neither replaces the
+  other. Verify the exact names Resend shows in its dashboard rather than assuming —
+  it can place records at the root depending on how the domain was added.
 - **DMARC is Wix's, by CNAME.** Once the zone leaves Wix that CNAME still resolves,
   but it is Wix's policy on the owner's domain. Replace it with the domain's own
   record during the move.
@@ -147,10 +154,14 @@ purely DNS, and step 3 above unblocks it.
 - **Verify the domain, and expect records on `send.saltylamps.co.uk`** — Resend puts
   an MX there for bounce handling plus DKIM. This subdomain MX is exactly what Wix
   could not do.
-- **Sender address `orders@send.saltylamps.co.uk`**, set in Admin → Settings.
-- **SPF must cover both senders.** The root TXT record is currently absent; the one
-  that replaces it has to authorise Zoho and Resend together, or outbound mail from
-  the mailbox starts failing the moment the shop's record lands.
+- **Sender address `orders@send.saltylamps.co.uk`**, set in Admin → Settings. Add
+  `saltylamps.co.uk` as the domain in Resend and let it create the `send.` subdomain
+  itself — adding `send.saltylamps.co.uk` as the domain produces
+  `send.send.saltylamps.co.uk` and verifies nothing.
+- **The two SPF records are separate, and that is not a compromise.** Resend's SPF,
+  DKIM and bounce MX go on `send.saltylamps.co.uk`; the mailbox provider's SPF goes on
+  the plain domain. Adding the shop's does not disturb the mailbox's, and merging them
+  into one root record — which an earlier version of this file recommended — would.
 - A domain was added to Resend on 2026-08-01 and hit the Wix wall. If it is still
   listed unverified at <https://resend.com/domains>, **delete it before re-adding** so
   a stale entry doesn't confuse the attempt.
