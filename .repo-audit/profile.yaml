@@ -66,13 +66,6 @@ mirrors:
 
 # Areas the owner has declared fragile or mid-migration.
 fragile:
-  - path: salty-lamps-site/src/components/views/**
-    note: >
-      An older proposal deck. docs/technical.md already describes it as unused, and
-      DiagnosisView.jsx is the only importer of VisionDocs.jsx — the tree appears to
-      be internally-referencing dead weight. NOT removed during the 2026-08-01 audit
-      because that was outside the approved scope. Confirm reachability from
-      src/App.jsx before touching it.
   - path: salty-lamps-site/functions/api/webhook.js
     note: >
       Reads the Stripe shipping address from BOTH session.shipping_details and

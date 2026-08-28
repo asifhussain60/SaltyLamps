@@ -29,7 +29,18 @@ export async function onRequestPost({ request, env }) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
-    await recordOrder(env, stripe, session, new URL(request.url).origin)
+    try {
+      await recordOrder(env, stripe, session, new URL(request.url).origin)
+    } catch (err) {
+      // Stripe retries on a non-2xx, which is what we want here: this only fires on
+      // a genuine write failure (or two retried deliveries racing each other), and
+      // the idempotency check above makes a retry safe either way.
+      console.error('webhook: recordOrder failed', err)
+      return new Response(JSON.stringify({ received: false, error: err.message }), {
+        status: 500,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
   }
 
   return new Response(JSON.stringify({ received: true }), {

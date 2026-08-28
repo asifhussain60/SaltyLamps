@@ -62,7 +62,7 @@ salty-lamps-site/
 
 **Data.** The storefront fetches `GET /api/products` and starts payment with `POST /api/checkout` (body `{ items: [{ skuId, quantity }] }` — no client-supplied prices). The only shared component still wired in is `DonutChart.jsx` (used by the admin dashboard).
 
-> ⚠️ **Styling reality (verify before assuming):** styling is **hand-written CSS** in `src/styles/saltylamps.css` and `admin.css`, built on a shared CSS-custom-property design-token system. **Tailwind is configured but not actually used** (no `@tailwind` directives), and **Bootstrap is a dependency imported nowhere** — both are effectively dead and safe to remove. The `src/components/views/*` "proposal deck" subtree is also orphaned.
+> ⚠️ **Styling reality (verify before assuming):** styling is **hand-written CSS** in `src/styles/saltylamps.css` and `admin.css`, built on a shared CSS-custom-property design-token system. **Tailwind is configured but not actually used** (no `@tailwind` directives), and **Bootstrap is a dependency imported nowhere** — both are effectively dead and safe to remove. The `src/components/views/*` "proposal deck" subtree was confirmed orphaned and has been removed.
 
 ## 5. Backend — API surface
 
@@ -172,5 +172,5 @@ Secrets are set with `wrangler pages secret put` (never committed):
 
 - **Catalogue seed is destructive:** `d1/seed.sql` deletes+reinserts products/skus; because `skus.id` is autoincrement, re-running it after real orders exist orphans `order_items`. Switch to an UPSERT on `(product_id, sku)` before heavy production use.
 - **Dead dependencies:** `bootstrap` is unused; `tailwindcss` is configured but produces no CSS for the live app. Removable.
-- **Orphaned subtree:** `src/components/views/*` (the old proposal deck) is not part of the shipped app.
+- **Orphaned subtree removed:** `src/components/views/*` (the old proposal deck) was confirmed unreferenced and deleted.
 - **Package name** is still `salty-lamps-proposal`; harmless but worth renaming for production.

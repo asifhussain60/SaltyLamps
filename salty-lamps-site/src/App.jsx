@@ -2181,7 +2181,9 @@ export default function App() {
     <div className="site-shell">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        // Escape '<' so an admin-authored description containing "</script>" can't
+        // close this tag early and inject markup after it.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
       />
       <a className="skip-link" href="#main">Skip to main content</a>
       <div className="announce">Bulk and trade orders available</div>

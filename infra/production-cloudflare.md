@@ -178,9 +178,9 @@ when the database has no orders, creates the R2 bucket, builds, and deploys. Re-
 is safe; the one destructive step is opt-in and refuses to run once orders exist.
 
 The first run stops after creating D1 and prints a `database_id` that has to be written
-into `wrangler.toml` before the deploy step can bind it. **That id is different from
-the dev one, and `wrangler.toml` currently holds the dev value** — this is the one file
-that cannot serve both accounts as it stands.
+into `wrangler.prod.toml` before the deploy step can bind it. **That id is different from
+the dev one, which lives in `wrangler.toml`** — the two accounts each have their own
+config file precisely so this can never be pasted into the wrong one.
 
 Then, entered by the owner and never by anyone else:
 

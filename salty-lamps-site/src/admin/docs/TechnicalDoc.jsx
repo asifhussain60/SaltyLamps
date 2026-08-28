@@ -99,7 +99,7 @@ export default function TechnicalDoc() {
         <strong> Tailwind is configured but not actually used</strong> (no <code>@tailwind</code>{' '}
         directives in the stylesheets), and <strong>Bootstrap is a dependency but imported nowhere</strong>
         — both are effectively dead and safe to remove. An older "proposal deck" subtree under
-        <code> src/components/views/</code> is also orphaned (not imported by the shipped app).
+        <code> src/components/views/</code> was confirmed orphaned and has been removed.
       </Callout>
 
       <h2>5. Backend — API surface</h2>
@@ -258,7 +258,7 @@ export default function TechnicalDoc() {
       <ul className="admin-doc__list">
         <li><strong>Catalogue seed is destructive:</strong> <code>d1/seed.sql</code> deletes+reinserts products/skus; because <code>skus.id</code> is autoincrement, re-running it after real orders exist orphans <code>order_items</code>. Switch to an UPSERT on <code>(product_id, sku)</code> before heavy production use.</li>
         <li><strong>Dead dependencies:</strong> <code>bootstrap</code> is unused; <code>tailwindcss</code> is configured but produces no CSS for the live app. Removable.</li>
-        <li><strong>Orphaned subtree:</strong> <code>src/components/views/*</code> (the old proposal deck) is not part of the shipped app.</li>
+        <li><strong>Orphaned subtree removed:</strong> <code>src/components/views/*</code> (the old proposal deck) was confirmed unreferenced and deleted.</li>
         <li><strong>Package name</strong> is still <code>salty-lamps-proposal</code>; harmless but worth renaming for production.</li>
       </ul>
 

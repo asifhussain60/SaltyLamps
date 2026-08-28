@@ -2,6 +2,7 @@
 // Technical Doc). Deliberately self-contained — no dependency on AdminApp internals —
 // so the docs stay decoupled from the rest of the portal.
 import React from 'react'
+import { Confirm } from '../Confirm.jsx'
 
 // A labelled diagram. `src` is a Vite-imported SVG URL from docs/diagrams/, so the
 // exact same file backs both this page and the Markdown mirror in docs/*.md.
@@ -83,17 +84,27 @@ export function Checklist({ storageKey, children }) {
 // confirms first — a stray click after two days of work would be maddening.
 export function ChecklistReset({ label = 'Clear all ticks' }) {
   const ctx = React.useContext(ChecklistContext)
+  const [open, setOpen] = React.useState(false)
   if (!ctx) return null
   return (
-    <button
-      type="button"
-      className="admin-doc__reset"
-      onClick={() => {
-        if (window.confirm('Clear every tick on this page? This cannot be undone.')) ctx.reset()
-      }}
-    >
-      {label}
-    </button>
+    <>
+      <button
+        type="button"
+        className="admin-doc__reset"
+        onClick={() => setOpen(true)}
+      >
+        {label}
+      </button>
+      <Confirm
+        open={open}
+        title="Clear all ticks?"
+        message="Clear every tick on this page? This cannot be undone."
+        confirmLabel="Clear"
+        danger
+        onConfirm={() => { ctx.reset(); setOpen(false) }}
+        onCancel={() => setOpen(false)}
+      />
+    </>
   )
 }
 

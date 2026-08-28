@@ -64,7 +64,7 @@ export async function onRequestPatch({ params, request, env, data }) {
       // The display name is a SNAPSHOT: the list's label for a known courier, the
       // owner's own words under 'other'. Never derived again at read time.
       if (!value.carrier) value.carrier_name = ''
-      else if (value.carrier !== 'other') value.carrier_name = carrierByCode(value.carrier).label
+      else if (value.carrier !== 'other') value.carrier_name = carrierByCode(value.carrier)?.label ?? value.carrier
     }
 
     const touchesDespatch = ['carrier', 'carrier_name', 'tracking_number', 'tracking_url']
@@ -96,7 +96,13 @@ export async function onRequestPatch({ params, request, env, data }) {
           httpClient: Stripe.createFetchHttpClient(),
           apiVersion: '2024-06-20',
         })
-        await stripe.refunds.create({ payment_intent: order.payment_intent })
+        // An idempotency key, not a DB guard, is what actually stops a double-click
+        // from issuing two real refunds: this call happens before anything is written
+        // to the order row, so a compare-and-set there would be too late to help.
+        await stripe.refunds.create(
+          { payment_intent: order.payment_intent },
+          { idempotencyKey: `refund:${order.id}` },
+        )
       } catch (stripeErr) {
         return apiError(`Stripe refund failed: ${stripeErr.message}`, 502, { code: 'stripe_error' })
       }
@@ -117,12 +123,22 @@ export async function onRequestPatch({ params, request, env, data }) {
     }
     if (set.length === 0) return apiError('Nothing to update.', 400, { code: 'validation_error' })
 
-    // Compare-and-set on the fulfilment state we read a moment ago. Two despatch
+    // Compare-and-set on whichever state(s) we read a moment ago. Two despatch
     // clicks in quick succession would otherwise both see 'packed', both write
-    // 'shipped', and both send the customer a despatch notice. The second one now
+    // 'shipped', and both send the customer a despatch notice — same risk for two
+    // 'cancel' clicks both seeing the pre-cancel status. The second one now
     // matches no row, and the email below is gated on the write having landed.
-    const guard = value.fulfilment_status != null ? ' AND fulfilment_status = ?' : ''
-    const guardBinds = value.fulfilment_status != null ? [order.fulfilment_status] : []
+    const guardParts = []
+    const guardBinds = []
+    if (value.fulfilment_status != null) {
+      guardParts.push('fulfilment_status = ?')
+      guardBinds.push(order.fulfilment_status)
+    }
+    if (value.status != null) {
+      guardParts.push('status = ?')
+      guardBinds.push(order.status)
+    }
+    const guard = guardParts.length ? ` AND ${guardParts.join(' AND ')}` : ''
 
     const updateStmt = env.DB
       .prepare(`UPDATE orders SET ${set.join(', ')} WHERE id = ?${guard}`)

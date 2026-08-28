@@ -62,13 +62,12 @@ Two things about it worth knowing before changing it:
   seed row, but sit in `public/` so they are uploaded on every deploy. Confirm they are genuinely
   unused before deleting; a gallery still under construction is a plausible reason to keep them.
 
-## 4. `database_id` is hardcoded in one place outside `wrangler.toml`
+## 4. ~~`database_id` is hardcoded in one place outside `wrangler.toml`~~ — no longer applies
 
-`scripts/generate-seo.mjs`'s `fetchProductsFromD1()` has the D1 database id as a literal string
-constant, because it talks to D1's HTTP API directly (not through a `wrangler.toml` binding) so
-the SEO build step doesn't depend on a deployment that hasn't happened yet. If the database is ever
-recreated (new id), this needs updating alongside `wrangler.toml`. See
-[`migration-playbook.md`](migration-playbook.md) Scenario C.
+This described `scripts/generate-seo.mjs`'s `fetchProductsFromD1()` holding the D1 database id
+as a literal string. That function no longer exists: content fetching now lives in
+`scripts/fetch-content-snapshot.mjs`, which reads `database_id` dynamically out of
+`wrangler.toml` via regex rather than hardcoding it. Nothing to fix here anymore.
 
 ## 5. ~~One checkout flow step never verified live~~ — verified 2026-07-10
 
