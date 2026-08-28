@@ -25,3 +25,9 @@ vite.config.js.timestamp-*
 
 # D1 remote backups — contain real order data (customer emails, addresses). Never commit.
 d1/backups/
+
+# End-to-end suite (tests/) — its own npm package on purpose, so the site build
+# never installs Playwright. Its dependencies, reports and traces are not source.
+tests/node_modules/
+tests/playwright-report/
+tests/test-results/

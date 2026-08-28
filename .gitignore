@@ -17,3 +17,7 @@ dist/
 .claude/*
 !.claude/launch.json
 
+# Wix backups taken by salty-lamps-site/scripts/backup-wix.mjs before the migration.
+# Archival copies of the live shop — pages, images and the indexed-URL inventory.
+# Large, regenerable while Wix is still up, and not source. Keep them, don't commit them.
+backups/
