@@ -1,6 +1,13 @@
 // GET /api/admin/reports/sales?from=YYYY-MM-DD&to=YYYY-MM-DD[&format=csv]
 // Daily paid-sales series plus totals for the window (default: last 30 days).
+//
+// The dates in the query string are the LONDON dates the owner typed, and the
+// series is grouped by London day. `created_at` is stored in UTC, so both the
+// window boundaries and the day each order falls in have to be resolved against
+// Europe/London before any of this is true — see ../../../lib/shop-time.mjs for
+// what was wrong before and why.
 import { json, apiError, toCsv, csvResponse, fillDailySeries } from '../../../lib/admin-helpers.mjs'
+import { bucketByLondonPeriod, londonDate, londonDayStartUtc, shiftLondonDate, shopWindows } from '../../../lib/shop-time.mjs'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -10,33 +17,33 @@ export async function onRequestGet({ request, env }) {
   const to = DATE_RE.test(url.searchParams.get('to') || '') ? url.searchParams.get('to') : null
   const format = url.searchParams.get('format')
 
-  // Bound the window; SQLite resolves the defaults when a param is absent.
-  const fromExpr = from ? '?' : `date('now','-29 days')`
-  const toExpr = to ? `date(?, '+1 day')` : `date('now','+1 day')`
-  const binds = []
-  if (from) binds.push(from)
-  if (to) binds.push(to)
-
-  // Same window, resolved in JS so the returned series can be zero-filled day by day — keeps
-  // chart x-axis spacing accurate and avoids degenerate rendering when a window has little data.
-  const jsFrom = from || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
-  const jsToExclusive = to ? new Date(new Date(`${to}T00:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10)
-    : new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+  const w = shopWindows()
+  // `to` is inclusive to the reader, so the exclusive bound is the following day.
+  const fromDate = from || w.salesDefaultFromDate
+  const toExclusiveDate = shiftLondonDate(to || w.today, 1)
+  const fromBound = londonDayStartUtc(fromDate)
+  const toBound = londonDayStartUtc(toExclusiveDate)
 
   try {
+    // Hourly, then re-bucketed in JS: SQLite cannot tell which London day a UTC
+    // timestamp belongs to, and through BST a quarter of the evening's orders sit
+    // on the wrong side of midnight.
     const rows = await env.DB.prepare(
-      `SELECT date(created_at) day, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
+      `SELECT strftime('%Y-%m-%dT%H', created_at) hour, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
        FROM orders
-       WHERE status='paid' AND created_at >= ${fromExpr} AND created_at < ${toExpr}
-       GROUP BY day ORDER BY day`,
-    ).bind(...binds).all()
+       WHERE status='paid' AND created_at >= ? AND created_at < ?
+       GROUP BY hour ORDER BY hour`,
+    ).bind(fromBound, toBound).all()
 
-    const sparse = rows.results || []
+    const sparse = bucketByLondonPeriod(rows.results || [], londonDate)
+      .map(({ key, revenue_pence, orders }) => ({ day: key, revenue_pence, orders }))
     const totals = sparse.reduce(
       (acc, r) => ({ revenue_pence: acc.revenue_pence + r.revenue_pence, orders: acc.orders + r.orders }),
       { revenue_pence: 0, orders: 0 },
     )
-    const series = fillDailySeries(sparse, jsFrom, jsToExclusive)
+    // Zero-filled day by day so the chart's x-axis spacing stays accurate and a
+    // window with little data does not render degenerately.
+    const series = fillDailySeries(sparse, fromDate, toExclusiveDate)
 
     if (format === 'csv') {
       const csv = toCsv(series, [

@@ -1,17 +1,24 @@
 // GET /api/admin/stats — dashboard KPIs, recent orders, top products, sales series.
+//
+// EVERY WINDOW IS A LONDON WINDOW. These figures used to be computed with
+// `date('now')` inside the SQL, which is UTC — so through British Summer Time the
+// dashboard's "today" ran from 01:00 to 01:00 and an order taken at half past
+// midnight was reported against yesterday. The boundaries now come from
+// ../../lib/shop-time.mjs, which knows the DST rules, and are passed in as bound
+// values; SQLite only ever compares two strings. See that file for the full
+// reasoning.
 import { json, apiError, fillDailySeries, lowStockThreshold } from '../../lib/admin-helpers.mjs'
+import { bucketByLondonPeriod, londonDate, shiftLondonDate, shopWindows } from '../../lib/shop-time.mjs'
 
 export async function onRequestGet({ env }) {
   const db = env.DB
-  const today = new Date()
   const lowStock = await lowStockThreshold(db)
-  const seriesFrom = new Date(today.getTime() - 13 * 86400000).toISOString().slice(0, 10)
-  const seriesToExclusive = new Date(today.getTime() + 86400000).toISOString().slice(0, 10)
+  const w = shopWindows()
   try {
     const stmts = [
-      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= date('now')`),
-      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= date('now','-6 days')`),
-      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= date('now','start of month')`),
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= ?`).bind(w.todayStart),
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= ?`).bind(w.weekStart),
+      db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid' AND created_at >= ?`).bind(w.monthStart),
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v, COUNT(*) c FROM orders WHERE status='paid'`),
       db.prepare(`SELECT COUNT(*) c FROM orders WHERE status='paid' AND fulfilment_status='unfulfilled'`),
       db.prepare(`SELECT COUNT(*) c FROM skus WHERE track_mode='quantity' AND quantity > 0 AND quantity <= ?`).bind(lowStock),
@@ -24,33 +31,39 @@ export async function onRequestGet({ env }) {
                   JOIN orders o ON o.id = oi.order_id
                   WHERE o.status='paid'
                   GROUP BY p.id ORDER BY qty DESC LIMIT 5`),
-      db.prepare(`SELECT date(created_at) day, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
-                  FROM orders WHERE status='paid' AND created_at >= date('now','-13 days')
-                  GROUP BY day ORDER BY day`),
+      // Hourly rather than daily, and re-bucketed below. SQLite has no timezone
+      // database, so it cannot know which London day 23:30 UTC belongs to; asking
+      // it for hours and adding them up here is the only exact answer.
+      db.prepare(`SELECT strftime('%Y-%m-%dT%H', created_at) hour, COALESCE(SUM(amount_total_pence),0) revenue_pence, COUNT(*) orders
+                  FROM orders WHERE status='paid' AND created_at >= ?
+                  GROUP BY hour ORDER BY hour`).bind(w.seriesFrom),
       db.prepare(`SELECT COALESCE(SUM(oi.quantity),0) v
                   FROM order_items oi JOIN orders o ON o.id = oi.order_id
-                  WHERE o.status='paid' AND o.created_at >= date('now')`),
+                  WHERE o.status='paid' AND o.created_at >= ?`).bind(w.todayStart),
       // A customer counts as "new" this week if their earliest-ever paid order falls in the window.
       db.prepare(`SELECT COUNT(*) c FROM (
                     SELECT customer_email FROM orders
                     WHERE status='paid' AND customer_email IS NOT NULL
                     GROUP BY customer_email
-                    HAVING MIN(created_at) >= date('now','-6 days')
-                  )`),
+                    HAVING MIN(created_at) >= ?
+                  )`).bind(w.weekStart),
       db.prepare(`SELECT COUNT(DISTINCT o.id) orders, COALESCE(SUM(oi.quantity),0) units
                   FROM order_items oi JOIN orders o ON o.id = oi.order_id
-                  WHERE o.status='paid' AND o.created_at >= date('now','-6 days')`),
+                  WHERE o.status='paid' AND o.created_at >= ?`).bind(w.weekStart),
       // Prior-period comparisons for the dashboard's KPI rings.
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
-                  WHERE status='paid' AND created_at >= date('now','-1 day') AND created_at < date('now')`),
+                  WHERE status='paid' AND created_at >= ? AND created_at < ?`).bind(w.yesterdayStart, w.todayStart),
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
-                  WHERE status='paid' AND created_at >= date('now','-13 days') AND created_at < date('now','-6 days')`),
+                  WHERE status='paid' AND created_at >= ? AND created_at < ?`).bind(w.previousWeekStart, w.weekStart),
       db.prepare(`SELECT COALESCE(SUM(amount_total_pence),0) v FROM orders
-                  WHERE status='paid' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+                  WHERE status='paid' AND created_at >= ? AND created_at < ?`).bind(w.previousMonthStart, w.monthStart),
       db.prepare(`SELECT fulfilment_status, COUNT(*) c FROM orders WHERE status='paid' GROUP BY fulfilment_status`),
     ]
     const r = await db.batch(stmts)
     const one = i => r[i].results?.[0] || {}
+
+    const series = bucketByLondonPeriod(r[9].results || [], londonDate)
+      .map(({ key, revenue_pence, orders }) => ({ day: key, revenue_pence, orders }))
 
     return json({
       revenue: {
@@ -74,7 +87,7 @@ export async function onRequestGet({ env }) {
       },
       recent_orders: r[7].results || [],
       top_products: r[8].results || [],
-      sales_series: fillDailySeries(r[9].results || [], seriesFrom, seriesToExclusive),
+      sales_series: fillDailySeries(series, w.seriesFromDate, shiftLondonDate(w.today, 1)),
       activity: {
         units_today: one(10).v || 0,
         new_customers_week: one(11).c || 0,
