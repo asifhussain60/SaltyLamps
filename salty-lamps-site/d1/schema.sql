@@ -89,6 +89,13 @@ CREATE TABLE IF NOT EXISTS orders (
     CHECK (fulfilment_status IN ('unfulfilled', 'packed', 'shipped', 'delivered')),
   tracking_number TEXT,
   shipped_at TEXT,
+  -- Despatch details, written together by the admin's "Mark as despatched" action.
+  -- carrier is the CODE from CARRIERS in functions/lib/validation.mjs; carrier_name
+  -- and tracking_url are SNAPSHOTS taken at despatch, not derived at read time, so
+  -- editing the carrier list later never rewrites what a past customer was told.
+  carrier TEXT,
+  carrier_name TEXT,
+  tracking_url TEXT,
   -- Shipping address captured from Stripe at checkout (needed to pack and post).
   ship_name TEXT,
   ship_line1 TEXT,

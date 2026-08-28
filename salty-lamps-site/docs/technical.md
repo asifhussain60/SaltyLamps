@@ -83,7 +83,7 @@ Pages Functions; the file path is the route. Handlers export `onRequestGet/Post/
 |---|---|---|
 | `/api/admin/stats` | GET | Dashboard batch: revenue, counts, stock alerts, 14-day series, comparisons |
 | `/api/admin/orders` | GET | Filter/paginate orders with item counts |
-| `/api/admin/orders/:id` | GET, PATCH | Order detail; update fulfilment/tracking, or refund/cancel (real Stripe refund) |
+| `/api/admin/orders/:id` | GET, PATCH | Order detail; despatch (carrier + consignment number + tracking link), move fulfilment status, or refund/cancel (real Stripe refund) |
 | `/api/admin/orders/by-month`, `/by-year` | GET | Paid orders grouped by period |
 | `/api/admin/products` | GET, POST | List all (incl. hidden) with SKUs; create product + ≥1 SKU |
 | `/api/admin/products/:id` | PATCH, DELETE | Update; delete (blocked if a SKU appears on orders) |
@@ -114,6 +114,16 @@ Pages Functions; the file path is the route. Handlers export `onRequestGet/Post/
 - **admin_audit** — append-only log of every admin write (actor email + action).
 
 > ⚠️ **Two schema gotchas:** `skus.sku` is deliberately **not unique** (the source catalogue reuses codes), so `order_items` references the surrogate `skus.id`. And **D1 does not enforce foreign keys**, which is why deletes are guarded in code.
+
+> ℹ️ The diagram predates migration 006 and does not yet draw `orders.carrier`, `carrier_name` or `tracking_url`.
+
+### Despatch
+
+An order cannot reach `fulfilment_status = 'shipped'` without a **carrier** and a **consignment number** — the rule lives in `despatchErrors()` in `validation.mjs` and is enforced by the endpoint as well as the form, so a stale tab cannot bypass it. The admin's **Mark as despatched** button writes carrier, consignment number and tracking link in one request; the transition then sends the customer the `order_shipped` email exactly once, with a *Track your parcel* button pointing at the stored link.
+
+The carrier list and each courier's link pattern are plain data in `CARRIERS` (`functions/lib/validation.mjs`), shared by the form and the server. `carrier_name` and `tracking_url` are **snapshots taken at despatch**, not derived at read time, so editing the list later never rewrites what a past customer was told. The link is prefilled from the pattern and remains editable per order.
+
+Correcting the details afterwards does **not** re-send the email — the notice fires on the transition only. Every email attempted for an order, and why one was skipped, is listed on the order page itself (`GET /api/admin/emails/outbox?order=…`).
 
 ## 9. Authentication
 

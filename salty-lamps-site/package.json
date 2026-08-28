@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "node scripts/fetch-content-snapshot.mjs && vite build && node scripts/generate-seo.mjs",
     "content:snapshot": "node scripts/fetch-content-snapshot.mjs",
+    "media:optimise": "node scripts/optimise-media.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

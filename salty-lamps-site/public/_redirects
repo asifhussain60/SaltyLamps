@@ -1,8 +1,92 @@
+# Cloudflare Pages redirects. FIRST MATCH WINS, so every specific rule must sit
+# above the SPA catch-all on the last line.
+#
+# The bulk of this file exists to carry the OLD WIX SITE'S SEARCH RANKINGS across
+# the cutover. The Wix sitemap listed 54 indexed URLs on 2026-08-11; only 17 of
+# them exist unchanged on the new site, because the new shop publishes one page
+# per VARIANT where Wix published one page per PRODUCT. Without the rules below,
+# 37 indexed URLs — including every salt lamp and every salt lick — would return
+# a 404 the moment DNS moves, and the domain's accumulated authority with them.
+#
+# A dead URL must always land on the most specific real page available. Sending
+# it to the homepage instead is read by search engines as a soft 404 and earns
+# nothing. Where Wix had one page and the new site has several variants, the
+# redirect points at the entry-level or representative variant; the customer can
+# reach the others from there.
+#
+# To regenerate the inventory this was built from:
+#   curl -s https://www.saltylamps.co.uk/sitemap.xml   # (while Wix is still live)
+# and diff its <loc> values against dist/*sitemap*.xml after `npm run build`.
+
+# --- Canonical host: apex and bare http to https://www --------------------------
 http://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 https://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
+
+# --- Misspelled category slug that was live on Wix ------------------------------
 /category/himalyan-salt-massage-relaxation-products /category/himalayan-salt-massage-relaxation-products 301
 /collection/trade-spa/himalyan-salt-massage-relaxation-products /collection/trade-spa/himalayan-salt-massage-relaxation-products 301
-/product-page/tequilla-shot-glass /product-page/tequila-shot-glass 301
+
+# --- Wix categories with no direct equivalent -----------------------------------
+# "All Products" was Wix's catch-all listing; /shop is this site's.
+/category/all-products /shop 301
+# The Aura frames category became a collection.
+/category/auraframes-uk /collection/aura-collection 301
+
+# --- Wix pages that do not exist here -------------------------------------------
+# Wix's hosted invoice-payment page. No equivalent and no organic value.
+/payment-request-page / 301
+# There is no blog on this site. The two published posts are redirected to the
+# category each one is about, which is the closest real content. If the blog is
+# ever reinstated, delete these three rules rather than stacking more on top.
+/blog /shop 301
+/post/discover-the-health-benefits-culinary-uses-and-unique-properties-of-himalayan-crystal-rock-salt /category/rock-salt-pantry-items 301
+/post/rock-salt-licks-for-horses-and-cattle-benefits-and-where-to-buy-from /category/equestrian-salt-licks 301
 /returns-exchanges /return-refund-policy 301
+
+# --- Products: Wix slug reordered, same single product --------------------------
+/product-page/himalayan-rock-salt-lamp-angel-shape /product-page/angel-shape-himalayan-rock-salt-lamp 301
+/product-page/himalayan-rock-salt-lamp-block-shape /product-page/block-shape-himalayan-rock-salt-lamp 301
+/product-page/himalayan-rock-salt-lamp-dolphin /product-page/dolphin-shape-himalayan-rock-salt-lamp 301
+/product-page/himalayan-rock-salt-lamp-dove-shape-lamp /product-page/dove-shape-himalayan-rock-salt-lamp 301
+/product-page/himalayan-rock-salt-lamp-mushroom-shape /product-page/mushroom-shape-himalayan-rock-salt-lamp 301
+/product-page/himalayan-rock-salt-lamp-pyramid-shape /product-page/pyramid-shape-himalayan-rock-salt-lamp 301
+/product-page/tear-drop-shape-himalayan-rock-salt-lamp /product-page/tear-drop-shape-himalayan-rock-salt-lamp-tear-drop 301
+/product-page/rock-salt-lamp-wooden-basket-himalayan /product-page/wooden-basket-himalayan-rock-salt-lamp-wood-basket 301
+/product-page/rock-salt-soap-bar-scrub-bar-himalayan /product-page/himalayan-rock-salt-soap-bar-scrub-bar-regular 301
+/product-page/himalayan-crystal-rock-salt-candle-holder-goblet /product-page/himalayan-crystal-rock-salt-candle-holder-goblet-shape 301
+
+# The Wix slug was a typo ("tequilla") AND the product was renamed. The previous
+# version of this file redirected it to /product-page/tequila-shot-glass, which
+# has never existed on this site — a 301 straight into a 404.
+/product-page/tequilla-shot-glass /product-page/himalayan-salt-shot-glass-hand-carved-tequila-glass-from-natural-rock-salt 301
+
+# --- Products: one Wix page became several variant pages ------------------------
+# Each lands on the entry-level or representative variant.
+/product-page/cable-for-salt-lamp /product-page/cable-for-salt-lamp-regular 301
+/product-page/cable-for-salt-lamp-1 /product-page/cable-for-salt-lamp-large-base 301
+/product-page/fire-bowl-himalayan-rock-salt-lamp /product-page/fire-bowl-himalayan-rock-salt-lamp-small 301
+/product-page/himalayan-rock-salt-ballsphere-shape-lamp /product-page/ball-sphere-shaped-himalayan-rock-salt-lamp-small 301
+/product-page/natural-shape-himalayan-rock-salt-lamp-crystal /product-page/natural-shape-himalayan-crystal-rock-salt-lamp-medium 301
+/product-page/himalayan-crystal-rock-salt-culinary-salt /product-page/himalayan-crystal-rock-salt-culinary-salt-1kg-fine 301
+/product-page/himalayan-rock-salt-bowls /product-page/himalayan-rock-salt-bowl-natural-pink-salt-serving-bowl-for-salads-soups-etc-6-dia 301
+/product-page/himalayan-rock-salt-bricks-for-salt-walls /product-page/himalayan-rock-salt-bricks-for-salt-walls-st-841 301
+/product-page/himalayan-rock-salt-candle-holder-block-square-shape /product-page/himalayan-rock-salt-candle-holder-block-square-shape-small 301
+/product-page/himalayan-rock-salt-candle-holder-natural-shape /product-page/himalayan-rock-salt-candle-holder-natural-shape-small 301
+/product-page/himalayan-rock-salt-massage-stones-sticks /product-page/himalayan-rock-salt-massage-stones-sticks-stick 301
+/product-page/himalayan-rock-salt-platters-cooking-food-display /product-page/himalayan-rock-salt-platters-8-x8-x1-square 301
+/product-page/salt-lamp-bulb /product-page/salt-lamp-bulb-15-watts-1pc 301
+/product-page/himalayan-rock-salt-lick-equestrian-cattle /product-page/himalayan-rock-salt-lick-for-equestrian-cattle-2-3kg-1pc 301
+/product-page/salty-licks-for-horses-cattle-himalayan-rock-salt-licks /product-page/salty-licks-for-horses-cattle-himalayan-rock-salt-licks-2-3kg-1pc 301
+
+# --- Products: renamed special offers -------------------------------------------
+/product-page/himalayan-crystal-rock-salt-candle-holders-special-offer /product-page/special-offer-himalayan-crystal-rock-salt-candle-holders-buy-2-get-1-free 301
+/product-page/himalayan-rock-salt-lamp-2-x-candle-special-offer /product-page/special-offer-himalayan-rock-salt-lamp-candle-holders-1-lamp-2-candle-holders 301
+
+# --- Product with no equivalent -------------------------------------------------
+# The Wix "saltwood frame" listing is the Aura range, which is now a collection
+# rather than a single product page.
+/product-page/saltwood-frame /collection/aura-collection 301
+
+# --- SPA fallback. MUST REMAIN LAST ---------------------------------------------
 /* /index.html 200

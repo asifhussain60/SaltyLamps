@@ -123,7 +123,7 @@ export default function TechnicalDoc() {
           <tbody>
             <tr><td><code>/api/admin/stats</code></td><td>GET</td><td>Dashboard batch: revenue, counts, stock alerts, 14-day series, comparisons</td></tr>
             <tr><td><code>/api/admin/orders</code></td><td>GET</td><td>Filter/paginate orders with item counts</td></tr>
-            <tr><td><code>/api/admin/orders/:id</code></td><td>GET, PATCH</td><td>Order detail; update fulfilment/tracking, or refund/cancel (real Stripe refund)</td></tr>
+            <tr><td><code>/api/admin/orders/:id</code></td><td>GET, PATCH</td><td>Order detail; despatch (carrier + consignment number + tracking link), move fulfilment status, or refund/cancel (real Stripe refund)</td></tr>
             <tr><td><code>/api/admin/orders/by-month</code>, <code>/by-year</code></td><td>GET</td><td>Paid orders grouped by period</td></tr>
             <tr><td><code>/api/admin/products</code></td><td>GET, POST</td><td>List all (incl. hidden) with SKUs; create product + ≥1 SKU</td></tr>
             <tr><td><code>/api/admin/products/:id</code></td><td>PATCH, DELETE</td><td>Update; delete (blocked if a SKU appears on orders)</td></tr>
@@ -168,6 +168,32 @@ export default function TechnicalDoc() {
         so <code>order_items</code> references the surrogate <code>skus.id</code>. And <strong>D1 does not
         enforce foreign keys</strong>, which is why deletes are guarded in code.
       </Callout>
+      <Callout tone="info" title="Diagram is one migration behind">
+        The diagram predates migration 006 and does not yet draw <code>orders.carrier</code>,
+        <code> carrier_name</code> or <code>tracking_url</code>.
+      </Callout>
+
+      <h3>Despatch</h3>
+      <p>
+        An order cannot reach <code>fulfilment_status = 'shipped'</code> without a <strong>carrier</strong> and a
+        <strong> consignment number</strong> — the rule lives in <code>despatchErrors()</code> in
+        <code> validation.mjs</code> and is enforced by the endpoint as well as the form, so a stale tab cannot
+        bypass it. The <strong>Mark as despatched</strong> button writes carrier, consignment number and tracking
+        link in one request; the transition then sends the customer the <code>order_shipped</code> email exactly
+        once, with a <em>Track your parcel</em> button pointing at the stored link.
+      </p>
+      <p>
+        The carrier list and each courier's link pattern are plain data in <code>CARRIERS</code>
+        (<code>functions/lib/validation.mjs</code>), shared by the form and the server.
+        <code> carrier_name</code> and <code>tracking_url</code> are <strong>snapshots taken at despatch</strong>,
+        not derived at read time, so editing the list later never rewrites what a past customer was told. The link
+        is prefilled from the pattern and remains editable per order.
+      </p>
+      <p>
+        Correcting the details afterwards does <strong>not</strong> re-send the email — the notice fires on the
+        transition only. Every email attempted for an order, and why one was skipped, is listed on the order page
+        itself (<code>GET /api/admin/emails/outbox?order=…</code>).
+      </p>
 
       <h2>9. Authentication</h2>
       <Figure src={authUrl} alt="Cloudflare Access issues a signed JWT; the admin middleware verifies it on every request." caption="Cloudflare Access + per-request JWT verification in _middleware.js." />

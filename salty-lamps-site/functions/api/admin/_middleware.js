@@ -14,6 +14,14 @@
 // nothing — see the bypass block in onRequest for why that is now enforced rather
 // than merely documented.
 //
+// Open test site: ADMIN_OPEN_HOSTS names the hostnames — and only those — where the
+// admin answers with no sign-in at all. It exists because the test site has to be
+// clickable by the owner before Cloudflare Access is set up, and it is deliberately
+// a list of hostnames rather than an on/off flag: a flag follows the code to
+// production, a hostname does not. When the shop moves to its own domain the list
+// will not match it and the admin will be closed there by default, with no one
+// having to remember anything.
+//
 // Required production secrets (wrangler pages secret put):
 //   ACCESS_TEAM_DOMAIN  e.g. "saltylamps" or "saltylamps.cloudflareaccess.com"
 //   ACCESS_AUD          the Access application Audience (AUD) tag
@@ -38,19 +46,22 @@ function sealResponse(response) {
 export async function onRequest(context) {
   const { request, env, next, data } = context
 
-  // --- local-only bypass -------------------------------------------------
-  // The flag on its own is not enough, and trusting it was a real incident: it was
-  // set as a production secret on the test site and left there, which served the
-  // whole catalogue, the whole order list, and the delete and refund routes to
-  // anyone who asked, with no token of any kind. A switch that opens the door
-  // whenever someone sets it in the wrong place is not a dev convenience, so the
-  // bypass now also requires the request to have arrived at a local hostname.
-  // Cloudflare routes to a Pages project by hostname, so a deployed Function never
-  // sees one — the flag goes inert the moment it leaves a laptop, whether or not
-  // anyone remembers to unset it.
-  if (isTruthy(env.DEV_ADMIN_BYPASS) && isLocalRequest(request)) {
-    data.actorEmail = 'dev@localhost'
-    return sealResponse(await next())
+  // --- no-sign-in access, scoped to named hostnames ----------------------
+  // Trusting a bare on/off flag was a real incident: DEV_ADMIN_BYPASS was set as a
+  // production secret on the test site and left there, and this gate honoured it
+  // wherever it found it, which served the whole catalogue, the whole order list and
+  // the delete and refund routes to anyone who asked. Both doors below are therefore
+  // tied to WHERE the request arrived, not just to whether someone set a variable:
+  // a flag travels with the code to production, a hostname does not.
+  const openAs = openAccessReason(request, env)
+  if (openAs) {
+    data.actorEmail = openAs.actor
+    const response = sealResponse(await next())
+    // Anything written while the door is open is attributed to a non-person in the
+    // audit log, and says so on the wire, so an open deployment is never mistaken
+    // for a locked-down one at a glance.
+    response.headers.set('x-admin-auth', `open:${openAs.reason}`)
+    return response
   }
 
   // Fail closed if the gate isn't configured — never serve admin data open.
@@ -88,13 +99,38 @@ function isTruthy(v) {
 // loopback address by specification.
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]', '0.0.0.0'])
 
-function isLocalRequest(request) {
+// Why the door is open, or null when it is not. Two ways in, both pinned to the
+// hostname the request actually arrived at.
+function openAccessReason(request, env) {
+  let hostname
   try {
-    const { hostname } = new URL(request.url)
-    return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost')
+    hostname = new URL(request.url).hostname
   } catch {
-    return false
+    return null
   }
+
+  if (isTruthy(env.DEV_ADMIN_BYPASS)
+      && (LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost'))) {
+    return { reason: 'local', actor: 'dev@localhost' }
+  }
+
+  if (hostMatches(hostname, env.ADMIN_OPEN_HOSTS)) {
+    return { reason: 'open-host', actor: `no-sign-in@${hostname}` }
+  }
+
+  return null
+}
+
+// Comma-separated hostnames. An entry starting with a dot matches any subdomain of
+// it, which is what covers Cloudflare's per-deployment preview aliases
+// (<hash>.<project>.pages.dev) without listing each one.
+function hostMatches(hostname, list) {
+  for (const raw of String(list || '').split(',')) {
+    const entry = raw.trim().toLowerCase()
+    if (!entry) continue
+    if (entry.startsWith('.') ? hostname.endsWith(entry) : hostname === entry) return true
+  }
+  return false
 }
 
 function readCookie(request, name) {

@@ -2,15 +2,23 @@
 // PATCH /api/admin/orders/:id  — fulfilment status, tracking, or refund/cancel.
 import Stripe from 'stripe'
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
-import { validateOrderPatch } from '../../../lib/validation.mjs'
+import {
+  validateOrderPatch, despatchErrors, ORDER_PATCH_FIELDS,
+  carrierByCode, carrierTrackingUrl,
+} from '../../../lib/validation.mjs'
 import { sendTemplated, orderTokens, orderBlocks } from '../../../lib/mailer.mjs'
 
 // Which customer email a status change earns, and only on an ACTUAL change.
 // Re-saving an order that is already 'shipped' — which the admin form does every
 // time any other field is edited — must not send the customer a second despatch
 // notice, so each rule compares the new value against the row as it was before.
+//
+// ctaField names the order column that becomes the email's button destination.
+// It is per-rule, not a shared token: putting the tracking link on the tokens
+// object would aim the button at the courier the day someone types a cta_label
+// into the delivered, refunded or cancelled wording.
 const STATUS_EMAILS = [
-  { field: 'fulfilment_status', to: 'shipped', template: 'order_shipped' },
+  { field: 'fulfilment_status', to: 'shipped', template: 'order_shipped', ctaField: 'tracking_url' },
   { field: 'fulfilment_status', to: 'delivered', template: 'order_delivered' },
   { field: 'status', to: 'refunded', template: 'order_refunded' },
   { field: 'status', to: 'cancelled', template: 'order_cancelled' },
@@ -48,6 +56,36 @@ export async function onRequestPatch({ params, request, env, data }) {
     const order = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
     if (!order) return apiError('Order not found.', 404, { code: 'not_found' })
 
+    // Resolve the despatch details server-side as well as in the form. The admin
+    // fills the courier name and the tracking link in as the owner types, but a
+    // stale tab or a hand-made request reaches here too, and what is stored is what
+    // a customer is emailed.
+    if (value.carrier != null) {
+      // The display name is a SNAPSHOT: the list's label for a known courier, the
+      // owner's own words under 'other'. Never derived again at read time.
+      if (!value.carrier) value.carrier_name = ''
+      else if (value.carrier !== 'other') value.carrier_name = carrierByCode(value.carrier).label
+    }
+
+    const touchesDespatch = ['carrier', 'carrier_name', 'tracking_number', 'tracking_url']
+      .some(f => value[f] != null)
+    if (touchesDespatch && !value.tracking_url) {
+      // Only fills a gap: a link the admin sent through wins, so a courier that
+      // changes its URL shape is fixable per order without waiting for a deploy.
+      const derived = carrierTrackingUrl(
+        value.carrier != null ? value.carrier : order.carrier,
+        value.tracking_number != null ? value.tracking_number : order.tracking_number,
+      )
+      if (derived) value.tracking_url = derived
+    }
+
+    // The despatch rule, checked against the order AS IT WILL BE: no order reaches
+    // 'shipped' without a courier and a consignment number. The email fires once,
+    // on that transition, so this is the only moment the details can still be
+    // required — afterwards the customer already has the notice.
+    const despatch = despatchErrors({ ...order, ...value })
+    if (Object.keys(despatch).length > 0) return validationError(despatch)
+
     // If marking refunded, issue the Stripe refund first — don't record a refund
     // we didn't actually make. (Uses the configured Stripe key; safe in test mode.)
     if (value.status === 'refunded') {
@@ -64,29 +102,42 @@ export async function onRequestPatch({ params, request, env, data }) {
       }
     }
 
+    // The SET clause is driven by the shared field list rather than a chain of ifs,
+    // so a column added to validateOrderPatch() cannot be validated here and then
+    // silently dropped on the way to the database.
     const set = []
     const binds = []
-    if (value.fulfilment_status != null) {
-      set.push('fulfilment_status = ?')
-      binds.push(value.fulfilment_status)
-      if (value.fulfilment_status === 'shipped' && !order.shipped_at) {
+    for (const field of ORDER_PATCH_FIELDS) {
+      if (value[field] == null) continue
+      set.push(`${field} = ?`)
+      binds.push(value[field])
+      if (field === 'fulfilment_status' && value[field] === 'shipped' && !order.shipped_at) {
         set.push(`shipped_at = datetime('now')`)
       }
     }
-    if (value.tracking_number != null) {
-      set.push('tracking_number = ?')
-      binds.push(value.tracking_number)
-    }
-    if (value.status != null) {
-      set.push('status = ?')
-      binds.push(value.status)
-    }
+    if (set.length === 0) return apiError('Nothing to update.', 400, { code: 'validation_error' })
 
-    const updateStmt = env.DB.prepare(`UPDATE orders SET ${set.join(', ')} WHERE id = ?`).bind(...binds, params.id)
-    await env.DB.batch([
+    // Compare-and-set on the fulfilment state we read a moment ago. Two despatch
+    // clicks in quick succession would otherwise both see 'packed', both write
+    // 'shipped', and both send the customer a despatch notice. The second one now
+    // matches no row, and the email below is gated on the write having landed.
+    const guard = value.fulfilment_status != null ? ' AND fulfilment_status = ?' : ''
+    const guardBinds = value.fulfilment_status != null ? [order.fulfilment_status] : []
+
+    const updateStmt = env.DB
+      .prepare(`UPDATE orders SET ${set.join(', ')} WHERE id = ?${guard}`)
+      .bind(...binds, params.id, ...guardBinds)
+    const [writeResult] = await env.DB.batch([
       updateStmt,
       auditStmt(env.DB, data.actorEmail, 'order.update', 'order', params.id, value),
     ])
+
+    if (guard && (writeResult?.meta?.changes ?? 1) === 0) {
+      return apiError(
+        'This order was changed by someone else. Reload and try again.',
+        409, { code: 'conflict' },
+      )
+    }
 
     const updated = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
 
@@ -106,10 +157,9 @@ export async function onRequestPatch({ params, request, env, data }) {
 async function notifyStatusChange(env, request, before, after, patch) {
   if (!after?.customer_email) return
 
-  const templates = STATUS_EMAILS
+  const rules = STATUS_EMAILS
     .filter(rule => patch[rule.field] === rule.to && before[rule.field] !== rule.to)
-    .map(rule => rule.template)
-  if (templates.length === 0) return
+  if (rules.length === 0) return
 
   // Same join the GET handler above uses, so the despatch email lists the order
   // exactly as the admin sees it on screen.
@@ -126,11 +176,16 @@ async function notifyStatusChange(env, request, before, after, patch) {
 
   await sendTemplated(
     env,
-    templates.map(templateKey => ({
-      templateKey,
+    rules.map(rule => ({
+      templateKey: rule.template,
       to: after.customer_email,
       orderId: after.id,
-      data: tokens,
+      // ctaHref is added per template, never to the shared tokens — renderEmail()
+      // draws the button whenever a cta_label and a ctaHref are both present, so a
+      // shared one would aim every future button at the courier's tracking page.
+      data: rule.ctaField && after[rule.ctaField]
+        ? { ...tokens, ctaHref: after[rule.ctaField] }
+        : tokens,
       blocks,
     })),
     { origin: new URL(request.url).origin },

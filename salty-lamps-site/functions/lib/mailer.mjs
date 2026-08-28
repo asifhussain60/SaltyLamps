@@ -221,6 +221,11 @@ export function orderTokens(order, { paymentMethod = '' } = {}) {
     order_total: formatMoney(order.amount_total_pence),
     order_date: formatDate(order.created_at),
     tracking_number: order.tracking_number || '',
+    // The courier's name as it stood at despatch, not looked up from the code — see
+    // the column comment in d1/schema.sql. Both are blank until the order ships,
+    // which is why only order_shipped may name them in its wording.
+    carrier: order.carrier_name || '',
+    tracking_url: order.tracking_url || '',
     payment_method: paymentMethod,
   }
 }
@@ -234,6 +239,9 @@ export function orderBlocks(order, items, { includeAddress = true } = {}) {
       ['Placed', formatDate(order.created_at)],
       ['Payment status', capitalise(order.status)],
       ['Fulfilment', capitalise(order.fulfilment_status)],
+      // Both blank until the order is despatched. blockPanel() drops rows with no
+      // value, so the confirmation email sent at purchase is unchanged by these.
+      ['Carrier', order.carrier_name || ''],
       ['Tracking number', order.tracking_number || ''],
     ],
   }]

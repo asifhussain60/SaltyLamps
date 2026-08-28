@@ -1,0 +1,49 @@
+# Production Wrangler config — the OWNER'S OWN Cloudflare account.
+#
+# WHY THIS FILE EXISTS. `wrangler.toml` hardcodes the DEV/UAT database_id, which
+# belongs to Asif's hotmail account. A D1 database id is account-specific, so the
+# two environments cannot share one config file: pointing production at the dev
+# id would either fail to bind or, worse, bind the production site to the UAT
+# database and its simulated orders.
+#
+# `deploy-production.sh` passes this file to every wrangler call via the global
+# `-c` flag when PROD_CONFIG is set (the default). Nothing else reads it, so the
+# dev workflow — `wrangler pages dev`, `deploy-cloudflare.sh` — is untouched and
+# still uses `wrangler.toml`.
+#
+# FIRST RUN. `database_id` below is a placeholder. `deploy-production.sh` creates
+# the database, prints its real id, and stops. Paste the id in here, commit it
+# (a D1 id is an identifier, not a secret — see infra/README.md), and re-run.
+#
+# The project `name` must match PROD_PROJECT in the environment, or wrangler
+# refuses the deploy with a project-name mismatch.
+
+name = "salty-lamps"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# --- D1 database ---------------------------------------------------------------
+# Created by: wrangler d1 create salty-lamps-db   (on the OWNER's account)
+[[d1_databases]]
+binding = "DB"
+database_name = "salty-lamps-db"
+database_id = "REPLACE_WITH_PRODUCTION_DATABASE_ID"
+
+# --- R2 bucket for admin-uploaded product images -------------------------------
+# Created by: wrangler r2 bucket create salty-lamps-images
+# Requires the one-time R2 opt-in on the account, or creation fails with 10042.
+# Served publicly at /api/images/<key> (see functions/api/images).
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "salty-lamps-images"
+
+# --- Secrets -------------------------------------------------------------------
+# NEVER in this file. Set interactively by the owner, after the first deploy:
+#   npx wrangler pages secret put STRIPE_SECRET_KEY     --project-name salty-lamps
+#   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name salty-lamps
+#   npx wrangler pages secret put SITE_URL              --project-name salty-lamps
+#   npx wrangler pages secret put RESEND_API_KEY        --project-name salty-lamps
+#
+# Pages binds secrets at DEPLOY time. Setting one does nothing to the running
+# deployment until you redeploy.

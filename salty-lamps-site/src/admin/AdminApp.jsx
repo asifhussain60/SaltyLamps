@@ -17,6 +17,10 @@ import {
   FULFILMENT_LABELS,
   PAYMENT_STATUSES,
   PAYMENT_STATUS_LABELS,
+  CARRIERS,
+  carrierTrackingUrl,
+  despatchErrors,
+  EMAIL_TEMPLATE_SPECS,
   TRACK_MODES,
   TRACK_MODE_LABELS,
   CATEGORY_THEMES,
@@ -305,9 +309,9 @@ function Confirm({ open, title, message, confirmLabel = 'Confirm', danger, onCon
   )
 }
 
-function Field({ label, error, children, hint }) {
+function Field({ label, error, children, hint, className = '' }) {
   return (
-    <label className={`admin-field ${error ? 'admin-field--error' : ''}`}>
+    <label className={`admin-field ${error ? 'admin-field--error' : ''} ${className}`}>
       <span className="admin-field-label">{label}</span>
       {children}
       {hint && !error && <span className="admin-field-hint">{hint}</span>}
@@ -914,25 +918,97 @@ function OrdersList() {
   )
 }
 
+// Every email the shop has tried to send about ONE order, shown on the order.
+//
+// Sending is switched off until the domain's DKIM and SPF records exist, so the
+// despatch notice the owner just triggered may be logged as 'skipped', not sent.
+// Without this panel that is only discoverable by leaving the order and browsing
+// Emails -> Activity, which nobody does after clicking a button that said it worked.
+function OrderEmails({ orderId }) {
+  const { loading, error, data, reload } = usePageData(
+    () => api(`/api/admin/emails/outbox?order=${encodeURIComponent(orderId)}&limit=20`),
+    [orderId],
+  )
+
+  return (
+    <section className="admin-card">
+      <h2><Icon name="mail" tone="amber" className="admin-card-icon" />Emails for this order</h2>
+      {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data.rows.length ? (
+        <EmptyState>No emails have been sent for this order yet.</EmptyState>
+      ) : (
+        <table className="admin-table">
+          <thead><tr><th>When</th><th>Email</th><th>To</th><th>Outcome</th><th>Detail</th></tr></thead>
+          <tbody>
+            {data.rows.map(row => (
+              <tr key={row.id}>
+                <td className="admin-muted">{row.created_at}</td>
+                <td>{EMAIL_TEMPLATE_SPECS[row.template_key]?.label || row.template_key}</td>
+                <td className="admin-muted">{row.to_address}</td>
+                <td>{row.status}</td>
+                <td className="admin-muted">{row.error || row.subject}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  )
+}
+
 function OrderDetail({ id }) {
   const { loading, error, data, reload } = usePageData(() => api(`/api/admin/orders/${id}`), [id])
   const [fulfil, setFulfil] = useState('')
+  const [carrier, setCarrier] = useState('')
+  const [carrierName, setCarrierName] = useState('')
   const [tracking, setTracking] = useState('')
+  const [trackingUrl, setTrackingUrl] = useState('')
+  // True once the link no longer matches what the carrier's pattern would build —
+  // either because the owner typed one or because the stored one was overridden
+  // earlier. Picking a carrier or retyping the number clears it, because at that
+  // point the old link is wrong anyway.
+  const [urlEdited, setUrlEdited] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
-  const [confirm, setConfirm] = useState(null) // 'refunded' | 'cancelled' | null
+  const [confirm, setConfirm] = useState(null) // 'despatch' | 'refunded' | 'cancelled' | null
 
   useEffect(() => {
     if (data?.order) {
-      setFulfil(data.order.fulfilment_status)
-      setTracking(data.order.tracking_number || '')
+      const o = data.order
+      setFulfil(o.fulfilment_status)
+      setCarrier(o.carrier || '')
+      setCarrierName(o.carrier_name || '')
+      setTracking(o.tracking_number || '')
+      setTrackingUrl(o.tracking_url || '')
+      setUrlEdited(Boolean(o.tracking_url) && o.tracking_url !== carrierTrackingUrl(o.carrier, o.tracking_number))
     }
   }, [data])
+
+  // The link the courier's own pattern gives for this consignment number. 'Other'
+  // has no pattern, so the field stays whatever the owner pasted.
+  useEffect(() => {
+    if (urlEdited) return
+    const derived = carrierTrackingUrl(carrier, tracking)
+    if (derived) setTrackingUrl(derived)
+  }, [carrier, tracking, urlEdited])
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
   const { order, items } = data
+  const shipped = ['shipped', 'delivered'].includes(order.fulfilment_status)
+
+  // The same rule the endpoint enforces, run against the form as it stands, off the
+  // one shared definition. Drives the button's disabled state and the hint beneath
+  // it; the red field errors below come from the server's own reply, so a form that
+  // has never been submitted is not covered in warnings.
+  const despatchGaps = despatchErrors({
+    ...order,
+    fulfilment_status: 'shipped',
+    carrier,
+    carrier_name: carrierName,
+    tracking_number: tracking,
+  })
+  const fieldErr = field => saveErr?.fields?.[field]
 
   const patch = async payload => {
     setSaving(true)
@@ -986,30 +1062,115 @@ function OrderDetail({ id }) {
 
       <section className="admin-card">
         <div className="admin-card-head">
-          <h2><Icon name="truck" tone="amber" className="admin-card-icon" />Fulfilment</h2>
+          <h2><Icon name="truck" tone="amber" className="admin-card-icon" />Despatch</h2>
           <div className="admin-badges">
             <StatusBadge value={order.status} kind="payment" />
             <StatusBadge value={order.fulfilment_status} kind="fulfilment" />
           </div>
         </div>
         {saveErr && <ErrorState error={saveErr} />}
+
+        {shipped && (
+          <p className="admin-kv">
+            <span>Despatched</span>
+            <strong>
+              {dateFmt(order.shipped_at)}
+              {order.carrier_name ? ` · ${order.carrier_name}` : ''}
+              {order.tracking_url && (
+                <> · <a className="admin-link" href={order.tracking_url} target="_blank" rel="noopener noreferrer">
+                  Track parcel<Icon name="externalLink" size={13} />
+                </a></>
+              )}
+            </strong>
+          </p>
+        )}
+
+        <div className="admin-inline-form">
+          <Field label="Carrier" error={fieldErr('carrier')}>
+            <select
+              className="admin-input"
+              value={carrier}
+              onChange={e => { setCarrier(e.target.value); setUrlEdited(false) }}
+            >
+              <option value="">Choose a carrier…</option>
+              {CARRIERS.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+            </select>
+          </Field>
+          {carrier === 'other' && (
+            <Field label="Carrier name" error={fieldErr('carrier_name')}>
+              <input className="admin-input" value={carrierName} onChange={e => setCarrierName(e.target.value)} placeholder="e.g. DX Delivery" />
+            </Field>
+          )}
+          <Field label="Consignment number" error={fieldErr('tracking_number')}>
+            <input
+              className="admin-input"
+              value={tracking}
+              onChange={e => { setTracking(e.target.value); setUrlEdited(false) }}
+              placeholder="e.g. RM123456789GB"
+            />
+          </Field>
+        </div>
+
+        <div className="admin-inline-form">
+          <Field label="Tracking link" className="admin-field--grow">
+            <input
+              className="admin-input"
+              value={trackingUrl}
+              onChange={e => { setTrackingUrl(e.target.value); setUrlEdited(true) }}
+              placeholder="https://…"
+            />
+          </Field>
+          {shipped ? (
+            <button
+              className="admin-btn admin-btn--primary"
+              disabled={saving || Object.keys(despatchGaps).length > 0}
+              onClick={() => patch({
+                carrier, carrier_name: carrierName, tracking_number: tracking, tracking_url: trackingUrl,
+              })}
+            >
+              <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save despatch details'}
+            </button>
+          ) : (
+            <button
+              className="admin-btn admin-btn--primary"
+              disabled={saving || Object.keys(despatchGaps).length > 0}
+              onClick={() => setConfirm('despatch')}
+            >
+              <Icon name="truck" size={15} />{saving ? 'Saving…' : 'Mark as despatched'}
+            </button>
+          )}
+        </div>
+
+        <p className="admin-field-hint">
+          {carrier === 'other'
+            ? 'Paste the courier’s own tracking page for this parcel.'
+            : 'The tracking link is filled in from the carrier — edit it if the courier has changed its links.'}
+          {' '}
+          {shipped
+            ? 'Correcting these details does not send the customer another email.'
+            : Object.keys(despatchGaps).length > 0
+              ? 'Choose the carrier and enter the consignment number to despatch.'
+              : 'Despatching emails the customer their tracking link.'}
+        </p>
+
         <div className="admin-inline-form">
           <Field label="Fulfilment status">
             <select className="admin-input" value={fulfil} onChange={e => setFulfil(e.target.value)}>
-              {FULFILMENT_STATUSES.map(s => <option key={s} value={s}>{FULFILMENT_LABELS[s]}</option>)}
+              {FULFILMENT_STATUSES
+                .filter(s => s !== 'shipped' || shipped)
+                .map(s => <option key={s} value={s}>{FULFILMENT_LABELS[s]}</option>)}
             </select>
           </Field>
-          <Field label="Tracking number">
-            <input className="admin-input" value={tracking} onChange={e => setTracking(e.target.value)} placeholder="Optional" />
-          </Field>
           <button
-            className="admin-btn admin-btn--primary"
-            disabled={saving}
-            onClick={() => patch({ fulfilment_status: fulfil, tracking_number: tracking })}
+            className="admin-btn admin-btn--ghost"
+            disabled={saving || fulfil === order.fulfilment_status}
+            onClick={() => patch({ fulfilment_status: fulfil })}
           >
-            <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save fulfilment'}
+            <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save status'}
           </button>
+          <span className="admin-field-hint">Despatch is done with the button above, not from here.</span>
         </div>
+
         <div className="admin-danger-row">
           {order.status === 'paid' && (
             <>
@@ -1020,6 +1181,24 @@ function OrderDetail({ id }) {
         </div>
       </section>
 
+      <OrderEmails orderId={order.id} />
+
+      <Confirm
+        open={confirm === 'despatch'}
+        title="Mark this order as despatched?"
+        message={order.customer_email
+          ? `${order.customer_email} will be emailed that the parcel is on its way, with a link to track it. This is sent once and cannot be unsent.`
+          : 'This order has no customer email address on file, so no despatch notice will be sent.'}
+        confirmLabel="Despatch and notify"
+        onConfirm={() => patch({
+          fulfilment_status: 'shipped',
+          carrier,
+          carrier_name: carrierName,
+          tracking_number: tracking,
+          tracking_url: trackingUrl,
+        })}
+        onCancel={() => setConfirm(null)}
+      />
       <Confirm
         open={confirm === 'refunded'}
         danger

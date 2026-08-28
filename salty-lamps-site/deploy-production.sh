@@ -39,7 +39,59 @@ ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 warn() { printf '  \033[33m! %s\033[0m\n' "$*"; }
 die()  { printf '\n\033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
 
-wr() { npx wrangler "$@"; }
+# Every wrangler call goes through here so they all agree on ONE config file.
+#
+# WHY: wrangler.toml carries the DEV/UAT database_id, which belongs to a different
+# Cloudflare account. Deploying production against it binds the live shop to the
+# UAT database and its simulated orders — a failure that looks like success.
+# wrangler.prod.toml holds the owner's ids; PROD_CONFIG='' opts out if a caller
+# genuinely wants the default file.
+CONFIG="${PROD_CONFIG-wrangler.prod.toml}"
+if [ -n "$CONFIG" ] && [ ! -f "$CONFIG" ]; then
+  die "Missing $CONFIG. It holds the production D1 id and R2 binding; deploying
+     without it would fall back to wrangler.toml, which points at the DEV
+     database on a different account. Set PROD_CONFIG='' only if you mean that."
+fi
+PLACEHOLDER_DB=0
+if [ -n "$CONFIG" ] && grep -q 'REPLACE_WITH_PRODUCTION_DATABASE_ID' "$CONFIG"; then
+  PLACEHOLDER_DB=1   # first run: step 1 creates the database and stops, which is expected
+fi
+wr() {
+  if [ -n "$CONFIG" ]; then npx wrangler -c "$CONFIG" "$@"; else npx wrangler "$@"; fi
+}
+
+# Apply one migration file, tolerating the single error that is benign here.
+#
+# WHY THIS EXISTS. Step 2 below applies d1/schema.sql and THEN every migration.
+# schema.sql already creates `orders` with fulfilment_status, tracking_number,
+# shipped_at and the ship_* columns, so 001-admin-portal.sql's bare
+# `ALTER TABLE orders ADD COLUMN fulfilment_status ...` raises
+# "duplicate column name" — on a FRESH database, not just a re-run. Under
+# `set -euo pipefail` that killed the whole script before it ever reached the
+# build and deploy steps. SQLite has no `ADD COLUMN IF NOT EXISTS` and no
+# conditional DDL, so the loop has to absorb exactly that one error and nothing
+# else: any other failure still aborts loudly with wrangler's own output.
+#
+# THE RULE THIS DEPENDS ON: migration files are APPEND-ONLY AS A SET. wrangler
+# stops a file at its first failing statement, so a file whose first ALTER is a
+# duplicate silently skips the rest of itself. That is harmless while every
+# migration is all-or-nothing, and becomes a real bug the moment someone appends
+# a column to an EXISTING migration file. A new column always means a NEW file.
+apply_migration() {
+  local file="$1" out rc
+  set +e
+  out=$(wr d1 execute "$DB_NAME" --remote --file="$file" 2>&1)
+  rc=$?
+  set -e
+  if [ $rc -eq 0 ]; then
+    ok "migration: $file"
+  elif printf '%s' "$out" | grep -qi 'duplicate column name'; then
+    warn "migration: $file — columns already present, skipped."
+  else
+    printf '%s\n' "$out" >&2
+    die "Migration failed: $file"
+  fi
+}
 
 # --- 0. Auth sanity -----------------------------------------------------------
 if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && [ -z "${CF_ALLOW_INTERACTIVE:-}" ]; then
@@ -55,9 +107,18 @@ if wr d1 info "$DB_NAME" >/dev/null 2>&1; then
   ok "D1 database already exists."
 else
   wr d1 create "$DB_NAME"
-  warn "Created a NEW D1 database. Copy the printed database_id into wrangler.prod.toml"
-  warn "(or wrangler.toml for this account) before the deploy step can bind it."
+  warn "Created a NEW D1 database. Copy the printed database_id into ${CONFIG:-wrangler.toml}"
+  warn "before the deploy step can bind it."
   die  "Re-run this script after wiring the database_id."
+fi
+
+# The database exists, so the id in the config must be the real one. Catching the
+# placeholder here — rather than at the deploy step — means the failure names the
+# cause instead of surfacing as a binding error against a live site.
+if [ "$PLACEHOLDER_DB" = "1" ]; then
+  die "$CONFIG still has the placeholder database_id, but '$DB_NAME' exists.
+     Run:  npx wrangler -c $CONFIG d1 info $DB_NAME
+     and paste its uuid into the database_id line of $CONFIG, then re-run."
 fi
 
 # --- 2. Schema + migrations + CATALOG seed (never demo orders) ----------------
@@ -65,8 +126,7 @@ say "Applying schema + migrations to '$DB_NAME' (remote)…"
 wr d1 execute "$DB_NAME" --remote --file=d1/schema.sql
 for m in d1/migrations/*.sql; do
   [ -e "$m" ] || continue
-  ok "migration: $m"
-  wr d1 execute "$DB_NAME" --remote --file="$m"
+  apply_migration "$m"
 done
 
 # Catalog seed is destructive (it deletes+reinserts products/skus). Gate it so a

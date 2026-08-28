@@ -279,8 +279,67 @@ function storeSchema() {
   }
 }
 
+// Google renders a BreadcrumbList as the clickable trail that replaces the grey
+// URL line in a search result — "Salty Lamps › Salt Lamps › Angel Shape" instead
+// of the raw path. It is the cheapest click-through improvement available here,
+// and on a shop whose product slugs are long and variant-suffixed it is a large
+// legibility win.
+//
+// The trail must mirror a path the site can actually be navigated by, or Google
+// reports it as invalid. Each arm below therefore reuses the same route helpers
+// (`categoryRoute`, `collectionRoute`) that generate the real links.
+function breadcrumbSchema(route) {
+  if (route.path === '/') return null
+
+  const crumbs = [{ name: 'Home', path: '/' }]
+
+  if (route.product) {
+    // A product route carries slugs rather than a resolved category, so find the
+    // first category that actually exists in the taxonomy. A product whose only
+    // categories were filtered out gets Home › Shop › Product rather than a
+    // broken middle crumb.
+    //
+    // `all-products` must be skipped for exactly that reason: every product is in
+    // it, so it wins the `find` on every page, and `categoryRoutes` deliberately
+    // excludes it — the crumb would have linked to /category/all-products, which
+    // this site does not build. Google reports a breadcrumb item pointing at a
+    // 404 as an invalid structured-data error for the whole page.
+    const category = categories.find(
+      item => item.slug !== 'all-products' && route.product.categories?.includes(item.slug),
+    )
+    if (category) crumbs.push({ name: category.name, path: categoryRoute(category.slug) })
+    else crumbs.push({ name: 'Shop', path: '/shop' })
+    crumbs.push({ name: route.product.name, path: route.path })
+  } else if (route.shopperPath) {
+    crumbs.push({ name: route.shopperPath.name, path: collectionRoute(route.shopperPath.slug) })
+    if (route.category) crumbs.push({ name: route.category.name, path: route.path })
+  } else if (route.category) {
+    crumbs.push({ name: 'Shop', path: '/shop' })
+    crumbs.push({ name: route.category.name, path: route.path })
+  } else {
+    crumbs.push({ name: route.title.replace(' | Salty Lamps', ''), path: route.path })
+  }
+
+  // A two-item trail of Home › Self on a top-level page tells a search engine
+  // nothing it cannot see from the URL, so emit nothing rather than noise.
+  if (crumbs.length < 3 && !route.shopperPath) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: absolute(crumb.path),
+    })),
+  }
+}
+
 function schemaFor(route) {
   const schemaItems = [storeSchema()]
+  const breadcrumbs = breadcrumbSchema(route)
+  if (breadcrumbs) schemaItems.push(breadcrumbs)
   if (route.product) schemaItems.push(productSchema(route.product))
   const list = itemListSchema(route)
   if (list) schemaItems.push(list)

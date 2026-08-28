@@ -14,6 +14,7 @@ is public.
 - [`stripe.md`](stripe.md) — account, API key, webhook endpoint
 - [`email.md`](email.md) — Resend account, why not Cloudflare, current UAT state, what unblocks
   customer email
+- [`production-cloudflare.md`](production-cloudflare.md) — the owner’s own account, the domain move off Wix, and the SEO carry-over
 - [`migration-playbook.md`](migration-playbook.md) — step-by-step: new domain, new Stripe account, or both
 - [`known-issues.md`](known-issues.md) — things to fix before this goes live for real
 

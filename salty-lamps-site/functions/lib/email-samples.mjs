@@ -18,6 +18,9 @@ const SAMPLE_ORDER = {
   amount_total_pence: 4597,
   created_at: '2026-08-01 18:16:49',
   tracking_number: 'RM123456789GB',
+  carrier: 'royal_mail',
+  carrier_name: 'Royal Mail',
+  tracking_url: 'https://www.royalmail.com/track-your-item#/tracking-results/RM123456789GB',
   ship_name: 'Jane Doe',
   ship_line1: '12 Fairmile Court',
   ship_line2: '25 Fairmile Road',
@@ -103,6 +106,15 @@ export function sampleFor(key) {
         ],
       }],
     }
+  }
+
+  // The despatch email is the one customer template with a button. renderEmail()
+  // draws it only when the template has a cta_label AND the message supplies a
+  // ctaHref, so without this the owner would preview — and test-send themselves —
+  // an order_shipped with no Track button, then wonder where it went in the real
+  // one. That is exactly the "picture of the wrong thing" this file exists to stop.
+  if (key === 'order_shipped') {
+    return { data: { ...orderData, ctaHref: SAMPLE_ORDER.tracking_url }, blocks: orderPanels }
   }
 
   return { data: orderData, blocks: orderPanels }

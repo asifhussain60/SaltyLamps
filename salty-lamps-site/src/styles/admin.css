@@ -374,6 +374,15 @@
 .admin-donut-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
 .admin-inline-form { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
 .admin-inline-form .admin-field { margin-bottom: 0; }
+/* A field that should take the rest of its row — the order page's tracking link,
+   so the action button sits beside it instead of below a wrapped, full-width
+   input. Fields are content-width by default, which is right for the short ones. */
+.admin-inline-form .admin-field--grow { flex: 1 1 320px; }
+/* Hints and messages that sit under a whole form rather than inside one <label>.
+   Deliberately outside the label: .admin-field is a <label>, and the storefront's
+   `label` rule uppercases everything inside it — fine for a four-word field hint,
+   unreadable for a sentence. */
+.admin-card > p.admin-field-hint { margin: 10px 0 0; }
 .admin-danger-row { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 /* The one action row for a page-level form: bottom of the card, right-aligned.
    Used by Product edit, Inventory, Settings and the category form so "where is
@@ -586,6 +595,202 @@
 .admin-doc__list { margin: 10px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 .admin-doc__list li { font-size: 0.94rem; }
 .admin-doc__foot { margin-top: 24px; color: var(--muted); font-size: 0.85rem; }
+
+/* ---- Migration runbook: collapsible phases, tickable steps, copyable shell ----
+   The migration page is worked through over days rather than read once, so it is
+   built as a checklist rather than as prose. Three pieces:
+     .admin-doc__phase   — a collapsible phase, colour-coded by how risky it is
+     .admin-doc__check   — one tickable step, state persisted in localStorage
+     .admin-doc__console — a block of shell with a copy button                */
+
+.admin-doc__phases { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+
+.admin-doc__phase {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--muted);
+  border-radius: 12px;
+  background: var(--paper);
+  overflow: hidden;
+}
+/* Risk, at a glance, without needing the reader to have read ahead:
+   safe = nothing customer-facing changes; care = reversible but consequential;
+   live = the public cutover itself. */
+.admin-doc__phase--safe { border-left-color: var(--admin-green); }
+.admin-doc__phase--care { border-left-color: var(--amber); }
+.admin-doc__phase--live { border-left-color: var(--ember); }
+.admin-doc__phase.is-complete { background: rgba(45, 123, 95, 0.05); border-left-color: var(--admin-green); }
+
+.admin-doc__phase > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.admin-doc__phase > summary::-webkit-details-marker { display: none; }
+.admin-doc__phase > summary:hover { background: rgba(0, 0, 0, 0.025); }
+.admin-doc__phase > summary:focus-visible { outline: 2px solid var(--admin-blue); outline-offset: -2px; }
+
+.admin-doc__phase-num {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--slate);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.88rem;
+  font-family: var(--modern);
+}
+.admin-doc__phase.is-complete .admin-doc__phase-num { background: var(--admin-green); }
+
+.admin-doc__phase-head { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+.admin-doc__phase-head strong { font-family: var(--modern); font-size: 1.02rem; font-weight: 800; }
+.admin-doc__phase-head em { font-style: normal; font-size: 0.85rem; color: var(--muted); }
+
+.admin-doc__phase-count {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+.admin-doc__phase.is-complete .admin-doc__phase-count { color: var(--admin-green); border-color: currentColor; }
+
+.admin-doc__phase-body { padding: 4px 18px 18px; border-top: 1px solid var(--line); }
+.admin-doc__phase-body > p:first-child { margin-top: 14px; }
+
+/* ---- tickable steps ---- */
+.admin-doc__checks { list-style: none; margin: 14px 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* The bare `label` selector in saltylamps.css (storefront forms) sets uppercase
+   and letter-spacing — harmless on a three-word field caption, unreadable on a
+   full sentence of runbook instruction. Reset both, as .admin-switch does. */
+.admin-doc__check > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.94rem;
+  font-family: var(--body);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.admin-doc__check > label:hover { background: rgba(0, 0, 0, 0.03); }
+.admin-doc__check input[type='checkbox'] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--admin-green);
+  cursor: pointer;
+}
+/* Ticked steps are struck through AND faded, so a glance down a phase shows
+   what is left without reading a word. The strike sits on the text span rather
+   than the label so the checkbox itself is never crossed out. Sub-lists inside
+   a step are struck too — a half-struck step reads as half-done. */
+.admin-doc__check.is-done > label { color: var(--muted); }
+.admin-doc__check.is-done > label > span,
+.admin-doc__check.is-done > label > span * {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(109, 98, 91, 0.55);
+}
+.admin-doc__check.is-done > label > span > strong { font-weight: 600; }
+/* Links keep their own underline behaviour; without this the strike and the
+   link underline stack into an unreadable double rule. */
+.admin-doc__check.is-done > label a { color: var(--muted); text-decoration: line-through; }
+
+.admin-doc__reset {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.admin-doc__reset:hover { color: var(--ember); border-color: var(--ember); }
+
+/* ---- copyable shell block ---- */
+.admin-doc__console {
+  margin: 16px 0;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--slate);
+}
+.admin-doc__console-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.admin-doc__console-dots { display: flex; gap: 6px; flex: 0 0 auto; }
+.admin-doc__console-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 250, 244, 0.28); }
+.admin-doc__console-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: rgba(255, 250, 244, 0.86);
+  font-size: 0.8rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-doc__console-copy {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 250, 244, 0.28);
+  background: transparent;
+  color: rgba(255, 250, 244, 0.9);
+  border-radius: 7px;
+  padding: 3px 11px;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.admin-doc__console-copy:hover { background: rgba(255, 250, 244, 0.12); }
+
+.admin-doc__console pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  color: rgba(255, 250, 244, 0.92);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+/* The shared .admin-doc code rule paints a light chip background, which is
+   invisible against the dark terminal panel. */
+.admin-doc__console pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+.admin-doc__console-note {
+  margin: 0;
+  padding: 9px 16px 11px;
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(255, 250, 244, 0.62);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .admin-doc__phase > summary { flex-wrap: wrap; }
+  .admin-doc__phase-count { order: 3; margin-left: 42px; }
+}
 
 /* Emails — the template editor opens inline under its table row, so it needs to
    read as a nested panel rather than as another table cell. */

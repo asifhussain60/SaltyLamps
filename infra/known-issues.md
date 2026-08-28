@@ -33,12 +33,34 @@ the surrogate `skus.id`, never the human-readable `sku` string), so nothing brea
 ever scan or search one of these codes for fulfilment, you can't tell which item it means. Worth
 fixing at the source in Wix (or wherever the catalog is edited going forward).
 
-## 3. Product images are full-resolution Wix originals
+## 3. Product images were full-resolution Wix originals — FIXED 2026-08-11
 
 `scripts/generate-d1-seed.mjs` downloads the first image per product straight from Wix's CDN with
-no resizing or compression — files run 1–4.7MB each, 35 of them. Functionally fine, but worth
-compressing before page-load speed matters. Not done as part of this work since it's a separate
-concern from getting the storefront wired to D1.
+no resizing or compression. That left 81.5 MB of images in `public/media`, single product
+photographs over 4 MB, and a homepage carrying 12.9 MB of images before a customer saw anything.
+
+**Fixed by `scripts/optimise-media.mjs`** (`npm run media:optimise`), which re-encodes every image
+in place — 81.5 MB → 23.2 MB, and the homepage 12.9 MB → 3.9 MB. It is idempotent and safe to
+re-run; a manifest stops an image being quantised twice.
+
+Two things about it worth knowing before changing it:
+
+- **It deliberately never renames a file.** Image paths are data, stored in the D1
+  `products`/`content` tables, in the generated `d1/seed.sql`, and in the committed content
+  snapshot. Converting to WebP would save a further ~12 MB and needs a data migration across both
+  databases to do it — worth doing one day, not worth coupling to a compression pass.
+- **The PNGs were the whole problem**: photographs saved as PNG, a format for flat graphics.
+  Palette quantisation returns ~70% for a mean pixel difference of about 2/255, measured rather
+  than assumed. Re-compressing them losslessly instead makes them *larger* than the originals.
+
+**Still open, and now the larger share of the bundle:**
+
+- **71 MB of video** in `public/media/video`, untouched by this and now roughly three-quarters of
+  everything deployed.
+- **~32 MB of images nothing references** — `salt-bowl.png`, `salt-wall.png`, `heart-holders.png`,
+  `salt-tiles.png`, `candle-marble.png` and others appear in no source file, no snapshot and no
+  seed row, but sit in `public/` so they are uploaded on every deploy. Confirm they are genuinely
+  unused before deleting; a gallery still under construction is a plausible reason to keep them.
 
 ## 4. `database_id` is hardcoded in one place outside `wrangler.toml`
 

@@ -30,6 +30,57 @@ export const FULFILMENT_LABELS = {
   unfulfilled: 'Unfulfilled', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered',
 }
 
+// The couriers the shop despatches with, and how to build a tracking link from a
+// consignment number. Data only — a `{tracking}` placeholder rather than a function
+// — so this module keeps the purity the header promises and the admin UI can render
+// a live link as the owner types without importing anything else.
+//
+// UK-only by design: functions/api/checkout.js collects GB addresses only. 'other'
+// carries no pattern; the owner types the courier's name and pastes the link, which
+// is also the escape hatch when a courier changes its URL shape between deploys.
+//
+// NOT a database CHECK constraint. SQLite cannot alter one without rebuilding the
+// table, and the list of couriers a shop uses changes far more often than the
+// fulfilment lifecycle does. The whitelist is enforced here, at the write path.
+export const CARRIERS = [
+  { code: 'royal_mail', label: 'Royal Mail', url: 'https://www.royalmail.com/track-your-item#/tracking-results/{tracking}' },
+  { code: 'evri', label: 'Evri', url: 'https://www.evri.com/track/parcel/{tracking}' },
+  { code: 'dpd', label: 'DPD', url: 'https://track.dpd.co.uk/search?reference={tracking}' },
+  { code: 'yodel', label: 'Yodel', url: 'https://www.yodel.co.uk/track/{tracking}' },
+  { code: 'parcelforce', label: 'Parcelforce', url: 'https://www.parcelforce.com/track-trace?trackNumber={tracking}' },
+  { code: 'other', label: 'Other (type the name)', url: '' },
+]
+
+export const CARRIER_CODES = CARRIERS.map(c => c.code)
+
+export function carrierByCode(code) {
+  return CARRIERS.find(c => c.code === code) || null
+}
+
+/**
+ * The tracking link for a courier and consignment number, or '' when there isn't
+ * one to build ('other' has no pattern). Encoded because the number reaches this
+ * as free text and lands in a URL.
+ */
+export function carrierTrackingUrl(code, trackingNumber) {
+  const carrier = carrierByCode(code)
+  const tracking = trimStr(trackingNumber)
+  if (!carrier || !carrier.url || !tracking) return ''
+  return carrier.url.replace('{tracking}', encodeURIComponent(tracking))
+}
+
+// The order columns the admin PATCH may write, in the order they are applied. The
+// handler builds its UPDATE from this list rather than from a hand-written chain of
+// ifs, so a field added to validateOrderPatch() below can never be validated and
+// then silently dropped on the way to the database.
+export const ORDER_PATCH_FIELDS = [
+  'fulfilment_status', 'tracking_number', 'carrier', 'carrier_name', 'tracking_url', 'status',
+]
+
+// Fields that describe getting the parcel out of the door, as opposed to the two
+// payment states. Kept apart on purpose — see validateOrderPatch().
+const FULFILMENT_FIELDS = ['fulfilment_status', 'tracking_number', 'carrier', 'carrier_name', 'tracking_url']
+
 // The nine theme token sets defined in src/styles/saltylamps.css (.theme-lamp,
 // .theme-holder, ...). NOT free text: each one is three CSS custom properties, so a
 // category carrying an unknown theme renders with no accent colour at all.
@@ -414,11 +465,68 @@ export function validateOrderPatch(input = {}) {
     else value.tracking_number = tracking
   }
 
+  if (input.carrier != null) {
+    const carrier = trimStr(input.carrier)
+    // '' clears the courier, which is how an order goes back to having no despatch
+    // details at all; anything else must be a code we know how to link with.
+    if (carrier && !CARRIER_CODES.includes(carrier)) errors.carrier = 'Unknown carrier.'
+    else value.carrier = carrier
+  }
+
+  if (input.carrier_name != null) {
+    const name = trimStr(input.carrier_name)
+    if (name.length > 100) errors.carrier_name = 'Carrier name is too long.'
+    else value.carrier_name = name
+  }
+
+  if (input.tracking_url != null) {
+    const url = trimStr(input.tracking_url)
+    // This value is written straight into the href of a button in a customer's
+    // inbox, so the scheme is checked rather than assumed. escapeHtml() in
+    // email-render.mjs stops it breaking out of the attribute but says nothing
+    // about `javascript:`, which makes this the only gate that matters.
+    if (!url) value.tracking_url = ''
+    else if (url.length > 500) errors.tracking_url = 'Tracking link is too long.'
+    else if (!/^https:\/\/[^\s]+$/i.test(url)) errors.tracking_url = 'Tracking link must be a full https:// address.'
+    else value.tracking_url = url
+  }
+
+  // A refund or cancellation may not travel with fulfilment fields. The endpoint
+  // issues the real Stripe refund BEFORE it writes anything, so every extra field
+  // in that same request is another way for money to move and the record not to
+  // follow. The admin sends them separately already; this makes that a rule.
+  if (value.status != null && FULFILMENT_FIELDS.some(f => value[f] != null)) {
+    errors.form = 'Record a refund or cancellation on its own, not alongside despatch details.'
+  }
+
   if (Object.keys(value).length === 0 && Object.keys(errors).length === 0) {
     errors.form = 'Nothing to update.'
   }
 
   return { ok: Object.keys(errors).length === 0, errors, value }
+}
+
+/**
+ * The despatch rule: an order cannot be recorded as shipped without a courier and
+ * a consignment number, and 'other' additionally needs the courier's name.
+ *
+ * Takes the order AS IT WILL BE — the stored row with the patch already applied —
+ * because the owner may be adding the number to an order that already names the
+ * carrier, or shipping in one action. Runs in the endpoint (which holds the row)
+ * and in the admin form (which holds the draft), off this one definition.
+ *
+ * @returns { [field]: message } — empty when the order is ready to despatch.
+ */
+export function despatchErrors(merged = {}) {
+  const errors = {}
+  if (merged.fulfilment_status !== 'shipped') return errors
+
+  if (!trimStr(merged.carrier)) errors.carrier = 'Choose the carrier before despatching.'
+  if (!trimStr(merged.tracking_number)) errors.tracking_number = 'Enter the consignment number before despatching.'
+  if (merged.carrier === 'other' && !trimStr(merged.carrier_name)) {
+    errors.carrier_name = 'Enter the carrier’s name.'
+  }
+  return errors
 }
 
 // ---- email templates ------------------------------------------------------
@@ -446,7 +554,13 @@ export const EMAIL_TEMPLATE_SPECS = {
     label: 'New order alert (admin)', audience: 'admin',
     tokens: [...ORDER_TOKENS, 'customer_email', 'payment_method'],
   },
-  order_shipped: { label: 'Order despatched', audience: 'customer', tokens: [...ORDER_TOKENS, 'tracking_number'] },
+  // carrier + tracking_url are despatch-only on purpose. orderTokens() supplies them
+  // to every order email, but only this template may NAME them in its wording — an
+  // order confirmation, sent before anything is packed, would render both empty.
+  order_shipped: {
+    label: 'Order despatched', audience: 'customer',
+    tokens: [...ORDER_TOKENS, 'tracking_number', 'carrier', 'tracking_url'],
+  },
   order_delivered: { label: 'Order delivered', audience: 'customer', tokens: ORDER_TOKENS },
   order_refunded: { label: 'Refund confirmed', audience: 'customer', tokens: ORDER_TOKENS },
   order_cancelled: { label: 'Order cancelled', audience: 'customer', tokens: ORDER_TOKENS },
