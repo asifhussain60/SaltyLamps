@@ -44,7 +44,11 @@ const C = {
 // clashes with every colour in this palette. It is still referenced by the site
 // footer, the admin sidebar and the SEO card images; those are worth correcting
 // too, but separately from the email layer.
-const LOGO_PATH = '/salty-lamp-logo.jpeg'
+// The 256px copy, not the 1254px original. This is rendered at 104px wide in the
+// email header, so the full-size file was sending a quarter of a megabyte to every
+// customer for a thumbnail — on a phone, on mobile data, before they read a word.
+// The original stays in public/ because the social card is composited from it.
+const LOGO_PATH = '/salty-lamp-logo-256.jpeg'
 
 const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 

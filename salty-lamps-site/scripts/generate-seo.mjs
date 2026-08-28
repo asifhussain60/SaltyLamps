@@ -2,6 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
+// The Store, Product and CollectionPage schemas are defined once and shared with
+// the runtime copy in src/App.jsx. They used to be written out twice and had
+// already drifted — see the header of that module.
+import { combineSchemas, listSchema, productSchema, storeSchema } from '../src/content/schema.mjs'
+import { makeTaxonomy } from '../src/content/taxonomy.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -214,69 +219,43 @@ ${entries}
 }
 
 function itemListSchema(route) {
-  if (!route.products?.length) return null
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
+  return listSchema({
     name: route.title.replace(' | Salty Lamps', ''),
     description: route.description,
     url: absolute(route.path),
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: route.products.slice(0, 48).map((product, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        url: absolute(productRoute(product)),
-        name: product.name,
-      })),
-    },
-  }
+    products: route.products,
+    urlOf: product => absolute(productRoute(product)),
+  })
 }
 
-function productSchema(product) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.description,
-    sku: product.sku || undefined,
-    image: [asset(product.image)],
-    brand: {
-      '@type': 'Brand',
-      name: 'Salty Lamps',
-    },
-    offers: {
-      '@type': 'Offer',
-      url: absolute(productRoute(product)),
-      priceCurrency: 'GBP',
-      price: product.price,
-      availability: product.stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: {
-        '@type': 'Organization',
-        name: 'Salty Lamps Ltd',
-      },
-    },
-  }
+// Adapters. The schema shapes live in src/content/schema.mjs; these supply the
+// two things only this build script knows — how to make a URL absolute, and which
+// category the site actually builds a page for.
+function buildProductSchema(product) {
+  return productSchema(product, {
+    url: absolute(productRoute(product)),
+    imageUrl: asset(product.image),
+    categoryName: primaryCategoryName(product),
+  })
 }
 
-function storeSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Store',
-    name: 'Salty Lamps',
-    url: siteUrl,
-    telephone: '01782970001',
-    email: contactEmail,
-    image: asset('/media/salty-lamps-og-card.jpg'),
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Unit 41, Imex Business Park, Ormonde Street',
-      addressLocality: 'Stoke-on-Trent',
-      postalCode: 'ST4 3NP',
-      addressCountry: 'GB',
-    },
-  }
+// The same taxonomy the storefront builds, from the same snapshot, so the category
+// named in a product's schema is the one its page actually sits under. Reused
+// rather than reimplemented: primaryCategoryOf() skips the catch-all bucket by
+// reading is_virtual rather than hardcoding 'all-products', so adding another
+// bucket later needs no change here.
+const schemaTaxonomy = makeTaxonomy(categories, categoryAliases)
+
+function primaryCategoryName(product) {
+  return schemaTaxonomy.nameOf(schemaTaxonomy.primaryCategoryOf(product))
+}
+
+function buildStoreSchema() {
+  return storeSchema({
+    siteUrl,
+    contactEmail,
+    imageUrl: asset('/media/salty-lamps-og-card.jpg'),
+  })
 }
 
 // Google renders a BreadcrumbList as the clickable trail that replaces the grey
@@ -337,14 +316,13 @@ function breadcrumbSchema(route) {
 }
 
 function schemaFor(route) {
-  const schemaItems = [storeSchema()]
-  const breadcrumbs = breadcrumbSchema(route)
-  if (breadcrumbs) schemaItems.push(breadcrumbs)
-  if (route.product) schemaItems.push(productSchema(route.product))
-  const list = itemListSchema(route)
-  if (list) schemaItems.push(list)
-  if (route.schema) schemaItems.push(route.schema)
-  return schemaItems.length === 1 ? schemaItems[0] : { '@context': 'https://schema.org', '@graph': schemaItems }
+  return combineSchemas([
+    buildStoreSchema(),
+    breadcrumbSchema(route),
+    route.product ? buildProductSchema(route.product) : null,
+    itemListSchema(route),
+    route.schema,
+  ])
 }
 
 function injectHead(html, route) {
