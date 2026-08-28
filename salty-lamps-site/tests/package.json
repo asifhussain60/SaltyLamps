@@ -1,0 +1,15 @@
+{
+  "name": "salty-lamps-tests",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "End-to-end regression suite. Deliberately a SEPARATE package from the site: @playwright/test runs a browser-download postinstall, and the Cloudflare Pages build machine sets no PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD, so putting it in the site's devDependencies would slow every deploy and could fail one. Nothing here is ever installed by a production build.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}

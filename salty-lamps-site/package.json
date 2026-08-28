@@ -8,7 +8,8 @@
     "build": "node scripts/fetch-content-snapshot.mjs && vite build && node scripts/generate-seo.mjs",
     "content:snapshot": "node scripts/fetch-content-snapshot.mjs",
     "media:optimise": "node scripts/optimise-media.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "bootstrap": "^5.3.0",
