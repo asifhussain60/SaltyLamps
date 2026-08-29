@@ -206,10 +206,29 @@ test.describe('email', () => {
 
   test('a template preview renders through the real renderer', async ({ request }) => {
     test.skip(!(await adminOpen(request)), 'the admin is closed on this deployment')
-    const res = await request.get('/api/admin/emails/preview?key=order_confirmation', { failOnStatusCode: false })
-    test.skip(!res.ok(), 'preview takes a different shape on this build')
-    const html = await res.text()
-    expect(html).toMatch(/<table|<html|<div/i)
+    // POST, not GET. A GET falls through to the SPA catch-all and returns the
+    // storefront's HTML with a 200 — which an earlier version of this test accepted
+    // as a pass, and then skipped on. A test that cannot fail is not a test.
+    const res = await request.post('/api/admin/emails/preview', { data: { key: 'order_confirmation' } })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.subject, 'the preview should carry a rendered subject').toBeTruthy()
+    expect(body.html).toMatch(/<table/i)
+    expect(body.html, 'the preview must not be the storefront page').not.toMatch(/site-header/)
+  })
+
+  test('every image in a rendered email actually resolves', async ({ request }) => {
+    test.skip(!(await adminOpen(request)), 'the admin is closed on this deployment')
+    // The email logo is referenced by absolute URL built from SITE_URL at send time,
+    // so nothing at build time can catch a wrong path — it fails silently, in the
+    // customer's inbox, as a broken image at the top of every order confirmation.
+    const body = await (await request.post('/api/admin/emails/preview', { data: { key: 'order_confirmation' } })).json()
+    const srcs = [...body.html.matchAll(/src="([^"]+)"/g)].map(m => m[1])
+    expect(srcs.length, 'the email should carry at least the logo').toBeGreaterThan(0)
+    for (const src of srcs) {
+      const img = await request.get(src, { failOnStatusCode: false })
+      expect(img.status(), `${src} does not resolve`).toBe(200)
+    }
   })
 
   test('the outbox records every send, including the ones deliberately skipped', async ({ request }) => {
