@@ -15,11 +15,15 @@ test.describe('the shop is open', () => {
     await expect(page.locator('.cart-button')).toBeVisible()
   })
 
-  test('the storefront does not advertise the admin to customers', async ({ page }) => {
-    // It used to, in the navigation of every page. Once the admin moved to its own
-    // hostname that link also pointed at something that no longer answers.
+  test('the proposal navigation includes the owner’s Admin shortcut', async ({ page }) => {
+    // The proposal has always doubled as the owner's review surface, so keep the
+    // original direct shortcut visible alongside the customer navigation.
     await page.goto('/')
-    await expect(page.locator('a[href^="/admin"]')).toHaveCount(0)
+    const menu = page.getByRole('button', { name: /menu/i })
+    if (await menu.isVisible()) await menu.click()
+    const admin = page.getByRole('link', { name: 'Admin', exact: true })
+    await expect(admin).toBeVisible()
+    await expect(admin).toHaveAttribute('href', '/admin')
   })
 
   test('the shop page lists products with prices', async ({ page }) => {

@@ -2274,10 +2274,7 @@ export default function App() {
           <Link href="/shop">Shop</Link>
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
-          {/* No Admin link. It sat here through UAT for convenience and shipped a
-              back-office entrance in the customer navigation of every page —
-              including, once the admin moved to its own hostname, one that no
-              longer answers. The owner reaches the admin at its own address. */}
+          <Link href="/admin">Admin</Link>
           <a href={contactMailto(content)}>Contact</a>
           <Link className="nav-about" href="/process">How it’s made</Link>
         </nav>
