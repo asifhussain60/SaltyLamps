@@ -21,6 +21,10 @@
 //                     fail-closed default prevents a new preview project from
 //                     publishing the owner portal before Access is configured.
 //
+//   ADMIN_OPEN_HOSTS  Test/UAT hostnames where the owner can review the admin
+//                     without Cloudflare Access. This must never include the
+//                     customer-facing production hostname.
+//
 //   PUBLIC_HOST       The one hostname that is the real shop, for search engines.
 //                     Anything else serving the same build — the .pages.dev
 //                     address, a preview alias, the admin subdomain — is a
@@ -75,6 +79,11 @@ export function isAdminHost(hostname, env) {
   const list = env?.ADMIN_HOSTS
   if (!String(list || '').trim()) return false
   return hostMatches(hostname, list)
+}
+
+export function isAdminOpenHost(hostname, env) {
+  if (!hostname || isLocalHost(hostname)) return false
+  return hostMatches(hostname, env?.ADMIN_OPEN_HOSTS)
 }
 
 // Has an admin host actually been configured? Distinct from isAdminHost() because

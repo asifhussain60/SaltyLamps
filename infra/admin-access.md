@@ -1,8 +1,13 @@
 # Getting into the admin on the test site
 
-The admin API is closed. Every request to it answers *"Admin authentication is not
-configured"* — including yours. That is deliberate and it is the correct state: the
-alternative, which is what it was doing until 2 August 2026, is answering everybody.
+> **Current proposal state, 2026-09-13:** the owner-review site is deliberately open only on
+> `salty-lamps-proposal.pages.dev` through the hostname-scoped `ADMIN_OPEN_HOSTS` exception. This
+> restores the original sample-data review workflow. Remove that exception and complete the Access
+> setup below before any customer-domain cutover.
+
+The production design keeps the admin API closed until Cloudflare Access verifies the owner. The
+proposal site currently uses the explicit hostname-scoped review exception described above; no
+other deployed hostname inherits it.
 
 This is what it takes to open it again for the right people.
 

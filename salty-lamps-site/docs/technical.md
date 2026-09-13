@@ -133,7 +133,9 @@ Correcting the details afterwards does **not** re-send the email — the notice 
 
 **1. Does the admin exist at this hostname?** `ADMIN_HOSTS` (via `functions/lib/admin-hosts.mjs`) names where it lives. Anywhere else the answer is **404**, not 401. An unset value also means nowhere on deployed hosts, so a new preview fails closed. The `/admin` HTML itself is handled by the root `functions/_middleware.js`, because `_redirects` sources must be relative paths and so can never match on hostname.
 
-**2. May this request skip the sign-in?** Only local development may skip sign-in, using `DEV_ADMIN_BYPASS` on localhost. No deployed hostname has an unauthenticated bypass.
+**2. May this request skip the sign-in?** Local development may use `DEV_ADMIN_BYPASS` on localhost.
+The owner-review deployment may also use `ADMIN_OPEN_HOSTS`, which is pinned to the exact proposal
+hostname. That proposal exception must be removed before a customer-domain cutover.
 
 **3. Who is this?** The Access JWT (`Cf-Access-Jwt-Assertion` header or `CF_Authorization` cookie), requiring **RS256**, verified against the cached team **JWKS** for signature, issuer, expiry and **audience** (`ACCESS_AUD`), then the caller's email exposed for audit logging. It **fails closed**: if `ACCESS_AUD` or `ACCESS_TEAM_DOMAIN` is missing it returns 503.
 
@@ -164,6 +166,7 @@ Secrets are set with `wrangler pages secret put` (never committed):
 | `STRIPE_WEBHOOK_SECRET` | webhook signature verification |
 | `SITE_URL` | Stripe success/cancel redirects |
 | `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN` | admin auth middleware |
+| `ADMIN_HOSTS`, `ADMIN_OPEN_HOSTS` | proposal-only owner review routing |
 | `DEV_ADMIN_BYPASS` | dev/UAT admin bypass (never in prod) |
 | `RESEND_API_KEY` | transactional email sender (see `functions/lib/mailer.mjs`) |
 | `MAIL_DRY_RUN` | dev/UAT only — log and record every email without delivering it |

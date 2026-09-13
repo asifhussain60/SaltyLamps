@@ -26,7 +26,9 @@
 //   ACCESS_TEAM_DOMAIN  e.g. "saltylamps" or "saltylamps.cloudflareaccess.com"
 //   ACCESS_AUD          the Access application Audience (AUD) tag
 
-import { hostnameOf, isAdminHost, isLocalHost, isTruthy } from '../../lib/admin-hosts.mjs'
+import {
+  hostnameOf, isAdminHost, isAdminOpenHost, isLocalHost, isTruthy,
+} from '../../lib/admin-hosts.mjs'
 
 const JWKS_TTL_MS = 60 * 60 * 1000 // 1 hour
 const jwksCache = new Map() // teamDomain -> { keys, fetchedAt }
@@ -102,6 +104,10 @@ function openAccessReason(hostname, env) {
 
   if (isTruthy(env.DEV_ADMIN_BYPASS) && isLocalHost(hostname)) {
     return { reason: 'local', actor: 'dev@localhost' }
+  }
+
+  if (isAdminOpenHost(hostname, env)) {
+    return { reason: 'open-host', actor: `proposal-owner@${hostname}` }
   }
 
   return null

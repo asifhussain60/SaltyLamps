@@ -891,9 +891,9 @@ npm run build && npx wrangler pages deploy dist --project-name salty-lamps --bra
                 whether anybody else can.
               </Check>
               <Check id="pa-openhosts">
-                <strong>Make sure no retired bypass setting remains.</strong> Remove any old
-                <code> ADMIN_OPEN_HOSTS</code> setting. Current code ignores it, and deleting it
-                prevents an older rollback from reopening the portal.
+                <strong>Remove the proposal review shortcut.</strong> Delete
+                <code> ADMIN_OPEN_HOSTS</code> before the customer-domain cutover. It deliberately
+                opens only the proposal hostname for owner review and must never name the shop.
               </Check>
             </CheckList>
 

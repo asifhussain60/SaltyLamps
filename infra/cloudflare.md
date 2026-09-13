@@ -120,6 +120,9 @@ from stdin — never pass it as a CLI argument, it'd land in shell history):
   hostname and `/admin` plus `/api/admin/*` answer 404 on every other hostname. An entry beginning
   with a dot matches subdomains. Not a secret, but set the same way for consistency. Logic in
   `functions/lib/admin-hosts.mjs`
+- `ADMIN_OPEN_HOSTS` — dev/UAT-only owner review shortcut. The proposal currently names only
+  `salty-lamps-proposal.pages.dev`, restoring its original clickable Admin experience without
+  changing Wix or the customer domain. Never add a customer-facing production hostname.
 - `PUBLIC_HOST` — optional. The one hostname search engines should treat as the real shop; falls
   back to the host in `SITE_URL`. Every other hostname serving the same build — the `.pages.dev`
   address, preview aliases, the admin subdomain — gets `X-Robots-Tag: noindex` and a

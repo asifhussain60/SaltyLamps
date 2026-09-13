@@ -167,7 +167,8 @@ The admin stops being a page on the shop and becomes `admin.saltylamps.co.uk`.
    secrets bind at deploy time.
 5. Prove both directions: `/admin` and `/api/admin/*` must be **absent** from the shop's hostname,
    and the admin hostname must ask for a sign-in.
-6. `ADMIN_OPEN_HOSTS` must not exist on this project. It opens the admin with no sign-in at all.
+6. Remove the proposal-only `ADMIN_OPEN_HOSTS` shortcut before the production-domain cutover. It
+   exists only on `salty-lamps-proposal.pages.dev` for owner review and must never name the shop.
 
 > **`ADMIN_HOSTS` unset means the admin is served nowhere on deployed hosts.** Local development remains available on localhost.
 > That is deliberate: a deployment without completed Access setup remains closed. Correct the

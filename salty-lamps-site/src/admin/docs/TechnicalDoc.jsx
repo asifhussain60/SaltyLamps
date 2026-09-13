@@ -209,6 +209,11 @@ export default function TechnicalDoc() {
         <code>DEV_ADMIN_BYPASS=1</code> skips sign-in only when the request arrived on localhost and
         treats the caller as <code>dev@localhost</code>. Deployed hosts ignore it.
       </Callout>
+      <Callout tone="warn" title="Proposal owner review">
+        <code>ADMIN_OPEN_HOSTS</code> names the proposal hostname where the owner can review sample
+        data without Access. It must be removed before the customer-domain cutover and must never
+        contain a production hostname.
+      </Callout>
 
       <h2>10. Checkout &amp; payments</h2>
       <Figure src={checkoutUrl} alt="Checkout: create Stripe session → pay on Stripe → webhook → save order." caption="checkout.js creates the session; webhook.js records the paid order." />
@@ -237,6 +242,7 @@ export default function TechnicalDoc() {
             <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>webhook signature verification</td></tr>
             <tr><td><code>SITE_URL</code></td><td>Stripe success/cancel redirects</td></tr>
             <tr><td><code>ACCESS_AUD</code>, <code>ACCESS_TEAM_DOMAIN</code></td><td>admin auth middleware</td></tr>
+            <tr><td><code>ADMIN_HOSTS</code>, <code>ADMIN_OPEN_HOSTS</code></td><td>proposal-only owner review routing</td></tr>
             <tr><td><code>DEV_ADMIN_BYPASS</code></td><td>localhost-only development bypass</td></tr>
             <tr><td><code>RESEND_API_KEY</code></td><td>transactional email sender</td></tr>
             <tr><td><code>MAIL_DRY_RUN</code></td><td>dev/UAT only — log and record every email without delivering it</td></tr>

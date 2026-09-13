@@ -209,3 +209,21 @@ No enquiry, refund, newsletter, email test, checkout, delete, or record-edit act
 6. Repair overlay focus and admin form semantics.
 7. Remove editorial copy, loading flashes, and navigation ambiguity.
 8. Complete a true mobile-device and paid test-checkout verification before release.
+
+## Follow-up: proposal Admin loading regression
+
+**Reproduction.** The Admin navigation and page shell loaded on the proposal site, but Dashboard
+and every other owner view showed “Not found” because their data requests returned 404.
+
+**Root cause.** The hostname gate had been changed to serve Admin nowhere when `ADMIN_HOSTS` was
+unset. The Admin link was later restored without restoring the proposal site's matching access
+configuration.
+
+**Data check.** The remote proposal database still contained the catalogue and review data: 35
+products, 10 categories, 200 reviews, and three Stripe test orders. No data restoration was needed.
+
+**Repair.** The exact proposal hostname is now named by both `ADMIN_HOSTS` and the proposal-only
+`ADMIN_OPEN_HOSTS` owner-review exception. The Wix site, customer domain, and DNS were not changed.
+
+**Verification.** Dashboard, Orders, Products, Categories, Inventory, Reports, Emails, Settings,
+and all four Documentation views rendered successfully on both desktop and mobile browser profiles.

@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  adminSplitConfigured, hostMatches, isAdminHost, isLocalHost,
+  adminSplitConfigured, hostMatches, isAdminHost, isAdminOpenHost, isLocalHost,
   primaryAdminHost, publicHost, shouldDiscourageIndexing,
 } from '../functions/lib/admin-hosts.mjs'
 
@@ -22,6 +22,14 @@ test('with ADMIN_HOSTS set, only that hostname serves the admin', () => {
   assert.equal(isAdminHost('www.saltylamps.co.uk', env), false)
   assert.equal(isAdminHost('saltylamps.co.uk', env), false)
   assert.equal(adminSplitConfigured(env), true)
+})
+
+test('an explicitly named proposal host may use the owner review shortcut', () => {
+  const env = { ADMIN_OPEN_HOSTS: 'salty-lamps-proposal.pages.dev' }
+  assert.equal(isAdminOpenHost('salty-lamps-proposal.pages.dev', env), true)
+  assert.equal(isAdminOpenHost('preview.salty-lamps-proposal.pages.dev', env), false)
+  assert.equal(isAdminOpenHost('www.saltylamps.co.uk', env), false)
+  assert.equal(isAdminOpenHost('localhost', env), false)
 })
 
 test('a laptop always reaches the admin, whatever the variable says', () => {
