@@ -1,3 +1,4 @@
+import {useEffect,useRef,useId} from 'react'
 // Shared admin UI primitives: the icon set and the themed confirm modal.
 //
 // Split out of AdminApp.jsx so the admin docs pages (src/admin/docs/*) can use the same
@@ -69,12 +70,30 @@ export function Icon({ name, size = 16, solid = false, tone, className = '' }) {
 }
 
 export function Confirm({ open, title, message, confirmLabel = 'Confirm', danger, onConfirm, onCancel }) {
+  const dialog=useRef(null), previousFocus=useRef(null)
+  const titleId=useId(), descriptionId=useId()
+  useEffect(()=>{
+    if(!open)return
+    previousFocus.current=document.activeElement
+    dialog.current?.querySelector('button')?.focus()
+    const keydown=e=>{
+      if(e.key==='Escape'){e.preventDefault();onCancel();return}
+      if(e.key!=='Tab')return
+      const buttons=dialog.current?.querySelectorAll('button:not([disabled]),a[href],input,select,textarea,[tabindex="0"]')
+      if(!buttons?.length)return
+      const first=buttons[0],last=buttons[buttons.length-1]
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener('keydown',keydown)
+    return()=>{document.removeEventListener('keydown',keydown);previousFocus.current?.focus()}
+  },[open,onCancel])
   if (!open) return null
   return (
     <div className="admin-modal-backdrop" onClick={onCancel}>
-      <div className="admin-modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-        <h3>{danger && <Icon name="alertTriangle" tone="ember" className="admin-card-icon" />}{title}</h3>
-        <p>{message}</p>
+      <div ref={dialog} className="admin-modal" role="dialog" aria-labelledby={titleId} aria-describedby={descriptionId} aria-modal="true" onClick={e => e.stopPropagation()}>
+        <h3 id={titleId}>{danger && <Icon name="alertTriangle" tone="ember" className="admin-card-icon" />}{title}</h3>
+        <p id={descriptionId}>{message}</p>
         <div className="admin-modal-actions">
           <button className="admin-btn admin-btn--ghost" onClick={onCancel}>Cancel</button>
           <button className={`admin-btn ${danger ? 'admin-btn--danger' : 'admin-btn--primary'}`} onClick={onConfirm}>

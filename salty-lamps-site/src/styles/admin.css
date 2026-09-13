@@ -799,3 +799,36 @@
 .admin-email-editor .admin-modal-actions .admin-input { max-width: 260px; }
 .admin-email-preview { display: block; }
 
+
+.admin-option-photo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.admin-option-photo img { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; background: #fffaf4; }
+.admin-option-photo select { min-width: 120px; }
+.admin-sku-row { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
+
+/* Weight workflows share the existing admin tokens and form language. */
+.admin-weight-fields { grid-column:1 / -1; min-width:0; border:0; border-top:1px solid var(--line); padding:18px 0 0; margin:12px 0 0; }
+.admin-weight-fields legend {float:left;width:100%;font-size:1rem;font-weight:700;margin-bottom:8px;}
+.admin-weight-fields > p {clear:both;}
+.admin-weight-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start; }
+.admin-weight-grid > * {min-width:0;}
+.admin-weight-check {display:flex;gap:10px;align-items:center;min-height:44px;font-size:.95rem;text-transform:none;}
+.admin-weight-check input {width:19px;height:19px;accent-color:var(--amber);flex-shrink:0;}
+.admin-weight-hint {display:block;margin-top:10px;font-size:.88rem;font-weight:400;text-transform:none;color:var(--muted);line-height:1.5;}
+.admin-weight-fields .admin-field-label {text-transform:none;}
+.admin-rate-card {min-width:0;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:22px 0;}
+.admin-rate-card legend {font-size:1rem;padding:0 8px;font-weight:700;}
+.admin-section-tabs {display:flex;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--line);}
+.admin-section-tabs button {background:transparent;border:0;border-bottom:3px solid transparent;padding:12px 14px;font:inherit;cursor:pointer;}
+.admin-section-tabs button.active {border-color:var(--amber);color:var(--ember);font-weight:700;}
+.admin-section-tabs button:focus-visible {outline:2px solid var(--amber);outline-offset:2px;}
+.admin-weight-save {position:sticky;bottom:0;background:var(--paper);padding:16px;z-index:3;}
+.admin-weight-review {background:#fff4df;border:1px solid #dcc49b;border-radius:var(--radius);padding:12px;color:#6f4b20;}
+.admin-field-hint {text-transform:none;font-weight:400;line-height:1.5;}
+@media(max-width:900px){.admin-weight-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.admin-weight-grid{grid-template-columns:1fr;}.admin-sku-row{grid-template-columns:1fr;}.admin-rate-card{padding:14px;}.admin-section-tabs{gap:3px;}.admin-section-tabs button{padding:12px 10px;}}
+/* Option photos and pricing need full fields, not a compressed inventory row. */
+.admin-sku-row {grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;}
+.admin-sku-row > .admin-field,.admin-option-photo,.admin-option-photo .admin-input {min-width:0;}
+.admin-sku-remove {grid-column:1 / -1;justify-self:end;}
+@media(max-width:900px){.admin-sku-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.admin-sku-row{grid-template-columns:1fr;}}

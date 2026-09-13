@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { resolveMedia } from '../src/content/media-map.mjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
@@ -7,6 +8,7 @@ import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 // already drifted — see the header of that module.
 import { combineSchemas, listSchema, productSchema, storeSchema } from '../src/content/schema.mjs'
 import { makeTaxonomy } from '../src/content/taxonomy.mjs'
+import { publicProduct } from '../functions/lib/public-copy.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -27,7 +29,8 @@ const today = new Date().toISOString().slice(0, 10)
 // copies of hardcoded modules. Everything downstream reads the same field names, so
 // only this unpacking changed.
 const snapshot = readSnapshot()
-const { products, categories, siteUrl, categoryAliases } = snapshot
+const { categories, siteUrl, categoryAliases } = snapshot
+const products = (snapshot.products || []).map(publicProduct)
 const content = snapshot.content || {}
 // Falls back for a snapshot written before the address was part of the content layer.
 // The Store schema is consumed by search engines, so an absent address has to become
@@ -61,8 +64,8 @@ const categoryRoute = slug => `/category/${cleanSlug(slug)}`
 const collectionRoute = (collectionSlug, categorySlug) =>
   categorySlug ? `/collection/${collectionSlug}/${cleanSlug(categorySlug)}` : `/collection/${collectionSlug}`
 const productRoute = product => `/product-page/${product.slug}`
-const absolute = urlPath => `${siteUrl}${urlPath}`
-const asset = urlPath => `${siteUrl}${urlPath}`
+const absolute = urlPath => `${siteUrl}${resolveMedia(urlPath)}`
+const asset = urlPath => `${siteUrl}${resolveMedia(urlPath)}`
 
 const staticRoutes = [
   {
@@ -105,9 +108,9 @@ const staticRoutes = [
   },
   {
     path: '/reviews',
-    title: 'Customer Reviews | Salty Lamps',
+    title: 'Customer Guestbook | Salty Lamps',
     description:
-      'Read verified Salty Lamps guestbook feedback about product quality, delivery, packaging, customer service, and repeat buying.',
+      'Read archived Salty Lamps guestbook comments about product quality, delivery, packaging, customer service, and repeat buying.',
     image: '/media/live-site-products/lamp-natural-gemini.jpg',
   },
   {
@@ -496,7 +499,7 @@ function assertReferencedMediaExists() {
   const referenced = new Set()
   const collect = value => {
     if (typeof value === 'string') {
-      if (value.startsWith('/media/')) referenced.add(value.split('?')[0])
+      if (value.startsWith('/media/')) referenced.add(resolveMedia(value.split('?')[0]))
     } else if (Array.isArray(value)) {
       value.forEach(collect)
     } else if (value && typeof value === 'object') {

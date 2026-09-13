@@ -44,10 +44,8 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    // The admin on the test site answers without a sign-in only for hostnames
-    // named in ADMIN_OPEN_HOSTS. Against a production site behind Cloudflare
-    // Access, supply a service token and these tests reach the admin the same way
-    // the catalogue tools do.
+    // Deployed administration is always behind Cloudflare Access. Supply a
+    // service token so automated checks can reach it without an interactive login.
     extraHTTPHeaders: process.env.CF_ACCESS_CLIENT_ID
       ? {
           'CF-Access-Client-Id': process.env.CF_ACCESS_CLIENT_ID,

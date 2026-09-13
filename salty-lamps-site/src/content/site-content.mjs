@@ -14,8 +14,10 @@
 // first, then shopperPaths and pages); this module is the staging post that makes
 // that move safe.
 
-export const img = name => `/media/live-site-products/${name}`
-export const media = name => `/media/${name}`
+import { resolveMedia } from './media-map.mjs'
+
+export const img = name => resolveMedia(`/media/live-site-products/${name}`)
+export const media = name => resolveMedia(`/media/${name}`)
 
 export const groupThemes = {
   'salt-lamps': 'lamp',
@@ -91,9 +93,9 @@ export const categories = [
   },
   {
     slug: 'salt-wall-panels',
-    name: 'Aura Collection',
+    name: 'Saltwood Frames',
     description: 'Illuminated Himalayan salt wall art in hand-finished wood frames.',
-    image: img('aura-collection-frame-detail-live-site.jpg'),
+    image: img('saltwood-frames-frame-detail-live-site.jpg'),
   },
 ]
 
@@ -189,14 +191,14 @@ export const shopperPaths = [
     foreground: [img('salt-bricks-clean-gemini.jpg'), img('massage-stones-gemini.jpg')],
   },
   {
-    slug: 'aura-collection',
-    name: 'The Aura Collection',
-    shortName: 'Aura Collection',
+    slug: 'saltwood-frames',
+    name: 'Saltwood Frames',
+    shortName: 'Saltwood Frames',
     eyebrow: 'Illuminated wall art',
     heading: 'Illuminated Himalayan salt wall art, framed by hand.',
     description: 'Luxury backlit salt panels in hand-finished wood frames — warm, unique wall art for homes, gyms, and studios.',
     heroIntro: [
-      'The Aura Collection is ',
+      'Saltwood Frames are ',
       { hl: 'illuminated Himalayan salt wall art' },
       ' — carved from ancient rock salt formed over millions of years, so ',
       { hl: 'every panel is unique' },
@@ -204,12 +206,12 @@ export const shopperPaths = [
       { hl: 'hand-finished solid-wood frame' },
       ' with mitred corners, pairs beautifully with wood, stone, linen, and plants, and comes in a range of sizes — from a single accent panel to a full statement wall, at home, in the studio, or in reception.',
     ],
-    heroVideo: media('video/collection/aura-collection-hero-16x9.mp4'),
-    heroPoster: media('video/collection/aura-collection-hero-poster-16x9.jpg'),
+    heroVideo: media('video/collection/saltwood-frames-hero-16x9.mp4'),
+    heroPoster: media('video/collection/saltwood-frames-hero-poster-16x9.jpg'),
     categories: ['salt-wall-panels'],
     theme: 'panel',
-    background: media('aura-collection-lifestyle.jpg'),
-    foreground: [img('aura-collection-frame-detail-live-site.jpg'), img('aura-collection-workshop-real-live-site.jpg')],
+    background: media('saltwood-frames-lifestyle.jpg'),
+    foreground: [img('saltwood-frames-frame-detail-live-site.jpg'), img('saltwood-frames-workshop-real-live-site.jpg')],
   },
 ]
 

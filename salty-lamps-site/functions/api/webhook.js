@@ -1,3 +1,4 @@
+import {weightsFromMetadata,WEIGHT_FIELDS} from '../lib/weights.mjs'
 // POST /api/webhook — Stripe webhook endpoint.
 // Configure this URL in the Stripe dashboard (Developers > Webhooks) listening
 // for `checkout.session.completed`, then store the signing secret as a Pages
@@ -116,6 +117,9 @@ async function recordOrder(env, stripe, session, origin) {
       ).bind(session.id, skuId, line.quantity, line.price.unit_amount)
     )
 
+    const recordedWeights=weightsFromMetadata(line.price?.product?.metadata||{})
+    statements.push(db.prepare(`INSERT INTO order_item_weights(order_id,sku_id,${WEIGHT_FIELDS.join(',')}) VALUES (?,?,?,?,?,?,?)`).bind(session.id,skuId,...WEIGHT_FIELDS.map(k=>recordedWeights[k])))
+
     // Only auto-decrement for items with a real tracked quantity. Binary
     // (InStock/OutOfStock) items are a manual toggle in Wix today and stay
     // that way here — flipping them to out-of-stock after one sale would be
@@ -166,10 +170,11 @@ async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin,
   if (!order) return
 
   const items = await db.prepare(
-    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name
+    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
      FROM order_items oi
      JOIN skus s ON s.id = oi.sku_id
      JOIN products p ON p.id = s.product_id
+     LEFT JOIN order_item_weights ow ON ow.order_id=oi.order_id AND ow.sku_id=oi.sku_id
      WHERE oi.order_id = ?`,
   ).bind(session.id).all()
 

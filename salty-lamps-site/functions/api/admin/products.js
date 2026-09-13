@@ -1,3 +1,5 @@
+import { weightStatement, WEIGHT_SELECT } from '../../lib/postage-store.mjs'
+import { validateWeights } from '../../lib/weights.mjs'
 // GET  /api/admin/products — every product (incl. hidden) with its SKUs nested.
 // POST /api/admin/products — create a product plus at least one SKU.
 import { json, apiError, validationError, readJson, auditStmt, assertCategoriesExist } from '../../lib/admin-helpers.mjs'
@@ -7,7 +9,7 @@ export async function onRequestGet({ env }) {
   try {
     const [products, skus, images] = await env.DB.batch([
       env.DB.prepare(`SELECT * FROM products ORDER BY name`),
-      env.DB.prepare(`SELECT * FROM skus ORDER BY product_id, id`),
+      env.DB.prepare(`SELECT s.*, ${WEIGHT_SELECT}, si.image_id FROM skus s LEFT JOIN sku_weights w ON w.sku_id=s.id LEFT JOIN sku_images si ON si.sku_id = s.id ORDER BY s.product_id, s.id`),
       env.DB.prepare(`SELECT * FROM product_images ORDER BY product_id, sort_order, id`),
     ])
     const byProduct = new Map()
@@ -46,9 +48,10 @@ export async function onRequestPost({ request, env, data }) {
 
   const skuValues = []
   for (let i = 0; i < skuInputs.length; i++) {
+    if (skuInputs[i].image_id != null && skuInputs[i].image_id !== '') return apiError('Save the product and upload its photos before assigning option images.', 400, { code: 'validation' })
     const res = validateSku(skuInputs[i])
     if (!res.ok) return validationError(res.errors, `Fix SKU ${i + 1}.`)
-    skuValues.push(res.value)
+    try { skuValues.push({ ...res.value, ...validateWeights(skuInputs[i]) }) } catch(e) { return apiError(e.message,400) }
   }
 
   const id = `product_${crypto.randomUUID()}`
@@ -60,12 +63,13 @@ export async function onRequestPost({ request, env, data }) {
         `INSERT INTO products (id, name, slug, description, image, categories, tags, visible)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(id, p.name, p.slug, p.description, p.image, p.categories, p.tags, p.visible),
-      ...skuValues.map(s =>
+      ...skuValues.flatMap(s => [
         env.DB.prepare(
           `INSERT INTO skus (sku, product_id, variant_label, price_pence, track_mode, quantity, in_stock)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
         ).bind(s.sku, id, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock),
-      ),
+        weightStatement(env.DB,null,s),
+      ]),
       auditStmt(env.DB, data.actorEmail, 'product.create', 'product', id, { name: p.name, skus: skuValues.length }),
     ]
     await env.DB.batch(stmts)

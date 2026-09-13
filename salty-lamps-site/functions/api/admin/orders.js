@@ -30,9 +30,10 @@ export async function onRequestGet({ request, env }) {
   try {
     const listStmt = env.DB.prepare(
       `SELECT o.id, o.created_at, o.customer_email, o.amount_total_pence, o.currency,
-              o.status, o.fulfilment_status, o.tracking_number,
+              o.status, o.fulfilment_status, o.tracking_number, op.actual_weight_g,op.actual_cost_pence,
+              (SELECT CASE WHEN COUNT(ow.packed_weight_g)=COUNT(oi.sku_id) THEN SUM(ow.packed_weight_g*oi.quantity) ELSE NULL END FROM order_items oi LEFT JOIN order_item_weights ow ON ow.order_id=oi.order_id AND ow.sku_id=oi.sku_id WHERE oi.order_id=o.id) AS recorded_weight_g,
               (SELECT COALESCE(SUM(quantity),0) FROM order_items WHERE order_id = o.id) AS item_count
-       FROM orders o
+       FROM orders o LEFT JOIN order_postage op ON op.order_id=o.id
        ${whereSql}
        ORDER BY o.created_at DESC
        LIMIT ? OFFSET ?`,

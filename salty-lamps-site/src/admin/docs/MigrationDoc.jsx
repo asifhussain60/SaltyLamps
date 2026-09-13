@@ -44,14 +44,14 @@ const IDS = {
   p3: ['p3-enable', 'p3-destination', 'p3-rules', 'p3-test', 'p3-zoho'],
   p4: ['p4-account', 'p4-domain', 'p4-records', 'p4-spf', 'p4-verify', 'p4-settings'],
   p5: ['p5-firstrun', 'p5-dbid', 'p5-deploy', 'p5-check', 'p5-orders'],
-  pc: ['pc-export', 'pc-import', 'pc-read', 'pc-plan', 'pc-apply', 'pc-images', 'pc-verify'],
+  pc: ['pc-export', 'pc-import', 'pc-read', 'pc-plan', 'pc-apply', 'pc-images', 'pc-verify', 'pc-reviewed-assets', 'pc-option-photos', 'pc-media-proof'],
   pa: ['pa-domain', 'pa-access', 'pa-policy', 'pa-aud', 'pa-secrets', 'pa-redeploy', 'pa-verify', 'pa-openhosts'],
   p6: ['p6-account', 'p6-keys', 'p6-webhook', 'p6-secrets', 'p6-testorder'],
   pr: ['pr-install', 'pr-run', 'pr-mobile', 'pr-shop', 'pr-basket', 'pr-admin', 'pr-orders', 'pr-products', 'pr-stock'],
   pe: ['pe-order', 'pe-adminalert', 'pe-shipped', 'pe-delivered', 'pe-refunded', 'pe-cancelled', 'pe-lowstock', 'pe-enquiry', 'pe-refundreq', 'pe-resend', 'pe-inbox'],
   pd: ['pd-zero', 'pd-order', 'pd-kpis', 'pd-charts', 'pd-reports', 'pd-clock'],
   ps: ['ps-speed', 'ps-schema', 'ps-redirects', 'ps-sitemap', 'ps-noindex', 'ps-copy'],
-  p7: ['p7-domain', 'p7-siteurl', 'p7-webhook', 'p7-redeploy', 'p7-redirects', 'p7-live'],
+  p7: ['p7-domain', 'p7-siteurl', 'p7-webhook', 'p7-redeploy', 'p7-redirects', 'p7-live', 'p7-media-proof'],
   p8: ['p8-gsc', 'p8-sitemap', 'p8-bing', 'p8-business'],
   p9: ['p9-export', 'p9-monitor', 'p9-wix', 'p9-zoho'],
 }
@@ -755,6 +755,24 @@ node scripts/catalogue-reset.mjs apply --api=https://salty-lamps.pages.dev`}</Co
                 there, so a new product arrives with nothing to show. Upload photographs in{' '}
                 <strong>Products</strong> before going live, or those items launch as blank cards.
               </Check>
+              <Check id="pc-reviewed-assets">
+                <strong>Carry the complete reviewed media release into the owner's account.</strong>{' '}
+                Include all 100 lighter images, collection posters, the Saltwood Frames and manufacturing films,
+                original recovery files and remaining uploaded photographs. Copy the whole media folder and
+                transfer remaining uploads into the owner's image bucket. Keep the manifests and backups together.
+              </Check>
+              <Check id="pc-option-photos">
+                <strong>Connect every option to its reviewed photo after the final catalogue import.</strong>{' '}
+                Apply the option-photo structure before deploying the new application, then apply the reviewed
+                assignments after importing today's catalogue. All 73 reviewed options must match. A renamed or
+                missing option must be reconciled; never bypass the check or reseed a shop with orders.
+              </Check>
+              <Check id="pc-media-proof">
+                <strong>Prove the destination has every reviewed image before switching the domain.</strong>{' '}
+                Run the media cutover check below: 100 matching files, 73 correct option assignments, zero failures.
+                Also verify remaining uploads and films, then try size choices, quick preview, gallery thumbnails
+                and the selected cart item. Preserve the results with the release backup.
+              </Check>
               <Check id="pc-verify">
                 <strong>Check the shop against the export.</strong> Open{' '}
                 <strong>Products</strong> and <strong>Inventory</strong> here and spot-check five
@@ -762,6 +780,14 @@ node scripts/catalogue-reset.mjs apply --api=https://salty-lamps.pages.dev`}</Co
                 what the import reported.
               </Check>
             </CheckList>
+
+            <Console title="Verify reviewed images on the owner's temporary site"
+              note="Use the owner's actual Pages address. Follow docs/media-cutover.md for full-media transfer, migration order and rollback. Every check must pass before the domain switch.">
+              {`npm run media:verify
+CONTENT_SNAPSHOT_SOURCE=committed npm run build
+# After deployment and the reviewed catalogue migration:
+npm run media:verify-cutover -- --url=https://salty-lamps.pages.dev`}
+            </Console>
 
             <Console
               title="Count what is actually in the new shop"
@@ -865,10 +891,9 @@ npm run build && npx wrangler pages deploy dist --project-name salty-lamps --bra
                 whether anybody else can.
               </Check>
               <Check id="pa-openhosts">
-                <strong>Make sure the open-door setting names nothing here.</strong> There is a
-                setting called <code>ADMIN_OPEN_HOSTS</code> that lets the test site's admin
-                answer without a sign-in. If it exists on this production project at all, remove
-                it. The last check in the block below is what proves it.
+                <strong>Make sure no retired bypass setting remains.</strong> Remove any old
+                <code> ADMIN_OPEN_HOSTS</code> setting. Current code ignores it, and deleting it
+                prevents an older rollback from reopening the portal.
               </Check>
             </CheckList>
 
@@ -1322,6 +1347,12 @@ npm run build && npx wrangler pages deploy dist --project-name salty-lamps --bra
                 Phase 11 with one word changed, and it is the fastest way to know the switch went
                 cleanly.
               </Check>
+              <Check id="p7-media-proof">
+                <strong>Repeat the complete media check on the real domain.</strong>{' '}
+                Run <code>npm run media:verify-cutover -- --url=https://www.saltylamps.co.uk</code>.
+                Require zero failures, inspect size previews and collection images, play both generated films,
+                and keep the successful results. The temporary site passing does not prove the domain cutover passed.
+              </Check>
               <Check id="p7-live">
                 Open the shop as a customer would. Buy something small, for real, and refund it.
                 Confirm the confirmation email arrives — the address in its links has just
@@ -1473,8 +1504,8 @@ curl -s -o /dev/null -w "  saltylamps.co.uk -> %{http_code}\\n" https://saltylam
               </tr>
               <tr>
                 <td><strong>Phase 9</strong> — you cannot get into the admin</td>
-                <td>Remove the <code>ADMIN_HOSTS</code> setting and republish. The admin returns to the shop's own address exactly as before while you sort the sign-in out.</td>
-                <td>One republish, about two minutes.</td>
+                <td>Keep the portal closed, correct the Access application or secrets, and republish. Do not move the portal back onto the public shop.</td>
+                <td>One republish after the Access settings are corrected.</td>
               </tr>
               <tr>
                 <td><strong>Phase 15</strong> — the shop is live and something is badly wrong</td>

@@ -1,7 +1,10 @@
+import { weightStatement, hasWeightInput } from '../../../lib/postage-store.mjs'
+import { validateWeights } from '../../../lib/weights.mjs'
 // PATCH  /api/admin/skus/:id — update a SKU / variant.
 // DELETE /api/admin/skus/:id — delete, but only when no order references it.
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
 import { validateSku } from '../../../lib/validation.mjs'
+import { checkOptionImage, optionImageStatements } from '../../../lib/option-images.mjs'
 
 export async function onRequestPatch({ params, request, env, data }) {
   const [body, bodyErr] = await readJson(request)
@@ -14,14 +17,19 @@ export async function onRequestPatch({ params, request, env, data }) {
   if (!ok) return validationError(errors)
 
   try {
-    const existing = await env.DB.prepare(`SELECT id FROM skus WHERE id = ?`).bind(skuId).first()
+    const existing = await env.DB.prepare(`SELECT s.id, s.product_id,w.* FROM skus s LEFT JOIN sku_weights w ON w.sku_id=s.id WHERE s.id = ?`).bind(skuId).first()
     if (!existing) return apiError('SKU not found.', 404, { code: 'not_found' })
+    if(hasWeightInput(body)) { try { Object.assign(value,validateWeights(body,existing)) } catch(e) { return apiError(e.message,400) } }
+    const imageError = await checkOptionImage(env.DB, existing.product_id, body.image_id)
+    if (imageError) return imageError
 
     await env.DB.batch([
       env.DB.prepare(
         `UPDATE skus SET sku=?, variant_label=?, price_pence=?, track_mode=?, quantity=?, in_stock=? WHERE id=?`,
       ).bind(value.sku, value.variant_label, value.price_pence, value.track_mode, value.quantity, value.in_stock, skuId),
-      auditStmt(env.DB, data.actorEmail, 'sku.update', 'sku', skuId, value),
+      ...(hasWeightInput(body)?[weightStatement(env.DB,skuId,body,existing)]:[]),
+      ...optionImageStatements(env.DB, skuId, body.image_id),
+      auditStmt(env.DB, data.actorEmail, 'sku.update', 'sku', skuId, { ...value, ...(body.image_id !== undefined ? { image_id: body.image_id } : {}) }),
     ])
     return json({ id: skuId })
   } catch (err) {

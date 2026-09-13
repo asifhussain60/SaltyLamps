@@ -14,14 +14,6 @@
 // nothing — see the bypass block in onRequest for why that is now enforced rather
 // than merely documented.
 //
-// Open test site: ADMIN_OPEN_HOSTS names the hostnames — and only those — where the
-// admin answers with no sign-in at all. It exists because the test site has to be
-// clickable by the owner before Cloudflare Access is set up, and it is deliberately
-// a list of hostnames rather than an on/off flag: a flag follows the code to
-// production, a hostname does not. When the shop moves to its own domain the list
-// will not match it and the admin will be closed there by default, with no one
-// having to remember anything.
-//
 // Separate hostname: ADMIN_HOSTS names where the admin EXISTS, which is a different
 // question from who may use it. On any other hostname this API answers 404 before
 // it considers a token at all, so the customer-facing domain carries no admin
@@ -34,7 +26,7 @@
 //   ACCESS_TEAM_DOMAIN  e.g. "saltylamps" or "saltylamps.cloudflareaccess.com"
 //   ACCESS_AUD          the Access application Audience (AUD) tag
 
-import { hostMatches, hostnameOf, isAdminHost, isLocalHost, isTruthy } from '../../lib/admin-hosts.mjs'
+import { hostnameOf, isAdminHost, isLocalHost, isTruthy } from '../../lib/admin-hosts.mjs'
 
 const JWKS_TTL_MS = 60 * 60 * 1000 // 1 hour
 const jwksCache = new Map() // teamDomain -> { keys, fetchedAt }
@@ -60,22 +52,14 @@ export async function onRequest(context) {
   // --- does the admin exist at this hostname at all? ----------------------
   // Asked first, and answered with 404 rather than 401, because 401 confirms the
   // endpoint is there — and on the customer-facing domain the honest answer is
-  // that it is not. Unset ADMIN_HOSTS means "everywhere", which is what this
-  // project did before the admin moved to its own subdomain, so a deployment that
-  // never sets it behaves exactly as it always has.
+  // that it is not. An unset ADMIN_HOSTS also returns 404 on deployed hosts.
   if (!isAdminHost(hostname, env)) {
     return sealResponse(new Response(JSON.stringify({
       error: { code: 'not_found', message: 'Not found.' },
     }), { status: 404, headers: { 'content-type': 'application/json' } }))
   }
 
-  // --- no-sign-in access, scoped to named hostnames ----------------------
-  // Trusting a bare on/off flag was a real incident: DEV_ADMIN_BYPASS was set as a
-  // production secret on the test site and left there, and this gate honoured it
-  // wherever it found it, which served the whole catalogue, the whole order list and
-  // the delete and refund routes to anyone who asked. Both doors below are therefore
-  // tied to WHERE the request arrived, not just to whether someone set a variable:
-  // a flag travels with the code to production, a hostname does not.
+  // --- no-sign-in access, local development only -------------------------
   const openAs = openAccessReason(hostname, env)
   if (openAs) {
     data.actorEmail = openAs.actor
@@ -112,18 +96,12 @@ export async function onRequest(context) {
 
 // ---------------------------------------------------------------------------
 
-// Why the door is open, or null when it is not. Two ways in, both pinned to the
-// hostname the request actually arrived at — see ../../lib/admin-hosts.mjs for why
-// that is the load-bearing detail rather than an implementation choice.
+// The only no-sign-in path is an explicit local-development bypass.
 function openAccessReason(hostname, env) {
   if (!hostname) return null
 
   if (isTruthy(env.DEV_ADMIN_BYPASS) && isLocalHost(hostname)) {
     return { reason: 'local', actor: 'dev@localhost' }
-  }
-
-  if (hostMatches(hostname, env.ADMIN_OPEN_HOSTS)) {
-    return { reason: 'open-host', actor: `no-sign-in@${hostname}` }
   }
 
   return null

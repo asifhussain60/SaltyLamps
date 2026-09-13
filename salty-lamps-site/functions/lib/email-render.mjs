@@ -159,7 +159,7 @@ function blockItems({ title = 'Order details', items = [], totals = [] }) {
     </tr>`
 
   const rows = items.map(item => {
-    const meta = [item.variant, item.sku ? `SKU ${item.sku}` : '', item.unit ? `${item.unit} each` : '']
+    const meta = [item.variant, item.weight ? `Product weight: ${item.weight} each (excluding packaging)` : '', item.sku ? `SKU ${item.sku}` : '', item.unit ? `${item.unit} each` : '']
       .filter(Boolean).join(' · ')
     return `
       <tr>

@@ -6,13 +6,13 @@
 // happened, and if it does not answer on the admin domain the owner is locked out
 // of their own business.
 //
-// It also proves the third thing, which is the one nobody thinks to check: with
-// ADMIN_HOSTS unset, everything behaves exactly as it did before any of this
-// existed. That is what makes the change safe to deploy ahead of the cutover.
+// It also proves that an unconfigured deployment fails closed rather than
+// publishing the owner portal on a new preview hostname.
 import { expect, test } from '@playwright/test'
 
 const ADMIN_HOST = process.env.E2E_ADMIN_HOST || null
 const SPLIT_EXPECTED = Boolean(ADMIN_HOST)
+const IS_LOCAL = /127\.0\.0\.1|localhost/.test(process.env.E2E_BASE_URL || 'http://127.0.0.1:8788')
 
 test.describe('admin responses are never cached', () => {
   // A previously-authorised 200 replayed to a stranger is the whole reason this
@@ -26,18 +26,25 @@ test.describe('admin responses are never cached', () => {
 
 test.describe('when the split is not configured', () => {
   test.skip(SPLIT_EXPECTED, 'E2E_ADMIN_HOST is set, so the split is expected')
+  test.skip(IS_LOCAL, 'the owner portal is deliberately available on the local development server')
 
-  // The behaviour this project had before the admin moved. Unset means unchanged.
-  test('the admin is reachable on the site being tested', async ({ page }) => {
+  test('the admin is absent from the site being tested', async ({ page }) => {
     const res = await page.goto('/admin')
-    expect(res.status()).toBe(200)
+    expect(res.status()).toBe(404)
   })
 
-  test('the admin API answers something other than 404', async ({ request }) => {
+  test('the admin API is absent', async ({ request }) => {
     const res = await request.get('/api/admin/stats', { failOnStatusCode: false })
-    // 200 on an open test site, 401/503 where Access is configured — any of those
-    // means the endpoint exists. 404 would mean the host gate refused it.
-    expect(res.status(), 'unset ADMIN_HOSTS must not hide the admin').not.toBe(404)
+    expect(res.status()).toBe(404)
+  })
+})
+
+test.describe('local owner access', () => {
+  test.skip(!IS_LOCAL, 'this exception applies only to the local development server')
+
+  test('the owner portal remains usable on the laptop', async ({ page, request }) => {
+    expect((await page.goto('/admin')).status()).toBe(200)
+    expect((await request.get('/api/admin/stats')).status()).toBe(200)
   })
 })
 

@@ -47,7 +47,7 @@ Resend (settled in [`email.md`](email.md), not to be re-opened).
 | D1 database | `salty-lamps-db` | `DB` | Fresh and empty; catalogue seeded once, **never** demo orders |
 | R2 bucket | `salty-lamps-images` | `IMAGES` | Admin-uploaded product photos, served at `/api/images/<key>` |
 | Zone | `saltylamps.co.uk` | — | Moved from Wix nameservers, see §3 |
-| Custom domain | `admin.saltylamps.co.uk` | — | Second custom domain on the SAME Pages project. Cloudflare Access fronts the whole hostname; `ADMIN_HOSTS` makes `/admin` and `/api/admin/*` answer there and 404 everywhere else. Unset, the admin is served everywhere, exactly as before the split existed — so the code ships safely ahead of the cutover |
+| Custom domain | `admin.saltylamps.co.uk` | — | Second custom domain on the SAME Pages project. Cloudflare Access fronts the whole hostname; `ADMIN_HOSTS` makes `/admin` and `/api/admin/*` answer there and 404 everywhere else. Unset, the admin is served nowhere on deployed hosts, so the code ships safely ahead of the protected-host cutover. |
 
 R2 needs a **one-time account opt-in** in the dashboard before any bucket can be
 created; without it every create is refused with error `10042`. This caught the gmail

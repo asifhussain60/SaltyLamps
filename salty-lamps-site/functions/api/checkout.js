@@ -1,3 +1,5 @@
+import {weightMetadata,weightLabel,quotePostage} from '../lib/weights.mjs'
+import {readPostageConfig} from '../lib/postage-store.mjs'
 // POST /api/checkout
 // Body: { items: [{ skuId: number, quantity: number }] }
 // Looks up each line server-side in D1 (never trusts a client-sent price),
@@ -53,6 +55,7 @@ export async function onRequestPost({ request, env }) {
   })
 
   const lineItems = []
+  const deliveryLines = []
   for (const item of items) {
     const skuId = Number(item?.skuId)
     const quantity = Number(item?.quantity)
@@ -61,8 +64,8 @@ export async function onRequestPost({ request, env }) {
     }
 
     const row = await env.DB.prepare(
-      `SELECT s.id, s.sku, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock, p.name
-       FROM skus s JOIN products p ON p.id = s.product_id
+      `SELECT s.id, s.sku, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock, p.name, w.product_weight_min_g,w.product_weight_max_g,w.packed_weight_g,w.postal_group,w.weight_public
+       FROM skus s JOIN products p ON p.id = s.product_id LEFT JOIN sku_weights w ON w.sku_id=s.id
        WHERE s.id = ?`
     ).bind(skuId).first()
 
@@ -78,17 +81,33 @@ export async function onRequestPost({ request, env }) {
         unit_amount: row.price_pence,
         product_data: {
           name: row.variant_label ? `${row.name} — ${row.variant_label}` : row.name,
-          metadata: { sku_id: String(row.id), sku: row.sku },
+          metadata: { sku_id: String(row.id), sku: row.sku, ...weightMetadata(row) },
+          ...(row.weight_public===1 && row.product_weight_min_g!=null ? {description: `Product weight: ${weightLabel({productWeightMinG:row.product_weight_min_g,productWeightMaxG:row.product_weight_max_g})} per item or pack, excluding packaging.`} : {}),
         },
       },
     })
+    deliveryLines.push({ quantity, packed_weight_g: row.packed_weight_g, postal_group: row.postal_group })
+  }
+
+  const postage = quotePostage(deliveryLines, await readPostageConfig(env.DB), { country: 'GB' })
+  if (postage.status !== 'ready') {
+    return jsonError('Delivery for this basket needs a quote before payment. Please contact Salty Lamps and we will confirm the best option.', 409)
   }
 
   const siteUrl = env.SITE_URL || new URL(request.url).origin
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    metadata: { store: 'salty-lamps' },
     line_items: lineItems,
     shipping_address_collection: { allowed_countries: ['GB'] },
+    shipping_options: postage.options.map(option => ({
+      shipping_rate_data: {
+        type: 'fixed_amount',
+        fixed_amount: { amount: option.price_pence, currency: 'gbp' },
+        display_name: option.service,
+        metadata: { postage_rate_id: option.id, total_weight_g: String(postage.total_weight_g) },
+      },
+    })),
     branding_settings: BRANDING,
     success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}/checkout/cancelled`,

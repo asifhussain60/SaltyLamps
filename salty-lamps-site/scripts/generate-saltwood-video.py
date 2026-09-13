@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the Aura Collection hero video via the Gemini API (Veo 3.1).
+"""Generate the Saltwood Frames hero video via the Gemini API (Veo 3.1).
 
 Six ~8s presenter-led scenes forming one continuous piece: the same British
 woman speaks to camera throughout while the background morphs cinematically
@@ -20,9 +20,9 @@ prompts where each clip's background flows from the previous clip's end state.
 This also lets scene 1 open on a dark room that warms as the panel ignites.
 
 Clips are stitched with ffmpeg into
-public/media/video/collection/aura-collection-hero-16x9.mp4 and a warm poster
+public/media/video/collection/saltwood-frames-hero-16x9.mp4 and a warm poster
 frame is extracted, matching the naming of the existing hero videos. The prior
-video and poster are backed up to *.bak before overwrite.
+video and poster are backed up in the private render cache before overwrite.
 
 API key comes from the macOS Keychain item `gemini_api_key`.
 Copy stays claim-free: ambience, craftsmanship, uniqueness, sizes only —
@@ -44,7 +44,7 @@ OUT_DIR = SITE / "public" / "media" / "video" / "collection"
 REF_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else SITE / "scripts" / "video-refs"
 # Render cache lives OUTSIDE public/ so Vite never publishes the intermediate
 # clips (public/ is copied verbatim into dist/ on build).
-WORK = SITE / ".aura-render-cache"
+WORK = SITE / ".saltwood-render-cache"
 
 STYLE = (
     "Cinematic commercial footage, warm golden colour grading, soft lighting, "
@@ -181,7 +181,7 @@ SCENES = [
             "bookshelves and a leather armchair. She stands before three "
             f"panels matching the reference image — each {PRODUCT} — as the "
             "camera slowly, gently pushes in and the amber glow deepens. She "
-            "smiles warmly and says: \"The Aura Collection. Nature. "
+            "smiles warmly and says: \"Saltwood Frames. Nature. "
             "Simplicity. Discover yours.\""
         ),
     },
@@ -331,7 +331,7 @@ def stitch_crossfade(clips, final, xdur=0.6):
          "-filter_complex", ";".join(fc),
          "-map", "[vout]", "-map", "[aout]",
          "-c:v", "libx264", "-crf", "20", "-preset", "medium",
-         "-c:a", "aac", "-b:a", "128k", str(final)],
+         "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(final)],
         check=True,
     )
 
@@ -349,14 +349,14 @@ def main():
         print(f"scene {scene['name']}: generating...", flush=True)
         clips.append(generate_scene(scene, key))
 
-    final = OUT_DIR / "aura-collection-hero-16x9.mp4"
-    poster = OUT_DIR / "aura-collection-hero-poster-16x9.jpg"
+    final = OUT_DIR / "saltwood-frames-hero-16x9.mp4"
+    poster = OUT_DIR / "saltwood-frames-hero-poster-16x9.jpg"
 
     # Back up the current video and poster before overwriting, so a weaker
     # render can be reverted (cp -> *.bak, only if an original exists).
     for asset in (final, poster):
         if asset.exists():
-            backup = asset.with_suffix(asset.suffix + ".bak")
+            backup = WORK / (asset.name + ".bak")
             backup.write_bytes(asset.read_bytes())
             print(f"backed up {asset.name} -> {backup.name}", flush=True)
 

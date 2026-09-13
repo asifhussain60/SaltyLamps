@@ -11,12 +11,13 @@
 // write time and never leave the server. Enforcing it in SQL rather than in the
 // client means a suppressed quote cannot reach a browser at all.
 import { json, apiError } from '../lib/admin-helpers.mjs'
+import { isPublishableReview, PUBLIC_REVIEW_WHERE } from '../lib/public-copy.mjs'
 
 export async function onRequestGet({ env }) {
   try {
     const rows = await env.DB.prepare(
       `SELECT id, name, date_text, quote, proof, rating, featured, featured_order
-       FROM reviews WHERE display = 1 ORDER BY featured DESC, featured_order, name`,
+       FROM reviews WHERE ${PUBLIC_REVIEW_WHERE} ORDER BY featured DESC, featured_order, name`,
     ).all()
 
     return json(
@@ -24,7 +25,7 @@ export async function onRequestGet({ env }) {
         reviews: (rows.results || []).map(r => ({
           id: r.id, name: r.name, date: r.date_text, quote: r.quote,
           proof: r.proof, rating: r.rating, featured: !!r.featured,
-        })),
+        })).filter(isPublishableReview),
       },
       200,
       { 'cache-control': 'public, max-age=300' },

@@ -126,6 +126,10 @@ say "Applying schema + migrations to '$DB_NAME' (remote)…"
 wr d1 execute "$DB_NAME" --remote --file=d1/schema.sql
 for m in d1/migrations/*.sql; do
   [ -e "$m" ] || continue
+  if [ "$(basename "$m")" = "010-lighter-catalogue.sql" ]; then
+    warn "Deferred reviewed media assignments until after the final catalogue import: follow docs/media-cutover.md."
+    continue
+  fi
   apply_migration "$m"
 done
 

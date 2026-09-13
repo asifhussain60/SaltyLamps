@@ -32,10 +32,11 @@ export async function onRequestGet({ params, env }) {
     const items = await env.DB.prepare(
       `SELECT oi.sku_id, oi.quantity, oi.unit_price_pence,
               s.sku, s.variant_label, s.track_mode,
-              p.id AS product_id, p.name, p.image
+              p.id AS product_id, p.name, p.image, ow.packed_weight_g
        FROM order_items oi
        JOIN skus s ON s.id = oi.sku_id
        JOIN products p ON p.id = s.product_id
+       LEFT JOIN order_item_weights ow ON ow.order_id=oi.order_id AND ow.sku_id=oi.sku_id
        WHERE oi.order_id = ?`,
     ).bind(params.id).all()
 
@@ -180,10 +181,11 @@ async function notifyStatusChange(env, request, before, after, patch) {
   // Same join the GET handler above uses, so the despatch email lists the order
   // exactly as the admin sees it on screen.
   const items = await env.DB.prepare(
-    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name
+    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
      FROM order_items oi
      JOIN skus s ON s.id = oi.sku_id
      JOIN products p ON p.id = s.product_id
+       LEFT JOIN order_item_weights ow ON ow.order_id=oi.order_id AND ow.sku_id=oi.sku_id
      WHERE oi.order_id = ?`,
   ).bind(after.id).all()
 

@@ -62,7 +62,7 @@ interactive browser OAuth (sign into the hotmail account when the browser opens)
 ## Where the credentials live (this machine)
 
 Saved once in the macOS Keychain, read automatically by
-`deploy-cloudflare.sh` (same pattern as `scripts/generate-aura-video.py`'s
+`deploy-cloudflare.sh` (same pattern as `scripts/generate-saltwood-video.py`'s
 `gemini_api_key` lookup):
 
 | Keychain service | Account field | Holds |

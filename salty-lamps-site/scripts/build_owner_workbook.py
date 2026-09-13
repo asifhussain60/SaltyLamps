@@ -275,6 +275,11 @@ def build():
         ("STOCK you\nhave now", 11, FILL_FILL_IN),
         ("STILL\nSELLING?", 11, FILL_FILL_IN),
         ("Notes — please read, some rows have a question for you", 58, None),
+        ("Product weight from (kg)", 20, FILL_FILL_IN),
+        ("Product weight to (kg)", 20, FILL_FILL_IN),
+        ("Packed shipping weight (kg)", 22, FILL_FILL_IN),
+        ("Postal group", 20, FILL_FILL_IN),
+        ("Show product weight", 20, FILL_FILL_IN),
     ]
 
     ws["A1"] = ("Fill in the BLUE columns. The green one fills itself in as you type. Grey is reference only — "
@@ -346,11 +351,18 @@ def build():
                 n.fill = FILL_WARN
                 n.font = Font(bold=True, color="9B4328")
 
-            for col in range(1, 14):
+            for col, field in [(14,'product_weight_min_g'),(15,'product_weight_max_g'),(16,'packed_weight_g')]:
+                value = sku.get(field)
+                cell = ws.cell(row=row,column=col,value=None if value is None else value/1000)
+                cell.number_format = '0.000'
+                cell.fill = FILL_FILL_IN
+            ws.cell(row=row,column=17,value=sku.get('postal_group') or '').fill = FILL_FILL_IN
+            ws.cell(row=row,column=18,value='No' if sku.get('weight_public') == 0 else 'Yes').fill = FILL_FILL_IN
+            for col in range(1, 19):
                 ws.cell(row=row, column=col).border = BORDER
             row += 1
 
-    ws.auto_filter.ref = f"A2:M{row - 1}"
+    ws.auto_filter.ref = f"A2:R{row - 1}"
 
     # ------------------------------------------------------------- VAT & DELIVERY
     ws = wb.create_sheet("VAT & Delivery")

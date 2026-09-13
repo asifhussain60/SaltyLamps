@@ -115,11 +115,11 @@ from stdin — never pass it as a CLI argument, it'd land in shell history):
   — account, current UAT sender, and what still blocks customer email — in [`email.md`](email.md).
   Cloudflare cannot send this mail itself; that question is settled in `email.md`, don't re-open it
 - `MAIL_DRY_RUN` — dev/UAT only; renders and logs every email without handing it to the provider
-- `ADMIN_HOSTS` — comma-separated hostnames where the admin exists. **Unset means everywhere**,
-  which is the behaviour this project had before the admin moved to its own subdomain, so an
-  existing deployment that never sets it is unaffected. Set it and `/admin` plus `/api/admin/*`
-  answer 404 on every other hostname. An entry beginning with a dot matches subdomains. Not a
-  secret, but set the same way for consistency. Logic in `functions/lib/admin-hosts.mjs`
+- `ADMIN_HOSTS` — comma-separated hostnames where the admin exists. **Unset means nowhere on a
+  deployed host**, so a preview or incomplete setup fails closed. Set it to the protected owner
+  hostname and `/admin` plus `/api/admin/*` answer 404 on every other hostname. An entry beginning
+  with a dot matches subdomains. Not a secret, but set the same way for consistency. Logic in
+  `functions/lib/admin-hosts.mjs`
 - `PUBLIC_HOST` — optional. The one hostname search engines should treat as the real shop; falls
   back to the host in `SITE_URL`. Every other hostname serving the same build — the `.pages.dev`
   address, preview aliases, the admin subdomain — gets `X-Robots-Tag: noindex` and a

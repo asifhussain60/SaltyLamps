@@ -37,7 +37,7 @@ The admin portal is separated from the public shop — on the real shop, by host
 
 ![Admin auth: Cloudflare Access signs the admin in and issues a pass, which the site verifies on every admin request.](diagrams/admin-auth.svg)
 
-> ⚠️ **Note about the current test site:** the test site deliberately leaves the admin open so testers can try it freely. That is done by naming the test site's hostname in a setting called `ADMIN_OPEN_HOSTS` — a list of addresses rather than an on/off switch, precisely so it cannot follow the code to the real shop. A hostname does not travel; a switch does, and one once did. On the real shop the admin is closed and behind Cloudflare Access — see the Technical Documentation.
+> **Administration is never public.** Every deployed owner portal requires its dedicated hostname and Cloudflare Access. If either is missing, the storefront returns a not-found response and the owner data remains closed.
 
 ## Two separate environments
 

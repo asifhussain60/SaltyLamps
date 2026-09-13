@@ -1,7 +1,7 @@
 // Where the admin exists, and where it does not.
 //
-// The first test is the most important one in this file: it is the guarantee that
-// deploying the host split ahead of the cutover changes nothing at all.
+// The first test is the most important one in this file: every deployment fails
+// closed until its dedicated admin hostname is explicitly configured.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
@@ -9,9 +9,9 @@ import {
   primaryAdminHost, publicHost, shouldDiscourageIndexing,
 } from '../functions/lib/admin-hosts.mjs'
 
-test('with ADMIN_HOSTS unset, the admin is served exactly where it always was', () => {
-  assert.equal(isAdminHost('www.saltylamps.co.uk', {}), true)
-  assert.equal(isAdminHost('salty-lamps-proposal.pages.dev', {}), true)
+test('with ADMIN_HOSTS unset, deployed hosts do not serve the admin', () => {
+  assert.equal(isAdminHost('www.saltylamps.co.uk', {}), false)
+  assert.equal(isAdminHost('salty-lamps-proposal.pages.dev', {}), false)
   assert.equal(adminSplitConfigured({}), false)
   assert.equal(adminSplitConfigured({ ADMIN_HOSTS: '   ' }), false)
 })

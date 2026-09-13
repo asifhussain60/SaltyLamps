@@ -21,3 +21,6 @@ dist/
 # Archival copies of the live shop — pages, images and the indexed-URL inventory.
 # Large, regenerable while Wix is still up, and not source. Keep them, don't commit them.
 backups/
+
+# Generated review, verification, and workbook artifacts
+outputs/

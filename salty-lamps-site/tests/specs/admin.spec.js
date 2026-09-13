@@ -27,7 +27,7 @@ test.describe('the admin refuses strangers', () => {
   test('it never answers with data and never says 200 by accident', async ({ request }) => {
     const res = await request.get('/api/admin/orders', { failOnStatusCode: false })
     // 200 only where this deployment deliberately opens the admin (a laptop, or a
-    // hostname named in ADMIN_OPEN_HOSTS). Anywhere else: refused.
+    // localhost-only development bypass). Anywhere else: refused.
     expect([200, 401, 403, 404, 503]).toContain(res.status())
     if (res.status() !== 200) {
       expect(await res.text()).not.toMatch(/customer_email|amount_total_pence/)

@@ -127,6 +127,76 @@ def resolve_refs(target, ref_source):
     return resolved, problems
 
 
+def read_product_rows(ws):
+    """Find supported headers, never assume column positions or infer identities."""
+    def norm(s):
+        return re.sub(r"\s+", " ", str(s or "")).strip().lower()
+    aliases = {
+        'ref': ['ref', "ref (don't change)", 'ref (keep unchanged)'],
+        'product': ['product'], 'variant': ['size / option'],
+        'code': ['product code', 'product code (correct it if wrong)'],
+        'cost': ['your cost per unit £ (before vat)', 'unit cost before vat (£)'],
+        'pack': ['units in this pack', 'units per pack'],
+        'override': ['or set your own shop price £', 'shop price (£)'],
+        'stock': ['stock you have now', 'stock'], 'selling': ['still selling?'],
+        'note': ['notes — please read, some rows have a question for you', 'product notes'],
+        'packed_weight': ['packed weight (kg)', 'packed shipping weight (kg)'],
+        'product_weight_min': ['product weight from (kg)', 'product weight min (kg)'],
+        'product_weight_max': ['product weight to (kg)', 'product weight max (kg)'],
+        'postal_group': ['postal group'], 'weight_public': ['show product weight'],
+    }
+    lookup = {label: key for key, labels in aliases.items() for label in labels}
+    columns = None
+    for header in range(1, min(ws.max_row, 20)+1):
+        names = [norm(c.value) for c in ws[header]]
+        if any(lookup.get(n) == 'ref' for n in names) and 'product' in names:
+            columns = {}
+            for i, name in enumerate(names, 1):
+                key = lookup.get(name)
+                if key:
+                    if key in columns: return {}, [f'Duplicate {key} column.']
+                    columns[key] = i
+            break
+    if columns is None: return {}, ['Cannot identify the Products header. Ref and Product are required.']
+    rows, errors = {}, []
+    for r in range(header+1, ws.max_row+1):
+        raw = ws.cell(r, columns['ref']).value
+        if raw in (None, ''): continue
+        if isinstance(raw, bool) or not re.fullmatch(r'[1-9]\d*', str(raw)):
+            errors.append(f'Row {r}: invalid Ref {raw!r}.'); continue
+        ref = int(raw)
+        if ref in rows: errors.append(f'Row {r}: duplicate Ref {ref}.'); continue
+        row = {key: ws.cell(r, columns[key]).value if key in columns else None for key in aliases}
+        row.update(row=r, pack=row['pack'] or 1, selling=str(row['selling'] or '').strip().lower())
+        rows[ref] = row
+    return rows, errors
+
+
+def weight_updates(row):
+    """Blank/omitted cells preserve; CLEAR is the explicit deletion operation."""
+    from decimal import Decimal, InvalidOperation
+    changes = {}
+    for key in ['product_weight_min', 'product_weight_max', 'packed_weight']:
+        value = row.get(key)
+        if value is None or value == '': continue
+        if isinstance(value, str) and value.strip().upper() == 'CLEAR':
+            changes[key+'_g'] = None; continue
+        if isinstance(value, bool) or not re.fullmatch(r'\d+(\.\d{1,3})?', str(value).strip()):
+            raise ValueError(f'{key}: use a positive kg value with at most three decimals.')
+        grams = Decimal(str(value).strip())*1000
+        if grams <= 0 or grams > 1000000000: raise ValueError(f'{key}: weight is outside the supported range.')
+        changes[key+'_g'] = int(grams)
+    group = row.get('postal_group')
+    if group not in (None, ''):
+        if not isinstance(group,str) or len(group.strip())>80: raise ValueError('Postal group must be text up to 80 characters.')
+        changes['postal_group'] = '' if group.strip().upper()=='CLEAR' else group.strip()
+    visible = row.get('weight_public')
+    if visible not in (None, ''):
+        if str(visible).strip().lower() not in ['yes','no','true','false','1','0']: raise ValueError('Show product weight must be Yes or No.')
+        changes['weight_public'] = 1 if str(visible).strip().lower() in ['yes','true','1'] else 0
+    return changes
+
+
 def main():
     global API
     argv = sys.argv[1:]
@@ -162,34 +232,9 @@ def main():
 
     ws = load_workbook(path, data_only=False)["Products"]
 
-    # Row 1 is the reminder banner, row 2 the header, data from row 3.
-    sheet = {}
-    problems = []
-    for r in range(3, ws.max_row + 1):
-        ref = ws.cell(row=r, column=1).value
-        if ref in (None, ""):
-            continue
-        try:
-            ref = int(ref)
-        except (TypeError, ValueError):
-            problems.append(f"row {r}: the Ref in column A is {ref!r}, which isn't one of ours")
-            continue
-        if ref in sheet:
-            problems.append(f"row {r}: Ref {ref} appears more than once — the sheet has been "
-                            "copied or duplicated somewhere")
-            continue
-        sheet[ref] = {
-            "row": r,
-            "product": ws.cell(row=r, column=2).value,
-            "variant": ws.cell(row=r, column=3).value,
-            "code": ws.cell(row=r, column=4).value,
-            "cost": ws.cell(row=r, column=7).value,
-            "pack": ws.cell(row=r, column=8).value or 1,
-            "override": ws.cell(row=r, column=10).value,
-            "stock": ws.cell(row=r, column=11).value,
-            "selling": str(ws.cell(row=r, column=12).value or "").strip().lower(),
-            "note": ws.cell(row=r, column=13).value,
-        }
+    sheet, problems = read_product_rows(ws)
+    if problems:
+        sys.exit("\n".join(problems))
 
     live = fetch("/api/admin/products")["products"]
     by_ref, map_problems = resolve_refs(live, ref_source)
@@ -212,6 +257,17 @@ def main():
             missing.append((ref, row))
             continue
         product, sku = by_ref[ref]
+        try:
+            weights = weight_updates(row)
+            merged = {**sku, **weights}
+            lo, hi, packed = (merged.get(k) for k in ['product_weight_min_g','product_weight_max_g','packed_weight_g'])
+            if (lo is None) != (hi is None) or (lo is not None and lo > hi): raise ValueError('Enter both ends of a valid product weight range.')
+            if packed is not None and hi is not None and packed < hi: raise ValueError('Packed weight must cover the maximum product weight.')
+            for key,value in weights.items():
+                if sku.get(key) != value: want(sku,key,value)
+        except ValueError as e:
+            problems.append(f"row {row['row']}: {e}")
+
         code = forced_codes.get(ref) or (str(row["code"]).strip() if row["code"] else None)
         label = str(code or sku["sku"])
 
@@ -356,6 +412,10 @@ def main():
         print("    (probably renamed codes — these need creating by hand, not guessed at)")
         for code, row in missing[:15]:
             print(f"  {code:<16} {row['product']}")
+
+    weight_changes = {k:{f:v for f,v in fields.items() if f.endswith("_g") or f in ("postal_group","weight_public")} for k,fields in wanted.items()}
+    for key, fields in weight_changes.items():
+        if fields: print(f"  Weight update Ref {key}: {fields}")
 
     if problems:
         print("\nRefusing to write while there are problems above. Fix the sheet and re-run.\n")

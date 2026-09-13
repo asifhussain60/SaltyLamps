@@ -187,3 +187,8 @@ enters them directly into Cloudflare via the commands above.
 reseed once orders exist), but for ongoing catalog edits in production, use the
 admin portal or a targeted `UPSERT` keyed on `(product_id, sku)` rather than the
 full seed file.
+
+
+## Required generated-media cutover
+
+Follow [the reviewed media cutover plan](docs/media-cutover.md) during catalogue import and again at domain cutover. It includes the entire generated media tree, 100 lighter images, all 73 option assignments, supporting posters and films, original recovery files and remaining R2 uploads. The bootstrap defers migration 010 until after the final catalogue import. The deployment must pass `npm run media:verify-cutover -- --url=https://YOUR-DESTINATION` and the full-media/browser checks before switching the domain.

@@ -2,6 +2,7 @@
 // DELETE /api/admin/products/:id — delete, but only when no order references its SKUs.
 import { json, apiError, validationError, readJson, auditStmt, assertCategoriesExist } from '../../../lib/admin-helpers.mjs'
 import { validateProduct } from '../../../lib/validation.mjs'
+import { deleteImageObject } from '../../../lib/image-upload.mjs'
 
 export async function onRequestPatch({ params, request, env, data }) {
   const [body, bodyErr] = await readJson(request)
@@ -47,11 +48,14 @@ export async function onRequestDelete({ params, env, data }) {
       )
     }
 
+    const gallery = await env.DB.prepare('SELECT key FROM product_images WHERE product_id = ?').bind(params.id).all()
     await env.DB.batch([
       env.DB.prepare(`DELETE FROM skus WHERE product_id = ?`).bind(params.id),
+      env.DB.prepare(`DELETE FROM product_images WHERE product_id = ?`).bind(params.id),
       env.DB.prepare(`DELETE FROM products WHERE id = ?`).bind(params.id),
       auditStmt(env.DB, data.actorEmail, 'product.delete', 'product', params.id, null),
     ])
+    await Promise.all((gallery.results || []).map(image => deleteImageObject(env, image.key)))
     return json({ id: params.id, deleted: true })
   } catch (err) {
     return apiError(`Could not delete product: ${err.message}`, 500, { code: 'server_error' })

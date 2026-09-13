@@ -1,3 +1,5 @@
+import {WeightFields,weightForm,weightPayload,DeliverySettings,BulkWeights,OrderPostage,PostageReport} from './WeightPanels.jsx'
+import {weightInput} from '../../functions/lib/weights.mjs'
 // Salty Lamps admin portal — dashboard, orders, catalog CRUD, inventory, reports.
 //
 // Rendered by App.jsx whenever the route starts with /admin. Same bundle, same site,
@@ -64,7 +66,10 @@ function shadeBetween(hexA, hexB, t) {
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
-function navigate(path) {
+const dirtyForms = new Set()
+const allowLeave = () => !dirtyForms.size || window.confirm("Discard unsaved changes?")
+function navigate(path, force = false) {
+  if (!force && !allowLeave()) return
   window.history.pushState({}, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
   window.scrollTo({ top: 0 })
@@ -170,8 +175,9 @@ function useUnsavedChangesWarning(isDirty) {
       e.preventDefault()
       e.returnValue = ''
     }
+    const owner = Symbol(); dirtyForms.add(owner)
     window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
+    return () => { dirtyForms.delete(owner); window.removeEventListener('beforeunload', handler) }
   }, [isDirty])
 }
 
@@ -209,11 +215,11 @@ function EmptyState({ children }) {
   )
 }
 
-function SearchInput({ value, onChange, placeholder }) {
+function SearchInput({ value, onChange, placeholder, label = 'Search' }) {
   return (
     <div className="admin-search">
       <Icon name="search" size={15} tone="muted" className="admin-search-icon" />
-      <input className="admin-input admin-search-input" placeholder={placeholder} value={value} onChange={onChange} />
+      <input type="search" aria-label={label} className="admin-input admin-search-input" placeholder={placeholder} value={value} onChange={onChange} />
     </div>
   )
 }
@@ -367,9 +373,11 @@ function SalesBars({ series }) {
   const area = `${line} L${pts[pts.length - 1].x.toFixed(1)},${H - padBottom} L${pts[0].x.toFixed(1)},${H - padBottom} Z`
   const gridYs = [0.25, 0.5, 0.75].map(f => padTop + innerH * f)
   const labelIdx = [0, Math.floor((pts.length - 1) / 2), pts.length - 1]
+  const totalRevenue = series.reduce((sum, day) => sum + day.revenue_pence, 0)
+  const totalOrders = series.reduce((sum, day) => sum + day.orders, 0)
 
   return (
-    <svg className="admin-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Daily sales">
+    <svg className="admin-trend-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Daily sales from ${dateFmt(series[0].day)} to ${dateFmt(series[series.length - 1].day)}: ${gbp(totalRevenue)} across ${totalOrders} orders. Each data point includes its daily value.`}>
       <defs>
         <linearGradient id="admin-trend-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" className="admin-trend-stop-start" />
@@ -831,7 +839,7 @@ function OrdersList() {
         <section className="admin-card">
           <table className="admin-table">
             <thead>
-              <tr><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Fulfilment</th></tr>
+              <tr><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Packed weight</th><th>Postage paid</th><th>Payment</th><th>Fulfilment</th></tr>
             </thead>
             <tbody>
               {data.orders.map(o => (
@@ -840,6 +848,8 @@ function OrdersList() {
                   <td>{o.customer_email || '—'}</td>
                   <td>{o.item_count}</td>
                   <td>{gbp(o.amount_total_pence)}</td>
+                  <td>{o.actual_weight_g!=null?`${weightInput(o.actual_weight_g)} kg actual`:o.recorded_weight_g!=null?`${weightInput(o.recorded_weight_g)} kg recorded`:"Not recorded"}</td>
+                  <td>{o.actual_cost_pence==null?"Not recorded":gbp(o.actual_cost_pence)}</td>
                   <td><StatusBadge value={o.status} kind="payment" /></td>
                   <td><StatusBadge value={o.fulfilment_status} kind="fulfilment" /></td>
                 </tr>
@@ -967,13 +977,14 @@ function OrderDetail({ id }) {
         <section className="admin-card">
           <h2><Icon name="box" tone="amber" className="admin-card-icon" />Items</h2>
           <table className="admin-table">
-            <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Line</th></tr></thead>
+            <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Packed weight each</th><th>Line</th></tr></thead>
             <tbody>
               {items.map(it => (
                 <tr key={it.sku_id}>
                   <td>{it.name}{it.variant_label ? ` — ${it.variant_label}` : ''}</td>
                   <td>{it.sku}</td>
                   <td>{it.quantity}</td>
+                  <td>{it.packed_weight_g==null?"Not recorded":`${weightInput(it.packed_weight_g)} kg`}</td>
                   <td>{gbp(it.unit_price_pence * it.quantity)}</td>
                 </tr>
               ))}
@@ -1117,6 +1128,7 @@ function OrderDetail({ id }) {
         </div>
       </section>
 
+      <OrderPostage api={api} id={order.id} useDirty={useUnsavedChangesWarning} />
       <OrderEmails orderId={order.id} />
 
       <Confirm
@@ -1186,6 +1198,7 @@ function ProductsList() {
   const filtered = data.products.filter(p => {
     if (visibility === 'visible' && !p.visible) return false
     if (visibility === 'hidden' && p.visible) return false
+    if (visibility === "weight_missing" && p.skus.every(s=>s.packed_weight_g!=null && s.postal_group)) return false
     if (needle && !p.name.toLowerCase().includes(needle)) return false
     return true
   })
@@ -1207,6 +1220,7 @@ function ProductsList() {
           <option value="">All products</option>
           <option value="visible">Visible</option>
           <option value="hidden">Hidden</option>
+          <option value="weight_missing">Missing weight / postal group</option>
         </select>
       </div>
       {actionErr && <ErrorState error={actionErr} />}
@@ -1216,7 +1230,7 @@ function ProductsList() {
         ) : (
           <table className="admin-table">
             <thead>
-              <tr><th></th><th>Name</th><th>SKUs</th><th>Price</th><th>Visible</th><th></th></tr>
+              <tr><th></th><th>Name</th><th>Options</th><th>Price</th><th>Shipping weights</th><th>Visible</th><th></th></tr>
             </thead>
             <tbody>
               {pageItems.map(p => {
@@ -1232,6 +1246,7 @@ function ProductsList() {
                     <td><AdminLink href={`/admin/products/${p.id}`} className="admin-link">{p.name}</AdminLink></td>
                     <td>{p.skus.length}</td>
                     <td>{priceLabel}</td>
+                    <td>{p.skus.filter(s=>s.packed_weight_g!=null&&s.postal_group).length} / {p.skus.length} ready</td>
                     <td>{p.visible ? 'Yes' : <span className="admin-muted">Hidden</span>}</td>
                     <td className="admin-cell-actions">
                       <AdminLink href={`/admin/products/${p.id}`} className="admin-link">Edit</AdminLink>
@@ -1260,7 +1275,7 @@ function ProductsList() {
 
 // ---- product edit / create ------------------------------------------------
 
-const blankSku = () => ({ sku: '', variant_label: '', price: '', track_mode: 'quantity', quantity: '0', in_stock: true })
+const blankSku = () => ({ ...weightForm(), sku: '', variant_label: '', price: '', track_mode: 'quantity', quantity: '0', in_stock: true, image_id: '' })
 
 function ProductEdit({ id }) {
   const isNew = id === 'new'
@@ -1271,6 +1286,8 @@ function ProductEdit({ id }) {
   const [form, setForm] = useState(null)
   const [skus, setSkus] = useState([])
   const [originalSkuIds, setOriginalSkuIds] = useState([])
+  const [productDirty,setProductDirty] = useState(false)
+  useUnsavedChangesWarning(productDirty)
   const [errs, setErrs] = useState({})
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
@@ -1296,9 +1313,10 @@ function ProductEdit({ id }) {
         categories: p.categories || '', tags: p.tags || '', visible: !!p.visible, image: p.image || '',
       })
       setSkus(p.skus.map(s => ({
-        id: s.id, sku: s.sku, variant_label: s.variant_label || '',
+        ...weightForm(s), id: s.id, sku: s.sku, variant_label: s.variant_label || '',
         price: String(penceToPounds(s.price_pence)), track_mode: s.track_mode,
         quantity: s.quantity == null ? '0' : String(s.quantity), in_stock: !!s.in_stock,
+        image_id: s.image_id == null ? '' : String(s.image_id),
       })))
       setOriginalSkuIds(p.skus.map(s => s.id))
       setImages((p.images || []).map(im => ({ id: im.id, path: im.path })))
@@ -1310,8 +1328,8 @@ function ProductEdit({ id }) {
   if (!isNew && !form) return <EmptyState>Product not found.</EmptyState>
   if (!form) return <Loading />
 
-  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
-  const setSku = (i, k, v) => setSkus(list => list.map((s, j) => (j === i ? { ...s, [k]: v } : s)))
+  const setField = (k, v) => { setProductDirty(true); setForm(f => ({ ...f, [k]: v })) }
+  const setSku = (i, k, v) => { setProductDirty(true); setSkus(list => list.map((s, j) => (j === i ? { ...s, [k]: v } : s))) }
 
   const MAX_PICK_BYTES = MAX_IMAGE_BYTES * 4
 
@@ -1360,6 +1378,7 @@ function ProductEdit({ id }) {
     try {
       const res = await api(`/api/admin/products/${id}/images/${imgId}`, { method: 'DELETE' })
       setImages(list => list.filter(im => im.id !== imgId))
+      setSkus(list => list.map(s => String(s.image_id) === String(imgId) ? { ...s, image_id: '' } : s))
       setField('image', res.primary_path)
     } catch (e) {
       setImageErr(e.message)
@@ -1394,6 +1413,7 @@ function ProductEdit({ id }) {
     const pv = validateProduct(form)
     Object.assign(next, pv.errors)
     skus.forEach((s, i) => {
+      try { weightPayload(s) } catch(e) { next[`sku_${i}`] = e.message }
       const sv = validateSku(s)
       if (!sv.ok) next[`sku_${i}`] = Object.values(sv.errors).join(' ')
     })
@@ -1409,28 +1429,30 @@ function ProductEdit({ id }) {
       if (isNew) {
         const res = await api('/api/admin/products', {
           method: 'POST',
-          body: { product: form, skus },
+          body: { product: form, skus: skus.map(s=>({...s,...weightPayload(s)})) },
         })
         for (const pending of pendingImages) {
           const fd = new FormData()
           fd.append('image', pending.file)
           await api(`/api/admin/products/${res.id}/images`, { method: 'POST', body: fd, isForm: true })
         }
-        navigate(`/admin/products/${res.id}`)
+        setProductDirty(false)
+        navigate(`/admin/products/${res.id}`, true)
         return
       }
       // Existing: update product, then reconcile SKUs. Image gallery changes are
       // already live — each add/delete/replace above hit their own endpoint.
       await api(`/api/admin/products/${id}`, { method: 'PATCH', body: form })
       for (const s of skus) {
-        if (s.id) await api(`/api/admin/skus/${s.id}`, { method: 'PATCH', body: s })
-        else await api(`/api/admin/products/${id}/skus`, { method: 'POST', body: s })
+        if (s.id) await api(`/api/admin/skus/${s.id}`, { method: 'PATCH', body: {...s,...weightPayload(s)} })
+        else await api(`/api/admin/products/${id}/skus`, { method: 'POST', body: {...s,...weightPayload(s)} })
       }
       const keptIds = skus.filter(s => s.id).map(s => s.id)
       for (const oldId of originalSkuIds) {
         if (!keptIds.includes(oldId)) await api(`/api/admin/skus/${oldId}`, { method: 'DELETE' })
       }
       await reload()
+      setProductDirty(false)
       setSaveErr({ message: 'Saved.', ok: true })
     } catch (e) {
       setSaveErr(e)
@@ -1523,8 +1545,8 @@ function ProductEdit({ id }) {
 
       <section className="admin-card">
         <div className="admin-card-head">
-          <h2><Icon name="tag" tone="amber" className="admin-card-icon" />Variants / SKUs</h2>
-          <button className="admin-btn admin-btn--ghost" type="button" onClick={() => setSkus(list => [...list, blankSku()])}><Icon name="plus" size={15} />Add SKU</button>
+          <h2><Icon name="tag" tone="amber" className="admin-card-icon" />{skus.length === 1 ? "Product option" : "Product options"}</h2>
+          <button className="admin-btn admin-btn--ghost" type="button" onClick={() => {setProductDirty(true);setSkus(list => [...list, blankSku()])}}><Icon name="plus" size={15} />Add SKU</button>
         </div>
         <div className="admin-sku-list">
           {skus.map((s, i) => (
@@ -1535,6 +1557,15 @@ function ProductEdit({ id }) {
               <Field label="Variant">
                 <input className="admin-input" value={s.variant_label} onChange={e => setSku(i, 'variant_label', e.target.value)} placeholder="(none)" />
               </Field>
+              {!isNew && <Field label="Option photo">
+                <div className="admin-option-photo">
+                  <img src={images.find(im => String(im.id) === String(s.image_id))?.path || form.image || undefined} alt="Selected option preview" />
+                  <select className="admin-input" aria-label={`Photo for ${s.variant_label || s.sku || `option ${i + 1}`}`} value={s.image_id} onChange={e => setSku(i, 'image_id', e.target.value)}>
+                    <option value="">Use product cover</option>
+                    {images.map((im, j) => <option key={im.id} value={im.id}>Photo {j + 1}{j === 0 ? ' — cover' : ''}</option>)}
+                  </select>
+                </div>
+              </Field>}
               <Field label="Price (£)">
                 <input className="admin-input" inputMode="decimal" value={s.price} onChange={e => setSku(i, 'price', e.target.value)} />
               </Field>
@@ -1553,12 +1584,13 @@ function ProductEdit({ id }) {
               <button
                 className="admin-link admin-link--danger admin-sku-remove"
                 type="button"
-                onClick={() => setSkus(list => list.filter((_, j) => j !== i))}
+                onClick={() => {setProductDirty(true);setSkus(list => list.filter((_, j) => j !== i))}}
                 disabled={skus.length === 1}
                 title={skus.length === 1 ? 'A product needs at least one SKU' : 'Remove'}
               >
                 Remove
               </button>
+              <WeightFields value={s} onChange={(k,v)=>setSku(i,k,v)} />
               {errs[`sku_${i}`] && <span className="admin-field-error admin-sku-error">{errs[`sku_${i}`]}</span>}
             </div>
           ))}
@@ -1596,6 +1628,10 @@ function ModeBadge({ mode }) {
 }
 
 function Inventory() {
+  const [tab,setTab]=useState("stock")
+  return <><div className="admin-section-tabs" role="tablist" aria-label="Inventory views"><button role="tab" aria-selected={tab==="stock"} className={tab==="stock"?"active":""} onClick={()=>{if(allowLeave())setTab("stock")}}>Stock</button><button role="tab" aria-selected={tab==="weights"} className={tab==="weights"?"active":""} onClick={()=>{if(allowLeave())setTab("weights")}}>Weights</button></div>{tab==="weights"?<BulkWeights api={api} useDirty={useUnsavedChangesWarning}/>:<StockInventory/>}</>
+}
+function StockInventory() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/products'))
   // The threshold is a setting now, so read it rather than importing the constant.
   // The constant remains the fallback for a database predating the settings table.
@@ -1669,11 +1705,12 @@ function Inventory() {
       </div>
       <div className="admin-filters">
         <SearchInput
+          label="Search inventory by product or stock code"
           placeholder="Search product or SKU…"
           value={q}
           onChange={e => { setQ(e.target.value); setPage(0) }}
         />
-        <select className="admin-input" value={stockFilter} onChange={e => { setStockFilter(e.target.value); setPage(0) }}>
+        <select aria-label="Filter inventory by stock status" className="admin-input" value={stockFilter} onChange={e => { setStockFilter(e.target.value); setPage(0) }}>
           <option value="">All stock</option>
           <option value="low">Low stock</option>
           <option value="out">Out of stock</option>
@@ -1687,7 +1724,7 @@ function Inventory() {
         ) : (
           <table className="admin-table">
             <thead>
-              <tr><th></th><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Stock</th><th></th></tr>
+              <tr><th></th><th>Product</th><th>SKU</th><th>Variant</th><th>Mode</th><th>Packed weight</th><th>Stock</th><th></th></tr>
             </thead>
             <tbody>
               {pageItems.map(s => {
@@ -1700,9 +1737,11 @@ function Inventory() {
                     <td>{s.sku}</td>
                     <td>{s.variant_label || '—'}</td>
                     <td><ModeBadge mode={s.track_mode} /></td>
+                    <td>{s.packed_weight_g==null?"Not entered":`${weightInput(s.packed_weight_g)} kg`}</td>
                     <td>
                       {s.track_mode === 'quantity' ? (
                         <input
+                          aria-label={`Stock quantity for ${s.productName}${s.variant_label ? `, ${s.variant_label}` : ''}`}
                           className="admin-input admin-input--sm"
                           inputMode="numeric"
                           value={edit.quantity != null ? edit.quantity : s.quantity}
@@ -1752,6 +1791,7 @@ function Reports() {
   const { sales, products, inventory } = data
   return (
     <>
+      <PostageReport api={api}/>
       <section className="admin-card">
         <div className="admin-card-head">
           <h2><Icon name="trendingUp" tone="amber" className="admin-card-icon" />Sales — last 30 days</h2>
@@ -2173,6 +2213,10 @@ const SETTING_HINTS = {
 const hintForType = s => (s.type === 'int' ? `Whole number between ${s.min ?? 0} and ${s.max ?? 1000}` : undefined)
 
 function Settings() {
+  const [tab,setTab]=useState(window.location.pathname.endsWith("/delivery")?"delivery":"shop")
+  return <><div className="admin-section-tabs">{[["shop","Shop"],["delivery","Delivery"],["email","Email & alerts"]].map(([key,label])=><button key={key} className={tab===key?"active":""} onClick={()=>{if(allowLeave())setTab(key)}}>{label}</button>)}</div>{tab==="delivery"?<DeliverySettings api={api} useDirty={useUnsavedChangesWarning}/>:<GeneralSettings key={tab} section={tab}/>}</>
+}
+function GeneralSettings({section}) {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/settings'))
   const [edits, setEdits] = useState({})
   const [saving, setSaving] = useState(false)
@@ -2210,7 +2254,7 @@ function Settings() {
       {saveErr && <ErrorState error={saveErr} />}
       {savedMsg && <p className="admin-note">{savedMsg}</p>}
 
-      {data.settings.map(s => (
+      {data.settings.filter(s => section === "email" ? /email|notify/.test(s.key) : !/email|notify/.test(s.key)).map(s => (
         <Field
           key={s.key}
           label={s.label}
@@ -2243,8 +2287,7 @@ function Settings() {
         The low-stock threshold drives the dashboard alerts, the Inventory badges and the
         low-stock report. Currency is fixed to GBP because checkout, the shop and this
         portal all format in pounds and the Stripe account is GBP — showing it as editable
-        would be misleading. Store details, shipping and payouts are managed in Stripe and
-        Cloudflare.
+        would be misleading. Delivery rates and weight display are managed in the Delivery tab. Payouts are managed in Stripe.
       </p>
 
       <div className="admin-form-actions">
@@ -2285,7 +2328,7 @@ function CategoriesList() {
     setSaveErr(null)
   }
 
-  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const setField = (k, v) => { setProductDirty(true); setForm(f => ({ ...f, [k]: v })) }
 
   const save = async () => {
     const isNew = editing === '__new__'

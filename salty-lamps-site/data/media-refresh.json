@@ -1,0 +1,1005 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "sphere-lamp",
+      "source": "/media/live-site-products/wix-0d1e2d90-db7.png",
+      "output": "/media/light-catalogue/sphere-lamp.webp",
+      "sourceSha256": "2c554ef2d01d04f338ba06fdf634cd2921f6781b7f02e90afe0c7a1dbfdb4c8e",
+      "generatedSha256": "18ad38fd54dccb767dbdc49904577f064d4a4085880fba6cc720d7e53bdfa69b",
+      "outputSha256": "227404c9afb238af93616eed859553b7a5b8c6802a82c207ebc839ed619f164a",
+      "prompt": "Edit this existing product photograph to a lighter ecommerce colour treatment. Preserve the exact sphere lamp shape, no wooden base added, retain subtle Salty Lamps branding. Replace dark backdrop with soft ivory studio setting, pale pink/peach natural Himalayan salt with visible mineral grain, soft daylight, restrained warm glow for lamps, neutral shadows. Entire product visible with generous margins. Do not invent product details or add props. Square photograph.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "fire-bowl",
+      "source": "/media/live-site-products/wix-fb78f6bc-88b.jpg",
+      "output": "/media/light-catalogue/fire-bowl.webp",
+      "sourceSha256": "406559af0c001cd192c2590fca884d1f6d36b96b71c292ad221fb33f7bb9399b",
+      "generatedSha256": "ab008da1716835c3635bcaf89d722522c855acfcc7f4cd29e9352bc82ca01a86",
+      "outputSha256": "91cc554ec5a3cb5b6f34947bec80230fc0d9cec35b6b0063805ffd8f5d1314a3",
+      "prompt": "Edit this existing product photograph to a lighter ecommerce colour treatment. Preserve the thick round bowl and irregular salt chunks, complete bowl visible. Replace dark backdrop with soft ivory studio setting, pale pink/peach natural Himalayan salt with visible mineral grain, soft daylight, restrained warm glow for lamps, neutral shadows. Entire product visible with generous margins. Do not invent product details or add props. Square photograph.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "platter-square",
+      "source": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "output": "/media/light-catalogue/platter-square.webp",
+      "sourceSha256": "02b199afba2ec935c9efe7df49b567adeec7b2109540a56ee40636bd26661630",
+      "generatedSha256": "87bd0340fcd6941ee2b6d37dc61c96b78a523164f7446dadbd8871dc8814e54b",
+      "outputSha256": "c83f71f43e1e4c622c8045bbb3dc54476ca0518deda66e50a2364e366707d7de",
+      "prompt": "Edit this existing product photograph to a lighter ecommerce colour treatment. Preserve the square platter geometry and salt grain. Preserve the Salty Chef branding exactly, keep the existing food arrangement. Replace dark backdrop with soft ivory studio setting, pale pink/peach natural Himalayan salt with visible mineral grain, soft daylight, restrained warm glow for lamps, neutral shadows. Entire product visible with generous margins. Do not invent product details or add props. Square photograph.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "massage-hearts",
+      "source": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "output": "/media/light-catalogue/massage-hearts.webp",
+      "sourceSha256": "96094603848cd3d4d4c4db95e5a9966111aed30a17bef1c00cb089342aff8c28",
+      "generatedSha256": "f976f4ae93d23d5e96586c3e5dca6ea2ebd9aa78470300c4b2937f7f1bc63a83",
+      "outputSha256": "1a99fa73d9ef98c8388ada55db081002073b24ef669dbce7dc1b1b2600b8ec08",
+      "prompt": "Edit this existing product photograph to a lighter ecommerce colour treatment. Preserve both heart stones' exact shapes. Preserve the text Massage Heart Stones. Replace dark backdrop with soft ivory studio setting, pale pink/peach natural Himalayan salt with visible mineral grain, soft daylight, restrained warm glow for lamps, neutral shadows. Entire product visible with generous margins. Do not invent product details or add props. Square photograph.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "block-lamp",
+      "source": "/media/live-site-products/wix-260249e0-701.jpg",
+      "output": "/media/light-catalogue/block-lamp.webp",
+      "sourceSha256": "1dba5adcedc7fb025393d3cc171b4b2f511b896a7ef3b41c803c39d083da6e2b",
+      "generatedSha256": "7e0c53519bea5618be66f6cab381647c819366f2c2798c79480ec91064a982b1",
+      "outputSha256": "45bde0920ce4aa0eaf19888a97ed25cc607243ef092e8115c1d6ef67fc26d1b6",
+      "prompt": "Edit this exact existing salt lamp photo for a lighter catalogue. Preserve the exact product silhouette and carved shape, all visible parts and existing branding, no new base or fittings. Natural pale pink/peach Himalayan salt, visible grain and texture, restrained warm illumination instead of saturated orange, soft daylight and ivory studio background/tabletop. Whole product in view with generous margins, no cropping. Keep any existing text accurate, add no new text or props. Square composition.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "dolphin-lamp",
+      "source": "/media/live-site-products/wix-79f86bda-e4f.jpg",
+      "output": "/media/light-catalogue/dolphin-lamp.webp",
+      "sourceSha256": "58c844d4040abf5bf3acafc999098c93ea7223a99beeecd2f2a091590d67a948",
+      "generatedSha256": "fa13228415b96e221c77501935eaa20d94138e601a5beef85457a42f81e5b8eb",
+      "outputSha256": "3161eb576bcc4ea6121f3e37a60edbf2fd25e1657939cbb0b1352c376206116e",
+      "prompt": "Edit this exact existing salt lamp photo for a lighter catalogue. Preserve the exact product silhouette and carved shape, all visible parts and existing branding, no new base or fittings. Natural pale pink/peach Himalayan salt, visible grain and texture, restrained warm illumination instead of saturated orange, soft daylight and ivory studio background/tabletop. Whole product in view with generous margins, no cropping. Keep any existing text accurate, add no new text or props. Square composition.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "angel-lamp",
+      "source": "/media/live-site-products/wix-1b92dfb0-dae.jpg",
+      "output": "/media/light-catalogue/angel-lamp.webp",
+      "sourceSha256": "7f6f70e1685981439e1e3ce1e3874b297dd4cb678ea17ce7783292c953fa24cd",
+      "generatedSha256": "8cc53d5492ac598f668ad01978df8479247bc5cd48e18f80b4ad0692dbb046ce",
+      "outputSha256": "9e48f89256297fc91a8f37617fae89010dff5ab092feb69a5fb1f9e7bc3695aa",
+      "prompt": "Edit this exact existing salt lamp photo for a lighter catalogue. Preserve the exact product silhouette and carved shape, all visible parts and existing branding, no new base or fittings. Natural pale pink/peach Himalayan salt, visible grain and texture, restrained warm illumination instead of saturated orange, soft daylight and ivory studio background/tabletop. Whole product in view with generous margins, no cropping. Keep any existing text accurate, add no new text or props. Square composition.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "flower-lamp",
+      "source": "/media/live-site-products/wix-2f15bfa7-2bf.png",
+      "output": "/media/light-catalogue/flower-lamp.webp",
+      "sourceSha256": "8866a00b5cc7856adb08a9a4c5b2b79c4809d606a1187fd858410b6ff0818384",
+      "generatedSha256": "c1b8234d9eae21ad8e09980e657b7f909748894a59170a3d69f6993dd703cef3",
+      "outputSha256": "2f348ccbffbb2cd61b037d3fb532bd7d042c7b58b9983e52b83151cc534315f1",
+      "prompt": "Edit this exact existing salt lamp photo for a lighter catalogue. Preserve the exact product silhouette and carved shape, all visible parts and existing branding, no new base or fittings. Natural pale pink/peach Himalayan salt, visible grain and texture, restrained warm illumination instead of saturated orange, soft daylight and ivory studio background/tabletop. Whole product in view with generous margins, no cropping. Keep any existing text accurate, add no new text or props. Square composition.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-lamp",
+      "source": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "output": "/media/light-catalogue/natural-lamp.webp",
+      "sourceSha256": "19cefe5b486c2be71f52bc157effc6b6f76b9b1422ba060038593d4f82e085d3",
+      "generatedSha256": "29146c4a8d7177e2f132403ec691b64a7873c0cb7b2756030010993afabab14a",
+      "outputSha256": "b25a5974ef5dd144b4e6e6df2e2bf5a30ee8605f6428acb59741d9c07031c8c9",
+      "prompt": "Edit this exact Salty Lamps natural Himalayan salt lamp product photograph for a lighter ecommerce catalogue. Preserve the exact irregular stone silhouette, its surface mineral texture and the complete brown wooden base. Replace black room/background with seamless warm off-white studio background and light cream tabletop, soft natural daylight, gentle grounding shadow. Salt should be natural pale pink/peach with restrained warm illumination, not saturated orange, no white bleaching and no lost texture. One lamp only, entire base visible, centered with generous consistent margins, photorealistic faithful product editing. No text, no logos added, no other objects. Square output suitable as the master reference photograph for this product family. Save the generated image for use in the project.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "dove-lamp",
+      "source": "/media/live-site-products/wix-d8f2a678-086.jpg",
+      "output": "/media/light-catalogue/dove-lamp.webp",
+      "sourceSha256": "865a1f692a6f66ddc753abd290547c64829072994723bbac9fbf17e745bd1fdc",
+      "generatedSha256": "308c6cbfaaa2a394f63da5a1f5222ccf3439c91b368a05356bfc36f2d4baef44",
+      "outputSha256": "bd906862120b3a4ddf3f80606ec0bad9c5370e5e73f3a3dbf27347c2fecddd77",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "fire-basket",
+      "source": "/media/live-site-products/wix-c8539b66-7a4.png",
+      "output": "/media/light-catalogue/fire-basket.webp",
+      "sourceSha256": "804275b7e75d6c5da6609b3e00a92d381fba0d6bf4762a2691d672f9df1fcd2d",
+      "generatedSha256": "5831fb06dd03d5c0aeb7785e2976e2737d5a5e2590fe6743eb4f3d47ff3c3374",
+      "outputSha256": "64181405eee154ba5d5d9013a674c57eee0c9bfae42b3bc2fe7056ad2988ea68",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-salt",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-salt.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "da5640fa85da523fa6722b0ed267be9b1e0072b386609fb647bc3c85c604aab6",
+      "outputSha256": "0bd4fedba0b22bfcbbe3ba5e8d80308b0206c0493d1ec6a5de9739e4ff7eac18",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "goblet-holder",
+      "source": "/media/live-site-products/wix-ff66797a-a14.jpg",
+      "output": "/media/light-catalogue/goblet-holder.webp",
+      "sourceSha256": "8fe3f677ead4a34e80eec063fb94e835ff4a07b19e101dd1cfa69347b66ac9f0",
+      "generatedSha256": "018b3f2e1f96d8ef019d52e2ccaf219c859a0a7c46325c44d8968bf07758d986",
+      "outputSha256": "87e51f83c41338248688d1f328790eef1968e8ca023e2519b7f44d06033b79ee",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "serving-bowl",
+      "source": "/media/live-site-products/wix-0408c683-5d2.png",
+      "output": "/media/light-catalogue/serving-bowl.webp",
+      "sourceSha256": "6655b96499b09a9a5cb156d20b7bcacf4c786fa22d9d2c9d621973fd53f0c836",
+      "generatedSha256": "bd84904cfd121e3bf24f0671499048141d2bc5af42228c9dad425be430b0bd8a",
+      "outputSha256": "3a795ba1309a4fdf0b760fdbeda8ac6de02b2a46b121b922c0478e9910b57268",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "salt-bricks",
+      "source": "/media/live-site-products/wix-d9e5764d-48c.png",
+      "output": "/media/light-catalogue/salt-bricks.webp",
+      "sourceSha256": "85309a917a8a77d66ed64171da008c37879ab0b51fc2b074885a29ac72a09522",
+      "generatedSha256": "6189f67faf31237bf7917ba85b491e180af05eae85c5141f9dc61c0b755641d2",
+      "outputSha256": "9a475b712877914ef4208e5ffa1d5fba14c522d3b285fd9548487d325eafa5eb",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "square-holder",
+      "source": "/media/live-site-products/wix-c76fac9b-0b1.png",
+      "output": "/media/light-catalogue/square-holder.webp",
+      "sourceSha256": "119f351975034fe69612c312d9a694ba81e05d75f81713fe1813ffcbed0f0329",
+      "generatedSha256": "6bcf2dd1ab24add27fc191e569383fe79bd6739f7334be548bfeaf7e597fd9b9",
+      "outputSha256": "b4ffa95ac99440e53a1c72d34c3fc9fc10b3941142c5b3de802534d82b98623c",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "sphere-holder",
+      "source": "/media/live-site-products/wix-0b00a2a3-b2c.png",
+      "output": "/media/light-catalogue/sphere-holder.webp",
+      "sourceSha256": "c11ca2b88324de54831373755f20e981dfd8d6ed9476c539a52691b6f0e049ef",
+      "generatedSha256": "9f943537723f420bb38fd9b365944fde7b2d802a6efc89381b2581cbe19c02e5",
+      "outputSha256": "37708b21962d0e8a1d571aa18baa6fe0e6eb0e75ffe88ad6b7a26ad41fe4bf71",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product shape, parts, count, mineral texture and any branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging and wording accurate. Square composition with margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "heart-holder",
+      "source": "/media/live-site-products/wix-0bb26b6a-e51.jpg",
+      "output": "/media/light-catalogue/heart-holder.webp",
+      "sourceSha256": "eb68a82cbf4669ec711f4efc37fbf3b646a18d74f00a4925d4c88f75c1d8fb68",
+      "generatedSha256": "db2266ea1943d56bfc1fe24e22829882f70091d1d0797d82b88d689c014c4f58",
+      "outputSha256": "d22d3df15a7ed6d99af8977930399a498f688025cf203c2f41876e594f0a1e6f",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-holder",
+      "source": "/media/live-site-products/wix-fc4519da-2c4.jpg",
+      "output": "/media/light-catalogue/natural-holder.webp",
+      "sourceSha256": "22826e7bda29080a557fada10fb4f07bf64af8ddebb41c72149cd273057aeeef",
+      "generatedSha256": "a02f1af67adc804b0addcc69139501f9b5c92e189ed8f0cfd0598afee1b49904",
+      "outputSha256": "2e4cca54ac48c32efcb430eaafe25f3d16d86a4b84e0045d673413bf97b5c7e6",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "salt-licks",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/salt-licks.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "40756cac21d5aca135a0d2097415049cead4a371e56b0178981766bc3b0fdb02",
+      "outputSha256": "13d614fddb2e1269c6ac0162914d501c7cfc66abd1fcc06d8b0a5d7794b8b603",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "soap-bar",
+      "source": "/media/live-site-products/wix-df19c1f7-07d.png",
+      "output": "/media/light-catalogue/soap-bar.webp",
+      "sourceSha256": "50f8da13a2cc30e3a0004b59a6a0762beae1da5e0bde77e01c2d09237a576718",
+      "generatedSha256": "41e56fcd19ea8b5e8a7b4b1944d056a880f6ce94380e84c049f2915fabd2e94e",
+      "outputSha256": "71257a97fd77697d4028bed0782fb7083f13dfe7b7882c1f05e87d8e9a181ffc",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "shot-glass",
+      "source": "/media/live-site-products/wix-3fdc1a9e-5ce.png",
+      "output": "/media/light-catalogue/shot-glass.webp",
+      "sourceSha256": "d52fb976e356ee1cbb805511e428dfc7b0e6c39f0da81535277a69e5071410e2",
+      "generatedSha256": "fe51a0645fd669458a2dabec1c73c8aa182a37ab0bf36a6d878f0bca992d3c13",
+      "outputSha256": "412b270e4ef27abb82ea4b72e160f687d439694dbfd2c646445f115fe10d4889",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "mushroom-lamp",
+      "source": "/media/live-site-products/wix-cd59cd36-b6d.png",
+      "output": "/media/light-catalogue/mushroom-lamp.webp",
+      "sourceSha256": "91450ef02bf697ae96b66d84fac7aaee485daec46bee523cafcad6c301800478",
+      "generatedSha256": "e201c6ba860110d84311dab41edd876aedd66efa606dcd3e6eb1ac7e4a34bd55",
+      "outputSha256": "23149a77229e07499ea411f8800fb2a61923ca7675742d46f6e2c3bc96ae3f18",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "pyramid-lamp",
+      "source": "/media/live-site-products/wix-c3ca8d50-6b3.jpg",
+      "output": "/media/light-catalogue/pyramid-lamp.webp",
+      "sourceSha256": "2aeafeb1558601d39bf68ab5a72f03fc62d10ad098306d53fddd95b5558827c6",
+      "generatedSha256": "504fd59732c67fd44c048646aae849d46c46b9dd206773c083aad4bc0e4e105c",
+      "outputSha256": "0f7590fd5833a9be111876e9506d2ad48e98db5f432aebe64ce2c54809d67822",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "apple-holder",
+      "source": "/media/live-site-products/wix-71c7a15b-5f8.jpg",
+      "output": "/media/light-catalogue/apple-holder.webp",
+      "sourceSha256": "ba349f9b4f9f68ca7f2a726d1ffdfba4d68e8370d098999df3d1a2e467bdb521",
+      "generatedSha256": "407f626d43512f74744b3aef8e288ef6c3cd368bd0aa60badd68656dc4b6caee",
+      "outputSha256": "b6e5df7bd505f6de6caad775bf8b5839fa4bb311419d46123f75b7abee7d90aa",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props or text. Keep existing packaging wording accurate. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "cable-large",
+      "source": "/media/live-site-products/wix-b7ee9a81-244.jpg",
+      "output": "/media/light-catalogue/cable-large.webp",
+      "sourceSha256": "126b9a73b578a8d4936b5aa06d80b19146142722206fa3f43a9f74cce1cca9d5",
+      "generatedSha256": "264213e978843b6d8c8010e2f878e1b8e116ae19dc48894f2a9633249f934c09",
+      "outputSha256": "fcdc3875ff69e4b237c011a4121f0a78105dbdbc89a29146f1ba0fd416b3bf23",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulbs",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulbs.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "a71c96a3294c0fd006c07ce4b7e5f8084756f7a17d22d56a431861c97773d207",
+      "outputSha256": "385ac7853e1c41549d60f2f9ebdae442fd2043bb16a7392616129382fa84bca2",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "single-lick",
+      "source": "/media/live-site-products/wix-a197ccb4-120.png",
+      "output": "/media/light-catalogue/single-lick.webp",
+      "sourceSha256": "fbbd70257127a5a61ecc39727c28d69e549494de1fdde266e33572a8993264b7",
+      "generatedSha256": "9ffb353f40f01c4e128c2712817280ad2f99babbece70ce3b8d3da3b9f7de7f9",
+      "outputSha256": "8f838fbdea965c80e658161c0873b192a938bf108c8165ade368dcbf01c9d114",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins. Show exactly ONE 2-3kg salt lick with rope, same type as source. Remove poster layout, promotional price, all ad text and certification claims; just the one product on cream studio background.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "holder-offer",
+      "source": "/media/live-site-products/wix-33d0afbf-8e8.jpg",
+      "output": "/media/light-catalogue/holder-offer.webp",
+      "sourceSha256": "ee886ceb91e26d7d8cf8f872b61d5481960ebe979785e9cbed7ae0a60350e3fa",
+      "generatedSha256": "793e965547201a0e392dafd9791a29824045ebd594d6f56045b6d769244454da",
+      "outputSha256": "7e6189a868164fdc4bd99e860d3ee4fccf9f180c636a6b48dcabaef66eaf8f16",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins. Show exactly THREE natural candle holders. Remove poster layout, promotional price and all ad text; just three products together on cream studio background.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lamp-offer",
+      "source": "/media/live-site-products/wix-3ce67eac-b04.png",
+      "output": "/media/light-catalogue/lamp-offer.webp",
+      "sourceSha256": "7db4e5ec4a9ad4e82d41063731ec63f50d455aa4227a6e1007f597315387cd56",
+      "generatedSha256": "e63bc55e8c962cb0fd745c721765e277916dfd17c7966c95a96c2c9a24e370ab",
+      "outputSha256": "2de1a5062c58842996e3eb5b0ef792632cd2207b3db40218a21216a0120d66e0",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins. Show exactly ONE natural lamp with complete wooden base plus TWO natural candle holders. Remove poster layout, promotional price and all ad text; just the three products together on cream studio background.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "teardrop-lamp",
+      "source": "/media/live-site-products/wix-6487b67b-4e1.jpg",
+      "output": "/media/light-catalogue/teardrop-lamp.webp",
+      "sourceSha256": "bea01d2351a20f1427a09c5dc4c4be2c9fbaf30432dccb578430b886b27cba93",
+      "generatedSha256": "f3b78037202a254a78e4eb2f414ceb553e30057fbe92de74631faedf9b647e4e",
+      "outputSha256": "15505016e60eb987814c850397c458c7194cac0672cb656dc1a9791b81f79355",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "wood-basket",
+      "source": "/media/live-site-products/wix-ed7c376b-02f.jpg",
+      "output": "/media/light-catalogue/wood-basket.webp",
+      "sourceSha256": "395d122508e41a8f5c5ae79bde42ffe6b21cac2f880e8fb643a2bfc0d5862285",
+      "generatedSha256": "1d7490fbe2305fa656029c476e86e604a3528d4f903034bd9bab2e70c58a3844",
+      "outputSha256": "588f785f37f4d5c7a19e327386f3af085e07dbbf791220f2db3c4d4a5059d9f2",
+      "prompt": "Edit this exact existing product photograph for a lighter Salty Lamps ecommerce catalogue. Preserve product silhouette, parts, count, mineral texture and branding. Natural pale pink and peach salt instead of strong orange, soft daylight, warm off-white background/tabletop, gentle shadows. No bleaching, no cropped product, no added props. Keep electrical fittings exactly as shown without invention. Square composition with generous margins.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-xs",
+      "source": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "output": "/media/light-catalogue/natural-xs.webp",
+      "sourceSha256": "19cefe5b486c2be71f52bc157effc6b6f76b9b1422ba060038593d4f82e085d3",
+      "generatedSha256": "8414c152171b4fe5e3f8642ee67c9f433b2690345b99ca1bacd9eb0e7c55ad48",
+      "outputSha256": "21cd441b51754974f481d9fc4624b6cff1fac3190aca0b9bcd73bb5b80ca2a16",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One X-Small natural lamp. Product occupies 40% image height. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-small",
+      "source": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "output": "/media/light-catalogue/natural-small.webp",
+      "sourceSha256": "19cefe5b486c2be71f52bc157effc6b6f76b9b1422ba060038593d4f82e085d3",
+      "generatedSha256": "4c19335cd939dfb5b6c5faa70231115d3c458e4a01ee08239c0735e90cd40004",
+      "outputSha256": "b38dfcfa1f0876427269c96f437011b42ff7d72e2edc5442a214b31d7988c0ed",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One Small natural lamp. Product occupies 50% image height. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-medium",
+      "source": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "output": "/media/light-catalogue/natural-medium.webp",
+      "sourceSha256": "19cefe5b486c2be71f52bc157effc6b6f76b9b1422ba060038593d4f82e085d3",
+      "generatedSha256": "20ef5ff14a71e7f1d7c94a18cad20c3bd83f9fccf61ee9ec39a5ea330fc9c22b",
+      "outputSha256": "299137a0f7c06f97cdff74f1d43c326fcef0575cfb954ecb06a9f46b43d0e589",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One Medium natural lamp. Product occupies 62% image height. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-large",
+      "source": "/media/live-site-products/wix-e11b5bf5-f5f.jpg",
+      "output": "/media/light-catalogue/natural-large.webp",
+      "sourceSha256": "19cefe5b486c2be71f52bc157effc6b6f76b9b1422ba060038593d4f82e085d3",
+      "generatedSha256": "bed190e2d0b9c1356a4b5ebe1ba298c6f06275b49e189ad2aed8b33b6fd22deb",
+      "outputSha256": "9a6dd880b8883009f3484e577c6c890a007ec2267b399f7b23b9d64155b5c847",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One Large natural lamp. Product occupies 76% image height. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "sphere-large",
+      "source": "/media/live-site-products/wix-0d1e2d90-db7.png",
+      "output": "/media/light-catalogue/sphere-large.webp",
+      "sourceSha256": "2c554ef2d01d04f338ba06fdf634cd2921f6781b7f02e90afe0c7a1dbfdb4c8e",
+      "generatedSha256": "3d06543b1f53114944a8ef8078fc738b515515d123dfe5084c3578e365658d45",
+      "outputSha256": "040b96da4737513301ca092792589ede7124ad27dc073ae237e8e915babcc4c6",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One Large spherical lamp on its full wooden base. Entire product occupies 78% image height. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "fire-bowl-large",
+      "source": "/media/live-site-products/wix-fb78f6bc-88b.jpg",
+      "output": "/media/light-catalogue/fire-bowl-large.webp",
+      "sourceSha256": "406559af0c001cd192c2590fca884d1f6d36b96b71c292ad221fb33f7bb9399b",
+      "generatedSha256": "d56d514607a048dfc19b2ffc482de9148844ec051a6a1984d32d0ea1b892714b",
+      "outputSha256": "365001a16cb85bdb02765b5f76ae3bdd3a2c60dfd7feeaa03222fb1bfa3f4d94",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. One Large fire bowl lamp with salt chunks and its complete base. Product occupies 78% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "platter-round",
+      "source": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "output": "/media/light-catalogue/platter-round.webp",
+      "sourceSha256": "02b199afba2ec935c9efe7df49b567adeec7b2109540a56ee40636bd26661630",
+      "generatedSha256": "fdf1c51d1514be977f89cbe9aceacd0fc7deeb5db17a45bc7f50a62142d0f95f",
+      "outputSha256": "915a3b7966e32416d88ae4bdedce8af48578caf6af010bd18f00aeddd959a3de",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one ROUND CIRCULAR salt platter, 8 inch diameter and 1.5 inch thick. No square/rectangle object. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "platter-rectangle12",
+      "source": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "output": "/media/light-catalogue/platter-rectangle12.webp",
+      "sourceSha256": "02b199afba2ec935c9efe7df49b567adeec7b2109540a56ee40636bd26661630",
+      "generatedSha256": "ddbce32ef45b716c0d22be3166699b1528d6fb2783802179b2990e224d83a25f",
+      "outputSha256": "392458b0208d8d0545986c75a7c7c2b43b80674e7aba3385802eaaec0f379f62",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one rectangular salt platter, 12 by 8 inches and 1.5 inch thick. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "platter-rectangle8",
+      "source": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "output": "/media/light-catalogue/platter-rectangle8.webp",
+      "sourceSha256": "02b199afba2ec935c9efe7df49b567adeec7b2109540a56ee40636bd26661630",
+      "generatedSha256": "f4c15f2b34c84e2ad0c82c705b313cf4a5394a9875a16c971c26f850f8cded17",
+      "outputSha256": "fbc3e79ba672fce733704ca87313d31dbcb14d3fcff15b1bff63592eeeebd978",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one long narrow rectangular salt platter, 8 by 4 inches and 1 inch thick. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "platter-square15",
+      "source": "/media/live-site-products/wix-5a2f41f6-b0d.png",
+      "output": "/media/light-catalogue/platter-square15.webp",
+      "sourceSha256": "02b199afba2ec935c9efe7df49b567adeec7b2109540a56ee40636bd26661630",
+      "generatedSha256": "da8e8fb6a8b318b0f1c21e268f0949151d2282a35d1210f365696df65740ba39",
+      "outputSha256": "67ccdd02f308bc529a294a22936612d62aa3503a515d043bcbf6682c9cfef064",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one square salt platter, 8 by 8 inches and 1.5 inch thick. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "massage-ball",
+      "source": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "output": "/media/light-catalogue/massage-ball.webp",
+      "sourceSha256": "96094603848cd3d4d4c4db95e5a9966111aed30a17bef1c00cb089342aff8c28",
+      "generatedSha256": "d061d570b6dcbbcc32f6f2b235e426d065f6b6c9a19a9ce0859f8ba6687cf2e5",
+      "outputSha256": "83ac5f7cb16fa249f706e3de695029a3a6609b9c33cbcb462c02cda06ce06002",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one spherical BALL massage stone, no heart, no holes, no base. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "massage-disk",
+      "source": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "output": "/media/light-catalogue/massage-disk.webp",
+      "sourceSha256": "96094603848cd3d4d4c4db95e5a9966111aed30a17bef1c00cb089342aff8c28",
+      "generatedSha256": "12b68c4c00e312a85d251b47cb62f02a84995850c406dc52b604aba922bbc24c",
+      "outputSha256": "e0a2eda70c2de947968fc728288c34007957245a598fc4a5f7096c4dcbcaa17d",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one flat circular DISK massage stone, no heart, no holes, no base. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "massage-stick",
+      "source": "/media/live-site-products/wix-e3f1eb3d-20e.jpg",
+      "output": "/media/light-catalogue/massage-stick.webp",
+      "sourceSha256": "96094603848cd3d4d4c4db95e5a9966111aed30a17bef1c00cb089342aff8c28",
+      "generatedSha256": "420001c6db1b3813b9bc13697e467996bcd0ce9d47b66c1ee43693954d15805f",
+      "outputSha256": "0f306032443fbf126fa3b9c796b2a3e12c08bd63000cc0c88fa07b47889ff063",
+      "prompt": "Create a faithful illustrative option preview based on this reference product's material and craftsmanship. Exactly one cylindrical massage STICK with rounded ends, no heart, no holes, no base. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, gentle warm glow only if a lamp, visible mineral grain, gentle shadow. Preserve correct fittings and base for lamps. Whole product, generous margin, square. No text, no food, no dimension arrows, no props. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bowl8",
+      "source": "/media/live-site-products/wix-0408c683-5d2.png",
+      "output": "/media/light-catalogue/bowl8.webp",
+      "sourceSha256": "6655b96499b09a9a5cb156d20b7bcacf4c786fa22d9d2c9d621973fd53f0c836",
+      "generatedSha256": "3daf9040a621018db9449a1828ed662b474155524e98df15246c347a30fa7880",
+      "outputSha256": "79539471434fcef9e4f033139ff32a3ff0e81dd6443659493e60e33e134b1b45",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE empty 8 inch diameter round serving bowl. Product occupies 62% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bowl10",
+      "source": "/media/live-site-products/wix-0408c683-5d2.png",
+      "output": "/media/light-catalogue/bowl10.webp",
+      "sourceSha256": "6655b96499b09a9a5cb156d20b7bcacf4c786fa22d9d2c9d621973fd53f0c836",
+      "generatedSha256": "218c3b0ef739e8f83e624b5018b2f3e78e3d1ccce3477998140a69d4202d1067",
+      "outputSha256": "21de62ecf344b7c93207ce52656c61e2fb06b5dc8a700422c618e8a7a5b25b7a",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE empty 10 inch diameter round serving bowl. Product occupies 78% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bowl25",
+      "source": "/media/live-site-products/wix-0408c683-5d2.png",
+      "output": "/media/light-catalogue/bowl25.webp",
+      "sourceSha256": "6655b96499b09a9a5cb156d20b7bcacf4c786fa22d9d2c9d621973fd53f0c836",
+      "generatedSha256": "ef504e6c8de6087fe600e5d0fc5036f7af5c1a11e2fa9f142666faa8e510b166",
+      "outputSha256": "81944e54f328777e8fa96ad53cbd16f766eb80517e9f135e15490ccb42b7cbbc",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE empty 2.5 inch diameter round serving bowl. Product occupies 32% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bowl6",
+      "source": "/media/live-site-products/wix-0408c683-5d2.png",
+      "output": "/media/light-catalogue/bowl6.webp",
+      "sourceSha256": "6655b96499b09a9a5cb156d20b7bcacf4c786fa22d9d2c9d621973fd53f0c836",
+      "generatedSha256": "e2c321f957b6d1005bb425b4901570e9f0278c9f6fed6b2aa39c8950e9d89201",
+      "outputSha256": "030e643e2896dd8493190187b052e35c9727cf15772bf14f547eb45fe301df03",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE empty 6 inch diameter round serving bowl. Product occupies 48% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "brick2",
+      "source": "/media/live-site-products/wix-d9e5764d-48c.png",
+      "output": "/media/light-catalogue/brick2.webp",
+      "sourceSha256": "85309a917a8a77d66ed64171da008c37879ab0b51fc2b074885a29ac72a09522",
+      "generatedSha256": "d5fe6fc885d6d5a39fc85cf7f244b9af13b0215c63d41109c686a365c6ece825",
+      "outputSha256": "38c0231dff27bffe0b05c896098e43292223382c924af249c327255231144db4",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE salt brick 8 by 4 by 2 inches. Show thickness clearly. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "brick1",
+      "source": "/media/live-site-products/wix-d9e5764d-48c.png",
+      "output": "/media/light-catalogue/brick1.webp",
+      "sourceSha256": "85309a917a8a77d66ed64171da008c37879ab0b51fc2b074885a29ac72a09522",
+      "generatedSha256": "80319528ef29af5ddb285d5cccaaee67819c4ca77cdff30b71e53e5726ca9489",
+      "outputSha256": "ae288f586bbd45f293c065cc27610c885ae54cc4e457c82e48d5f491909a1776",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE salt brick 8 by 4 by 1 inches. Show thinner slab thickness clearly. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "square-holder-small",
+      "source": "/media/live-site-products/wix-c76fac9b-0b1.png",
+      "output": "/media/light-catalogue/square-holder-small.webp",
+      "sourceSha256": "119f351975034fe69612c312d9a694ba81e05d75f81713fe1813ffcbed0f0329",
+      "generatedSha256": "db9ce1fdb55847297a2aac16db5a8bcbf11dd937c0acaec2d015435ed4fbefa1",
+      "outputSha256": "cf62fa943dae52a57f6071b2cb252e30b0c9d2de9e305f1fc8f0648cc63d9eb7",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE Small square tea light candle holder. Product occupies 48% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "natural-holder-large",
+      "source": "/media/live-site-products/wix-fc4519da-2c4.jpg",
+      "output": "/media/light-catalogue/natural-holder-large.webp",
+      "sourceSha256": "22826e7bda29080a557fada10fb4f07bf64af8ddebb41c72149cd273057aeeef",
+      "generatedSha256": "64476acf5922d3006d8f9de9f32f513ea7a69d158565fcdf3ebcbe23a10ffea4",
+      "outputSha256": "5e0403dbe7aae5cf3da8bef505c15989a7c9ad50129f8c37564367cb7b8216e7",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE Large natural tea light candle holder. Product occupies 75% image width. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "soap-leaf",
+      "source": "/media/live-site-products/wix-df19c1f7-07d.png",
+      "output": "/media/light-catalogue/soap-leaf.webp",
+      "sourceSha256": "50f8da13a2cc30e3a0004b59a6a0762beae1da5e0bde77e01c2d09237a576718",
+      "generatedSha256": "71985fd5d2606dbd66dc5e3dfad159b44cdc316d1856c55b9eac1674ad356950",
+      "outputSha256": "1826976b7bda9808688c9ad742ac31f4206d92fec14371bae5099130bafc2c03",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE leaf-shaped salt soap bar, based on the leaf-shaped left bar in the reference, unwrapped. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "soap-regular",
+      "source": "/media/live-site-products/wix-df19c1f7-07d.png",
+      "output": "/media/light-catalogue/soap-regular.webp",
+      "sourceSha256": "50f8da13a2cc30e3a0004b59a6a0762beae1da5e0bde77e01c2d09237a576718",
+      "generatedSha256": "145a4df3af6335875c627a3dc67cf194281e3f69c6da9c8b8247acd1a559a766",
+      "outputSha256": "fa62131f74a39e15ee4e09c543107f661113b933c29f693adda3864743637a3e",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE rectangular rounded salt soap bar, based on the rectangular right bar in the reference, unwrapped. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-1kg-fine",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-1kg-fine.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "b5805e53cd9b533ce434411da6a5014f900ca1554425d77c2595226e5d762f2d",
+      "outputSha256": "f77e65977a321b8c0d7c6b3218d64060db97ad62f029d84473a4c3347ff4096a",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 1kg fine culinary salt with fine salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"1 kg\" and \"FINE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-1kg-coarse",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-1kg-coarse.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "44726bdd5c12614f44cb6a1a63aef887080a32308405a13a7a2238f62bd6a984",
+      "outputSha256": "4a98dcf6c43f41cb8b15b89a3086e42fd2aaf98eb320e18aabb6fadd4553a541",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 1kg coarse culinary salt with coarse salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"1 kg\" and \"COARSE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-5kg-fine",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-5kg-fine.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "7e9b21e4a69bfb01c9f96e7fb13c101cb3b5cdbaeeeb01662a9bf103483c6d2e",
+      "outputSha256": "848b7e4fba333392f46579ab152793e2dcd00a770e9b129fa2830d0b37963ca3",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 5kg fine culinary salt with fine salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"5 kg\" and \"FINE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-5kg-coarse",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-5kg-coarse.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "17f11f24c1b1e8e619e3755a0ed7bc3f85a87a2d6e6037f7498506fedf303d90",
+      "outputSha256": "bc9b4cb07a2860ac86c67ca27d47512360db5203a0c385fa74d8afb4f794e21a",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 5kg coarse culinary salt with coarse salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"5 kg\" and \"COARSE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-10kg-fine",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-10kg-fine.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "450280b8cc53df35eb8a1c1eeda8e92a4d53c12f073920977c431df608bcb562",
+      "outputSha256": "963184327bbdc1482ca85a2b22cef5dbefb8e7faa3e905ed58131218d077eff9",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 10kg fine culinary salt with fine salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"10 kg\" and \"FINE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "culinary-10kg-coarse",
+      "source": "/media/live-site-products/wix-39183349-a08.png",
+      "output": "/media/light-catalogue/culinary-10kg-coarse.webp",
+      "sourceSha256": "264a248be265e8c9b295c8c557c4334c43af6e962172c2f8c77a1de6d8fa2024",
+      "generatedSha256": "2bf2aa24d26bcbfb39b18590cf85bf980dfc0323fdea09d4b040d5f94f3d355c",
+      "outputSha256": "40a44e732e99b99c280df0336675a58ff325b7d85785142032bb92f9ab7625bd",
+      "prompt": "Create a faithful illustrative option preview based on the reference product's material and craftsmanship. Exactly ONE upright pouch of 10kg coarse culinary salt with coarse salt crystals in a small pile in front. Use reference SALTY CHEF brand design, but remove all old net weight text and replace with accurate \"10 kg\" and \"COARSE\" text. No vegetables or bottles. Light catalogue styling: pale pink/peach Himalayan salt, ivory studio background and tabletop, soft daylight, visible mineral grain, gentle shadow. Whole product, generous margin, square. Remove old advertising text and dimension labels from reference. No text except the packaging details specifically requested. No food props, no dimension arrows. Size presentation is illustrative, not a measured photograph. Shape and item count must exactly match this option.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-15w-1pc",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-15w-1pc.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "a1f110af7fedfd6e3fbfaec7502816c247a851b6a59f59fc4db0684341dba1ec",
+      "outputSha256": "a048b5355c87289ef27f34edab324ed99a30f00454e4efd33a73f53e797f96fa",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 1 clear E14 pygmy salt-lamp bulb, 15 watt option. Match the reference glass and screw-base form. Show only the correct count of unboxed bulbs spaced apart, no packaging, no lettering. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-15w-2pc",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-15w-2pc.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "a1e1361b403ddfb07667e3c2d0808c10e079d43ae39159d735d872254cb2354f",
+      "outputSha256": "ec0aa9399b90579d042d1bead03e9cfb6a0d1cbe0c1fe999243ce02300d6aa47",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 2 clear E14 pygmy salt-lamp bulbs, 15 watt option. Match the reference glass and screw-base form. Show only the correct count of unboxed bulbs spaced apart, no packaging, no lettering. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-15w-3pc",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-15w-3pc.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "04330e04e9255e4e9e1dc55b3ff63bda5bfe2833d5911c3cdd5a5dff414e1140",
+      "outputSha256": "71db4696d68b58b18952c2e4060bed4bc52af9f876109ab8d0812dc2de8a4e34",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 3 clear E14 pygmy salt-lamp bulbs, 15 watt option. Match the reference glass and screw-base form. Show only the correct count of unboxed bulbs spaced apart, no packaging, no lettering. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-25w-1pc",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-25w-1pc.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "1fb3d2f05dd08952f9cf34471b13d6b7e6119554359eaa6f3e1694c852b0a8a8",
+      "outputSha256": "0ff64ec419f04bc6fafba6bf98bf86593a03c7d4e73d60e97c39cb5f71ad5107",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 1 clear E14 pygmy salt-lamp bulb, 25 watt option. Match the reference glass and screw-base form. Show only the correct count of unboxed bulbs spaced apart, no packaging, no lettering. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-25w-2pc",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-25w-2pc.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "7528266f66056fd41a1c17c06f2fbea4cc388b726b97e7e83cc23a38358ed2c3",
+      "outputSha256": "44a2cc9083d9214909af3af390c754a6c2e799c2615536d568d08a9ff5971ec1",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 2 clear E14 pygmy salt-lamp bulbs, 25 watt option. Match the reference glass and screw-base form. Show only the correct count of unboxed bulbs spaced apart, no packaging, no lettering. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-1-1p5kg-1pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-1-1p5kg-1pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "495007565b2d9e4190c98d7ecc9f4778b9cb5b30573c7b12fabadf79dfc79bec",
+      "outputSha256": "3d29dc22520f88f50ff7283b4ca4e3b531ad84b9b94a164d0d3bf50993667a6a",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 1 natural salt lick, each with its rope, 1-1.5 kg option. Show one centered lick. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-1-1p5kg-2pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-1-1p5kg-2pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "19deb9ebe69249c6d50d6d7652722cef5c887d83be54c7cf1d82df2ea93ab997",
+      "outputSha256": "b05e97d43d75ac60d111e5363d631ab72af2c90944a220dc8a276082e7f090a1",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 2 natural salt licks, each with its rope, 1-1.5 kg option. Arrange exactly two side by side. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-1-1p5kg-4pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-1-1p5kg-4pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "f55dc35ff06cff2fc2e93c6bc53fa9ae0da8f4d9ecd6a43e5208b4d739710aaa",
+      "outputSha256": "a2b213f2dbeeefbae45717ac87f5a1e731d9fd447350f32ab41fb1efb58a6c94",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 4 natural salt licks, each with its rope, 1-1.5 kg option. Arrange 2 by 2, four distinct licks. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-1-1p5kg-12pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-1-1p5kg-12pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "f8135494533d4a0be8d1e95fc418e8a0c929d3a5f1bccae052a52b14cbbee06a",
+      "outputSha256": "6db6b0abc69dbe5fa586c2ec0cdaa363f5f0a6a5dcf8ebbd59add6e2425bc1f8",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 12 natural salt licks, each with its rope, 1-1.5 kg option. Arrange clearly in a grid of 3 rows by 4 columns, twelve distinct licks with no overlap. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-2-3kg-1pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-2-3kg-1pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "9d5a33640b9c7aaf3851ed9b8dd0b3de9102eccc1f88261434ac572a02377dd2",
+      "outputSha256": "8b166a63fb1fb91b19443a643d3ab18862e94c80bfbfc220c2b52ffc3a33025e",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 1 natural salt lick, each with its rope, 2-3 kg option. Show one centered lick. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-2-3kg-2pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-2-3kg-2pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "aa73f959f58657bf3274f760b1b02433ee6badf71a351a69ec4062c687d23ce7",
+      "outputSha256": "f048db13072098e26321eb09b4c5878c22d44784a3fff54843907077dc12b515",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 2 natural salt licks, each with its rope, 2-3 kg option. Arrange exactly two side by side. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-2-3kg-4pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-2-3kg-4pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "76decf8d00f147ae86fb3083b5da40912ff84aedd71966d5bb994b25f0180cd7",
+      "outputSha256": "13722fe29a8804692a6b3da77b8d206fe350c021b903abacef133f16b89788e0",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 4 natural salt licks, each with its rope, 2-3 kg option. Arrange 2 by 2, four distinct licks. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-2-3kg-12pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-2-3kg-12pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "08e7054b5fdafd25f6bf1c44cd99d373b5fa2e6453cf8d2e65b0f270bbfc5e13",
+      "outputSha256": "238156abce45524d5f940024eac86896e36ead830abc4936212f6c800b8baec6",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 12 natural salt licks, each with its rope, 2-3 kg option. Arrange clearly in a grid of 3 rows by 4 columns, twelve distinct licks with no overlap. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-4-5kg-1pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-4-5kg-1pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "596eb2c8a8e3a99ade860654c13602c90dd9eaac5611cff08f9a55444fdee5e3",
+      "outputSha256": "fe9f1dbfb0f3c18a0d97db7d119fb3d130f0cdb26831e4dfc90929e3421cde78",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 1 natural salt lick, each with its rope, 4-5 kg option. Show one centered lick. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-4-5kg-2pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-4-5kg-2pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "c85e6673f8beae4f70235004940b927f98304c7b85a16090a93b9d66dcb7fd12",
+      "outputSha256": "d4fad8cef604db502b86fa0d3e50fa5a0c53df2f38babafa164a221de1730013",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 2 natural salt licks, each with its rope, 4-5 kg option. Arrange exactly two side by side. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-4-5kg-4pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-4-5kg-4pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "4feb7c46b9c279b5a59c5160186bd915d6ae279906ba5e75a55a372cc7b2c318",
+      "outputSha256": "204caf82540f7710bc2a8eebf88cfadaf8aab088d5870e50fe95ea675dad7168",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 4 natural salt licks, each with its rope, 4-5 kg option. Arrange 2 by 2, four distinct licks. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-4-5kg-12pc",
+      "source": "/media/live-site-products/wix-197a2dbf-710.jpg",
+      "output": "/media/light-catalogue/lick-4-5kg-12pc.webp",
+      "sourceSha256": "36ceb58c1cdabd632feae16f91dde1bafc3ab9e3fcc8a4c5ccc82fd5f729ce35",
+      "generatedSha256": "92465db6f737ff317f175bf4267e37518724f0874e13008b052bdcf30f4be8b5",
+      "outputSha256": "087dc04e52e8927d6b7f7b9d6c43c1f3810fde764cf033f4bf3c5b0a4d871134",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Exactly 12 natural salt licks, each with its rope, 4-5 kg option. Arrange clearly in a grid of 3 rows by 4 columns, twelve distinct licks with no overlap. Entire group in frame. Do not add text or labels. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "yoga-room",
+      "source": "/media/yoga-room.png",
+      "output": "/media/light-catalogue/yoga-room.webp",
+      "sourceSha256": "5fdf3e9debdf2e4f1a51f6455e206ea4cb3b6dc99c8a233c00e524627ed81199",
+      "generatedSha256": "7ee59dc268c1e66ec1ec92639de5f416c507e9a89cd68e8e2f1fa691078140aa",
+      "outputSha256": "7d1019a4d8bb3fe5c4593f62d522bb28353058a9a2c721dcc231527a6245e12d",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "horse-field",
+      "source": "/media/home-horse-salt-lick-generated.png",
+      "output": "/media/light-catalogue/horse-field.webp",
+      "sourceSha256": "fc393a1dd5367de7b290ecf25ed5c887d31e55258a6ea7f1da680201401f1767",
+      "generatedSha256": "a1636480526826f827664d22650ffe1252c02f45dc674a289bb73feebf068652",
+      "outputSha256": "69779faa74852256812a7fb70c60d463e2e615e88df7682ee0788ace1200b68f",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "spa-room",
+      "source": "/media/home-spa-salt-room-generated.png",
+      "output": "/media/light-catalogue/spa-room.webp",
+      "sourceSha256": "22e909cc41b09803ac2490c5c7e05e2867567c1cf4cbe4fb2d578bcbb4daf80a",
+      "generatedSha256": "875db39fe71e66fec857bdc019e0bf5473ac541ace297f56724c358835a94fd3",
+      "outputSha256": "58fdde9fd5a5f59130e1010b217aceb782c3452686dd58378eeee1ae7119811e",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "saltwood-room",
+      "source": "/media/saltwood-frames-lifestyle.jpg",
+      "output": "/media/light-catalogue/saltwood-room.webp",
+      "sourceSha256": "aa212fc08496fc4005ce50ef72b1d85ebe3e90f5a2e62fc969f3536e71cf548b",
+      "generatedSha256": "dae66998f4ddb25673ee6b023b2cc56f95f8b148b1c0127b7f25efd34a46302a",
+      "outputSha256": "a2330ef7835a2f00e8ad7f2d969c70b45a467547fcdc7ff5866aa5ead2a14123",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "saltwood-living",
+      "source": "/media/live-site-products/saltwood-frames-livingroom-live-site.jpg",
+      "output": "/media/light-catalogue/saltwood-living.webp",
+      "sourceSha256": "4fa9b6e252b9e90c4d3dffcee036e708104a7b1b3a96c0bf99d34f02b696f7d0",
+      "generatedSha256": "68c67da895fca5b1b65ca4fe287b5b17635db3f8be52d3452abd088eb4d059c2",
+      "outputSha256": "548cd389026ca3883eee02dd3ef236597d080b12cb39117edb4db6e83282ff24",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "saltwood-lobby",
+      "source": "/media/live-site-products/saltwood-frames-hotel-lobby-live-site.jpg",
+      "output": "/media/light-catalogue/saltwood-lobby.webp",
+      "sourceSha256": "dfb40ef0b173cc77943501689be1670b9d630a452be2c81c1e5797292e6f1c9b",
+      "generatedSha256": "4fa82c18914072221f0ade30f3aa871bd609db77836f3031082913bb121b71f9",
+      "outputSha256": "aa3d151ce09c8fa4a17ee5f58acc293586e2f147ef2ff39521ec75712306b13f",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "trade-showroom",
+      "source": "/media/trade-wholesale-showroom-generated.png",
+      "output": "/media/light-catalogue/trade-showroom.webp",
+      "sourceSha256": "e91545d744a8a3997752c26c63811a1ecf6d8bc035ff5c0ab5902f1e5f6421fd",
+      "generatedSha256": "0e5d5c92736381c101a111e41fb753849d9511b24efa54558ba3289a0020e892",
+      "outputSha256": "81196ac7a6eea3a62d8bc22ea48a4a8d5c03b9eefaf1482e72cdb66a019b38fd",
+      "prompt": "Regenerate this exact Salty Lamps merchandising scene with much lighter natural daylight and a pale cream, pink and peach colour treatment. Keep the same subjects, product shapes, room layout, furnishings, people or animals, and realistic materials. Preserve salt mineral veining and restrained warm glow; reduce the heavy dark orange cast and lift shadow detail. No washed-out white salt, no new objects or text, no changes to product geometry. Preserve the source composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-home",
+      "source": "/media/video/collection/home-gifts-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-home.webp",
+      "sourceSha256": "b157ca3c7dddb35a67bfb832fd76cdcaf199c8788af44a47a9f4a86fe08efeba",
+      "generatedSha256": "fb66f4cd620ebf7fcabd97ed8306ddde6290e6303a3d86eaaeb90ee0bc27864d",
+      "outputSha256": "6300875e93cf4b18a53f0ca0f8200f8f2b2a37499bf2078be2f8074ee181cc00",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-kitchen",
+      "source": "/media/video/collection/kitchen-food-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-kitchen.webp",
+      "sourceSha256": "4ad879fbc2a77aabb5d34baa8a3ec967cf2cd957a53698dff192a88175c8c067",
+      "generatedSha256": "697bd8be19fd435e8e1a129205bbf5756756c72e3ab04e3b9ed39243cc2336ba",
+      "outputSha256": "e3fe5e87239aabfa580690a463315feac90b418196339dc7b25f4926e1b49369",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-horses",
+      "source": "/media/video/collection/horses-farm-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-horses.webp",
+      "sourceSha256": "51f825d8acb2962cf911f763637c15387b2a3cde3ffacea7b1f2e4dc50ccfeb0",
+      "generatedSha256": "33467d2f67bd9f76d216fcf1f8dcc521e545516137dc2b3ec22ac09a740a531a",
+      "outputSha256": "e94eceb39473abb04215d4a3c546bec6196495533baad82d616f57fc5333175a",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-trade",
+      "source": "/media/video/collection/trade-spa-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-trade.webp",
+      "sourceSha256": "38a94e3c70b879a9d9e709b6749af4e8fb7ff7d66993b4e656c5d5b41a40d7ef",
+      "generatedSha256": "8ffe884fa8973c9aeb47f52b0e95cd54bc48b99b2e17eab148fcecdddf20f480",
+      "outputSha256": "645add9f778d204b7244b404900a01ebb53d0d7ac60ac01bc3349575e3cd9347",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-saltwood",
+      "source": "/media/video/collection/saltwood-frames-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-saltwood.webp",
+      "sourceSha256": "30a0a0cd55c703615bda98bd1a992178d61ed04154bc30a9b773d28c80fe2d71",
+      "generatedSha256": "03735c8e727c9ac190106b2436e45356cc7986639557adc4d3c74bbf34160164",
+      "outputSha256": "50cb878c46f15a2948694ec34737411110799fc8c2d6e5d390c4a2ef894e5e5f",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-manufacturing",
+      "source": "/media/video/salty-lamps-manufacturing-process-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-manufacturing.webp",
+      "sourceSha256": "29e9b98591980a4dced672766c336dd38d0ceba870ec5aa66d3aaa50d78d33f4",
+      "generatedSha256": "0ca53e76a27fa0e83bbf9ce41f6b1f95e6d92b4d8662a42792ac0c2a559a2ac6",
+      "outputSha256": "852b86fae22ec8ce0fec4db9a21f258a5b294c19c05b678f16b43fcd75cbbc5b",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "poster-main",
+      "source": "/media/video/salty-lamps-homepage-hero-poster-16x9.jpg",
+      "output": "/media/light-catalogue/poster-main.webp",
+      "sourceSha256": "a59275a33fcceb09e1361d145e325a532a8d832331e6df61a5f3743dfa2b1570",
+      "generatedSha256": "30a3589a637efb9e25ad43aa4aff4b590b1df48972a2969132f3dfe298e969ab",
+      "outputSha256": "7c80e33f91223f040678f9f2607d23077a08f281339cbc92dd3271d979cf416e",
+      "prompt": "Edit this exact video poster frame for the lighter Salty Lamps website. Preserve the same scene, all people identities and expressions, product geometry, furnishing, camera composition and layout. Lift shadows with soft daylight, reduce strong orange/brown cast, pale pink-peach salt retaining natural veining and gentle illumination. No added text, props or subjects, no altered expressions. Wide 16:9 output, full source frame.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "brand-card",
+      "source": "/media/salty-lamps-og-card.jpg",
+      "output": "/media/light-catalogue/brand-card.webp",
+      "sourceSha256": "3ccd641379dd6a27c84aaffebfa0cb143673046ba3cffeb24e44286e53b58c59",
+      "generatedSha256": "87b90e5353e0483b9216eaf2606ab242fe358a5abda5847507d783592262c598",
+      "outputSha256": "0463bf88b0a8f32682386529410d4d4914d6c3e13a28c970626714b2dcba23e2",
+      "prompt": "Edit this exact Salty Lamps brand sharing card with lighter warm ivory outer background, pale peach lamp and softer warm gold highlights. Preserve exact SALTY LAMPS spelling, circular emblem, floral motifs and overall layout. Keep emblem readable and recognisable. Wide 1200:630 composition.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "cable-regular-v2",
+      "source": "/media/live-site-products/wix-9c0fe076-e77.jpg",
+      "output": "/media/light-catalogue/cable-regular-v2.webp",
+      "sourceSha256": "d1a0c2f730e9a5d84523cd9c130cba5018f667de8a2d87cb2d824ead28070dfa",
+      "generatedSha256": "b44c752c6caa931e01b0c8aaecb0ebff460c78088715d9fd9c0090598caeebeb",
+      "outputSha256": "235c1c9d65a6e6a1665f024127ea11baa86673ad58ae98597e2c42c276f85e95",
+      "prompt": "Create a faithful illustrative option preview based on this reference. Preserve the ENTIRE white cable with plug, switch and fitting, every part, exactly as source. Reduce product to 65% frame width so absolutely no cord touches or crosses the image boundary. Keep white plastics, brass plug pins, correct UK plug and all electrical details unchanged. No pink cable. Soft daylight, ivory studio background and tabletop, gentle shadow, generous margins on all sides. Natural pale pink peach salt if present with visible mineral texture. Square composition. No advertisement text, prices, certification claims or invented accessories. Product shape and count must match the requested option exactly.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "uploaded-basket",
+      "source": "/media/original-uploaded/893cfce2-d13f-4e5b-97c5-ffad6599cdb8.png",
+      "output": "/media/light-catalogue/uploaded-basket.webp",
+      "sourceSha256": "34688880dfa30afa4ba56facbce0ed64cd67f434fd80088e62315c38284a569a",
+      "generatedSha256": "8c1d8e5968b6cefcfd39e119b24ea88f2caf472097c7d8c04f68c77c936ae087",
+      "outputSha256": "944a80050fabcfdbf35f2e88069b61d9a2a7f461c5843b63a4cc2f68c01cf440",
+      "prompt": "Edit this reference faithfully, preserve every product, object, person, geometry and layout. Refresh with bright diffuse neutral daylight, lighter cream and pale natural pink salt colours, open shadows and reduced excessive orange cast. Keep clear mineral texture and realistic materials. Do not add products, change counts or add text. Keep original composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "chef-family",
+      "source": "/media/live-site-products/salty-chef-family-live-site.png",
+      "output": "/media/light-catalogue/chef-family.webp",
+      "sourceSha256": "6d7af9f4be23e397f54b09819784c9744bcc13e26f062a850ddf26bec413d4fe",
+      "generatedSha256": "fe75b4f4386f0542458208619e57f0395de29a7c494924089c8648de9a797742",
+      "outputSha256": "877ba8fe127bc863a4857404079472f45dd3e63d5e173531060d5bfadd76f8dc",
+      "prompt": "Edit this reference faithfully, preserve every product, object, person, geometry and layout. Refresh with bright diffuse neutral daylight, lighter cream and pale natural pink salt colours, open shadows and reduced excessive orange cast. Keep clear mineral texture and realistic materials. Do not add products, change counts or add text. Keep original composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "wall-install",
+      "source": "/media/live-site-products/salt-wall-installation-live-site.png",
+      "output": "/media/light-catalogue/wall-install.webp",
+      "sourceSha256": "855bb11dab74844b73613d76adce2bb167846c6f39bb7abdc0e626a0ba4084b3",
+      "generatedSha256": "b47ed406664d99131a937a1816d49945b39129701cf93ed83f3e4aad8b7bc280",
+      "outputSha256": "f7e529c232d8dea616e98331a351c5f44193d58bbfedaac5f48ca7a86b05415e",
+      "prompt": "Edit this reference faithfully, preserve every product, object, person, geometry and layout. Refresh with bright diffuse neutral daylight, lighter cream and pale natural pink salt colours, open shadows and reduced excessive orange cast. Keep clear mineral texture and realistic materials. Do not add products, change counts or add text. Keep original composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "lick-field",
+      "source": "/media/live-site-products/lick-field-scene-gemini.jpg",
+      "output": "/media/light-catalogue/lick-field.webp",
+      "sourceSha256": "b1d4f6f2fb93aaabd4fe196c56ab4b7ba6b75e139fcfe6d18c1ebb1872abdee5",
+      "generatedSha256": "d46bd87e4a6c43bfc7608f18a1ba0ec677704a6b5009897baa7980828cf4c284",
+      "outputSha256": "c20b542fa53f13e7e24dcd809307966452b63825aa6cb1cb7bddbca78edc097e",
+      "prompt": "Edit this reference faithfully, preserve every product, object, person, geometry and layout. Refresh with bright diffuse neutral daylight, lighter cream and pale natural pink salt colours, open shadows and reduced excessive orange cast. Keep clear mineral texture and realistic materials. Do not add products, change counts or add text. Keep original composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "massage-set",
+      "source": "/media/live-site-products/massage-stones-gemini.jpg",
+      "output": "/media/light-catalogue/massage-set.webp",
+      "sourceSha256": "eedc2bc09c86c540c7d7740b65677b6d0bd466dacdc04511a76f3a44783bce6b",
+      "generatedSha256": "6632435f95f6144cf88067652254a6c5145db75a9973c6fe0c85b37bd2ec53b9",
+      "outputSha256": "0643ba00c15a49ba850da4bd445762e12505f085bc92a595ce09b6ab39168194",
+      "prompt": "Edit this reference faithfully, preserve every product, object, person, geometry and layout. Refresh with bright diffuse neutral daylight, lighter cream and pale natural pink salt colours, open shadows and reduced excessive orange cast. Keep clear mineral texture and realistic materials. Do not add products, change counts or add text. Keep original composition and aspect ratio.\n",
+      "status": "reviewed"
+    },
+    {
+      "id": "bulb-25w-3pc-v2",
+      "source": "/media/live-site-products/wix-0c2dfc77-19c.jpg",
+      "output": "/media/light-catalogue/bulb-25w-3pc-v2.webp",
+      "sourceSha256": "c1af87d15d3abeffef7e357ae72c6621d27c8cb7ed25de5c82d131cec3f7d089",
+      "generatedSha256": "3c92e5e610a2aa4291119e0230ca93a50204a6c71804f602edca41bfa2a894b7",
+      "outputSha256": "26ad4efd62d4df0fd4f7d29e6f9227382d6f990c933cd367ab0222eb2e687794",
+      "prompt": "Create a faithful product photograph of exactly THREE clear transparent glass 25 watt replacement incandescent bulbs, small screw metal bases, internal filaments visible. Reference shows the bulb model. These are GLASS electrical bulbs, NOT made of salt. Absolutely NO salt coating or pink mineral texture. Neutral cream seamless studio backdrop, bright soft light, all three entirely visible. No packaging or invented text.\n",
+      "status": "reviewed"
+    }
+  ]
+}

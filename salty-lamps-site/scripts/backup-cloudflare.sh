@@ -91,7 +91,7 @@ count_rows() {
   printf 'bucket      %s\n' "$BUCKET"
   printf 'account     %s\n' "${CLOUDFLARE_ACCOUNT_ID:-<from wrangler login>}"
   printf '\ninsert statements per table (as written to database.sql):\n'
-  for t in products skus orders order_items categories settings email_templates email_outbox enquiries reviews product_images admin_audit; do
+  for t in products skus orders order_items categories settings email_templates email_outbox enquiries reviews product_images sku_images admin_audit; do
     printf '  %-18s %s\n' "$t" "$(count_rows "$t")"
   done
 } > "$OUT/manifest.txt"

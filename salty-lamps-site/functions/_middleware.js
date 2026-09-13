@@ -24,7 +24,6 @@
 // token verification on the path of every image request on the site.
 
 import {
-  adminSplitConfigured,
   hostnameOf,
   isAdminHost,
   primaryAdminHost,
@@ -32,6 +31,12 @@ import {
 } from './lib/admin-hosts.mjs'
 
 const ROBOTS_KEEP_OUT = 'User-agent: *\nDisallow: /\n'
+const PUBLIC_PAGES = new Set([
+  '/', '/shop', '/gallery', '/process', '/reviews', '/privacy-policy',
+  '/terms-and-conditions', '/return-refund-policy', '/returns-exchanges',
+  '/refund-request', '/checkout/success', '/checkout/cancelled',
+])
+const PUBLIC_PAGE_PREFIXES = ['/product-page/', '/category/', '/collection/']
 
 export async function onRequest(context) {
   const { request, env, next } = context
@@ -42,14 +47,14 @@ export async function onRequest(context) {
   // Only /admin* is considered here. /api/admin/* is refused by its own
   // middleware, which returns a JSON error the admin UI can read rather than the
   // HTML redirect a browser wants — two different callers, two different answers.
-  if (isAdminPath(pathname) && adminSplitConfigured(env) && !isAdminHost(hostname, env)) {
+  if (isAdminPath(pathname) && !isAdminHost(hostname, env)) {
     const target = primaryAdminHost(env)
     // A redirect rather than a 404 because the person hitting this is almost
     // always the owner following an old bookmark, and sending them to the right
     // place costs nothing: the admin behind it is still gated by Cloudflare
     // Access, so this discloses only that an admin exists somewhere — which the
     // hostname itself already does.
-    if (target) {
+    if (target && target !== hostname) {
       const url = new URL(request.url)
       // Hostname only. The port is deliberately left alone: in production it is
       // already empty (443 is implied), so clearing it would be a no-op there —
@@ -58,11 +63,23 @@ export async function onRequest(context) {
       url.hostname = target
       return Response.redirect(url.toString(), 301)
     }
-    // ADMIN_HOSTS holds only wildcard patterns, so there is nowhere to send them.
+    // No safe destination is configured, so the public host does not disclose an
+    // owner interface at all.
     return new Response('Not found', {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex, nofollow' },
     })
+  }
+
+  // The SPA fallback must carry a real 404 status for arbitrary addresses while
+  // still returning the app shell, which provides the useful recovery screen.
+  // Product, category and collection slugs are resolved client-side from live data;
+  // their route families stay eligible here and unknown top-level pages do not.
+  if (isUnknownBrowserPage(request, pathname)) {
+    const response = await next()
+    const missing = new Response(response.body, { status: 404, headers: response.headers })
+    missing.headers.set('x-robots-tag', 'noindex, nofollow')
+    return missing
   }
 
   // --- 2. only one hostname is the real shop -------------------------------
@@ -90,4 +107,11 @@ export async function onRequest(context) {
 
 function isAdminPath(pathname) {
   return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
+function isUnknownBrowserPage(request, pathname) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return false
+  if (!String(request.headers.get('accept') || '').includes('text/html')) return false
+  if (PUBLIC_PAGES.has(pathname) || isAdminPath(pathname)) return false
+  return !PUBLIC_PAGE_PREFIXES.some(prefix => pathname.startsWith(prefix))
 }

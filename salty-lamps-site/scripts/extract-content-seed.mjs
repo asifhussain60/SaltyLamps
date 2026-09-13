@@ -394,7 +394,7 @@ function emitPagesAndSnippets() {
     // A factual claim about real customers, so it belongs in editable data rather
     // than a source file. It is still a frozen figure — the reviews table has a
     // `rating` column, and this should be computed from it once ratings are real.
-    'reviews.headline_score': '5.0',
+    'reviews.headline_score': '',
   }
   for (const [key, value] of Object.entries(snippets)) {
     w(`INSERT OR IGNORE INTO content_snippets (key, value) VALUES (${q(key)}, ${q(value)});`)

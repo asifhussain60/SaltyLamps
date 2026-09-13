@@ -1,10 +1,11 @@
 // GET /api/products
 // Flattens D1 products+skus into one flat "product card" per SKU, matching the
-// shape the storefront already renders (a product with variants becomes one
-// card per variant, since the UI has no in-page variant picker today).
+// option records consumed by the storefront. The UI groups these by product
+// and selects the matching option image, price and stock.
 
 import { apiError } from '../lib/admin-helpers.mjs'
 import { PRODUCTS_QUERY, PRODUCT_IMAGES_QUERY, flattenProductRows } from '../lib/flatten-products.mjs'
+import { publicProduct } from '../lib/public-copy.mjs'
 
 export async function onRequestGet({ env }) {
   try {
@@ -12,7 +13,7 @@ export async function onRequestGet({ env }) {
       env.DB.prepare(PRODUCTS_QUERY),
       env.DB.prepare(PRODUCT_IMAGES_QUERY),
     ])
-    const products = flattenProductRows(cards.results || [], images.results || [])
+    const products = flattenProductRows(cards.results || [], images.results || []).map(publicProduct)
 
     return new Response(JSON.stringify({ products }), {
       status: 200,

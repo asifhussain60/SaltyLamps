@@ -206,9 +206,8 @@ export default function TechnicalDoc() {
         <code> ACCESS_TEAM_DOMAIN</code> is missing it returns 503 rather than serving admin data.
       </p>
       <Callout tone="warn" title="DEV_ADMIN_BYPASS">
-        If the secret <code>DEV_ADMIN_BYPASS=1</code> is set, the middleware skips all checks and treats the
-        caller as <code>dev@localhost</code>. Intended for local dev and the DEV/UAT site only.
-        <strong> Never set it in production</strong> — it leaves the admin open to anyone with the URL.
+        <code>DEV_ADMIN_BYPASS=1</code> skips sign-in only when the request arrived on localhost and
+        treats the caller as <code>dev@localhost</code>. Deployed hosts ignore it.
       </Callout>
 
       <h2>10. Checkout &amp; payments</h2>
@@ -238,7 +237,7 @@ export default function TechnicalDoc() {
             <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>webhook signature verification</td></tr>
             <tr><td><code>SITE_URL</code></td><td>Stripe success/cancel redirects</td></tr>
             <tr><td><code>ACCESS_AUD</code>, <code>ACCESS_TEAM_DOMAIN</code></td><td>admin auth middleware</td></tr>
-            <tr><td><code>DEV_ADMIN_BYPASS</code></td><td>dev/UAT admin bypass (never in prod)</td></tr>
+            <tr><td><code>DEV_ADMIN_BYPASS</code></td><td>localhost-only development bypass</td></tr>
             <tr><td><code>RESEND_API_KEY</code></td><td>transactional email sender</td></tr>
             <tr><td><code>MAIL_DRY_RUN</code></td><td>dev/UAT only — log and record every email without delivering it</td></tr>
           </tbody>

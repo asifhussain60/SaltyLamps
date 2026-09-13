@@ -140,8 +140,8 @@ export const supportImages = {
     { src: img('lamp-sphere-gemini.jpg'), alt: 'Himalayan salt lamp gift set' },
   ],
   panel: [
-    { src: img('aura-collection-livingroom-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a living room' },
-    { src: img('aura-collection-hotel-lobby-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a hotel lobby' },
+    { src: img('saltwood-frames-livingroom-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a living room' },
+    { src: img('saltwood-frames-hotel-lobby-live-site.jpg'), alt: 'Framed Himalayan salt wall panels in a hotel lobby' },
   ],
 }
 

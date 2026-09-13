@@ -131,9 +131,9 @@ Correcting the details afterwards does **not** re-send the email — the notice 
 
 `functions/api/admin/_middleware.js` runs on every `/api/admin/*` request. It answers three questions in order.
 
-**1. Does the admin exist at this hostname?** `ADMIN_HOSTS` (via `functions/lib/admin-hosts.mjs`) names where it lives. Anywhere else the answer is **404**, not 401 — 401 would confirm the endpoint is there, and on the customer-facing domain the honest answer is that it is not. **Unset means everywhere**, which is what this project did before the admin moved to its own subdomain, so a deployment that never sets it behaves exactly as it always has. The `/admin` HTML itself is handled by the root `functions/_middleware.js`, because `_redirects` sources must be relative paths and so can never match on hostname.
+**1. Does the admin exist at this hostname?** `ADMIN_HOSTS` (via `functions/lib/admin-hosts.mjs`) names where it lives. Anywhere else the answer is **404**, not 401. An unset value also means nowhere on deployed hosts, so a new preview fails closed. The `/admin` HTML itself is handled by the root `functions/_middleware.js`, because `_redirects` sources must be relative paths and so can never match on hostname.
 
-**2. May this request skip the sign-in?** Two doors, both pinned to the hostname the request arrived at rather than to a flag: `DEV_ADMIN_BYPASS` **only** on localhost, and `ADMIN_OPEN_HOSTS` for named hostnames. Responses through either are stamped `x-admin-auth: open:<reason>` and attributed to a non-person in the audit log.
+**2. May this request skip the sign-in?** Only local development may skip sign-in, using `DEV_ADMIN_BYPASS` on localhost. No deployed hostname has an unauthenticated bypass.
 
 **3. Who is this?** The Access JWT (`Cf-Access-Jwt-Assertion` header or `CF_Authorization` cookie), requiring **RS256**, verified against the cached team **JWKS** for signature, issuer, expiry and **audience** (`ACCESS_AUD`), then the caller's email exposed for audit logging. It **fails closed**: if `ACCESS_AUD` or `ACCESS_TEAM_DOMAIN` is missing it returns 503.
 

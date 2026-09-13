@@ -12,6 +12,8 @@
 //
 // MUST stay pure: no env, no fetch, no React. Just query text and a shaping function.
 
+import { PUBLIC_REVIEW_WHERE } from './public-copy.mjs'
+
 // The address the shop publishes as its own — its Contact links, the "Ask a question"
 // button, the footer, and the schema.org Store block. It is the SAME setting the admin
 // notifications are sent to (admin_notify_email), so changing it in admin Settings
@@ -41,12 +43,12 @@ export const CONTENT_QUERIES = [
   `SELECT list_key, label, title, text, href, metric_value, metric_percent FROM content_list_items ORDER BY list_key, sort_order`,
   // display = 1 is the ASA filter, enforced in SQL so a suppressed quote never
   // reaches a browser at all.
-  `SELECT id, name, date_text, quote, proof, rating FROM reviews WHERE featured = 1 AND display = 1 ORDER BY featured_order`,
+  `SELECT id, name, date_text, quote, proof, rating FROM reviews WHERE featured = 1 AND ${PUBLIC_REVIEW_WHERE} ORDER BY featured_order`,
   // The home page states how many guestbook notes back the review band, but it must
   // not pull the whole corpus to do it. Counting server-side also makes the figure
   // honest: it is the number actually displayable, not the raw archive size that the
   // old copy quoted while silently filtering ten of them out.
-  `SELECT COUNT(*) AS n FROM reviews WHERE display = 1 AND featured = 0`,
+  `SELECT COUNT(*) AS n FROM reviews WHERE ${PUBLIC_REVIEW_WHERE}`,
   // ONE KEY BY NAME, never `SELECT * FROM settings`. This result set is served to the
   // public by /api/content, and the settings table also holds the sender address, the
   // admin alert destination and the operational switches — none of which a visitor has

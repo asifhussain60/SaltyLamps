@@ -149,6 +149,12 @@ New products arrive with **no image** — Wix's images are on Wix's CDN. The imp
 > an Access **service token** (`CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET`); it says so if you
 > hit it.
 
+### Required media cutover gate
+
+Follow [the reviewed media cutover plan](media-cutover.md) before leaving this phase. Transfer the **entire media tree**, including all 100 lighter images, Saltwood Frames and manufacturing films, and remaining uploaded photographs. Apply migration 009 before the new API and migration 010 only **after the final catalogue import**. Preserve the reviewed manifests, original sources and option-photo assignments.
+
+Run `npm run media:verify-cutover -- --url=https://salty-lamps.pages.dev` against the owner's actual temporary address. All 100 image hashes and all 73 reviewed option assignments must pass, alongside full-media/R2 checks and browser preview checks. No missing asset or unmapped option may be accepted at cutover.
+
 ## Phase 9 — Move the admin to its own subdomain, and lock it
 
 The admin stops being a page on the shop and becomes `admin.saltylamps.co.uk`.
@@ -163,9 +169,9 @@ The admin stops being a page on the shop and becomes `admin.saltylamps.co.uk`.
    and the admin hostname must ask for a sign-in.
 6. `ADMIN_OPEN_HOSTS` must not exist on this project. It opens the admin with no sign-in at all.
 
-> **`ADMIN_HOSTS` unset means the admin is served everywhere, exactly as before this existed.**
-> That is deliberate: the code can ship ahead of the cutover without changing any behaviour. The
-> rollback for a lockout is to remove the secret and redeploy.
+> **`ADMIN_HOSTS` unset means the admin is served nowhere on deployed hosts.** Local development remains available on localhost.
+> That is deliberate: a deployment without completed Access setup remains closed. Correct the
+> hostname or Access settings and redeploy rather than reopening the portal on the shop.
 
 ## Phase 10 — Payments
 
@@ -248,6 +254,8 @@ Add `www.saltylamps.co.uk` and the apex as custom domains, update `SITE_URL`, **
 Stripe webhook (editing keeps the signing secret; a new endpoint issues a new one), redeploy, then
 re-run the whole Phase 11 suite against the real address and place one more real order.
 
+Repeat the [media cutover gate](media-cutover.md) against `https://www.saltylamps.co.uk` after the switch. Archive the successful results before marking the migration complete.
+
 ## Phase 16 — Tell Google
 
 Search Console **Domain** property (covers www/apex and both protocols) verified by a TXT record —
@@ -269,7 +277,7 @@ list, disconnect the domain from the Wix site, then cancel Wix and the old mailb
 | Phase 5 (email in) | Turn Email Routing off — the old mailbox was never touched | Minutes |
 | Phase 6 (email out) | Delete and re-add the domain in Resend; a half-verified entry confuses the next attempt | No customer impact |
 | Phase 8 (catalogue) | Restore the previous `data/catalogue.json` and apply again; nothing was deleted | Minutes |
-| Phase 9 (admin) | Remove `ADMIN_HOSTS` and redeploy — the admin returns to the shop's address | One deploy |
+| Phase 9 (admin) | Keep the portal closed, correct the Access application or secrets, and redeploy | One deploy after Access is corrected |
 | Phase 15 (live) | Point `www` back at `pointing.wixdns.net` and the apex at Wix; the Wix site is still paid for until Phase 17 | Minutes — the domain is already on Cloudflare |
 
 Every row assumes Phase 2 was done. It is the only phase with no undo of its own, which is why it

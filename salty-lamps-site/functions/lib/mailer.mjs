@@ -1,3 +1,4 @@
+import {weightLabel} from './weights.mjs'
 // Sending. One provider, one place.
 //
 // THE GOVERNING RULE: an email may never break a business transaction. The Stripe
@@ -264,6 +265,7 @@ export function orderBlocks(order, items, { includeAddress = true } = {}) {
       name: item.name,
       variant: item.variant_label || '',
       sku: item.sku || '',
+      weight: item.weight_public===1?weightLabel({productWeightMinG:item.product_weight_min_g,productWeightMaxG:item.product_weight_max_g}):'',
       qty: item.quantity,
       unit: formatMoney(item.unit_price_pence),
       total: formatMoney(item.unit_price_pence * item.quantity),

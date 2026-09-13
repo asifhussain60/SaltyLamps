@@ -19,8 +19,9 @@ vite.config.js.timestamp-*
 # macOS
 .DS_Store
 
-# Aura video generator: local render cache + pre-overwrite backups
+# Collection video generator: local render cache + pre-overwrite backups
 .aura-render-cache/
+.manufacturing-render-cache/
 *.bak
 
 # D1 remote backups — contain real order data (customer emails, addresses). Never commit.
@@ -31,3 +32,9 @@ d1/backups/
 tests/node_modules/
 tests/playwright-report/
 tests/test-results/
+
+# Wooden Frame Collection rename renders and rollback copies
+.wooden-frame-render-cache/
+
+# Saltwood Frames render and verification cache
+.saltwood-render-cache/

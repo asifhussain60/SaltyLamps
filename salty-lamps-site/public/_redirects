@@ -30,8 +30,8 @@ http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 # --- Wix categories with no direct equivalent -----------------------------------
 # "All Products" was Wix's catch-all listing; /shop is this site's.
 /category/all-products /shop 301
-# The Aura frames category became a collection.
-/category/auraframes-uk /collection/aura-collection 301
+# The wooden frame category became a collection.
+/category/auraframes-uk /collection/saltwood-frames 301
 
 # --- Wix pages that do not exist here -------------------------------------------
 # Wix's hosted invoice-payment page. No equivalent and no organic value.
@@ -84,9 +84,32 @@ http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 /product-page/himalayan-rock-salt-lamp-2-x-candle-special-offer /product-page/special-offer-himalayan-rock-salt-lamp-candle-holders-1-lamp-2-candle-holders 301
 
 # --- Product with no equivalent -------------------------------------------------
-# The Wix "saltwood frame" listing is the Aura range, which is now a collection
+# The Wix "saltwood frame" listing is the wooden frame range, which is now a collection
 # rather than a single product page.
-/product-page/saltwood-frame /collection/aura-collection 301
+/product-page/saltwood-frame /collection/saltwood-frames 301
 
-# --- SPA fallback. MUST REMAIN LAST ---------------------------------------------
+# --- Collection rename: keep bookmarks and indexed media working ----------------
+/collection/aura-collection /collection/saltwood-frames 301
+/collection/aura-collection/* /collection/saltwood-frames/:splat 301
+/media/aura-collection-lifestyle.jpg /media/saltwood-frames-lifestyle.jpg 301
+/media/live-site-products/aura-collection-frame-detail-live-site.jpg /media/live-site-products/saltwood-frames-frame-detail-live-site.jpg 301
+/media/live-site-products/aura-collection-hotel-lobby-live-site.jpg /media/live-site-products/saltwood-frames-hotel-lobby-live-site.jpg 301
+/media/live-site-products/aura-collection-livingroom-live-site.jpg /media/live-site-products/saltwood-frames-livingroom-live-site.jpg 301
+/media/live-site-products/aura-collection-workshop-real-live-site.jpg /media/live-site-products/saltwood-frames-workshop-real-live-site.jpg 301
+/media/video/collection/aura-collection-hero-16x9.mp4 /media/video/collection/saltwood-frames-hero-16x9.mp4 301
+/media/video/collection/aura-collection-hero-poster-16x9.jpg /media/video/collection/saltwood-frames-hero-poster-16x9.jpg 301
+
+
+# Corrected Saltwood Frames branding; keep previous addresses working.
+/collection/wooden-frame-collection /collection/saltwood-frames 301
+/collection/wooden-frame-collection/* /collection/saltwood-frames/:splat 301
+/media/wooden-frame-collection-lifestyle.jpg /media/saltwood-frames-lifestyle.jpg 301
+/media/video/collection/wooden-frame-collection-hero-poster-16x9.jpg /media/video/collection/saltwood-frames-hero-poster-16x9.jpg 301
+/media/video/collection/wooden-frame-collection-hero-16x9.mp4 /media/video/collection/saltwood-frames-hero-16x9.mp4 301
+/media/live-site-products/wooden-frame-collection-frame-detail-live-site.jpg /media/live-site-products/saltwood-frames-frame-detail-live-site.jpg 301
+/media/live-site-products/wooden-frame-collection-livingroom-live-site.jpg /media/live-site-products/saltwood-frames-livingroom-live-site.jpg 301
+/media/live-site-products/wooden-frame-collection-hotel-lobby-live-site.jpg /media/live-site-products/saltwood-frames-hotel-lobby-live-site.jpg 301
+/media/live-site-products/wooden-frame-collection-workshop-real-live-site.jpg /media/live-site-products/saltwood-frames-workshop-real-live-site.jpg 301
+
+# --- SPA fallback. MUST REMAIN LAST ---
 /* /index.html 200

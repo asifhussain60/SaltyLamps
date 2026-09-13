@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { ProductWeight } from './components/WeightDisplay.jsx'
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 
 // Loaded on demand rather than imported, because the admin portal is ~2,500 lines
 // that no shopper will ever run, and a static import puts every one of them in the
@@ -10,8 +11,10 @@ import { img, media, siteUrl } from './content/site-content.mjs'
 import { combineSchemas, listSchema, productSchema, storeSchema } from './content/schema.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
+import { publicCollectionSections } from '../functions/lib/public-copy.mjs'
 import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 import snapshot from './content/content-snapshot.json'
+import ProductGallery, { ProductImage } from './components/ProductGallery.jsx'
 
 const money = value =>
   new Intl.NumberFormat('en-GB', {
@@ -125,33 +128,6 @@ const initialsFor = name =>
     .join('')
     .toUpperCase()
 
-// Theme-generic stock photography, used ONLY as a fallback for a product whose own
-// gallery has nothing beyond its primary image. Every product currently has exactly
-// one gallery row, so this is still what most product pages show — but it is the
-// exception rather than the rule, and it disappears per-product as real photographs
-// are uploaded through the admin gallery.
-const supportImagesForTheme = (content, theme, primaryImage) => {
-  const productSupport = themeContentOf(content, theme).images || []
-  const lampSupport = content.themes?.lamp?.images || []
-  const seen = new Set([primaryImage])
-  return [...productSupport, ...lampSupport]
-    .filter(item => {
-      if (seen.has(item.src)) return false
-      seen.add(item.src)
-      return true
-    })
-    .slice(0, 2)
-}
-
-// A product's detail thumbnails: its own gallery when it has one, theme stock photos
-// otherwise. The gallery's first entry is the primary image already shown large, so
-// it is dropped here.
-const detailImagesFor = (content, product, theme) => {
-  const gallery = (product.images || []).filter(src => src !== product.image)
-  if (gallery.length) return gallery.map(src => ({ src, alt: product.name }))
-  return supportImagesForTheme(content, theme, product.image)
-}
-
 // `lede` is stored as a template containing {name}; one theme row serves every product
 // in that theme, so the interpolation happens here at read time.
 const productSellingContent = (content, taxonomy, product) => {
@@ -262,7 +238,7 @@ const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperP
   if (route === '/gallery') return { title: pageTitle('Gallery'), description: 'Browse Salty Lamps product details, lifestyle scenes, and trade-use references.', image: media('yoga-room.png') }
   if (route.startsWith('/admin')) return { title: pageTitle('Admin'), description: 'Salty Lamps admin portal.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,nofollow' }
   if (route === '/process') return { title: pageTitle('Manufacturing Process'), description: 'See how Salty Lamps products move from mined rock salt to cut, finished, packed products.', image: media('video/salty-lamps-manufacturing-process-poster-16x9.jpg') }
-  if (route === '/reviews') return { title: pageTitle('Customer Reviews'), description: 'Read verified Salty Lamps guestbook feedback by customer theme.', image: img('lamp-natural-gemini.jpg') }
+  if (route === '/reviews') return { title: pageTitle('Customer Guestbook'), description: 'Read archived Salty Lamps guestbook comments by customer theme.', image: img('lamp-natural-gemini.jpg') }
   if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('salty-lamps-og-card.jpg') }
   if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
   if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
@@ -356,13 +332,9 @@ function Link({ href, children, className, onClick, ...props }) {
 // shape (Heart, Ball, Disk), the soap bars by form, and the bulbs by wattage — and
 // "Size: Heart" is simply wrong. One neutral word is right for all fourteen.
 //
-// Only the options that can actually be bought are offered, so nobody picks their way
-// into a dead end. The one exception is the option being shown right now: a sold-out
-// one still has its own indexed URL, so landing on that link directly has to show it
-// — disabled — rather than quietly swapping the shopper onto something other than what
-// the link promised.
+// Every option remains previewable; purchase availability is enforced by Add to cart.
 function OptionPicker({ group, active, onSelect }) {
-  const options = group.variants.filter(variant => variant.stock || variant.skuId === active.skuId)
+  const options = group.variants
 
   return (
     <div className="option-picker" role="group" aria-label="Option">
@@ -374,7 +346,6 @@ function OptionPicker({ group, active, onSelect }) {
             type="button"
             className={option.skuId === active.skuId ? 'is-selected' : ''}
             aria-pressed={option.skuId === active.skuId}
-            disabled={!option.stock}
             onClick={() => onSelect(option)}
           >
             <span>{option.variantLabel}</span>
@@ -412,6 +383,7 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
       <div className="product-body">
         <p>{groupName}</p>
         <h3>{product.name}</h3>
+        {product.showWeightCards && <ProductWeight product={product} compact group/>}
         <span>{product.description}</span>
       </div>
       <div className="product-meta">
@@ -420,7 +392,7 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
           {/* Singular is reachable: a two-option product with one of them sold out has
               exactly one left to offer, and read "1 options". */}
           {product.stock
-            ? hasOptions ? `${product.inStockCount} option${product.inStockCount === 1 ? '' : 's'}` : 'In stock'
+            ? hasOptions ? `${product.variantCount} options` : 'In stock'
             : 'Currently unavailable'}
         </small>
       </div>
@@ -461,17 +433,28 @@ function Honeypot() {
 // piece of copy on the page.
 function ChatModule({ onSubmit, message, content }) {
   const [open, setOpen] = useState(false)
+  const panelRef = useRef(null)
+  const triggerRef = useRef(null)
+
+  useEffect(() => {
+    if (open) panelRef.current?.querySelector('input')?.focus()
+  }, [open])
+
+  const close = () => {
+    setOpen(false)
+    window.requestAnimationFrame(() => triggerRef.current?.focus())
+  }
 
   return (
     <div className={`chat-module ${open ? 'open' : ''}`}>
       {open && (
-        <form className="chat-panel" onSubmit={onSubmit}>
+        <form id="support-chat" ref={panelRef} className="chat-panel" role="region" aria-label="Salty Lamps support" onSubmit={onSubmit}>
           <div className="chat-panel-header">
             <div>
               <p className="eyebrow">Salty Lamps support</p>
               <strong>Ask us about products, trade, or orders.</strong>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close chat">Close</button>
+            <button type="button" onClick={close} aria-label="Close chat">Close</button>
           </div>
           <label>
             Name
@@ -491,11 +474,62 @@ function ChatModule({ onSubmit, message, content }) {
           {message && <p className="success">{message}</p>}
         </form>
       )}
-      <button className="chat-button" type="button" onClick={() => setOpen(current => !current)}>
+      <button ref={triggerRef} className="chat-button" type="button" aria-expanded={open} aria-controls="support-chat" onClick={() => (open ? close() : setOpen(true))}>
         {open ? 'Close Chat' : "Let's Chat"}
       </button>
     </div>
   )
+}
+
+function useModalFocus(open, ref, onClose) {
+  const returnFocus = useRef(null)
+
+  useEffect(() => {
+    if (!open || !ref.current) return undefined
+    const dialog = ref.current
+    returnFocus.current = document.activeElement
+    const background = [...document.querySelectorAll('.site-shell > :not(.cart-drawer):not(.modal):not(.scrim)')]
+    const previous = background.map(node => ({ node, inert: node.inert }))
+    background.forEach(node => { node.inert = true })
+
+    const focusable = () => [...dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+      .filter(node => !node.hidden && node.getClientRects().length)
+    window.requestAnimationFrame(() => (dialog.querySelector('[data-dialog-focus]') || focusable()[0] || dialog).focus())
+
+    const handleKey = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const nodes = focusable()
+      if (!nodes.length) {
+        event.preventDefault()
+        dialog.focus()
+        return
+      }
+      const first = nodes[0]
+      const last = nodes[nodes.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    dialog.addEventListener('keydown', handleKey)
+    document.body.classList.add('has-modal-open')
+    return () => {
+      dialog.removeEventListener('keydown', handleKey)
+      previous.forEach(({ node, inert }) => { node.inert = inert })
+      document.body.classList.remove('has-modal-open')
+      window.requestAnimationFrame(() => {
+        if (!document.querySelector('.cart-drawer.open, .modal[role="dialog"]')) returnFocus.current?.focus?.()
+      })
+    }
+  }, [open, onClose, ref])
 }
 
 
@@ -538,6 +572,7 @@ export default function App() {
   const [reviewCorpus, setReviewCorpus] = useState(null)
   const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutResult, setCheckoutResult] = useState({ status: 'idle', orderReference: '' })
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
   const [quickViewSkuId, setQuickViewSkuId] = useState(null)
@@ -552,6 +587,9 @@ export default function App() {
   const [processFilmPlaying, setProcessFilmPlaying] = useState(false)
   const [processFilmPosterFailed, setProcessFilmPosterFailed] = useState(false)
   const [activeCollectionSection, setActiveCollectionSection] = useState('all')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const cartDialogRef = useRef(null)
+  const quickViewDialogRef = useRef(null)
 
   useEffect(() => {
     const updateRoute = () => setRoute(getRoute())
@@ -570,7 +608,7 @@ export default function App() {
     let alive = true
     setCatalog(current => ({ ...current, status: 'loading' }))
     Promise.all([
-      fetch('/api/products').then(readJsonOrThrow),
+      fetch('/api/products', { cache: 'no-cache' }).then(readJsonOrThrow),
       fetch('/api/categories').then(readJsonOrThrow),
       fetch('/api/content').then(readJsonOrThrow).catch(() => null),
     ])
@@ -588,7 +626,7 @@ export default function App() {
     return () => { alive = false }
   }, [])
 
-  useEffect(() => loadCatalog(), [loadCatalog])
+  useEffect(() => loadCatalog(), [loadCatalog, route.startsWith('/admin')])
 
   useEffect(() => {
     if (route !== '/reviews' || reviewCorpus) return
@@ -617,10 +655,27 @@ export default function App() {
   // here rather than appearing twice.
   const corpus = (reviewCorpus || []).filter(review => !review.featured)
 
-  // The order is placed, so the cart must not survive it — otherwise the same items
-  // reappear the moment the customer navigates back into the shop.
   useEffect(() => {
-    if (route === '/checkout/success') setCart([])
+    if (route !== '/checkout/success') {
+      setCheckoutResult({ status: 'idle', orderReference: '' })
+      return undefined
+    }
+    const sessionId = new URLSearchParams(window.location.search).get('session_id')
+    if (!sessionId) {
+      setCheckoutResult({ status: 'invalid', orderReference: '' })
+      return undefined
+    }
+    let alive = true
+    setCheckoutResult({ status: 'checking', orderReference: '' })
+    fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' })
+      .then(readJsonOrThrow)
+      .then(data => {
+        if (!alive || data.status !== 'paid') return
+        setCheckoutResult({ status: 'paid', orderReference: data.orderReference || '' })
+        setCart([])
+      })
+      .catch(() => alive && setCheckoutResult({ status: 'invalid', orderReference: '' }))
+    return () => { alive = false }
   }, [route])
 
   // Persist the cart across the Stripe round-trip. Only { skuId, qty } is stored —
@@ -661,9 +716,15 @@ export default function App() {
 
   const categorySlug = route.startsWith('/category/') ? taxonomy.resolve(route.replace('/category/', '')) : null
   const collectionMatch = route.match(/^\/collection\/([^/]+)(?:\/([^/]+))?$/)
-  const collectionSlug = collectionMatch?.[1] || null
+  const collectionSlug = ['aura-collection', 'wooden-frame-collection'].includes(collectionMatch?.[1])
+    ? 'saltwood-frames'
+    : collectionMatch?.[1] || null
   const collectionCategorySlug = collectionMatch?.[2] ? taxonomy.resolve(collectionMatch[2]) : null
+  // Accept the previous cached API payload during the collection rename rollout.
   const activeShopperPath = collections.find(path => path.slug === collectionSlug)
+    || (collectionSlug === 'saltwood-frames'
+      ? collections.find(path => ['wooden-frame-collection', 'aura-collection'].includes(path.slug))
+      : undefined)
 
   // Reset video state whenever the collection changes.
   useEffect(() => {
@@ -674,12 +735,17 @@ export default function App() {
   useEffect(() => {
     if (route !== '/') setHomeHeroPlaying(false)
     if (route !== '/process') setProcessFilmPlaying(false)
+    setMobileNavOpen(false)
   }, [route])
 
   // One entry per product rather than per SKU. Everything the shop counts, filters,
   // sorts, sections, or renders as a card works from this list, so the sidebar totals
   // and the grid can never disagree about how many products there are.
   const productGroups = useMemo(() => groupProducts(products), [products])
+  const promotedCollections = catalog.status === 'ready'
+    ? collections.filter(path => productGroups.some(product => productMatchesPath(product, path)) || path.trade?.heading)
+    : collections.filter(path => path.slug !== 'saltwood-frames')
+  const countLabel = value => (catalog.status === 'loading' ? '…' : value)
 
   const productSlug = route.startsWith('/product-page/') ? route.replace('/product-page/', '') : null
   // The URL still names one option, and that option is what the page shows, prices,
@@ -740,7 +806,7 @@ export default function App() {
           : route
   const galleryItems = useMemo(
     () => [
-      ...products.slice(0, 18).map((product, index) => ({
+      ...productGroups.slice(0, 18).map((product, index) => ({
         key: product.id,
         name: product.name,
         image: product.image,
@@ -757,7 +823,7 @@ export default function App() {
         variant: index % 3 === 0 ? 'wide' : '',
       })),
     ],
-    [products, taxonomy],
+    [productGroups, taxonomy],
   )
   const galleryShowcaseItems = useMemo(
     () => [
@@ -830,7 +896,7 @@ export default function App() {
   // sections; any drill-down or search falls back to the flat result grid.
   const isCollectionRoot = Boolean(activeShopperPath) && categoryFilter === 'all' && !query.trim()
   const collectionSections = isCollectionRoot
-    ? buildCollectionSections(activeShopperPath.sections || [], visibleProducts, snippet(content, 'collection.leftover_title', 'More in this range'))
+    ? buildCollectionSections(publicCollectionSections(activeShopperPath.sections, activeShopperPath.slug), visibleProducts, snippet(content, 'collection.leftover_title', 'More in this range'))
     : []
   const collectionSectionKey = collectionSections
     .map(section => `${section.id || ''}:${section.categorySlug || ''}`)
@@ -923,6 +989,14 @@ export default function App() {
     setQuickViewId(null)
     setQuickViewSkuId(null)
   }
+
+  const closeCart = React.useCallback(() => setCartOpen(false), [])
+  const closeQuickViewDialog = React.useCallback(() => {
+    setQuickViewId(null)
+    setQuickViewSkuId(null)
+  }, [])
+  useModalFocus(cartOpen, cartDialogRef, closeCart)
+  useModalFocus(Boolean(quickViewProduct), quickViewDialogRef, closeQuickViewDialog)
 
   // Picking an option on the product page rewrites the address rather than holding the
   // choice in state, because every option already IS a page: the URL, the canonical
@@ -1215,7 +1289,7 @@ export default function App() {
             </div>
             <div className="shop-layout-aside" aria-label="Shop highlights">
               <div className="shop-layout-stats">
-                <span><strong>{visibleProducts.length}</strong> shown</span>
+                <span><strong>{countLabel(visibleProducts.length)}</strong> shown</span>
                 <span><strong>{activeShopperPath ? activeShopperPath.shortName : taxonomy.navList.length}</strong> {activeShopperPath ? 'buyer path' : 'categories'}</span>
                 <span><strong>Trade</strong> bulk supply</span>
               </div>
@@ -1235,7 +1309,7 @@ export default function App() {
       <aside className="shop-sidebar" aria-label="Shop filters">
         <div className="sidebar-heading">
           <p className="eyebrow">{activeShopperPath ? activeShopperPath.shortName : 'Shop controls'}</p>
-          <span>{visibleProducts.length} shown</span>
+          <span>{countLabel(visibleProducts.length)} shown</span>
         </div>
         {activeShopperPath && (
           <div className={`path-context theme-${activeShopperPath.theme}`}>
@@ -1268,7 +1342,7 @@ export default function App() {
             className={`${categoryFilter === 'all' && (!isCollectionRoot || activeCollectionSection === 'all') ? 'active' : ''} theme-${activeShopperPath?.theme || 'lamp'}`}
           >
             <span>{activeShopperPath ? `All ${activeShopperPath.shortName}` : 'All products'}</span>
-            <small>{collectionProducts.length}</small>
+            <small>{countLabel(collectionProducts.length)}</small>
           </Link>
           {isCollectionRoot ? (
             collectionSections.map(section => (
@@ -1314,7 +1388,7 @@ export default function App() {
           </nav>
         )}
         {isCollectionRoot && !collectionSections.length ? (
-          /* A collection can legitimately have nothing in it — the Aura panels are
+          /* A collection can legitimately have nothing in it — the wooden-frame panels are
              hidden until they are priced. Without this the page simply stopped after
              the filter rail, with no explanation. Same three states as the shop grid
              below, so an outage never reads as "this range is empty". */
@@ -1332,9 +1406,11 @@ export default function App() {
               </div>
             ) : (
               <div className="empty-state">
-                <h3>Nothing in this range just yet</h3>
-                <p>These products are on their way. In the meantime, the rest of the Salty Lamps range is ready to browse.</p>
-                <Link className="button secondary" href="/shop">View all products</Link>
+                <h3>{activeShopperPath.slug === 'saltwood-frames' ? 'Made to order for your space' : 'Nothing in this range just yet'}</h3>
+                <p>{activeShopperPath.slug === 'saltwood-frames' ? 'Saltwood Frames are quoted to suit the size and setting of each project. Tell us about your wall and we will help with sizes, lead time, and pricing.' : 'These products are on their way. In the meantime, the rest of the Salty Lamps range is ready to browse.'}</p>
+                {activeShopperPath.slug === 'saltwood-frames'
+                  ? <a className="button primary" href={contactMailto(content, 'Saltwood Frames project enquiry')}>Request a project quote</a>
+                  : <Link className="button secondary" href="/shop">View all products</Link>}
               </div>
             )}
           </div>
@@ -1367,9 +1443,8 @@ export default function App() {
                     <aside className="shop-section-guide">
                       {section.image && <img src={section.image} alt="" loading="lazy" />}
                       <div>
-                        <p className="eyebrow">Recommended route</p>
+                        <p className="eyebrow">Best for</p>
                         <strong>{section.cardText}</strong>
-                        {section.recommendation && <p>{section.recommendation}</p>}
                       </div>
                       {section.categorySlug && (
                         <Link
@@ -1443,7 +1518,7 @@ export default function App() {
             <a className="button secondary" href="#trade">Request trade pricing</a>
           </div>
           <div className="hero-stats" aria-label="Store highlights">
-            <span><strong>{products.length}</strong> products</span>
+            <span><strong>{countLabel(productGroups.length)}</strong> products</span>
             <span><strong>Trade</strong> bulk orders</span>
             <span><strong>UK</strong> supplier</span>
           </div>
@@ -1456,7 +1531,7 @@ export default function App() {
               controls
               preload="metadata"
               onEnded={() => setHomeHeroPlaying(false)}
-              poster="/media/video/salty-lamps-homepage-hero-poster-16x9.jpg"
+              poster={media('video/salty-lamps-homepage-hero-poster-16x9.jpg')}
             >
               <source src="/media/video/salty-lamps-homepage-hero-16x9.mp4" type="video/mp4" />
             </video>
@@ -1502,7 +1577,7 @@ export default function App() {
           <p className="eyebrow">Shop by what you need</p>
           <h2>Choose the range that fits your buyer journey.</h2>
         </div>
-        {collections.map(path => (
+        {promotedCollections.map(path => (
           <Link key={path.slug} href={`/collection/${path.slug}`} className={`shopper-card theme-${path.theme}`}>
             <img className="shopper-card-bg" src={path.background} alt="" loading="lazy" />
             <span className="shopper-card-copy">
@@ -1576,12 +1651,9 @@ export default function App() {
               Based on {reviewCount} customer guestbook notes, with the strongest themes surfaced from the real wording customers left after buying.
             </p>
           </div>
-          <div className="review-score">
-            <strong>{snippet(content, 'reviews.headline_score', '')}</strong>
-            <span>
-              <span className="review-stars" aria-label="5 star featured reviews">★★★★★</span>
-              <small>Featured guestbook rating</small>
-            </span>
+          <div className="review-score review-score--archive">
+            <strong>{reviewCount}</strong>
+            <span><small>archived customer comments</small></span>
           </div>
           <div className="review-signals" aria-label="Common customer review themes">
             {reviewSignals.map(signal => (
@@ -1599,7 +1671,7 @@ export default function App() {
               <svg width="38" height="38" viewBox="0 0 40 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <polygon points="20,4 24.1,14.3 35.2,15.1 26.7,22.2 29.4,33 20,27 10.6,33 13.3,22.2 4.8,15.1 15.9,14.3" />
               </svg>
-              Read all {reviewCount} reviews
+              Read the customer guestbook
             </Link>
           </div>
         </div>
@@ -1613,11 +1685,7 @@ export default function App() {
                   <small>{review.date}</small>
                 </span>
               </div>
-              <div className="review-rating-row">
-                <strong className="review-stars" aria-label="5 star review">★★★★★</strong>
-                <span>5.0</span>
-                <em>Verified</em>
-              </div>
+              <div className="review-rating-row"><em>Archived guestbook comment</em></div>
               <p>{review.quote}</p>
               <small className="review-proof">{review.proof}</small>
             </article>
@@ -1633,7 +1701,6 @@ export default function App() {
   // now made on the page rather than baked into which page you landed on.
   const renderProductPage = (product, group) => {
     const theme = taxonomy.themeForProduct(product)
-    const detailImages = detailImagesFor(content, product, theme)
     const reassurance = productReassurance(content, theme)
     const proof = productProof(content, theme)
     const selling = productSellingContent(content, taxonomy, product)
@@ -1642,19 +1709,7 @@ export default function App() {
 
     return (
       <section className={`product-page theme-${theme}`}>
-        <div className="product-gallery">
-          <div className="product-gallery-main">
-            {/* The largest element on a product page, and therefore the one Google
-                times. Never lazy; asked for ahead of the thumbnails below it. */}
-            <img src={product.image} alt={product.name} fetchPriority="high" decoding="async" />
-            <span>{selling.category}</span>
-          </div>
-          <div className="product-gallery-thumbs">
-            {detailImages.map(item => (
-              <img key={item.src} src={item.src} alt={item.alt} loading="lazy" decoding="async" />
-            ))}
-          </div>
-        </div>
+        <ProductGallery key={product.skuId} product={product} category={selling.category} />
         <div className="product-detail">
           <div className="product-buy-panel">
             {/* No product has tags yet, and an empty eyebrow still reserves its
@@ -1673,6 +1728,7 @@ export default function App() {
                 <span>Only {product.stockQty} left</span>
               )}
             </div>
+            <ProductWeight product={product}/>
             {notice && <p className="notice">{notice}</p>}
             <div className="hero-actions product-cta-row">
               <button className="button primary" type="button" onClick={() => addProduct(product)} disabled={!product.stock}>
@@ -1683,7 +1739,7 @@ export default function App() {
               </a>
             </div>
             <div className="product-proof-strip">
-              <span className="review-stars" aria-label="5 star customer proof">★★★★★</span>
+              <span className="review-source-label">Customer guestbook</span>
               <p>{proof.quote}</p>
               <small>{proof.name} · {proof.proof}</small>
             </div>
@@ -1719,7 +1775,7 @@ export default function App() {
             </article>
             <article>
               <span>Delivery and support</span>
-              <p>Contact Salty Lamps Ltd for order support, bulk enquiries, returns questions, and replacement bulbs or cables. If you are unsure about size, fitting, or trade quantities, ask before placing the order request.</p>
+              <p>Delivery cost is shown during checkout where a rate is available. Heavy, mixed, and project orders may need a separate quote before dispatch. Contact Salty Lamps Ltd for order support, bulk enquiries, returns questions, and replacement bulbs or cables.</p>
             </article>
           </div>
 
@@ -1727,7 +1783,7 @@ export default function App() {
             <div className="product-review-heading">
               <div>
                 <p className="eyebrow">Customer proof</p>
-                <h2>Real buyer notes before you add to cart.</h2>
+                <h2>Customer guestbook notes before you add to cart.</h2>
               </div>
               <Link className="text-link" href="/reviews">Read all {reviewCount} reviews</Link>
             </div>
@@ -1741,9 +1797,8 @@ export default function App() {
                       <small>{review.date}</small>
                     </span>
                   </div>
-                  <p className="review-stars-line" aria-label="5 star review">★★★★★</p>
                   <p>{review.quote}</p>
-                  <em>{review.proof}</em>
+                  <em>{review.proof || 'Archived guestbook comment'}</em>
                 </article>
               ))}
             </div>
@@ -1820,6 +1875,42 @@ export default function App() {
     </section>
   )
 
+  const renderPrivacyPolicy = () => (
+    <section className="policy-page policy-page--detailed">
+      <p className="eyebrow">Your information</p>
+      <h1>Privacy notice</h1>
+      <p>Salty Lamps Ltd is responsible for the personal information collected through this shop. Questions and rights requests can be sent to <a href={contactMailto(content)}>{contactEmailOf(content)}</a> or by post to the business address shown in the footer.</p>
+      <div className="policy-sections">
+        <article><h2>What we collect and why</h2><p>We use contact, order, delivery, payment-reference, and message information to answer enquiries, provide requested quotations, fulfil orders, handle returns, prevent misuse, and meet accounting and legal duties. Newsletter details are used only when someone asks to receive updates.</p></article>
+        <article><h2>Who receives it</h2><p>Information is shared only where needed with the services that host this shop, process payments, deliver email, and fulfil deliveries. Card details are handled by Stripe and are not stored by Salty Lamps. We do not sell personal information.</p></article>
+        <article><h2>How long we keep it</h2><p>Order and accounting records are kept for the period required for tax, legal, and support purposes. Enquiries are kept only while they remain useful for the request and reasonable follow-up. Newsletter details are kept until consent is withdrawn.</p></article>
+        <article><h2>Your choices and rights</h2><p>You can ask for access, correction, deletion, restriction, portability, or an objection where the relevant right applies. You can withdraw newsletter consent at any time without affecting earlier use of your information.</p></article>
+        <article><h2>Storage and cookies</h2><p>The shop stores the current cart in the browser for the shopping session. Essential hosting and payment services may use security or checkout cookies. Any optional analytics or marketing cookies must remain off until the site provides a consent choice and updates this notice.</p></article>
+        <article><h2>Complaints</h2><p>Please contact Salty Lamps first so the concern can be addressed. You can also complain to the Information Commissioner’s Office at <a href="https://ico.org.uk/make-a-complaint/">ico.org.uk</a>.</p></article>
+      </div>
+      <p className="policy-review-note">This notice must be checked against the final hosting, email, delivery, analytics, and retention setup before launch.</p>
+      <Link className="button secondary" href="/shop">Return to shop</Link>
+    </section>
+  )
+
+  const renderTerms = () => (
+    <section className="policy-page policy-page--detailed">
+      <p className="eyebrow">Buying from Salty Lamps</p>
+      <h1>Terms and conditions</h1>
+      <p>These terms explain how consumer orders placed with Salty Lamps Ltd are handled. Trade, bespoke, and bulk quotations may include additional written terms supplied before an order is accepted.</p>
+      <div className="policy-sections">
+        <article><h2>Products and natural variation</h2><p>Product photographs and measurements describe the expected item. Natural Himalayan salt varies in colour, pattern, texture, shape, and weight, so each piece will differ slightly. Material differences do not affect your rights if an item is faulty or not as described.</p></article>
+        <article><h2>Price and payment</h2><p>Prices are shown in pounds sterling. An order is accepted when payment is confirmed and an order confirmation is issued. If a price or availability error prevents acceptance, payment will be returned and the customer will be contacted.</p></article>
+        <article><h2>Delivery</h2><p>Available delivery charges and estimates are shown before payment where the order can be rated automatically. Heavy, mixed, remote-area, trade, and project orders may require a separate quote. Salty Lamps will contact the customer if that applies before dispatch.</p></article>
+        <article><h2>Cancellations and returns</h2><p>Consumers buying online can normally cancel eligible goods within fourteen days after delivery, then return them within fourteen days after notifying Salty Lamps. The returns page explains the process, costs, condition deductions, faulty goods, and exceptions.</p></article>
+        <article><h2>Using the products</h2><p>Follow the care and safety instructions supplied with the product. Keep electrical fittings dry and use compatible bulbs and cables. Saltware and animal products should be used for their stated purpose.</p></article>
+        <article><h2>Problems and applicable law</h2><p>Nothing in these terms limits rights that cannot legally be excluded. Contact Salty Lamps promptly about damage, missing items, or a product that is not as described. These terms are governed by the laws that apply to the business and customer.</p></article>
+      </div>
+      <p className="policy-review-note">These terms require final business and legal review before launch, including tax status, delivery services, and any bespoke-product exceptions.</p>
+      <Link className="button secondary" href="/shop">Return to shop</Link>
+    </section>
+  )
+
   const renderReturnPolicy = () => (
     <section className="policy-page return-page">
       <p className="eyebrow">Returns and exchanges</p>
@@ -1831,7 +1922,7 @@ export default function App() {
         <article>
           <span>14 days</span>
           <strong>Return window</strong>
-          <p>Returns must be postmarked within fourteen days of the purchase date.</p>
+          <p>Tell us within fourteen days after delivery, then send eligible goods back within the following fourteen days.</p>
         </article>
         <article>
           <span>Unused</span>
@@ -1839,23 +1930,23 @@ export default function App() {
           <p>Returned items should be new, unused, and sent back with original tags, labels, and packaging.</p>
         </article>
         <article>
-          <span>RMA</span>
+          <span>Contact</span>
           <strong>Email before sending</strong>
-          <p>Email {contactEmailOf(content)} first so customer service can issue a return authorisation number.</p>
+          <p>Email {contactEmailOf(content)} before sending the item so the team can confirm the safest return route.</p>
         </article>
       </div>
       <div className="policy-steps">
         <h2>How to return an item</h2>
         <ol>
-          <li>Email customer service to request a Return Merchandise Authorization number.</li>
+          <li>Email customer service within fourteen days after delivery to say you wish to cancel or return an eligible item.</li>
           <li>Place the item securely in its original packaging with proof of purchase.</li>
           <li>Mail the return to Salty Lamps Ltd, Unit 41, Imex Business Park, Ormonde Street, Stoke-on-Trent, ST4 3NP.</li>
-          <li>Allow at least three days after receipt for the return or exchange to be processed.</li>
+          <li>Send the item within fourteen days after notifying Salty Lamps and retain proof of postage.</li>
         </ol>
       </div>
       <div className="policy-note">
-        <strong>Opened salt bags and pouches cannot be returned.</strong>
-        <p>For defective or damaged products, contact Salty Lamps so the team can arrange a refund or exchange.</p>
+        <strong>Return costs, refunds, and exceptions</strong>
+        <p>Unless an item is faulty, damaged, or incorrect, the customer normally pays the direct return cost. Standard outbound delivery is refunded where the law requires it. Reasonable deductions may apply for handling beyond what is needed to inspect an item. Sealed goods may be excluded only where the legal hygiene exception applies after unsealing. Faulty-goods rights are unaffected.</p>
       </div>
       <div className="hero-actions">
         {/* The form route rather than a mailto: it captures the order reference and
@@ -1894,7 +1985,7 @@ export default function App() {
             controls
             preload="metadata"
             onEnded={() => setProcessFilmPlaying(false)}
-            poster="/media/video/salty-lamps-manufacturing-process-poster-16x9.jpg"
+            poster={media('video/salty-lamps-manufacturing-process-poster-16x9.jpg')}
           >
             <source src="/media/video/salty-lamps-manufacturing-process-16x9.mp4" type="video/mp4" />
           </video>
@@ -1968,12 +2059,11 @@ export default function App() {
         <div>
           <p className="eyebrow">Guestbook feedback</p>
           <h1>Real customer notes from the Salty Lamps guestbook.</h1>
-          <p>Every note is left by a verified buyer through the post-purchase guestbook. Start with the strongest themes, then browse a representative set of real customer wording.</p>
+          <p>These are archived comments from the former Salty Lamps website guestbook. The archive did not record star ratings or purchase verification, so the comments are presented without either claim.</p>
         </div>
-        <div className="reviews-page-score">
-          <strong>{snippet(content, 'reviews.headline_score', '')}</strong>
-          <span className="review-stars" aria-hidden="true">★★★★★</span>
-          <small>{reviewCount} verified reviews</small>
+        <div className="reviews-page-score reviews-page-score--archive">
+          <strong>{reviewCount}</strong>
+          <small>archived comments</small>
         </div>
       </header>
       <div className="review-theme-grid" aria-label="Customer review themes">
@@ -1995,18 +2085,17 @@ export default function App() {
                 <small>{review.date}</small>
               </span>
             </div>
-            <p className="review-stars-line" aria-label="5 star review">★★★★★</p>
             <p>{review.quote}</p>
-            <em>{review.proof}</em>
+            <em>{review.proof || 'Archived guestbook comment'}</em>
           </article>
         ))}
       </div>
       <div className="reviews-list-heading">
         <div>
           <p className="eyebrow">Representative guestbook notes</p>
-          <h2>Recent proof without the endless scroll.</h2>
+          <h2>A representative selection from the archive.</h2>
         </div>
-        <p>Showing {Math.min(36, corpus.length)} of {reviewCount} verified notes. The full archive can stay available behind a “load more” control when the live site needs it.</p>
+        <p>Showing {Math.min(36, corpus.length)} of {reviewCount} archived comments.</p>
       </div>
       <div className="reviews-grid">
         {corpus.slice(0, 36).map(review => (
@@ -2018,9 +2107,8 @@ export default function App() {
                 <small>{review.date}</small>
               </span>
             </div>
-            <p className="review-stars-line" aria-label="5 star review">★★★★★</p>
             <p>{review.quote}</p>
-            <em>Verified buyer</em>
+            <em>Archived guestbook comment</em>
           </article>
         ))}
       </div>
@@ -2029,13 +2117,12 @@ export default function App() {
 
   const renderCheckoutSuccess = () => (
     <section className="policy-page checkout-status-page">
-      <p className="eyebrow">Order confirmed</p>
-      <h1>Thank you — your order is confirmed.</h1>
-      <p>
-        Payment was successful and a confirmation email is on its way. Salty Lamps will get your order packed and shipped shortly.
-      </p>
+      <p className="eyebrow">{checkoutResult.status === 'paid' ? 'Order confirmed' : checkoutResult.status === 'checking' ? 'Checking payment' : 'Confirmation unavailable'}</p>
+      <h1>{checkoutResult.status === 'paid' ? 'Thank you — your order is confirmed.' : checkoutResult.status === 'checking' ? 'We are confirming your payment.' : 'We could not confirm an order from this link.'}</h1>
+      <p>{checkoutResult.status === 'paid' ? 'Payment was confirmed and a confirmation email is on its way. Salty Lamps will get your order packed and shipped shortly.' : checkoutResult.status === 'checking' ? 'Please keep this page open for a moment. Your cart will remain unchanged until payment is confirmed.' : 'Your cart has not been cleared. Return to it to try checkout again, or contact Salty Lamps if you completed payment and need help.'}</p>
+      {checkoutResult.status === 'paid' && checkoutResult.orderReference && <p className="order-reference"><strong>Order reference:</strong> {checkoutResult.orderReference}</p>}
       <div className="hero-actions">
-        <Link className="button primary" href="/shop">Continue shopping</Link>
+        <Link className="button primary" href="/shop">{checkoutResult.status === 'paid' ? 'Continue shopping' : 'Return to shop'}</Link>
         <a className="button secondary" href={contactMailto(content)}>Contact us about this order</a>
       </div>
     </section>
@@ -2179,7 +2266,10 @@ export default function App() {
           <img src="/salty-lamp-logo-256.jpeg" alt="" width="38" height="38" decoding="async" />
           <span>Salty Lamps</span>
         </Link>
-        <nav aria-label="Primary navigation">
+        <button className="nav-toggle" type="button" aria-expanded={mobileNavOpen} aria-controls="primary-navigation" onClick={() => setMobileNavOpen(open => !open)}>
+          <span aria-hidden="true">☰</span> Menu
+        </button>
+        <nav id="primary-navigation" className={mobileNavOpen ? 'is-open' : ''} aria-label="Primary navigation">
           <Link href="/">Home</Link>
           <Link href="/shop">Shop</Link>
           <Link href="/gallery">Gallery</Link>
@@ -2189,7 +2279,7 @@ export default function App() {
               including, once the admin moved to its own hostname, one that no
               longer answers. The owner reaches the admin at its own address. */}
           <a href={contactMailto(content)}>Contact</a>
-          <Link className="nav-about" href="/process">About</Link>
+          <Link className="nav-about" href="/process">How it’s made</Link>
         </nav>
         <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>
           Cart <span>{cartCount}</span>
@@ -2214,7 +2304,7 @@ export default function App() {
               : route === '/returns-exchanges' || route === '/return-refund-policy'
                 ? renderReturnPolicy()
           : page
-            ? renderPolicy(page)
+            ? route === '/privacy-policy' ? renderPrivacyPolicy() : route === '/terms-and-conditions' ? renderTerms() : renderPolicy(page)
             : route === '/gallery'
               ? renderGallery()
               : route === '/shop' || categorySlug || activeShopperPath
@@ -2279,15 +2369,19 @@ export default function App() {
       <ChatModule onSubmit={handleChatSubmit} message={chatMessage} content={content} />
 
       <aside
+        ref={cartDialogRef}
         className={`cart-drawer ${cartOpen ? 'open' : ''}`}
+        role="dialog"
+        aria-modal="true"
         aria-label="Shopping cart"
         aria-hidden={!cartOpen}
         inert={cartOpen ? undefined : ''}
+        tabIndex={-1}
       >
         <header>
           <div>
             <p className="eyebrow">Your cart</p>
-            <h2>{cartCount ? `${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Ready when you are'}</h2>
+            <h2 id="cart-title">{cartCount ? `${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Ready when you are'}</h2>
           </div>
           <button type="button" onClick={() => setCartOpen(false)}>Close</button>
         </header>
@@ -2298,6 +2392,7 @@ export default function App() {
               <div>
                 <strong>{item.product.name}</strong>
                 <small>{money(item.product.price)}</small>
+                <ProductWeight product={item.product} compact quantity={item.qty}/>
               </div>
               <div className="qty">
                 <button type="button" onClick={() => changeQty(item.key, -1)} aria-label={`Decrease ${item.product.name}`}>-</button>
@@ -2311,6 +2406,7 @@ export default function App() {
           {notice && <p className="notice">{notice}</p>}
           <span>Subtotal</span>
           <strong>{money(cartTotal)}</strong>
+          <small className="cart-delivery-note">Delivery is calculated during checkout where a rate is available. Heavy, mixed, and project orders may need a separate quote before dispatch.</small>
           {cart.length ? (
             <button
               type="button"
@@ -2330,11 +2426,11 @@ export default function App() {
       {cartOpen && <button className="scrim" type="button" aria-label="Close cart" onClick={() => setCartOpen(false)} />}
 
       {quickViewProduct && (
-        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+        <div ref={quickViewDialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="quick-view-title" tabIndex={-1}>
           <button className="scrim" type="button" aria-label="Close quick view" onClick={closeQuickView} />
           <div className={`quick-view${quickViewProduct.variantCount > 1 ? ' quick-view--options' : ''}`}>
-            <button className="close-button" type="button" onClick={closeQuickView}>Close</button>
-            <img src={quickViewProduct.image} alt={quickViewProduct.name} decoding="async" />
+            <button className="close-button" type="button" data-dialog-focus onClick={closeQuickView}>Close</button>
+            <ProductImage src={quickViewVariant.image} alt={quickViewVariant.name} decoding="async" />
             <div>
               {quickViewProduct.tags.length > 0 && <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>}
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>
@@ -2349,7 +2445,9 @@ export default function App() {
                   }}
                 />
               )}
+              {quickViewVariant.image?.startsWith('/media/light-catalogue/') && <p className="product-preview-label">Illustrative preview. Natural colour and shape vary; size is not shown to scale.</p>}
               <strong>{priceLabel(quickViewVariant)}</strong>
+              <ProductWeight product={quickViewVariant}/>
               {notice && quickViewId === quickViewProduct.id && <p className="notice">{notice}</p>}
               <div className="hero-actions">
                 <button className="button primary" type="button" onClick={() => addProduct(quickViewVariant)} disabled={!quickViewVariant.stock}>

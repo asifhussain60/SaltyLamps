@@ -16,17 +16,10 @@
 //
 // THE THREE VARIABLES, and the difference between them:
 //
-//   ADMIN_HOSTS       Where the admin LIVES. When set, /admin and /api/admin/*
-//                     exist on these hostnames and nowhere else. When UNSET the
-//                     admin is served everywhere, which is the behaviour this
-//                     project had before the subdomain split — so an existing
-//                     deployment that never sets it is completely unaffected.
-//
-//   ADMIN_OPEN_HOSTS  Where the admin needs NO SIGN-IN. Strictly narrower than
-//                     the above and never the same list in production: it exists
-//                     so the test site is clickable before Cloudflare Access is
-//                     configured. Naming the production admin host here would
-//                     publish the order book.
+//   ADMIN_HOSTS       Where the admin LIVES. It must be set for every deployed
+//                     environment. An unset value serves the admin nowhere. This
+//                     fail-closed default prevents a new preview project from
+//                     publishing the owner portal before Access is configured.
 //
 //   PUBLIC_HOST       The one hostname that is the real shop, for search engines.
 //                     Anything else serving the same build — the .pages.dev
@@ -74,20 +67,13 @@ export function hostnameOf(request) {
 
 // Is the admin served at this hostname?
 //
-// UNSET MEANS EVERYWHERE, and that is deliberate rather than an oversight. This
-// module landed on a running site; defaulting to "nowhere" would have taken the
-// admin off the test site the moment it deployed, and defaulting to a guessed
-// hostname would be worse. Setting ADMIN_HOSTS is the single, visible action that
-// turns the split on — and the migration runbook has the owner prove both hosts
-// behave correctly before trusting it.
-//
 // Localhost always counts, so `wrangler pages dev` keeps working whatever the
 // variable says.
 export function isAdminHost(hostname, env) {
   if (!hostname) return false
   if (isLocalHost(hostname)) return true
   const list = env?.ADMIN_HOSTS
-  if (!String(list || '').trim()) return true
+  if (!String(list || '').trim()) return false
   return hostMatches(hostname, list)
 }
 

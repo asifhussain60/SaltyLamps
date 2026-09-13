@@ -63,7 +63,8 @@ test.describe('the shop is open', () => {
   })
 
   test('an unknown address gives a real 404 page, not a blank screen', async ({ page }) => {
-    await page.goto('/this-page-does-not-exist')
+    const response = await page.goto('/this-page-does-not-exist')
+    expect(response.status()).toBe(404)
     await expect(page.getByText(/not available|not found/i).first()).toBeVisible()
   })
 })
@@ -114,6 +115,52 @@ test.describe('the pages a customer is sent to after paying', () => {
       await expect(page.getByText(/not available|not found/i)).toHaveCount(0)
     })
   }
+
+  test('an unverified success link preserves the basket and makes no payment claim', async ({ page }) => {
+    await page.goto('/shop')
+    await page.locator('a[href^="/product-page/"]').first().click()
+    await page.getByRole('button', { name: /^add to cart$/i }).first().click()
+    await page.goto('/checkout/success')
+    await expect(page.getByRole('heading', { name: /could not confirm/i })).toBeVisible()
+    await expect(page.locator('.cart-button')).toContainText(/[1-9]/)
+    await expect(page.getByText(/payment was successful/i)).toHaveCount(0)
+  })
+})
+
+test.describe('keyboard and mobile navigation', () => {
+  test('cart and quick view take focus and restore it when closed', async ({ page }) => {
+    await page.goto('/shop')
+    const choose = page.getByRole('button', { name: /choose/i }).first()
+    await choose.click()
+    await expect(page.locator('.quick-view .close-button')).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(choose).toBeFocused()
+
+    const cart = page.locator('.cart-button')
+    await cart.click()
+    await expect(page.getByRole('dialog', { name: /shopping cart/i }).getByRole('button', { name: /close/i })).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(cart).toBeFocused()
+  })
+
+  test('the compact menu exposes every primary destination', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile navigation check')
+    await page.goto('/')
+    const menu = page.getByRole('button', { name: /menu/i })
+    await menu.click()
+    for (const name of ['Home', 'Shop', 'Gallery', 'Trade', 'Contact', 'How it’s made']) {
+      await expect(page.getByRole('navigation', { name: /primary/i }).getByRole('link', { name })).toBeVisible()
+    }
+  })
+})
+
+test.describe('customer evidence', () => {
+  test('guestbook comments are not presented as rated or verified purchases', async ({ page }) => {
+    await page.goto('/reviews')
+    await expect(page.getByText(/archived comments/i).first()).toBeVisible()
+    await expect(page.getByText(/verified buyer|verified reviews|5\.0/i)).toHaveCount(0)
+    await expect(page.getByText('★★★★★')).toHaveCount(0)
+  })
 })
 
 test.describe('the ways a customer can get in touch', () => {
