@@ -89,6 +89,9 @@ test('the Saltwood Frames category can be made visible in Admin', async ({ page 
   })
 
   await page.goto('/admin/categories')
+  await page.getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByText('Saltwood Frames still has 1 product. Hide it here by turning Visible off and saving, or reassign those products before deleting it.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Edit Saltwood Frames' })).toBeVisible()
   await page.getByRole('button', { name: 'Edit' }).click()
   const visible = page.getByRole('checkbox')
   await expect(visible).not.toBeChecked()

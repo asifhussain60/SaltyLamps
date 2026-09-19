@@ -2322,7 +2322,17 @@ function CategoriesList() {
   const [saveErr, setSaveErr] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [dirty, setDirty] = useState(false)
+  const editFormRef = useRef(null)
   useUnsavedChangesWarning(dirty)
+
+  useEffect(() => {
+    if (!editing || !editFormRef.current) return undefined
+    const frame = window.requestAnimationFrame(() => {
+      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      editFormRef.current?.querySelector('input, textarea, select, button')?.focus()
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [editing])
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
@@ -2380,6 +2390,15 @@ function CategoriesList() {
     }
   }
 
+  const requestDelete = c => {
+    if (c.product_count > 0) {
+      startEdit(c)
+      setSaveErr(new Error(`${c.name} still has ${c.product_count} ${c.product_count === 1 ? 'product' : 'products'}. Hide it here by turning Visible off and saving, or reassign those products before deleting it.`))
+      return
+    }
+    setConfirmDelete(c)
+  }
+
   return (
     <>
       <div className="admin-card-head admin-card-head--bare">
@@ -2392,7 +2411,7 @@ function CategoriesList() {
       {saveErr && <ErrorState error={saveErr} />}
 
       {editing && (
-        <section className="admin-card">
+        <section className="admin-card" ref={editFormRef}>
           <h2>{editing === '__new__' ? 'New category' : `Edit ${form.name}`}</h2>
           {editing === '__new__' ? (
             <Field label="Slug" error={errs.slug} hint="Lowercase, hyphenated. Becomes the page address and cannot be changed later.">
@@ -2449,7 +2468,7 @@ function CategoriesList() {
                 <td>
                   <button className="admin-btn" onClick={() => startEdit(c)}>Edit</button>
                   {!c.is_virtual && (
-                    <button className="admin-btn" disabled={c.product_count > 0} title={c.product_count > 0 ? 'Reassign its products first, or hide it instead.' : undefined} onClick={() => setConfirmDelete(c)}>
+                    <button className="admin-btn" title={c.product_count > 0 ? 'Hide it here, or reassign its products first.' : undefined} onClick={() => requestDelete(c)}>
                       Delete
                     </button>
                   )}
