@@ -61,3 +61,40 @@ test('admin categories and products retain Saltwood Frames branding', async ({ r
   expect(JSON.stringify(payload)).not.toMatch(/Wooden Frame Collection|Aura Collection/)
   expect(JSON.stringify(payload)).toContain('Saltwood Frames')
 })
+
+test('the Saltwood Frames category can be made visible in Admin', async ({ page }) => {
+  test.skip(!isLocal, 'the deployed admin is protected')
+
+  let category = {
+    slug: 'salt-wall-panels',
+    name: 'Saltwood Frames',
+    description: 'Illuminated Himalayan salt wall art in hand-finished wood frames.',
+    image: '/media/light-catalogue/saltwood-lobby.webp',
+    theme: 'panel',
+    sort_order: 100,
+    visible: 0,
+    is_virtual: 0,
+    product_count: 1,
+  }
+
+  await page.route('**/api/admin/categories', async route => {
+    if (route.request().method() !== 'GET') return route.continue()
+    await route.fulfill({ json: { categories: [category] } })
+  })
+  await page.route('**/api/admin/categories/salt-wall-panels', async route => {
+    const submitted = route.request().postDataJSON()
+    expect(submitted.visible).toBe(true)
+    category = { ...category, visible: 1 }
+    await route.fulfill({ json: { slug: category.slug } })
+  })
+
+  await page.goto('/admin/categories')
+  await page.getByRole('button', { name: 'Edit' }).click()
+  const visible = page.getByRole('checkbox')
+  await expect(visible).not.toBeChecked()
+  await visible.check()
+  await expect(visible).toBeChecked()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+
+  await expect(page.getByRole('row').filter({ hasText: 'Saltwood Frames' })).toContainText('Yes')
+})

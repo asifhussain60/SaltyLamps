@@ -1,4 +1,9 @@
 import { ProductWeight } from './components/WeightDisplay.jsx'
+import QuantityInput from './components/QuantityInput.jsx'
+import CartDelivery from './components/CartDelivery.jsx'
+import CartOption from './components/CartOption.jsx'
+import { PENDING_CHECKOUT_KEY, reconcilePurchasedCart, changeCartOption } from './content/cart-session.mjs'
+import { MAX_CART_QUANTITY } from '../functions/lib/cart.mjs'
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 
 // Loaded on demand rather than imported, because the admin portal is ~2,500 lines
@@ -168,25 +173,14 @@ const productVisibleReviews = (content, theme) => {
 // row in D1 (visible in admin under Emails -> Enquiries) and emails the owner.
 // Historical Supabase rows are left untouched in Supabase.
 //
-// The localStorage copy stays. It costs nothing and it is the only record the
-// shopper keeps of what they sent.
 const persistSubmission = async (source, payload) => {
-  const submission = { ...payload, createdAt: new Date().toISOString() }
-
-  try {
-    const key = `salty-lamps-${source}`
-    const existing = JSON.parse(window.localStorage.getItem(key) || '[]')
-    window.localStorage.setItem(key, JSON.stringify([submission, ...existing].slice(0, 80)))
-  } catch {
-    // Local storage can be blocked in private browsing; the submission still posts.
-  }
-
   const res = await fetch('/api/support/enquiry', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ source, ...payload }),
   })
-  if (!res.ok) throw new Error(`Enquiry submission failed (${res.status})`)
+  const data = await res.json()
+  if (!res.ok || data.ok !== true) throw new Error(data.error?.message || 'We could not send this. Your details are still here; please try again.')
 }
 
 
@@ -240,6 +234,7 @@ const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperP
   if (route === '/process') return { title: pageTitle('Manufacturing Process'), description: 'See how Salty Lamps products move from mined rock salt to cut, finished, packed products.', image: media('video/salty-lamps-manufacturing-process-poster-16x9.jpg') }
   if (route === '/reviews') return { title: pageTitle('Customer Guestbook'), description: 'Read archived Salty Lamps guestbook comments by customer theme.', image: img('lamp-natural-gemini.jpg') }
   if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('salty-lamps-og-card.jpg') }
+  if (route === '/checkout') return { title: pageTitle('Review your order'), description: 'Review your Salty Lamps order before secure payment.', robots: 'noindex,follow' }
   if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
   if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
   // noindex like the checkout routes, and for the same reason: a form that needs an
@@ -431,7 +426,7 @@ function Honeypot() {
 // `content` is passed in rather than read from a module-level constant so the widget
 // follows the live address the moment /api/content lands, exactly like every other
 // piece of copy on the page.
-function ChatModule({ onSubmit, message, content }) {
+function ChatModule({ onSubmit, message, content, busy, error, hideTrigger }) {
   const [open, setOpen] = useState(false)
   const panelRef = useRef(null)
   const triggerRef = useRef(null)
@@ -442,13 +437,13 @@ function ChatModule({ onSubmit, message, content }) {
 
   const close = () => {
     setOpen(false)
-    window.requestAnimationFrame(() => triggerRef.current?.focus())
+    window.requestAnimationFrame(() => (hideTrigger ? document.getElementById('delivery-help') : triggerRef.current)?.focus())
   }
 
   return (
     <div className={`chat-module ${open ? 'open' : ''}`}>
       {open && (
-        <form id="support-chat" ref={panelRef} className="chat-panel" role="region" aria-label="Salty Lamps support" onSubmit={onSubmit}>
+        <form id="support-chat" ref={panelRef} className="chat-panel" role="region" aria-label="Salty Lamps support" onSubmit={onSubmit} onKeyDown={event => { if (event.key === 'Escape') close() }}>
           <div className="chat-panel-header">
             <div>
               <p className="eyebrow">Salty Lamps support</p>
@@ -469,14 +464,14 @@ function ChatModule({ onSubmit, message, content }) {
             <textarea name="message" rows="4" placeholder="Tell us what you are looking for..." required />
           </label>
           <Honeypot />
-          <button type="submit">Send message</button>
+          <button type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send message'}</button>
           <a href={contactMailto(content, 'Website chat request')}>Open email instead</a>
-          {message && <p className="success">{message}</p>}
+          {message && <p className={error ? 'form-error' : 'success'} role={error ? 'alert' : 'status'}>{message}</p>}
         </form>
       )}
-      <button ref={triggerRef} className="chat-button" type="button" aria-expanded={open} aria-controls="support-chat" onClick={() => (open ? close() : setOpen(true))}>
+      {!hideTrigger && <button ref={triggerRef} className="chat-button" type="button" aria-expanded={open} aria-controls="support-chat" onClick={() => (open ? close() : setOpen(true))}>
         {open ? 'Close Chat' : "Let's Chat"}
-      </button>
+      </button>}
     </div>
   )
 }
@@ -487,6 +482,7 @@ function useModalFocus(open, ref, onClose) {
   useEffect(() => {
     if (!open || !ref.current) return undefined
     const dialog = ref.current
+    const openedPath = window.location.pathname
     returnFocus.current = document.activeElement
     const background = [...document.querySelectorAll('.site-shell > :not(.cart-drawer):not(.modal):not(.scrim)')]
     const previous = background.map(node => ({ node, inert: node.inert }))
@@ -526,7 +522,15 @@ function useModalFocus(open, ref, onClose) {
       previous.forEach(({ node, inert }) => { node.inert = inert })
       document.body.classList.remove('has-modal-open')
       window.requestAnimationFrame(() => {
-        if (!document.querySelector('.cart-drawer.open, .modal[role="dialog"]')) returnFocus.current?.focus?.()
+        if (!document.querySelector('.cart-drawer.open, .modal[role="dialog"]')) {
+          if (openedPath !== window.location.pathname && window.location.pathname === '/checkout') {
+            document.getElementById('order-review-title')?.focus()
+            return
+          }
+          const target = returnFocus.current
+          if (target?.isConnected && target !== document.body && !target.closest('[inert]')) target.focus?.()
+          else document.querySelector('.cart-button')?.focus()
+        }
       })
     }
   }, [open, onClose, ref])
@@ -572,7 +576,7 @@ export default function App() {
   const [reviewCorpus, setReviewCorpus] = useState(null)
   const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [checkoutResult, setCheckoutResult] = useState({ status: 'idle', orderReference: '' })
+  const [checkoutResult, setCheckoutResult] = useState({ status: 'idle' })
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
   const [quickViewSkuId, setQuickViewSkuId] = useState(null)
@@ -580,6 +584,9 @@ export default function App() {
   const [newsletterMessage, setNewsletterMessage] = useState('')
   const [chatMessage, setChatMessage] = useState('')
   const [notice, setNotice] = useState('')
+  const [invalidQuantities, setInvalidQuantities] = useState({})
+  const [formStates, setFormStates] = useState({})
+  const sendingForms = useRef(new Set())
   const [heroPlaying, setHeroPlaying] = useState(false)
   const [heroPosterFailed, setHeroPosterFailed] = useState(false)
   const [homeHeroPlaying, setHomeHeroPlaying] = useState(false)
@@ -588,6 +595,7 @@ export default function App() {
   const [processFilmPosterFailed, setProcessFilmPosterFailed] = useState(false)
   const [activeCollectionSection, setActiveCollectionSection] = useState('all')
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const cartDialogRef = useRef(null)
   const quickViewDialogRef = useRef(null)
 
@@ -606,11 +614,13 @@ export default function App() {
   // slightly stale wording instead of a page with no headings.
   const loadCatalog = React.useCallback(() => {
     let alive = true
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15000)
     setCatalog(current => ({ ...current, status: 'loading' }))
     Promise.all([
-      fetch('/api/products', { cache: 'no-cache' }).then(readJsonOrThrow),
-      fetch('/api/categories').then(readJsonOrThrow),
-      fetch('/api/content').then(readJsonOrThrow).catch(() => null),
+      fetch('/api/products', { cache: 'no-cache', signal: controller.signal }).then(readJsonOrThrow),
+      fetch('/api/categories', { signal: controller.signal }).then(readJsonOrThrow),
+      fetch('/api/content', { signal: controller.signal }).then(readJsonOrThrow).catch(() => null),
     ])
       .then(([productData, categoryData, contentData]) => {
         if (!alive) return
@@ -623,7 +633,8 @@ export default function App() {
         })
       })
       .catch(() => alive && setCatalog(current => ({ ...current, status: 'error' })))
-    return () => { alive = false }
+      .finally(() => clearTimeout(timeout))
+    return () => { alive = false; clearTimeout(timeout); controller.abort() }
   }, [])
 
   useEffect(() => loadCatalog(), [loadCatalog, route.startsWith('/admin')])
@@ -657,24 +668,31 @@ export default function App() {
 
   useEffect(() => {
     if (route !== '/checkout/success') {
-      setCheckoutResult({ status: 'idle', orderReference: '' })
+      setCheckoutResult({ status: 'idle' })
       return undefined
     }
     const sessionId = new URLSearchParams(window.location.search).get('session_id')
     if (!sessionId) {
-      setCheckoutResult({ status: 'invalid', orderReference: '' })
+      setCheckoutResult({ status: 'invalid' })
       return undefined
     }
     let alive = true
-    setCheckoutResult({ status: 'checking', orderReference: '' })
+    setCheckoutResult({ status: 'checking' })
     fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' })
       .then(readJsonOrThrow)
       .then(data => {
-        if (!alive || data.status !== 'paid') return
-        setCheckoutResult({ status: 'paid', orderReference: data.orderReference || '' })
-        setCart([])
+        if (!alive) return
+        if (data.status !== 'paid') { setCheckoutResult({ status: 'invalid' }); return }
+        setCheckoutResult(data)
+        try {
+          const pending = JSON.parse(window.sessionStorage.getItem(PENDING_CHECKOUT_KEY) || 'null')
+          if (pending?.sessionId === sessionId) {
+            window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+            setCart(items => reconcilePurchasedCart(items, pending.items))
+          }
+        } catch { /* Preserve the basket when this browser has no reliable checkout record. */ }
       })
-      .catch(() => alive && setCheckoutResult({ status: 'invalid', orderReference: '' }))
+      .catch(() => alive && setCheckoutResult({ status: 'invalid' }))
     return () => { alive = false }
   }, [route])
 
@@ -786,6 +804,7 @@ export default function App() {
     route !== '/reviews' &&
     route !== '/returns-exchanges' &&
     route !== '/return-refund-policy' &&
+    route !== '/checkout' &&
     route !== '/checkout/success' &&
     route !== '/checkout/cancelled' &&
     route !== '/refund-request' &&
@@ -903,6 +922,7 @@ export default function App() {
     .join('|')
 
   useEffect(() => {
+    if (catalog.status === 'loading' && productSlug) return
     document.title = meta.title
     const description = document.querySelector('meta[name="description"]')
     description?.setAttribute('content', meta.description)
@@ -921,7 +941,7 @@ export default function App() {
     setMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, 'content', meta.description)
     setMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, 'content', absoluteUrl(meta.image || media('salty-lamps-og-card.jpg')))
     document.querySelector('script[data-prerender-jsonld]')?.remove()
-  }, [canonicalPath, meta.description, meta.image, meta.robots, meta.title, meta.type])
+  }, [catalog.status, productSlug, canonicalPath, meta.description, meta.image, meta.robots, meta.title, meta.type])
 
   useEffect(() => {
     if (!isCollectionRoot || !collectionSections.length) {
@@ -1018,7 +1038,7 @@ export default function App() {
     // and still returns a 409 — this just means the shopper finds out here rather
     // than at the highest-intent click, and the published depth can be a little
     // stale because of the 60s cache.
-    const cap = product.stockQty ?? Infinity
+    const cap = Math.min(product.stockQty ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY)
     const existing = cart.find(item => item.key === key)
 
     if (existing && existing.qty >= cap) {
@@ -1037,88 +1057,72 @@ export default function App() {
     setNotice('')
   }
 
-  // Each handler captures the form element BEFORE awaiting. React nulls
-  // event.currentTarget once the handler returns, so reading it after an await
-  // throws and the form silently never clears.
-  const handleTradeSubmit = async event => {
+  const submitEnquiry = async (event, source, setMessage, successMessage) => {
     event.preventDefault()
+    if (sendingForms.current.has(source)) return
     const form = event.currentTarget
     const data = new FormData(form)
-    const interest = data.get('interest')
-
+    const payload = Object.fromEntries(data)
+    if (source === 'trade') payload.message = [payload.interest ? `Interested in: ${payload.interest}` : '', payload.message].filter(Boolean).join('\n\n')
+    sendingForms.current.add(source)
+    setFormStates(states => ({ ...states, [source]: 'sending' }))
+    setMessage('')
     try {
-      await persistSubmission('trade', {
-        name: data.get('name'),
-        email: data.get('email'),
-        // The endpoint takes one message field, so the interest dropdown is folded
-        // in rather than dropped — it is the most useful line in a trade enquiry.
-        message: [interest ? `Interested in: ${interest}` : '', data.get('message')].filter(Boolean).join('\n\n'),
-        website: data.get('website'),
-      })
-    } finally {
-      setFormMessage('Thanks for submitting. We will come back to you shortly.')
+      await persistSubmission(source, payload)
+      setMessage(successMessage)
+      setFormStates(states => ({ ...states, [source]: 'sent' }))
       form.reset()
+    } catch (error) {
+      setMessage('We could not send this. Your details are still here; please try again or contact us by email.')
+      setFormStates(states => ({ ...states, [source]: 'error' }))
+    } finally {
+      sendingForms.current.delete(source)
     }
   }
+  const handleTradeSubmit = event => submitEnquiry(event, 'trade', setFormMessage, 'Thanks for your enquiry. We will come back to you shortly.')
+  const handleNewsletterSubmit = event => submitEnquiry(event, 'newsletter', setNewsletterMessage, 'Thanks for subscribing.')
+  const handleChatSubmit = event => submitEnquiry(event, 'chat', setChatMessage, 'Thanks — your message is with us. We will reply as soon as possible.')
 
-  const handleNewsletterSubmit = async event => {
-    event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
-
-    try {
-      await persistSubmission('newsletter', {
-        email: data.get('email'),
-        website: data.get('website'),
-      })
-    } finally {
-      setNewsletterMessage('Thanks for subscribing.')
-      form.reset()
-    }
+  const changeQty = (key, quantity) => {
+    setNotice('')
+    setCart(items => items.map(item => item.key === key ? { ...item, qty: quantity } : item))
+  }
+  const removeCartItem = key => {
+    setCart(items => items.filter(item => item.key !== key))
+    setInvalidQuantities(values => { const next = { ...values }; delete next[key]; return next })
+    setNotice('Item removed from your cart.')
+    window.requestAnimationFrame(() => (cartOpen ? cartDialogRef.current?.querySelector('header button') : document.getElementById('order-review-title'))?.focus())
   }
 
-  const handleChatSubmit = async event => {
-    event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
-
-    try {
-      await persistSubmission('chat', {
-        name: data.get('name'),
-        email: data.get('email'),
-        message: data.get('message'),
-        website: data.get('website'),
-      })
-    } finally {
-      setChatMessage('Thanks — your message is with us. We will reply as soon as possible.')
-      form.reset()
-    }
-  }
-
-  const changeQty = (key, delta) => {
-    const line = cart.find(item => item.key === key)
-    const cap = line?.product.stockQty ?? Infinity
-    if (line && delta > 0 && line.qty >= cap) {
-      setNotice(`Only ${cap} of ${line.product.name} ${cap === 1 ? 'is' : 'are'} available.`)
+  const changeOption = (key, skuId) => {
+    if (checkoutLoading || catalog.status !== 'ready') return
+    const product = products.find(option => option.skuId === skuId)
+    const target = cart.find(item => item.product.skuId === skuId)
+    if (invalidQuantities[key] || (target && invalidQuantities[target.key])) {
+      setNotice('Please correct the quantity before changing this option.')
       return
     }
-    setNotice('')
-    setCart(items =>
-      items
-        .map(item => (item.key === key ? { ...item, qty: Math.min(cap, Math.max(0, item.qty + delta)) } : item))
-        .filter(item => item.qty > 0),
-    )
+    const result = changeCartOption(cart, key, product, MAX_CART_QUANTITY)
+    if (result.error) { setNotice(result.error); return }
+    setCart(result.cart)
+    setInvalidQuantities(values => { const next = { ...values }; delete next[key]; return next })
+    setNotice(result.merged ? 'Matching options combined. Prices and delivery are updating.' : 'Option changed. Prices and delivery are updating.')
+    window.requestAnimationFrame(() => (document.querySelector(`.checkout-review [data-cart-option="${skuId}"]`) || cartDialogRef.current?.querySelector(`[data-cart-option="${skuId}"]`))?.focus())
   }
 
   const handleCheckout = async () => {
+    if (checkoutLoading || cart.some(item => invalidQuantities[item.key])) return
     setCheckoutLoading(true)
     setNotice('')
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20000)
     try {
       const items = cart.map(item => ({ skuId: item.product.skuId, quantity: item.qty }))
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ items }),
+        signal: controller.signal,
       })
       const data = await res.json()
       if (!res.ok) {
@@ -1126,11 +1130,15 @@ export default function App() {
         setCheckoutLoading(false)
         return
       }
+      if (!data.url || !data.sessionId) throw new Error('Missing payment link')
+      try {
+        window.sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify({ sessionId: data.sessionId, items }))
+      } catch { /* Checkout remains available when browser storage is unavailable. */ }
       window.location.href = data.url
     } catch {
-      setNotice('Checkout failed. Please try again.')
+      setNotice('We could not open the payment page. Your basket is saved. Please try again.')
       setCheckoutLoading(false)
-    }
+    } finally { clearTimeout(timeout) }
   }
 
   // The Store, Product and CollectionPage shapes come from src/content/schema.mjs,
@@ -1306,7 +1314,10 @@ export default function App() {
               </div>
             </div>
           </div>
-      <aside className="shop-sidebar" aria-label="Shop filters">
+      <button className="mobile-filter-toggle button secondary" type="button" aria-expanded={mobileFiltersOpen} aria-controls="shop-filters" onClick={() => setMobileFiltersOpen(open => !open)}>
+        {mobileFiltersOpen ? 'Hide search and filters' : 'Search and filter'}{query ? ' · search active' : ''}
+      </button>
+      <aside id="shop-filters" className={`shop-sidebar${mobileFiltersOpen ? ' is-open' : ''}`} aria-label="Shop filters">
         <div className="sidebar-heading">
           <p className="eyebrow">{activeShopperPath ? activeShopperPath.shortName : 'Shop controls'}</p>
           <span>{countLabel(visibleProducts.length)} shown</span>
@@ -1629,16 +1640,11 @@ export default function App() {
           </label>
           <label>
             Message
-            {/* Required here because /api/support/enquiry requires it for a trade
-                enquiry. This form reports success in a `finally`, so a rejected
-                submission would otherwise say "Thanks for submitting" and drop the
-                lead — client and server have to agree on the rule, not just the
-                endpoint know it. */}
             <textarea name="message" rows="4" required />
           </label>
           <Honeypot />
-          <button type="submit">Send trade enquiry</button>
-          {formMessage && <p className="success">{formMessage}</p>}
+          <button type="submit" disabled={formStates.trade === 'sending'}>{formStates.trade === 'sending' ? 'Sending…' : 'Send trade enquiry'}</button>
+          {formMessage && <p className={formStates.trade === 'error' ? 'form-error' : 'success'} role={formStates.trade === 'error' ? 'alert' : 'status'}>{formMessage}</p>}
         </form>
       </section>
 
@@ -1729,7 +1735,7 @@ export default function App() {
               )}
             </div>
             <ProductWeight product={product}/>
-            {notice && <p className="notice">{notice}</p>}
+            {notice && <p className="notice" role="status">{notice}</p>}
             <div className="hero-actions product-cta-row">
               <button className="button primary" type="button" onClick={() => addProduct(product)} disabled={!product.stock}>
                 Add to cart
@@ -1775,7 +1781,7 @@ export default function App() {
             </article>
             <article>
               <span>Delivery and support</span>
-              <p>Delivery cost is shown during checkout where a rate is available. Heavy, mixed, and project orders may need a separate quote before dispatch. Contact Salty Lamps Ltd for order support, bulk enquiries, returns questions, and replacement bulbs or cables.</p>
+              <p>Your cart calculates UK delivery from the packed weight and quantity of each item before payment. Contact us about bespoke projects or delivery arrangements not offered online. Contact Salty Lamps Ltd for order support, bulk enquiries, returns questions, and replacement bulbs or cables.</p>
             </article>
           </div>
 
@@ -1901,7 +1907,7 @@ export default function App() {
       <div className="policy-sections">
         <article><h2>Products and natural variation</h2><p>Product photographs and measurements describe the expected item. Natural Himalayan salt varies in colour, pattern, texture, shape, and weight, so each piece will differ slightly. Material differences do not affect your rights if an item is faulty or not as described.</p></article>
         <article><h2>Price and payment</h2><p>Prices are shown in pounds sterling. An order is accepted when payment is confirmed and an order confirmation is issued. If a price or availability error prevents acceptance, payment will be returned and the customer will be contacted.</p></article>
-        <article><h2>Delivery</h2><p>Available delivery charges and estimates are shown before payment where the order can be rated automatically. Heavy, mixed, remote-area, trade, and project orders may require a separate quote. Salty Lamps will contact the customer if that applies before dispatch.</p></article>
+        <article><h2>Delivery</h2><p>Available delivery charges are calculated from packed item weights and quantities and shown before payment. Where online delivery is unavailable, contact Salty Lamps to agree delivery arrangements before placing your order.</p></article>
         <article><h2>Cancellations and returns</h2><p>Consumers buying online can normally cancel eligible goods within fourteen days after delivery, then return them within fourteen days after notifying Salty Lamps. The returns page explains the process, costs, condition deductions, faulty goods, and exceptions.</p></article>
         <article><h2>Using the products</h2><p>Follow the care and safety instructions supplied with the product. Keep electrical fittings dry and use compatible bulbs and cables. Saltware and animal products should be used for their stated purpose.</p></article>
         <article><h2>Problems and applicable law</h2><p>Nothing in these terms limits rights that cannot legally be excluded. Contact Salty Lamps promptly about damage, missing items, or a product that is not as described. These terms are governed by the laws that apply to the business and customer.</p></article>
@@ -2115,18 +2121,148 @@ export default function App() {
     </section>
   )
 
-  const renderCheckoutSuccess = () => (
-    <section className="policy-page checkout-status-page">
-      <p className="eyebrow">{checkoutResult.status === 'paid' ? 'Order confirmed' : checkoutResult.status === 'checking' ? 'Checking payment' : 'Confirmation unavailable'}</p>
-      <h1>{checkoutResult.status === 'paid' ? 'Thank you — your order is confirmed.' : checkoutResult.status === 'checking' ? 'We are confirming your payment.' : 'We could not confirm an order from this link.'}</h1>
-      <p>{checkoutResult.status === 'paid' ? 'Payment was confirmed and a confirmation email is on its way. Salty Lamps will get your order packed and shipped shortly.' : checkoutResult.status === 'checking' ? 'Please keep this page open for a moment. Your cart will remain unchanged until payment is confirmed.' : 'Your cart has not been cleared. Return to it to try checkout again, or contact Salty Lamps if you completed payment and need help.'}</p>
-      {checkoutResult.status === 'paid' && checkoutResult.orderReference && <p className="order-reference"><strong>Order reference:</strong> {checkoutResult.orderReference}</p>}
-      <div className="hero-actions">
-        <Link className="button primary" href="/shop">{checkoutResult.status === 'paid' ? 'Continue shopping' : 'Return to shop'}</Link>
-        <a className="button secondary" href={contactMailto(content)}>Contact us about this order</a>
-      </div>
+  const openOrderReview = () => {
+    setCartOpen(false)
+    setNotice('')
+    window.history.pushState({}, '', '/checkout')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.scrollTo(0, 0)
+    window.requestAnimationFrame(() => document.getElementById('order-review-title')?.focus())
+  }
+  const renderCartLines = () => (
+    <div className="cart-lines">
+          {cart.length ? cart.map(item => (
+            <article className="cart-line" key={item.key}>
+              <img src={item.product.image} alt="" loading="lazy" decoding="async" />
+              <div>
+                <strong>{item.product.productName || item.product.name}</strong>
+                <small>{money(item.product.price)} each</small>
+                <ProductWeight product={item.product} quantity={item.qty} compact />
+              </div>
+              <CartOption item={item} options={productGroups.find(group => group.productId === item.product.productId)?.variants || [item.product]}
+                disabled={checkoutLoading || catalog.status !== 'ready'} onChange={skuId => changeOption(item.key, skuId)} />
+              <div className="cart-line-actions">
+                <QuantityInput value={item.qty} max={Math.min(item.product.stockQty ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY)} name={item.product.name}
+                  disabled={checkoutLoading} onChange={quantity => changeQty(item.key, quantity)}
+                  onValidityChange={valid => setInvalidQuantities(values => ({ ...values, [item.key]: !valid }))} />
+                <div className="cart-line-total"><strong>{money(item.product.price * item.qty)}</strong><button type="button" disabled={checkoutLoading} onClick={() => removeCartItem(item.key)} aria-label={`Remove ${item.product.name}`}>Remove</button></div>
+              </div>
+            </article>
+          )) : <p>Your selected products will appear here.</p>}
+        </div>
+  )
+  const renderOrderReview = () => (
+    <section className="checkout-review">
+      <p className="eyebrow">Checkout · Step 1 of 2</p>
+      <h1 id="order-review-title" tabIndex={-1}>Review your order</h1>
+      <p>Check your items, chosen options and delivery. Next, enter your address and payment details securely.</p>
+      {cart.length ? <div className="checkout-review-grid">
+        <section aria-label="Order items"><h2>Your items</h2>{!cartOpen && renderCartLines()}<Link className="text-button" href="/shop">Continue shopping</Link></section>
+        <section className="checkout-order-summary" aria-labelledby="order-summary-title">
+          <h2 id="order-summary-title">Order summary</h2>
+          <div className="cart-summary-row"><span>Items ({cartCount})</span><strong>{money(cartTotal)}</strong></div>
+          {notice && <p className="notice" role="status">{notice}</p>}
+          <CartDelivery cart={cart} active={!cartOpen} paymentStep catalogStatus={catalog.status} onReloadCatalog={loadCatalog}
+            invalid={cart.some(item => invalidQuantities[item.key])} loading={checkoutLoading} onCheckout={handleCheckout} />
+        </section>
+      </div> : <div className="checkout-order-summary"><h2>Your cart is empty</h2><p>Add an item to review your order.</p><Link className="button primary" href="/shop">Browse the shop</Link></div>}
     </section>
   )
+
+  const renderCheckoutSuccess = () => {
+    if (checkoutResult.status !== 'paid') return (
+      <section className="policy-page checkout-status-page">
+        <p className="eyebrow">{checkoutResult.status === 'checking' ? 'Checking payment' : 'Confirmation unavailable'}</p>
+        <h1>{checkoutResult.status === 'checking' ? 'We are confirming your payment.' : 'We could not confirm an order from this link.'}</h1>
+        <p>{checkoutResult.status === 'checking' ? 'Please keep this page open for a moment. Your cart will remain unchanged until payment is confirmed.' : 'Your cart has not been cleared. Return to it to try checkout again, or contact Salty Lamps if you completed payment and need help.'}</p>
+        <div className="hero-actions">
+          <Link className="button primary" href="/shop">Return to shop</Link>
+          <a className="button secondary" href={contactMailto(content)}>Contact us</a>
+        </div>
+      </section>
+    )
+
+    const email = checkoutResult.emailDelivery || { status: 'processing', to: checkoutResult.customerEmail || '' }
+    const emailText = email.status === 'sent'
+      ? <>We sent the order confirmation to <strong>{email.to}</strong>. It may take a few minutes to arrive. Please check your spam or junk folder too.</>
+      : email.status === 'disabled'
+        ? <>This test order is safely recorded. Email delivery is switched off on this proposal site, so no message was sent. Customers will receive it automatically after launch.</>
+        : email.status === 'failed'
+          ? <>Your order is safely recorded, but the confirmation email could not be sent. Keep the reference below and contact us if you need a copy.</>
+          : <>We are preparing the confirmation email for <strong>{email.to || checkoutResult.customerEmail}</strong>. It may take a few minutes to arrive. Please check your spam or junk folder too.</>
+    const itemCount = (checkoutResult.items || []).reduce((sum, item) => sum + item.quantity, 0)
+    const placedAt = checkoutResult.placedAt
+      ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(checkoutResult.placedAt))
+      : ''
+
+    return (
+      <section className="checkout-confirmation" aria-labelledby="confirmation-title">
+        <header className="confirmation-hero">
+          <div className="confirmation-mark" aria-hidden="true">✓</div>
+          <div>
+            <p className="eyebrow">Payment complete</p>
+            <h1 id="confirmation-title">Thank you. Your order is confirmed.</h1>
+            <p>We have received your order and will let you know when it is on its way.</p>
+          </div>
+          <dl className="confirmation-reference">
+            <div><dt>Order reference</dt><dd>{checkoutResult.orderReference}</dd></div>
+            {placedAt && <div><dt>Placed</dt><dd>{placedAt}</dd></div>}
+          </dl>
+        </header>
+
+        <section className={`confirmation-email confirmation-email--${email.status}`} aria-label="Confirmation email">
+          <div className="confirmation-email-icon" aria-hidden="true">✉</div>
+          <div><h2>{email.status === 'disabled' ? 'Email is off on this test site' : email.status === 'failed' ? 'Your receipt needs attention' : 'Your receipt is on its way'}</h2><p>{emailText}</p></div>
+        </section>
+
+        <div className="confirmation-grid">
+          <section className="confirmation-card confirmation-products" aria-labelledby="ordered-products-title">
+            <div className="confirmation-card-heading">
+              <div><p className="eyebrow">Your purchase</p><h2 id="ordered-products-title">Products ordered</h2></div>
+              <span>{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+            </div>
+            <div className="confirmation-product-list">
+              {(checkoutResult.items || []).map(item => (
+                <article className="confirmation-product" key={item.id}>
+                  {item.image ? <img src={item.image} alt="" /> : <div className="confirmation-product-placeholder" aria-hidden="true">SL</div>}
+                  <div><h3>{item.name}</h3><p>Quantity {item.quantity} · {money(item.unitPricePence / 100)} each</p></div>
+                  <strong>{money(item.totalPence / 100)}</strong>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <aside className="confirmation-card confirmation-summary" aria-labelledby="confirmation-summary-title">
+            <p className="eyebrow">Receipt</p>
+            <h2 id="confirmation-summary-title">Order summary</h2>
+            <dl>
+              <div><dt>Products</dt><dd>{money((checkoutResult.totals?.itemsPence || 0) / 100)}</dd></div>
+              <div><dt>{checkoutResult.delivery?.service || 'UK delivery'}</dt><dd>{money((checkoutResult.totals?.deliveryPence || 0) / 100)}</dd></div>
+              <div className="confirmation-total"><dt>Total paid</dt><dd>{money((checkoutResult.totals?.totalPence || 0) / 100)}</dd></div>
+            </dl>
+            {(checkoutResult.delivery?.name || checkoutResult.delivery?.postcode) && <div className="confirmation-delivery">
+              <h3>Delivering to</h3>
+              <p>{checkoutResult.delivery.name}{checkoutResult.delivery.city ? <><br />{checkoutResult.delivery.city}</> : null}{checkoutResult.delivery.postcode ? <><br />{checkoutResult.delivery.postcode}</> : null}</p>
+            </div>}
+          </aside>
+        </div>
+
+        <section className="confirmation-next" aria-labelledby="what-happens-title">
+          <div><p className="eyebrow">Next steps</p><h2 id="what-happens-title">What happens now</h2></div>
+          <ol>
+            <li><span>1</span><div><strong>Order received</strong><p>Your payment and products are confirmed.</p></div></li>
+            <li><span>2</span><div><strong>Carefully packed</strong><p>We prepare and protect your natural salt products.</p></div></li>
+            <li><span>3</span><div><strong>Dispatch update</strong><p>We will email you when your order leaves us.</p></div></li>
+          </ol>
+        </section>
+
+        <div className="confirmation-actions">
+          <Link className="button primary" href="/shop">Continue shopping</Link>
+          <a className="button secondary" href={contactMailto(content, `Order ${checkoutResult.orderReference}`)}>Get help with this order</a>
+        </div>
+      </section>
+    )
+  }
 
   const renderCheckoutCancelled = () => (
     <section className="policy-page checkout-status-page">
@@ -2288,6 +2424,8 @@ export default function App() {
           ? renderNotFound()
           : currentProduct
           ? renderProductPage(currentProduct, currentGroup)
+          : route === '/checkout'
+            ? renderOrderReview()
           : route === '/checkout/success'
             ? renderCheckoutSuccess()
           : route === '/checkout/cancelled'
@@ -2351,8 +2489,8 @@ export default function App() {
             </span>
           </label>
           <Honeypot />
-          <button type="submit">Subscribe</button>
-          {newsletterMessage && <span className="newsletter-message">{newsletterMessage}</span>}
+          <button type="submit" disabled={formStates.newsletter === 'sending'}>{formStates.newsletter === 'sending' ? 'Sending…' : 'Subscribe'}</button>
+          {newsletterMessage && <span className="newsletter-message" role={formStates.newsletter === 'error' ? 'alert' : 'status'}>{newsletterMessage}</span>}
         </form>
         <nav aria-label="Footer links">
           <span className="footer-eyebrow">Company</span>
@@ -2363,7 +2501,7 @@ export default function App() {
         </nav>
       </footer>
 
-      <ChatModule onSubmit={handleChatSubmit} message={chatMessage} content={content} />
+      {route !== '/refund-request' && <ChatModule hideTrigger={route.startsWith('/checkout')} onSubmit={handleChatSubmit} message={chatMessage} content={content} busy={formStates.chat === 'sending'} error={formStates.chat === 'error'} />}
 
       <aside
         ref={cartDialogRef}
@@ -2382,37 +2520,14 @@ export default function App() {
           </div>
           <button type="button" onClick={() => setCartOpen(false)}>Close</button>
         </header>
-        <div className="cart-lines">
-          {cart.length ? cart.map(item => (
-            <article className="cart-line" key={item.key}>
-              <img src={item.product.image} alt="" loading="lazy" decoding="async" />
-              <div>
-                <strong>{item.product.name}</strong>
-                <small>{money(item.product.price)}</small>
-                <ProductWeight product={item.product} compact quantity={item.qty}/>
-              </div>
-              <div className="qty">
-                <button type="button" onClick={() => changeQty(item.key, -1)} aria-label={`Decrease ${item.product.name}`}>-</button>
-                <span>{item.qty}</span>
-                <button type="button" onClick={() => changeQty(item.key, 1)} aria-label={`Increase ${item.product.name}`}>+</button>
-              </div>
-            </article>
-          )) : <p>Your selected products will appear here.</p>}
-        </div>
+        {cartOpen && renderCartLines()}
         <footer>
-          {notice && <p className="notice">{notice}</p>}
+          {notice && <p className="notice" role="status">{notice}</p>}
           <span>Subtotal</span>
           <strong>{money(cartTotal)}</strong>
-          <small className="cart-delivery-note">Delivery is calculated during checkout where a rate is available. Heavy, mixed, and project orders may need a separate quote before dispatch.</small>
           {cart.length ? (
-            <button
-              type="button"
-              className="button primary"
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
-            >
-              {checkoutLoading ? 'Redirecting…' : 'Checkout'}
-            </button>
+            <CartDelivery cart={cart} active={cartOpen} catalogStatus={catalog.status} onReloadCatalog={loadCatalog} invalid={cart.some(item => invalidQuantities[item.key])} loading={checkoutLoading} onCheckout={openOrderReview}
+              />
           ) : (
             <Link className="button secondary" href="/shop" onClick={() => setCartOpen(false)}>
               Continue shopping

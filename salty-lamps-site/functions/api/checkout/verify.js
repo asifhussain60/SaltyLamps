@@ -1,11 +1,46 @@
 import Stripe from 'stripe'
+import { orderRef } from '../../lib/email-render.mjs'
 
-export function paidCheckoutSummary(session) {
+export function paidCheckoutSummary(session, { imagesBySkuId = new Map(), emailDelivery = null } = {}) {
   if (!session || session.metadata?.store !== 'salty-lamps') return null
   if (session.status !== 'complete' || session.payment_status !== 'paid') return null
+  const customerEmail = session.customer_details?.email || ''
+  const shipping = session.shipping_details
+    || session.collected_information?.shipping_details
+    || session.customer_details
+    || {}
+  const address = shipping.address || session.customer_details?.address || {}
+  const lines = session.line_items?.data || []
   return {
     status: 'paid',
-    orderReference: String(session.id || '').replace(/^cs_(?:test_|live_)?/, '').slice(-12),
+    orderReference: orderRef(session.id),
+    placedAt: Number.isFinite(session.created) ? new Date(session.created * 1000).toISOString() : null,
+    customerEmail,
+    delivery: {
+      name: shipping.name || session.customer_details?.name || '',
+      city: address.city || '',
+      postcode: address.postal_code || '',
+      service: session.shipping_cost?.shipping_rate?.display_name || '',
+    },
+    emailDelivery: emailDelivery || { status: 'processing', to: customerEmail },
+    items: lines.map((line, index) => {
+      const product = typeof line.price?.product === 'object' ? line.price.product : null
+      const skuId = Number(product?.metadata?.sku_id)
+      return {
+        id: line.id || `item-${index}`,
+        skuId: Number.isSafeInteger(skuId) ? skuId : null,
+        name: line.description || product?.name || 'Ordered item',
+        quantity: Number(line.quantity) || 0,
+        unitPricePence: Number(line.price?.unit_amount) || 0,
+        totalPence: Number(line.amount_total) || 0,
+        image: Number.isSafeInteger(skuId) ? imagesBySkuId.get(skuId) || '' : '',
+      }
+    }),
+    totals: {
+      itemsPence: Number(session.amount_subtotal) || 0,
+      deliveryPence: Number(session.shipping_cost?.amount_total ?? session.total_details?.amount_shipping) || 0,
+      totalPence: Number(session.amount_total) || 0,
+    },
   }
 }
 
@@ -22,12 +57,59 @@ export async function onRequestGet({ request, env }) {
   })
 
   try {
-    const summary = paidCheckoutSummary(await stripe.checkout.sessions.retrieve(sessionId))
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items.data.price.product', 'shipping_cost.shipping_rate'],
+    })
+    const summary = paidCheckoutSummary(session, await readPresentationDetails(env.DB, session))
     if (!summary) return json({ error: 'Payment is not confirmed.' }, 409)
     return json(summary, 200)
   } catch {
     return json({ error: 'Payment could not be confirmed.' }, 404)
   }
+}
+
+async function readPresentationDetails(db, session) {
+  const lines = session?.line_items?.data || []
+  const skuIds = [...new Set(lines
+    .map(line => Number(typeof line.price?.product === 'object' ? line.price.product?.metadata?.sku_id : null))
+    .filter(Number.isSafeInteger))]
+  const imagesBySkuId = new Map()
+
+  if (db && skuIds.length) {
+    try {
+      const placeholders = skuIds.map(() => '?').join(',')
+      const { results } = await db.prepare(
+        `SELECT s.id, COALESCE(pi.path, p.image, '') AS image
+         FROM skus s
+         JOIN products p ON p.id = s.product_id
+         LEFT JOIN sku_images si ON si.sku_id = s.id
+         LEFT JOIN product_images pi ON pi.id = si.image_id AND pi.product_id = p.id
+         WHERE s.id IN (${placeholders})`,
+      ).bind(...skuIds).all()
+      for (const row of results || []) imagesBySkuId.set(Number(row.id), row.image || '')
+    } catch {
+      // Product pictures improve the receipt but must never block confirmation.
+    }
+  }
+
+  const customerEmail = session?.customer_details?.email || ''
+  let emailDelivery = { status: 'processing', to: customerEmail }
+  if (db) {
+    try {
+      const row = await db.prepare(
+        `SELECT status, to_address FROM email_outbox
+         WHERE order_id = ? AND template_key = 'order_confirmation'
+         ORDER BY id DESC LIMIT 1`,
+      ).bind(session.id).first()
+      if (row?.status === 'sent') emailDelivery = { status: 'sent', to: row.to_address || customerEmail }
+      else if (row?.status === 'failed') emailDelivery = { status: 'failed', to: row.to_address || customerEmail }
+      else if (row?.status === 'skipped') emailDelivery = { status: 'disabled', to: row.to_address || customerEmail }
+    } catch {
+      // The Stripe receipt still renders while the order webhook finishes writing.
+    }
+  }
+
+  return { imagesBySkuId, emailDelivery }
 }
 
 function json(body, status) {

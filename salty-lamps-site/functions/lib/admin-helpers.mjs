@@ -113,7 +113,10 @@ export function fillDailySeries(rows, from, toExclusive) {
 // Rows -> CSV string. columns is [{ key, label }]; values are stringified safely.
 export function toCsv(rows, columns) {
   const esc = v => {
-    const s = v == null ? '' : String(v)
+    let s = v == null ? '' : String(v)
+    // Customer-entered text must stay text when an owner opens the export in a
+    // spreadsheet. Preserve actual numeric values (including negative amounts).
+    if (typeof v === 'string' && /^[\s]*[=+@-]/.test(s)) s = `'${s}`
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
   const header = columns.map(c => esc(c.label)).join(',')

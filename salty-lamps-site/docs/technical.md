@@ -10,7 +10,7 @@ Salty Lamps is a single React application serving both the public storefront and
 
 | Layer | Technology | Notes |
 |---|---|---|
-| UI | React 18, Vite 5 | One SPA; storefront + admin in the same bundle |
+| UI | React 18, Vite 6 | One SPA; owner interface loaded on demand |
 | Routing | Hand-rolled `history.pushState` | No router library; string-parses `location.pathname` |
 | Styling | Hand-written CSS + design tokens | Tailwind configured but unused (see §4) |
 | Hosting / API | Cloudflare Pages + Pages Functions | File-path = route under `functions/api/` |
@@ -56,11 +56,12 @@ salty-lamps-site/
 | `/` | Home |
 | `/shop`, `/category/:slug`, `/collection/:slug` | Shop listing |
 | `/product-page/:slug` | Product detail |
+| `/checkout` | Editable order review, delivery estimate, and secure payment hand-off |
 | `/checkout/success`, `/checkout/cancelled` | Post-payment pages |
 | `/gallery`, `/reviews`, `/process`, policy pages | Static content |
 | `/admin/*` | Admin SPA (§6) |
 
-**Data.** The storefront fetches `GET /api/products` and starts payment with `POST /api/checkout` (body `{ items: [{ skuId, quantity }] }` — no client-supplied prices). The only shared component still wired in is `DonutChart.jsx` (used by the admin dashboard).
+**Data.** The storefront fetches `GET /api/products` and starts payment with `POST /api/checkout` (body `{ items: [{ skuId, quantity }] }` — no client-supplied prices). Cart option, quantity and delivery controls are shared by the drawer and order review.
 
 > ⚠️ **Styling reality (verify before assuming):** styling is **hand-written CSS** in `src/styles/saltylamps.css` and `admin.css`, built on a shared CSS-custom-property design-token system. **Tailwind is configured but not actually used** (no `@tailwind` directives), and **Bootstrap is a dependency imported nowhere** — both are effectively dead and safe to remove. The `src/components/views/*` "proposal deck" subtree was confirmed orphaned and has been removed.
 
@@ -185,3 +186,55 @@ Secrets are set with `wrangler pages secret put` (never committed):
 - **Dead dependencies:** `bootstrap` is unused; `tailwindcss` is configured but produces no CSS for the live app. Removable.
 - **Orphaned subtree removed:** `src/components/views/*` (the old proposal deck) was confirmed unreferenced and deleted.
 - **Package name** is still `salty-lamps-proposal`; harmless but worth renaming for production.
+
+
+## Customer experience audit update — September 2026
+
+Payment confirmation reports verified payment without promising email delivery. Admin dates and sales-chart labels use the shop timezone consistently in all browsers.
+
+Checkout opens an editable `/checkout` order review before handing off to Stripe for address and payment entry. The payment action stays available while delivery is calculated. Internal catalogue gaps are never named in the customer interface or public delivery response; the secure checkout endpoint returns one neutral recovery message if it cannot prepare delivery. Weight, size and pack selectors update prices, quantities and delivery estimates; changing to an option already in the basket merges quantities within available stock. Product weight is displayed separately from packed shipping weight.
+
+The cart accepts typed whole quantities, checks real available stock (including bulk orders),
+shows line totals, and offers an explicit Remove action. The public delivery estimate endpoint
+(`POST /api/checkout/delivery`) and checkout share trusted database price, stock, visibility,
+and packed-weight validation. Duplicate option lines are merged before stock checks.
+
+Delivery uses the quantity of complete sellable items or packs multiplied by their packed weight.
+Consecutive numbered tariff rows (1, 2, 3…), with adjoining bands from zero for one country and no postcode restrictions, are treated as total-basket weight bands when parcel splitting is off. Their prices and limits remain unchanged; named postal groups retain their existing matching rules.
+Admin identifies missing packed weights by product and option. Customer pages do not expose those operational gaps. Checkout never invents a weight or silently uses free delivery, and delivery, catalogue, and payment requests have bounded waits with neutral recovery messages. Delivery is rechecked when the cart opens.
+By default an existing rate must cover the full parcel. Owners can opt into `split_parcels` in
+Delivery settings only when their courier rates apply per parcel: whole items are packed within
+the configured upper limit, postal groups remain separate, and the applicable charges are summed.
+Heavier individual items, missing weights, missing groups, missing bands, and unsupported destinations
+retain a contact/recovery path. No carrier prices or product weights are invented. Online checkout
+uses country-wide GB rates; postcode-specific quotes remain an owner order-postage feature.
+
+Contact forms preserve input on failed submissions and prevent repeat sends while pending. Success
+appears only after server acknowledgement. Message contents are no longer copied to browser local storage.
+Only the matching pending checkout can reconcile purchased cart quantities, once; an old success link
+cannot empty a later basket. The payment page and emails use the same short order reference, and return
+requests also accept the previous twelve-character reference.
+
+The webhook accepts completed paid sessions belonging to this shop and also handles delayed payment
+success. Configure both `checkout.session.completed` and `checkout.session.async_payment_succeeded` on
+the payment-provider webhook endpoint. The two shipping-address locations remain supported.
+
+Verification commands: `npm run test:unit`, `CONTENT_SNAPSHOT_SOURCE=committed npm run build`, and the
+separate browser suite in `tests/`. Use a disposable local database and no payment/email credentials.
+The browser suite includes automatic accessibility checks against WCAG A/AA rules; it does not replace
+manual screen-reader or real-device testing. `SALTY_VISUAL_AUDIT=1` captures review screenshots.
+
+## Asim Test Suite
+
+`/admin/asim-test-suite` provides 14 quick checks and 35 full checks across eight user journeys.
+The checklist data lives in `src/admin/asim-checks.mjs`; the page uses the existing Admin shell.
+Results and notes are versioned in browser local storage, separately for phone and computer,
+with storage-failure feedback, guarded reset, and copy/download summaries covering both devices.
+They do not sync between devices or browsers and are not automatic verification results.
+Relative shortcuts reuse a named shop tab. Checks requiring practice payments, orders, messages,
+or missing-data scenarios explain their setup; the checklist never performs those actions itself.
+
+On the proposal deployment, explicitly set `PUBLIC_HOST=www.saltylamps.co.uk` independently of
+`SITE_URL` (the checkout-return address), preserving the existing allowed proposal Admin hosts.
+This keeps the customer-host safeguard and proposal access compatible and excludes the proposal
+site from indexing. Do not change the customer domain or infer courier tariffs during deployment.

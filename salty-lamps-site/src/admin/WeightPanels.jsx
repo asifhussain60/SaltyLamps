@@ -5,6 +5,7 @@ import {
   validateWeights,
   validatePostageConfig,
   quotePostage,
+  usesBasketWeightBands,
 } from '../../functions/lib/weights.mjs'
 
 export function weightForm(s = {}) {
@@ -112,6 +113,7 @@ const money = (p) =>
       }).format(p / 100)
 export function DeliverySettings({ api, useDirty }) {
   const { data, error, loading, reload } = useLoad(api, '/api/admin/postage')
+  const products = useLoad(api, '/api/admin/products')
   const [form, setForm] = useState(null),
     [dirty, setDirty] = useState(false),
     [busy, setBusy] = useState(false),
@@ -203,9 +205,15 @@ export function DeliverySettings({ api, useDirty }) {
         </button>
       </div>
       <p className="admin-muted">
-        Maintain packed weights and postage estimates for despatch. Automatic
-        checkout charging is not enabled.
+        Checkout automatically multiplies each option’s packed weight by its quantity
+        and charges the matching delivery rate. Enter the weight of one complete sellable item or pack.
       </p>
+      {products.data && <div className="admin-state">
+        <strong>{products.data.products.filter(p => p.visible).flatMap(p => p.skus).filter(s => !s.packed_weight_g).length} visible product options need a packed shipping weight.</strong>
+        <p>Customers cannot pay for these options until the weights are entered. Use the weight of one item or complete pack, including its packaging. Do not estimate from the selling price.</p>
+        <a className="admin-link" href="/admin/inventory?tab=weights">Enter missing shipping weights →</a>
+      </div>}
+      {usesBasketWeightBands(data.config) && <div className="admin-state"><strong>Your numbered rows are total-basket weight bands.</strong><p>Delivery uses the combined packed weight of every item. It moves automatically to the next band as quantities increase. The numbers identify delivery bands; products do not stay in one band as the basket gets heavier.</p></div>}
       <div className="admin-weight-grid">
         <label className="admin-field">
           <span className="admin-field-label">
@@ -233,11 +241,25 @@ export function DeliverySettings({ api, useDirty }) {
         Admin entry uses kilograms. Changing the customer display unit converts
         values; it does not change recorded weights.
       </p>
+      <label className="admin-weight-check">
+        <input type="checkbox" checked={Boolean(form.split_parcels)} onChange={event => edit('split_parcels', event.target.checked)} />
+        Charge multiple parcels using these rates
+      </label>
+      <p className="admin-weight-hint">
+        Enable only when your courier charges these rates per parcel. Larger baskets
+        are packed by weight without splitting individual items or packs. Different
+        postal groups travel separately. Leave off if heavier orders use a separate tariff,
+        then add the applicable weight bands below.
+      </p>
+      <p className="admin-weight-hint">
+        Online checkout currently uses GB rates with blank postcode prefixes.
+        Postcode-specific rates are available for the order postage check after an address is known.
+      </p>
       <Message {...message} />
       {!form.rates.length && (
         <div className="admin-state">
-          No delivery rates yet. Add your own rates; unknown postage will be
-          marked for review.
+          No delivery rates yet. Customers cannot complete online checkout until
+          matching rates and packed item weights are entered.
         </div>
       )}
       {form.rates.map((r, i) => (

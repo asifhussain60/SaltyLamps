@@ -39,13 +39,13 @@ export async function onRequestPost({ request, env }) {
 // Matches either the short reference the emails print (#A1B2C3D4 — the last eight
 // characters of the Stripe session id, see orderRef in email-render.mjs) or a
 // pasted full session id, AND the email address recorded on the order.
-async function findOrder(db, reference, email) {
+export async function findOrder(db, reference, email) {
   const short = reference.replace(/^#/, '').trim().toUpperCase()
   return db.prepare(
     `SELECT * FROM orders
-     WHERE (UPPER(SUBSTR(id, -8)) = ? OR id = ?)
+     WHERE (UPPER(SUBSTR(id, -8)) = ? OR UPPER(SUBSTR(id, -12)) = ? OR id = ?)
        AND LOWER(customer_email) = LOWER(?)`,
-  ).bind(short, reference.trim(), email).first()
+  ).bind(short, short, reference.trim(), email).first()
 }
 
 async function notifyAdmin(env, request, order, reason) {

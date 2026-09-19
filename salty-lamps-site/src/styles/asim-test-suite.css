@@ -1,0 +1,75 @@
+.asim-suite { max-width: 1240px; margin: 0 auto; color: var(--ink); }
+.asim-suite button, .asim-suite a.admin-btn { min-height: 44px; }
+.asim-suite button:focus-visible, .asim-suite summary:focus-visible, .asim-suite textarea:focus-visible, .asim-suite a:focus-visible { outline: 3px solid var(--ember); outline-offset: 3px; }
+.asim-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.asim-eyebrow { margin: 0 0 9px; font: 700 .72rem var(--ui); text-transform: uppercase; letter-spacing: .1em; color: var(--ember); }
+.asim-heading h2 { font: 700 clamp(1.7rem, 2.8vw, 2.3rem)/1.2 var(--display); letter-spacing: -.04em; margin: 0 0 12px; }
+.asim-lead { color: var(--muted); margin: 0; }
+.asim-context { margin: 18px 0 0; color: var(--muted); font-size: .82rem; overflow-wrap: anywhere; }
+.asim-toolbar { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 24px; margin: 23px 0 18px; }
+.asim-toolbar h3 { font: 700 1rem var(--ui); margin-bottom: 12px; }
+.asim-mode-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.asim-mode-choices button { text-align: left; border: 1px solid var(--line); border-radius: 11px; padding: 16px; background: var(--raised); color: var(--ink); font: 400 .85rem/1.5 var(--ui); }
+.asim-mode-choices button[aria-pressed=true] { border-color: var(--ember); background: #f8ead9; }
+.asim-mode-choices strong { display: block; font-size: .95rem; margin-bottom: 7px; }
+.asim-mode-choices span { display: block; color: var(--muted); }
+.asim-help { color: var(--muted); font-size: .85rem; line-height: 1.5; margin: 10px 0 0; }
+.asim-device-choice .asim-help { margin: 0 0 12px; }
+.asim-instructions { border: 1px solid var(--line); border-radius: 11px; background: var(--raised); margin-bottom: 18px; padding: 0 16px; }
+.asim-instructions summary { cursor: pointer; padding: 14px 0; font: 600 .9rem/1.5 var(--ui); }
+.asim-instructions ol { padding-left: 20px; margin-top: 0; }
+.asim-instructions li, .asim-instructions p { color: var(--muted); font-size: .88rem; line-height: 1.6; margin-bottom: 8px; }
+.asim-segment { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 11px; background: var(--raised); }
+.asim-segment button { border: 0; background: transparent; color: var(--muted); border-radius: 8px; padding: 8px 14px; font: 600 .85rem var(--ui); }
+.asim-segment button[aria-pressed=true] { background: #f3e5d3; color: #703b20; }
+.asim-progress-box { padding: 20px 22px; border: 1px solid var(--line); border-radius: 13px; background: var(--raised); margin-bottom: 27px; }
+.asim-progress-heading { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; flex-wrap: wrap; }
+.asim-track { height: 7px; border-radius: 7px; background: var(--line); overflow: hidden; margin: 14px 0; }
+.asim-track > div { height: 100%; background: var(--admin-green); }
+.asim-counts { display: flex; gap: 20px; flex-wrap: wrap; font-size: .82rem; color: var(--muted); }
+.asim-workspace { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 30px; align-items: start; }
+.asim-journeys { display: grid; gap: 5px; }
+.asim-journeys > p { padding: 0 10px; margin-bottom: 6px; }
+.asim-journeys button { display: flex; gap: 10px; align-items: center; justify-content: space-between; width: 100%; text-align: left; padding: 12px 10px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); font: 600 .84rem var(--ui); }
+.asim-journeys button[aria-pressed=true] { border-color: var(--ember); background: #f8ead9; color: #873b20; }
+.asim-journeys small { white-space: nowrap; font-size: .72rem; }
+.asim-suite h3 { margin: 0; font: 700 1.25rem var(--display); }
+.asim-caption { margin: 7px 0 17px; font-size: .86rem; color: var(--muted); }
+.asim-case { background: var(--raised); border: 1px solid var(--line); border-radius: 11px; margin-bottom: 12px; }
+.asim-case[open] { border-color: var(--ember); }
+.asim-case summary { display: flex; gap: 11px; align-items: center; padding: 17px; cursor: pointer; list-style: none; font: 600 .93rem var(--ui); min-height: 58px; border-radius: 10px; }
+.asim-case summary::-webkit-details-marker { display: none; }
+.asim-dot { width: 25px; height: 25px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font: 600 .74rem var(--ui); }
+.asim-dot--works { background: var(--admin-green); color: white; border-color: var(--admin-green); }
+.asim-dot--problem { color: #9e342c; border-color: #9e342c; }
+.asim-dot--blocked { color: var(--ember); border-color: var(--ember); }
+.asim-expand { margin-left: auto; font-size: 1.25rem; color: var(--muted); }
+.asim-case-body { padding: 0 20px 20px; }
+.asim-case-body ol { margin: 4px 0 18px; padding-left: 20px; color: var(--muted); font-size: .9rem; }
+.asim-case-body li { padding: 4px 0; }
+.asim-expect, .asim-setup { background: #f8eee1; border-radius: 8px; padding: 13px 15px; margin: 0 0 16px; }
+.asim-expect strong, .asim-setup strong { display: block; color: #873b20; font: 700 .75rem var(--ui); }
+.asim-expect p, .asim-setup p { margin: 5px 0 0; font-size: .86rem; }
+.asim-setup { background: #f4f0ea; }
+.asim-shortcut { margin: 0 0 17px; }
+.asim-shortcut a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.asim-results { display: flex; gap: 8px; flex-wrap: wrap; }
+.asim-results button { flex: 1 1 100px; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: var(--raised); color: var(--muted); font: 600 .84rem var(--ui); }
+.asim-results button[aria-pressed=true] { border-color: var(--ember); background: #f8ead9; color: #873b20; }
+.asim-answer-prompt { font-size: .9rem; font-weight: 600; margin: 0 0 9px; }
+.asim-results strong { display: block; }
+.asim-results span { display: block; font: 400 .8rem/1.5 var(--ui); margin-top: 5px; }
+.asim-note { display: block; margin-top: 15px; font-size: .82rem; color: var(--muted); }
+.asim-note textarea { display: block; width: 100%; margin-top: 7px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); font: 400 1rem/1.5 var(--body); resize: vertical; }
+.asim-note textarea::placeholder { color: #73675c; }
+.asim-next { display: flex; justify-content: flex-end; margin-top: 17px; }
+.asim-summary { padding: 22px; border: 1px solid var(--line); background: var(--raised); border-radius: 12px; margin-top: 26px; }
+.asim-summary p { color: var(--muted); font-size: .86rem; }
+.asim-summary-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.asim-notice { font-size: .86rem; color: var(--ember); }
+.asim-notice:empty { display: none; }
+.asim-footer { display: flex; gap: 20px; justify-content: space-between; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 25px; padding-top: 19px; }
+.asim-footer p { font-size: .77rem; color: var(--muted); max-width: 660px; margin: 4px 0; }
+@media (max-width: 1000px) { .asim-workspace { grid-template-columns: 170px minmax(0, 1fr); gap: 20px; } .asim-toolbar { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+@media (max-width: 480px) { .asim-mode-choices { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 720px) { .asim-workspace { grid-template-columns: minmax(0, 1fr); } .asim-journeys { grid-template-columns: repeat(2, minmax(0, 1fr)); } .asim-journeys > p { grid-column: 1 / -1; } .asim-journeys button { font-size: .8rem; } .asim-case summary { padding: 14px; } .asim-case-body { padding: 0 14px 15px; } .asim-progress-box { padding: 16px; } .asim-segment button { padding: 8px 11px; } .asim-footer > button { width: 100%; } .asim-summary { padding: 16px; } }

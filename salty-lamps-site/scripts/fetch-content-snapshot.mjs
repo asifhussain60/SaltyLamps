@@ -241,6 +241,13 @@ for (const [key, value] of Object.entries({
   }
 }
 
+// Reusing a committed fallback does not refresh its provenance or age. Otherwise
+// an offline build makes old catalogue data look newly verified.
+if (resolved.resolvedFrom === 'committed') {
+  ok('Keeping the committed snapshot and its original freshness information.')
+  process.exit(0)
+}
+
 const snapshot = {
   // Bumped by hand when the snapshot's shape changes, so a stale committed file can be
   // detected rather than silently mis-read. v2 adds `content` and sources categories

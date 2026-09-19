@@ -31,20 +31,21 @@ test('checkout snapshots trusted database weights, not client weights or costs',
       weight_public: 1,
     }
     const config = {
-      unit: 'kg', show_cards: false,
+      unit: 'kg', show_cards: false, split_parcels: true,
       rates: [{ id: 'standard', group: 'Standard', service: 'Tracked delivery', country: 'GB', postcodes: '', min_g: 0, max_g: 10000, price_pence: 650 }],
     }
-    const DB = { prepare: sql => {
+    const DB = { batch: async statements => statements.map(() => ({ results: [row] })), prepare: sql => {
       const first = async () => sql.includes("key='postage_config'") ? { value: JSON.stringify(config) } : row
       return { first, bind: () => ({ first }) }
     } }
+    for (const quantity of [2, 4, 12]) {
     const result = await onRequestPost({
       env: { DB, STRIPE_SECRET_KEY: 'sk_test_fixture' },
       request: new Request('http://localhost/api/checkout', {
         method: 'POST',
         body: JSON.stringify({
           items: [
-            { skuId: 1, quantity: 2, packed_weight_g: 1, price_pence: 1 },
+            { skuId: 1, quantity, packed_weight_g: 1, price_pence: 1 },
           ],
         }),
       }),
@@ -57,14 +58,17 @@ test('checkout snapshots trusted database weights, not client weights or costs',
       '3500',
     )
     assert.equal(sent.get('line_items[0][price_data][unit_amount]'), '1000')
-    assert.equal(sent.get('line_items[0][quantity]'), '2')
+    assert.equal(sent.get('line_items[0][quantity]'), String(quantity))
     assert.match(
       sent.get('line_items[0][price_data][product_data][description]'),
       /2–3 kg/,
     )
-    assert.equal(sent.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]'), '650')
+    assert.equal(sent.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]'), String(Math.ceil(quantity / 2) * 650))
     assert.equal(sent.get('shipping_options[0][shipping_rate_data][display_name]'), 'Tracked delivery')
     assert.equal(sent.get('metadata[store]'), 'salty-lamps')
+    assert.equal(sent.get('payment_method_types[0]'), 'card')
+    assert.equal(sent.get('wallet_options[link][display]'), 'never')
+    }
   } finally {
     globalThis.fetch = previous
   }

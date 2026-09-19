@@ -119,6 +119,8 @@ export function validatePostageConfig(input) {
       'Choose a weight unit and provide up to 200 delivery rates.',
     )
   const ids = new Set()
+  if (input.split_parcels !== undefined && typeof input.split_parcels !== 'boolean')
+    throw new Error('Choose whether delivery rates can be used for multiple parcels.')
   const rates = input.rates.map((r) => {
     if (
       !r ||
@@ -190,7 +192,7 @@ export function validatePostageConfig(input) {
           'Weight bands overlap for the same service and destination.',
         )
     }
-  return { unit: input.unit, show_cards: input.show_cards, rates }
+  return { unit: input.unit, show_cards: input.show_cards, ...(input.split_parcels !== undefined ? { split_parcels: input.split_parcels } : {}), rates }
 }
 export function quotePostage(
   lines,
@@ -219,7 +221,18 @@ export function quotePostage(
     lines.reduce((s, l) => s + l.quantity * l.packed_weight_g, 0)
   if (!Number.isSafeInteger(total) || total <= 0 || total > MAX_WEIGHT_G)
     return review('Parcel weight is outside the supported range.')
+  // Older Admin tables labelled consecutive, adjoining weight bands 1, 2, 3…
+  // Those labels identify tariff rows, not groups of products to ship separately.
+  if (usesBasketWeightBands(config)) {
+    const options = config.rates.filter(r => r.country === String(destination.country || '').toUpperCase()
+      && total > r.min_g && total <= r.max_g)
+    return options.length
+      ? { status: 'ready', reason: '', total_weight_g: total, options: options.sort((a, b) => a.price_pence - b.price_pence) }
+      : review('No delivery rate matches this weight and destination.', total)
+  }
   const groups = new Set(lines.map((l) => l.postal_group))
+  if (config.split_parcels && overrideWeight == null && !lines.some(l => !l.postal_group))
+    return quoteParcels(lines, config, destination, total, review)
   if (groups.size !== 1 || !lines[0].postal_group)
     return review(
       'Missing or mixed postal groups need a manual postage check.',
@@ -238,8 +251,73 @@ export function quotePostage(
           prefixes(r.postcodes).some((p) => postcode.startsWith(p)))),
   )
   return options.length
-    ? { status: 'ready', reason: '', total_weight_g: total, options }
+    ? { status: 'ready', reason: '', total_weight_g: total, options: options.sort((a, b) => a.price_pence - b.price_pence) }
     : review('No delivery rate matches this weight and destination.', total)
+}
+
+export function usesBasketWeightBands(config) {
+  if (config.split_parcels || config.rates.length < 2) return false
+  const rates = [...config.rates].sort((a, b) => a.min_g - b.min_g)
+  return rates.every((rate, index) => rate.group === String(index + 1)
+    && rate.country === rates[0].country && !rate.postcodes
+    && rate.min_g === (index === 0 ? 0 : rates[index - 1].max_g))
+}
+
+// Use only owner-approved per-parcel tariffs. Whole sellable items/packs remain
+// indivisible, and postal groups are packed separately. Never divide a heavy lamp
+// arithmetically into parcels that could not physically contain it.
+function quoteParcels(lines, config, destination, total, review) {
+  if (lines.reduce((sum, line) => sum + line.quantity, 0) > 10000)
+    return review('This quantity needs a bulk delivery arrangement.', total)
+  const country = String(destination.country || '').toUpperCase()
+  const postcode = normalPostcode(destination.postcode)
+  const groups = [...new Set(lines.map(line => line.postal_group))]
+  const groupOptions = []
+  for (const group of groups) {
+    const groupLines = lines.filter(line => line.postal_group === group)
+    const rates = config.rates.filter(rate => rate.group === group && rate.country === country
+      && (!rate.postcodes || (postcode && prefixes(rate.postcodes).some(prefix => postcode.startsWith(prefix)))))
+    const options = []
+    for (const service of new Set(rates.map(rate => rate.service))) {
+      const bands = rates.filter(rate => rate.service === service)
+      const maximum = Math.max(...bands.map(rate => rate.max_g))
+      const groupWeight = groupLines.reduce((sum, line) => sum + line.quantity * line.packed_weight_g, 0)
+      const direct = bands.find(rate => groupWeight > rate.min_g && groupWeight <= rate.max_g)
+      if (direct) { options.push({ ...direct, parcel_count: 1 }); continue }
+      // Missing intermediate bands are configuration gaps, not permission to split.
+      if (groupWeight <= maximum || groupLines.some(line => line.packed_weight_g > maximum)) continue
+      const weights = groupLines.flatMap(line => Array(line.quantity).fill(line.packed_weight_g)).sort((a, b) => b - a)
+      const parcels = []
+      for (const weight of weights) {
+        const index = parcels.findIndex(parcel => parcel + weight <= maximum)
+        if (index < 0) parcels.push(weight)
+        else parcels[index] += weight
+        if (parcels.length > 100) break
+      }
+      if (parcels.length > 100) continue
+      const matched = parcels.map(weight => bands.find(rate => weight > rate.min_g && weight <= rate.max_g))
+      if (matched.some(rate => !rate)) continue
+      options.push({ ...bands[0], id: `${bands[0].id}-parcels`, price_pence: matched.reduce((sum, rate) => sum + rate.price_pence, 0), parcel_count: parcels.length })
+    }
+    if (!options.length) return review('No delivery rate matches this weight and destination.', total)
+    groupOptions.push(options.sort((a, b) => a.price_pence - b.price_pence))
+  }
+  let options = groupOptions[0]
+  if (groupOptions.length > 1) {
+    const common = groupOptions[0].filter(option => groupOptions.every(list => list.some(other => other.service === option.service)))
+    const combine = (parts, service) => ({
+      id: 'combined-parcels', service, country,
+      price_pence: parts.reduce((sum, part) => sum + part.price_pence, 0),
+      parcel_count: parts.reduce((sum, part) => sum + part.parcel_count, 0),
+    })
+    options = common.length
+      ? common.map(option => combine(groupOptions.map(list => list.find(part => part.service === option.service)), option.service))
+      : [combine(groupOptions.map(list => list[0]), 'Delivery in separate parcels')]
+  }
+  options = options.filter(option => Number.isSafeInteger(option.price_pence) && option.price_pence <= 100_000_000)
+  return options.length
+    ? { status: 'ready', reason: '', total_weight_g: total, options: options.sort((a, b) => a.price_pence - b.price_pence) }
+    : review('This basket needs a bulk delivery arrangement.', total)
 }
 
 // Stripe product metadata snapshots are stamped from database values at checkout.

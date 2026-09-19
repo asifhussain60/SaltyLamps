@@ -83,6 +83,7 @@ export function isAdminHost(hostname, env) {
 
 export function isAdminOpenHost(hostname, env) {
   if (!hostname || isLocalHost(hostname)) return false
+  if (hostname === publicHost(env)) return false
   return hostMatches(hostname, env?.ADMIN_OPEN_HOSTS)
 }
 

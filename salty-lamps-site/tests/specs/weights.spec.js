@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 test.describe.configure({ mode: 'serial' })
-let id, config, skuIds
+let id, config, skuIds, fixtureName, fixtureSlug
 const weights = {
   product_weight_min_g: 2000,
   product_weight_max_g: 3000,
@@ -8,13 +8,15 @@ const weights = {
   postal_group: 'QA Standard',
   weight_public: 1,
 }
-test.beforeAll(async ({ request }) => {
+test.beforeAll(async ({ request }, testInfo) => {
+  fixtureName = `Weight QA Fixture ${testInfo.project.name}`
+  fixtureSlug = `weight-qa-fixture-${testInfo.project.name}`
   config = (await (await request.get('/api/admin/postage')).json()).config
   const response = await request.post('/api/admin/products', {
     data: {
       product: {
-        name: 'Weight QA Fixture',
-        slug: 'weight-qa-fixture',
+        name: fixtureName,
+        slug: fixtureSlug,
         categories: 'salt-lamps',
         visible: true,
       },
@@ -91,7 +93,7 @@ test('admin product fields save, survive reload, validate and warn before naviga
 test('product option changes weight; quick view and basket use the selected option', async ({
   page,
 }) => {
-  await page.goto('/product-page/weight-qa-fixture-small')
+  await page.goto(`/product-page/${fixtureSlug}-small`)
   await expect(page.locator('.product-weight-detail')).toContainText('2–3 kg')
   const picker = page.locator('.option-picker')
   await picker.getByRole('button', { name: /Large/ }).click()
@@ -106,13 +108,15 @@ test('product option changes weight; quick view and basket use the selected opti
   )
   await page.getByRole('button', { name: 'Close', exact: true }).first().click()
   await page.goto('/shop')
+  const filters = page.getByRole('button', { name: /Search and filter/ })
+  if (await filters.isVisible()) await filters.click()
   await page
     .getByPlaceholder('Lamp, holder, lick, brick...')
     .first()
     .fill('Weight QA')
   await page
     .locator('.product-card')
-    .filter({ hasText: 'Weight QA Fixture' })
+    .filter({ hasText: fixtureName })
     .getByRole('button', { name: 'View', exact: true })
     .click()
   await expect(
@@ -132,7 +136,7 @@ test('delivery settings save and convert public display without changing stored 
   await page.reload()
   await page.getByRole('button', { name: 'Delivery', exact: true }).click()
   await expect(page.getByLabel('Customer weight display unit')).toHaveValue('g')
-  await page.goto('/product-page/weight-qa-fixture-small')
+  await page.goto(`/product-page/${fixtureSlug}-small`)
   await expect(page.locator('.product-weight-detail')).toContainText(
     '2,000–3,000 g',
   )

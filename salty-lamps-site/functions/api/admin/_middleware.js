@@ -179,7 +179,7 @@ async function verifyAccessJwt(token, teamDomain, expectedAud) {
 
   const claims = decodeSegment(payloadB64)
   const now = Math.floor(Date.now() / 1000)
-  if (claims.exp && now >= claims.exp) throw new Error('token expired')
+  if (!Number.isFinite(claims.exp) || now >= claims.exp) throw new Error('token expired or expiry missing')
   if (claims.nbf && now < claims.nbf) throw new Error('token not yet valid')
   if (claims.iss !== teamIssuer(teamDomain)) throw new Error('wrong issuer')
 

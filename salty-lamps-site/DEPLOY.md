@@ -21,7 +21,7 @@ depends on that folder to redeploy.
 | Deploy branch | `master` |
 | Build command | `npm run build` (Vite build + `scripts/generate-seo.mjs`) |
 | Build output | `dist` |
-| Framework | React 18 + Vite 5 |
+| Framework | React 18 + Vite 6 |
 
 > **Account:** the `salty-lamps-proposal` project — and its D1 database
 > `salty-lamps-db` and R2 bucket `salty-lamps-images` — live in the
@@ -76,6 +76,14 @@ overwrite with `security add-generic-password -s salty-lamps-proposal-cloudflare
 Cloudflare dashboard. If you also need R2/D1 from the script, create the new
 token with **Pages:Edit + D1:Edit + Workers R2 Storage:Edit** and save it the
 same way — the script and all data commands will then work headlessly.
+
+## Proposal runtime hostname
+
+Set the proposal Pages environment's `PUBLIC_HOST` to `www.saltylamps.co.uk` independently
+of `SITE_URL`, which may point back to the proposal site for checkout. Keep existing
+`ADMIN_HOSTS` and `ADMIN_OPEN_HOSTS`. This keeps proposal Admin access working with the
+public-host safeguard and prevents search engines from indexing the test deployment.
+This setting does not change DNS or the customer production deployment.
 
 ## Build-time environment
 

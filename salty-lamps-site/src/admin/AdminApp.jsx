@@ -34,6 +34,7 @@ import InfrastructureDoc from './docs/InfrastructureDoc.jsx'
 import TechnicalDoc from './docs/TechnicalDoc.jsx'
 import PricingDoc from './docs/PricingDoc.jsx'
 import MigrationDoc from './docs/MigrationDoc.jsx'
+import AsimTestSuite from './AsimTestSuite.jsx'
 import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
@@ -43,8 +44,9 @@ const gbp = pence =>
 
 const dateFmt = s => {
   if (!s) return '—'
-  const d = new Date(String(s).replace(' ', 'T') + (String(s).includes('T') ? '' : 'Z'))
-  return Number.isNaN(d.getTime()) ? s : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  const value = String(s)
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value.replace(' ', 'T') + (value.includes('T') ? '' : 'Z'))
+  return Number.isNaN(d.getTime()) ? s : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Europe/London' })
 }
 
 const monthLabel = ym => {
@@ -252,13 +254,22 @@ function Pagination({ page, pageCount, onChange }) {
 }
 
 function Field({ label, error, children, hint, className = '' }) {
+  // A switch already contains its own <label>. Wrapping that in another label is
+  // invalid HTML and makes the visible switch track swallow clicks in some
+  // browsers. Keep ordinary inputs inside a label, but give switches a neutral
+  // group wrapper and carry the field name onto the checkbox itself.
+  const hasSwitch = React.isValidElement(children) && children.type === Toggle
+  const Wrapper = hasSwitch ? 'div' : 'label'
+  const control = hasSwitch
+    ? React.cloneElement(children, { ariaLabel: children.props.ariaLabel || label })
+    : children
   return (
-    <label className={`admin-field ${error ? 'admin-field--error' : ''} ${className}`}>
+    <Wrapper className={`admin-field ${error ? 'admin-field--error' : ''} ${className}`}>
       <span className="admin-field-label">{label}</span>
-      {children}
+      {control}
       {hint && !error && <span className="admin-field-hint">{hint}</span>}
       {error && <span className="admin-field-error">{error}</span>}
-    </label>
+    </Wrapper>
   )
 }
 
@@ -266,10 +277,10 @@ function Field({ label, error, children, hint, className = '' }) {
 // visibility, SKU in-stock, inventory in-stock). Still a real <input type="checkbox">
 // under the hood (visually hidden, not display:none) so it keeps native semantics,
 // keyboard operation and screen-reader behaviour; only the look is custom CSS.
-function Toggle({ checked, onChange, label, inline }) {
+function Toggle({ checked, onChange, label, inline, ariaLabel }) {
   return (
     <label className={`admin-switch ${inline ? 'admin-switch--inline' : ''}`}>
-      <input type="checkbox" className="admin-switch-input" checked={checked} onChange={onChange} />
+      <input type="checkbox" className="admin-switch-input" checked={checked} onChange={onChange} aria-label={ariaLabel} />
       <span className="admin-switch-track"><span className="admin-switch-thumb" /></span>
       {label && <span className="admin-switch-label">{label}</span>}
     </label>
@@ -1628,7 +1639,7 @@ function ModeBadge({ mode }) {
 }
 
 function Inventory() {
-  const [tab,setTab]=useState("stock")
+  const [tab,setTab]=useState(() => new URLSearchParams(window.location.search).get('tab') === 'weights' ? 'weights' : 'stock')
   return <><div className="admin-section-tabs" role="tablist" aria-label="Inventory views"><button role="tab" aria-selected={tab==="stock"} className={tab==="stock"?"active":""} onClick={()=>{if(allowLeave())setTab("stock")}}>Stock</button><button role="tab" aria-selected={tab==="weights"} className={tab==="weights"?"active":""} onClick={()=>{if(allowLeave())setTab("weights")}}>Weights</button></div>{tab==="weights"?<BulkWeights api={api} useDirty={useUnsavedChangesWarning}/>:<StockInventory/>}</>
 }
 function StockInventory() {
@@ -2310,6 +2321,8 @@ function CategoriesList() {
   const [saving, setSaving] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [dirty, setDirty] = useState(false)
+  useUnsavedChangesWarning(dirty)
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
@@ -2319,6 +2332,7 @@ function CategoriesList() {
     setForm({ slug: '', name: '', description: '', image: '', theme: 'lamp', sort_order: '', visible: true })
     setErrs({})
     setSaveErr(null)
+    setDirty(false)
   }
 
   const startEdit = c => {
@@ -2326,9 +2340,10 @@ function CategoriesList() {
     setForm({ ...c, visible: !!c.visible })
     setErrs({})
     setSaveErr(null)
+    setDirty(false)
   }
 
-  const setField = (k, v) => { setProductDirty(true); setForm(f => ({ ...f, [k]: v })) }
+  const setField = (k, v) => { setDirty(true); setForm(f => ({ ...f, [k]: v })) }
 
   const save = async () => {
     const isNew = editing === '__new__'
@@ -2342,6 +2357,7 @@ function CategoriesList() {
     try {
       if (isNew) await api('/api/admin/categories', { method: 'POST', body: form })
       else await api(`/api/admin/categories/${editing}`, { method: 'PATCH', body: form })
+      setDirty(false)
       setEditing(null)
       await reload()
     } catch (e) {
@@ -2405,10 +2421,10 @@ function CategoriesList() {
             <input className="admin-input" type="number" value={form.sort_order} onChange={e => setField('sort_order', e.target.value)} />
           </Field>
           <Field label="Visible" error={errs.visible} hint="Hidden categories disappear from the shop but keep their products and their address.">
-            <Toggle checked={form.visible} onChange={v => setField('visible', v)} />
+            <Toggle checked={form.visible} onChange={e => setField('visible', e.target.checked)} />
           </Field>
           <div className="admin-form-actions">
-            <button className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
+            <button className="admin-btn" onClick={() => { setDirty(false); setEditing(null) }}>Cancel</button>
             <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
               <Icon name="check" size={15} />{saving ? 'Saving…' : 'Save'}
             </button>
@@ -2468,6 +2484,7 @@ const NAV = [
   { key: 'reports', label: 'Reports', href: '/admin/reports', icon: 'barChart' },
   { key: 'emails', label: 'Emails', href: '/admin/emails', icon: 'mail' },
   { key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'sliders' },
+  { key: 'asim-test-suite', label: 'Asim Test Suite', href: '/admin/asim-test-suite', icon: 'check' },
   {
     key: 'docs',
     label: 'Documentation',
@@ -2490,6 +2507,7 @@ const TITLES = {
   reports: 'Reports',
   emails: 'Emails',
   settings: 'Settings',
+  'asim-test-suite': 'Asim Test Suite',
   docs: 'Documentation',
   'docs/infrastructure': 'Infrastructure',
   'docs/technical': 'Technical Documentation',
@@ -2525,6 +2543,7 @@ export default function AdminApp({ route }) {
   else if (section === 'reports') page = <Reports />
   else if (section === 'emails') page = <Emails />
   else if (section === 'settings') page = <Settings />
+  else if (section === 'asim-test-suite') page = <AsimTestSuite />
   else if (section === 'docs' && params[0] === 'infrastructure') page = <InfrastructureDoc />
   else if (section === 'docs' && params[0] === 'technical') page = <TechnicalDoc />
   else if (section === 'docs' && params[0] === 'pricing') page = <PricingDoc />

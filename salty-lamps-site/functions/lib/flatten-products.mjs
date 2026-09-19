@@ -6,7 +6,7 @@ export const PRODUCTS_QUERY = `
   SELECT p.id AS product_id, p.name, p.slug, p.description, p.image, p.categories, p.tags,
          s.id AS sku_id, s.sku, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock,
          pi.id AS variant_image_id, pi.path AS variant_image,
-         w.product_weight_min_g,w.product_weight_max_g,w.weight_public,
+         w.product_weight_min_g,w.product_weight_max_g,w.weight_public,w.packed_weight_g,
          (SELECT json_extract(value,'$.unit') FROM settings WHERE key='postage_config') AS weight_unit,
          (SELECT json_extract(value,'$.show_cards') FROM settings WHERE key='postage_config') AS show_weight_cards
   FROM products p
@@ -71,17 +71,16 @@ export function flattenProductRows(rows, imageRows = []) {
       productWeightMaxG: row.weight_public === 1 ? row.product_weight_max_g ?? null : null,
       weightUnit: row.weight_unit === 'g' ? 'g' : 'kg',
       showWeightCards: row.show_weight_cards === 1,
+      deliveryNeedsConfirmation: !Number.isSafeInteger(row.packed_weight_g) || row.packed_weight_g <= 0,
       price: row.price_pence / 100,
       stock: inStock,
       // How many can actually be ordered. The cart uses this to cap quantity, so a
       // shopper finds out before checkout instead of hitting a 409 at the highest-
       // intent click. null for binary SKUs, which have no count by definition.
       //
-      // Capped at 20 rather than published raw: the exact stock level of every line
-      // is competitor-useful information, and "only 3 left" needs no more precision
-      // than this. checkout.js remains the authority — this is an affordance, not a
-      // guarantee, since the 60s cache can always be a little stale.
-      stockQty: row.track_mode === 'quantity' ? Math.min(row.quantity ?? 0, 20) : null,
+      // The order limit must reflect actual availability, including bulk orders.
+      // Checkout rechecks it because the public catalogue may be cached briefly.
+      stockQty: row.track_mode === 'quantity' ? (row.quantity ?? 0) : null,
       trackMode: row.track_mode,
       categories: row.categories ? row.categories.split(',').filter(Boolean) : [],
       image,

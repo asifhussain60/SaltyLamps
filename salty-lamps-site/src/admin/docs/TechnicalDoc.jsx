@@ -29,7 +29,7 @@ export default function TechnicalDoc() {
         <table className="admin-doc__table">
           <thead><tr><th>Layer</th><th>Technology</th><th>Notes</th></tr></thead>
           <tbody>
-            <tr><td>UI</td><td>React 18, Vite 5</td><td>One SPA; storefront + admin in the same bundle</td></tr>
+            <tr><td>UI</td><td>React 18, Vite 6</td><td>One SPA; storefront + admin in the same bundle</td></tr>
             <tr><td>Routing</td><td>Hand-rolled <code>history.pushState</code></td><td>No router library; string-parses <code>location.pathname</code></td></tr>
             <tr><td>Styling</td><td>Hand-written CSS + design tokens</td><td>See the styling note below — Tailwind is configured but unused</td></tr>
             <tr><td>Hosting / API</td><td>Cloudflare Pages + Pages Functions</td><td>File-path = route under <code>functions/api/</code></td></tr>
@@ -102,7 +102,15 @@ export default function TechnicalDoc() {
         <code> src/components/views/</code> was confirmed orphaned and has been removed.
       </Callout>
 
+      <h2>Customer experience audit update — September 2026</h2>
+      <p>Checkout opens an editable order review before handing off to Stripe for address and payment entry. The payment action stays available while delivery is calculated. Internal catalogue gaps are never named in the customer interface or public delivery response; secure checkout gives one neutral recovery message if it cannot prepare delivery. Weight, size and pack selectors update prices and delivery; selecting an option already in the basket combines quantities within available stock. Product weight is separate from packed shipping weight.</p>
+      <p>The cart accepts typed whole quantities and bulk orders, shows line totals, and offers a separate Remove action. Delivery estimates and checkout share the same database checks for price, stock, product visibility, packed weight, and duplicate option lines.</p>
+      <p>Delivery multiplies each complete item or pack’s shipping weight by quantity. In Delivery settings, enable multiple parcels only when the courier charges the entered rates per parcel. Items and packs are never split; different postal groups travel separately. Missing weights, rates, or unsupported destinations retain a contact route. Online checkout uses country-wide GB rates; postcode-specific estimates remain an owner order-postage feature.</p>
+      <p>Failed contact forms keep the customer’s input. Success appears only after acknowledgement. Only a matching pending checkout reconciles purchased cart quantities, once. Payment confirmation does not promise email delivery. Admin date labels use the shop timezone in all browsers. Payment confirmation and emails use the same short reference, and return requests also accept the previous twelve-character reference.</p>
+      <p>Payment notifications must belong to this shop and confirm payment before creating an order. Configure both <code>checkout.session.completed</code> and <code>checkout.session.async_payment_succeeded</code>. Both payment-provider shipping-address formats remain supported.</p>
+      <p>Run the unit checks, production build, and separate browser suite against a disposable local database without payment or email credentials. Browser coverage includes automatic accessibility checks and optional screenshots; manual screen-reader and real-device testing remain distinct acceptance work.</p>
       <h2>5. Backend — API surface</h2>
+      <p>Consecutive numbered tariff rows (1, 2, 3…), with adjoining bands from zero for one country and no postcode restrictions, use total-basket weight when parcel splitting is off. Prices and limits remain unchanged; named postal groups keep their existing matching rules. Admin identifies missing packed weights by product and option; customer pages do not expose those operational gaps. Checkout never invents a weight or silently uses free delivery. Delivery, catalogue and payment requests have bounded waits and neutral recovery messages, and opening the cart rechecks delivery.</p>
       <p>Pages Functions; the file path is the route. Handlers export <code>onRequestGet/Post/Patch/Delete</code>.</p>
       <h3>Public endpoints</h3>
       <div className="admin-doc__table-wrap">
@@ -110,8 +118,9 @@ export default function TechnicalDoc() {
           <thead><tr><th>Route</th><th>Method</th><th>Purpose</th></tr></thead>
           <tbody>
             <tr><td><code>/api/products</code></td><td>GET</td><td>Flattened visible catalogue (one card per SKU); 60s cache</td></tr>
+            <tr><td><code>/api/checkout/delivery</code></td><td>POST</td><td>Returns a trusted UK delivery estimate from the cart quantities and packed weights</td></tr>
             <tr><td><code>/api/checkout</code></td><td>POST</td><td>Re-verifies price/stock in D1, creates a Stripe Checkout Session, returns its URL</td></tr>
-            <tr><td><code>/api/webhook</code></td><td>POST</td><td>Stripe webhook; on <code>checkout.session.completed</code> writes the order and decrements stock (idempotent)</td></tr>
+            <tr><td><code>/api/webhook</code></td><td>POST</td><td>Stripe webhook; on a paid shop checkout completion or delayed payment success writes the order and decrements stock (idempotent)</td></tr>
             <tr><td><code>/api/images/*</code></td><td>GET</td><td>Serves R2-stored uploaded images; 1-year immutable cache, ETag</td></tr>
           </tbody>
         </table>
@@ -266,6 +275,11 @@ export default function TechnicalDoc() {
         <li><strong>Orphaned subtree removed:</strong> <code>src/components/views/*</code> (the old proposal deck) was confirmed unreferenced and deleted.</li>
         <li><strong>Package name</strong> is still <code>salty-lamps-proposal</code>; harmless but worth renaming for production.</li>
       </ul>
+
+      <h2>15. Asim Test Suite</h2>
+      <p><code>/admin/asim-test-suite</code> provides 14 quick checks and 35 full checks across eight user journeys, using <code>src/admin/asim-checks.mjs</code> and the existing Admin shell. Versioned browser local storage keeps phone and computer results separate. Storage-failure feedback, guarded reset, and copy/download summaries cover both devices. Results do not sync between devices or browsers and are not automatic verification results.</p>
+      <p>Relative shortcuts reuse a named shop tab. Checks requiring practice payments, orders, messages or missing-data scenarios explain their setup; the checklist never performs those actions itself.</p>
+      <p>On the proposal deployment, explicitly set <code>PUBLIC_HOST=www.saltylamps.co.uk</code> independently of <code>SITE_URL</code> (the checkout-return address), preserving existing allowed proposal Admin hosts. This keeps the customer-host safeguard and proposal access compatible and excludes the proposal site from indexing. Do not change the customer domain or infer courier tariffs during deployment.</p>
 
       <p className="admin-doc__foot">
         This page is mirrored as Markdown at <code>docs/technical.md</code>; both render the same

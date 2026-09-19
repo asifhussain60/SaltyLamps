@@ -28,7 +28,7 @@ export async function onRequestPost({ request, env }) {
     return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 })
   }
 
-  if (event.type === 'checkout.session.completed') {
+  if (isPaidShopCheckoutEvent(event)) {
     const session = event.data.object
     try {
       await recordOrder(env, stripe, session, new URL(request.url).origin)
@@ -48,6 +48,13 @@ export async function onRequestPost({ request, env }) {
     status: 200,
     headers: { 'content-type': 'application/json' },
   })
+}
+
+export function isPaidShopCheckoutEvent(event) {
+  return ['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event?.type)
+    && event.data?.object?.metadata?.store === 'salty-lamps'
+    && event.data.object.payment_status === 'paid'
+    && event.data.object.status === 'complete'
 }
 
 async function recordOrder(env, stripe, session, origin) {

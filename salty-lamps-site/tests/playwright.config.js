@@ -62,7 +62,7 @@ export default defineConfig({
   // Locally the suite brings up the real backend — Functions, D1 and R2 — because
   // `vite dev` does not run Functions at all and every admin test would fail
   // against it for the wrong reason.
-  webServer: isLocal
+  webServer: isLocal && !process.env.E2E_BASE_URL
     ? {
         command: 'npx wrangler pages dev dist --port 8788 --d1 DB=salty-lamps-db --r2 IMAGES=salty-lamps-images',
         cwd: '..',

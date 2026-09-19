@@ -1,5 +1,7 @@
 import {weightMetadata,weightLabel,quotePostage} from '../lib/weights.mjs'
 import {readPostageConfig} from '../lib/postage-store.mjs'
+import { CartError, readCheckoutCart } from '../lib/cart.mjs'
+import { deliveryMessage } from './checkout/delivery.js'
 // POST /api/checkout
 // Body: { items: [{ skuId: number, quantity: number }] }
 // Looks up each line server-side in D1 (never trusts a client-sent price),
@@ -46,82 +48,74 @@ export async function onRequestPost({ request, env }) {
     return jsonError('Invalid JSON body', 400)
   }
 
-  const items = Array.isArray(body?.items) ? body.items : []
-  if (items.length === 0) return jsonError('Cart is empty', 400)
-
-  const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-    httpClient: Stripe.createFetchHttpClient(),
-    apiVersion: '2024-06-20',
-  })
-
-  const lineItems = []
-  const deliveryLines = []
-  for (const item of items) {
-    const skuId = Number(item?.skuId)
-    const quantity = Number(item?.quantity)
-    if (!Number.isInteger(skuId) || !Number.isInteger(quantity) || quantity < 1) {
-      return jsonError('Invalid cart line', 400)
+  try {
+    const rows = await readCheckoutCart(env.DB, body?.items)
+    const lineItems = []
+    for (const row of rows) {
+      const quantity = row.quantity
+      lineItems.push({
+        quantity,
+        price_data: {
+          currency: 'gbp',
+          unit_amount: row.price_pence,
+          product_data: {
+            name: row.variant_label ? `${row.name} — ${row.variant_label}` : row.name,
+            metadata: { sku_id: String(row.id), sku: row.sku, ...weightMetadata(row) },
+            ...(row.weight_public===1 && row.product_weight_min_g!=null ? {description: `Product weight: ${weightLabel({productWeightMinG:row.product_weight_min_g,productWeightMaxG:row.product_weight_max_g})} per item or pack, excluding packaging.`} : {}),
+          },
+        },
+      })
     }
 
-    const row = await env.DB.prepare(
-      `SELECT s.id, s.sku, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock, p.name, w.product_weight_min_g,w.product_weight_max_g,w.packed_weight_g,w.postal_group,w.weight_public
-       FROM skus s JOIN products p ON p.id = s.product_id LEFT JOIN sku_weights w ON w.sku_id=s.id
-       WHERE s.id = ?`
-    ).bind(skuId).first()
+    const postage = quotePostage(rows, await readPostageConfig(env.DB), { country: 'GB' })
+    if (postage.status !== 'ready') {
+      return jsonError(deliveryMessage(postage), 409)
+    }
 
-    if (!row) return jsonError(`Unknown item in cart (sku id ${skuId})`, 400)
-
-    const available = row.track_mode === 'binary' ? row.in_stock === 1 : (row.quantity ?? 0) >= quantity
-    if (!available) return jsonError(`${row.name}${row.variant_label ? ` (${row.variant_label})` : ''} is out of stock`, 409)
-
-    lineItems.push({
-      quantity,
-      price_data: {
-        currency: 'gbp',
-        unit_amount: row.price_pence,
-        product_data: {
-          name: row.variant_label ? `${row.name} — ${row.variant_label}` : row.name,
-          metadata: { sku_id: String(row.id), sku: row.sku, ...weightMetadata(row) },
-          ...(row.weight_public===1 && row.product_weight_min_g!=null ? {description: `Product weight: ${weightLabel({productWeightMinG:row.product_weight_min_g,productWeightMaxG:row.product_weight_max_g})} per item or pack, excluding packaging.`} : {}),
-        },
-      },
+    if (!env.STRIPE_SECRET_KEY) return jsonError('Payment is temporarily unavailable. Your cart is saved; please try again later.', 503)
+    const testMode = env.STRIPE_SECRET_KEY.startsWith('sk_test_')
+    const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+      httpClient: Stripe.createFetchHttpClient(),
+      apiVersion: testMode ? '2025-04-30.basil' : '2024-06-20',
     })
-    deliveryLines.push({ quantity, packed_weight_g: row.packed_weight_g, postal_group: row.postal_group })
+    const siteUrl = env.SITE_URL || new URL(request.url).origin
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      // Link owns its verification code screen, so our application cannot make
+      // arbitrary codes pass. Test checkout disables Link per session instead:
+      // testers go straight to the ordinary card form without an email/phone OTP.
+      ...(testMode ? {
+        payment_method_types: ['card'],
+        wallet_options: { link: { display: 'never' } },
+      } : {}),
+      metadata: { store: 'salty-lamps' },
+      line_items: lineItems,
+      shipping_address_collection: { allowed_countries: ['GB'] },
+      shipping_options: postage.options.slice(0, 5).map(option => ({
+        shipping_rate_data: {
+          type: 'fixed_amount',
+          fixed_amount: { amount: option.price_pence, currency: 'gbp' },
+          display_name: option.service,
+          metadata: { postage_rate_id: option.id, total_weight_g: String(postage.total_weight_g), parcel_count: String(option.parcel_count || 1) },
+        },
+      })),
+      branding_settings: BRANDING,
+      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/checkout/cancelled`,
+    })
+
+    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
+      status: 200,
+      headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+    })
+  } catch (error) {
+    return jsonError(error instanceof CartError ? error.message : 'Checkout is temporarily unavailable. Your cart is saved; please try again.', error instanceof CartError ? error.status : 503)
   }
-
-  const postage = quotePostage(deliveryLines, await readPostageConfig(env.DB), { country: 'GB' })
-  if (postage.status !== 'ready') {
-    return jsonError('Delivery for this basket needs a quote before payment. Please contact Salty Lamps and we will confirm the best option.', 409)
-  }
-
-  const siteUrl = env.SITE_URL || new URL(request.url).origin
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    metadata: { store: 'salty-lamps' },
-    line_items: lineItems,
-    shipping_address_collection: { allowed_countries: ['GB'] },
-    shipping_options: postage.options.map(option => ({
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: option.price_pence, currency: 'gbp' },
-        display_name: option.service,
-        metadata: { postage_rate_id: option.id, total_weight_g: String(postage.total_weight_g) },
-      },
-    })),
-    branding_settings: BRANDING,
-    success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/checkout/cancelled`,
-  })
-
-  return new Response(JSON.stringify({ url: session.url }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  })
 }
 
 function jsonError(message, status) {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
   })
 }
