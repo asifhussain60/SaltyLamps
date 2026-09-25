@@ -27,7 +27,7 @@ together here once.
 | `Asifhussain60@hotmail.com` | `salty-lamps-proposal` Pages, `salty-lamps-db` D1 | Dev/UAT. Stays exactly as it is |
 | `asifhussain60@gmail.com` | `safinaverse.com` zone, Podcast Factory Worker | Unrelated. Nothing Salty Lamps may ever deploy here |
 
-The global deploy helper `~/PROJECTS/cloudflare-safina/cf-deploy.sh` is bound to the
+The global deploy helper `~/.claude/skills/cloudflare-safina/scripts/cf-deploy.sh` is bound to the
 **gmail** account and hard-aborts on any other. It is the wrong tool for this work.
 The right tool is already in the repo: `salty-lamps-site/deploy-production.sh`, which
 hardcodes no credentials and takes the account id and token from the environment.
