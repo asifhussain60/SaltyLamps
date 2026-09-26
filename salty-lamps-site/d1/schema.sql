@@ -2,7 +2,7 @@
 -- Apply with: wrangler d1 execute salty-lamps-db --file=d1/schema.sql
 
 CREATE TABLE IF NOT EXISTS products (
-  id TEXT PRIMARY KEY,              -- Wix product handleId, kept stable across re-imports
+  id TEXT PRIMARY KEY,              -- Existing replacement identity; link reviewed Wix handles separately
   name TEXT NOT NULL,
   slug TEXT NOT NULL DEFAULT '',            -- URL slug, e.g. /product-page/<slug>
   description TEXT NOT NULL DEFAULT '',     -- plain text, stripped/trimmed from Wix's HTML description

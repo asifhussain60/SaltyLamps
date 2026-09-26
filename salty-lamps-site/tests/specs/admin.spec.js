@@ -107,6 +107,48 @@ test.describe('the pages the owner works in', () => {
       expect(errors, `${path} threw:\n${errors.join('\n')}`).toEqual([])
     })
   }
+
+  test('category edit buttons bring the edit form into view', async ({ page, request }) => {
+    test.skip(!(await adminOpen(request)), 'the admin is closed on this deployment')
+    await page.goto('/admin/categories')
+    await expect(page.locator('.admin-shell')).toBeVisible()
+
+    const row = page.getByRole('row', { name: /Massage and relaxation|Saltwood Frames/ }).first()
+    await row.scrollIntoViewIfNeeded()
+    await row.getByRole('button', { name: 'Edit' }).click()
+
+    const heading = page.getByRole('heading', { name: /Edit (Massage and relaxation|Saltwood Frames)/ })
+    await expect(heading).toBeVisible()
+    await expect.poll(
+      () => heading.evaluate(el => el.getBoundingClientRect().top),
+      { message: 'edit form should scroll into the visible admin viewport' },
+    ).toBeGreaterThanOrEqual(60)
+    const y = await heading.evaluate(el => el.getBoundingClientRect().top)
+    expect(y).toBeLessThan(700)
+  })
+
+  test('every admin page starts at the top during in-app navigation', async ({ page, request }) => {
+    test.skip(!(await adminOpen(request)), 'the admin is closed on this deployment')
+    await page.goto('/admin/categories')
+    await page.evaluate(() => {
+      const sentinel = document.createElement('div')
+      sentinel.dataset.scrollSentinel = 'true'
+      sentinel.style.height = '6000px'
+      document.body.appendChild(sentinel)
+    })
+
+    const routes = ['/admin', ...pages.map(([path]) => path), '/admin/asim-test-suite']
+    for (const path of routes) {
+      await page.evaluate(() => window.scrollTo(0, 4000))
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(1000)
+      await page.evaluate(nextPath => {
+        window.history.pushState({}, '', nextPath)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      }, path)
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)))
+      expect(await page.evaluate(() => window.scrollY), `${path} should open at the top`).toBe(0)
+    }
+  })
 })
 
 test.describe('the migration runbook itself', () => {

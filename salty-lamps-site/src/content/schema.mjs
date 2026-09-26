@@ -81,22 +81,34 @@ export function storeSchema({ siteUrl, contactEmail, imageUrl }) {
 // `url` and `imageUrl` are passed in rather than built here, because the build
 // script and the browser resolve absolute URLs by different routes and neither
 // should be reimplemented in this file.
-export function productSchema(product, { url, imageUrl, categoryName, now } = {}) {
+export function productSchema(product, {
+  url,
+  imageUrl,
+  imageUrls,
+  categoryName,
+  description,
+  groupId,
+  groupRef,
+  now,
+} = {}) {
   if (!product) return null
+  const images = [...new Set([...(imageUrls || []), imageUrl].filter(Boolean))]
   return {
     '@context': CONTEXT,
     '@type': 'Product',
     name: product.name,
-    description: product.description || undefined,
+    description: description || product.description || undefined,
     sku: product.sku || undefined,
     // An array even when there is one image: Google asks for multiple, and a
     // consumer that expects a list should not have to handle both shapes.
-    image: imageUrl ? [imageUrl] : undefined,
+    image: images.length ? images : undefined,
     // The shopper-facing category, when the product has one that the site builds
     // a page for. Google added a Category property in 2026 so merchants can
     // classify in markup rather than only in a feed — and this shop has no feed.
     category: categoryName || undefined,
     brand: { '@type': 'Brand', name: SHOP.name },
+    isVariantOf: groupRef ? { '@id': groupRef } : undefined,
+    inProductGroupWithID: groupId || undefined,
     offers: {
       '@type': 'Offer',
       url,
@@ -107,6 +119,19 @@ export function productSchema(product, { url, imageUrl, categoryName, now } = {}
       itemCondition: `${CONTEXT}/NewCondition`,
       seller: { '@type': 'Organization', name: SHOP.legalName },
     },
+  }
+}
+
+export function productGroupSchema(product, { ref, description } = {}) {
+  if (!product) return null
+  return {
+    '@context': CONTEXT,
+    '@type': 'ProductGroup',
+    '@id': ref || undefined,
+    name: product.productName || product.name,
+    description: description || product.description || undefined,
+    productGroupID: product.productId || undefined,
+    brand: { '@type': 'Brand', name: SHOP.name },
   }
 }
 

@@ -1,13 +1,15 @@
+import { cartRequestItem } from '../../functions/lib/frame-orientation.mjs'
 import React, { useEffect, useState } from 'react'
 
 const money = pence => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(pence / 100)
 
-export default function CartDelivery({ cart, invalid, catalogStatus, onReloadCatalog, active, loading, onCheckout, paymentStep = false }) {
+export default function CartDelivery({ cart, invalid, catalogStatus, onReloadCatalog, active, loading, onCheckout, paymentStep = false, addressStep = false, postcode = '' }) {
   const [estimate, setEstimate] = useState({ status: 'loading' })
   const [revision, setRevision] = useState(0)
-  const key = JSON.stringify(cart.map(item => ({ skuId: item.product.skuId, quantity: item.qty })))
+  const key = JSON.stringify({ items: cart.map(cartRequestItem), postcode: postcode.trim().toUpperCase() })
   useEffect(() => {
     if (invalid || catalogStatus !== 'ready' || !active) return undefined
+    const payload = JSON.parse(key)
     const controller = new AbortController()
     let timeout
     let disposed = false
@@ -20,7 +22,7 @@ export default function CartDelivery({ cart, invalid, catalogStatus, onReloadCat
       try {
         const response = await fetch('/api/checkout/delivery', {
           method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ items: JSON.parse(key) }), signal: controller.signal,
+          body: JSON.stringify(payload), signal: controller.signal,
         })
         const data = await response.json()
         if (!response.ok) throw new Error(data.error || 'We could not check delivery. Please try again.')
@@ -55,9 +57,9 @@ export default function CartDelivery({ cart, invalid, catalogStatus, onReloadCat
         </>}
       </div>}
       <button type="button" className="button primary" onClick={onCheckout} disabled={loading || invalid || catalogStatus !== 'ready'}>
-        {loading ? 'Opening secure payment…' : paymentStep ? 'Continue to payment' : 'Checkout'}
+        {loading ? 'Opening secure payment…' : addressStep ? 'Continue to address' : paymentStep ? 'Continue to payment' : 'Checkout'}
       </button>
-      <small className="cart-delivery-note">{paymentStep ? 'Enter your delivery address and payment details securely on the next page.' : 'Review your order before entering payment details.'}</small>
+      <small className="cart-delivery-note">{addressStep ? 'Your postcode will be filled in on the UK address page.' : paymentStep ? 'Enter your delivery address and payment details securely on the next page.' : 'Review your order before entering payment details.'}</small>
     </>
   )
 }

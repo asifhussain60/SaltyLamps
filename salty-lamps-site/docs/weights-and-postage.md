@@ -10,9 +10,9 @@ Inventory → Weights supports batch editing, searching and a missing-weight/gro
 
 ## Delivery rules
 
-Settings → Delivery manages customer display units (kg/g), optional catalogue card summaries and up to 200 delivery rates. Each rate specifies group, service, country, optional comma-separated postcode prefixes, exclusive lower weight, inclusive upper weight and price in pounds. A blank prefix covers the whole country. Overlapping bands for the same service/destination are rejected. Different services may offer different valid rates.
+Settings → Delivery manages customer display units (kg/g), optional catalogue card summaries and up to 200 delivery rates. Each rate specifies group, service, country, optional comma-separated postcode prefixes, exclusive lower weight, inclusive upper weight and price in pounds. A blank prefix covers the whole country. Checkout uses the postcode entered before payment; order postage checks use the saved delivery postcode. Overlapping bands for the same service/destination are rejected. Different services may offer different valid rates.
 
-No delivery prices or product weights are inferred or seeded. Checkout offers the configured United Kingdom rates only when every basket line has a packed weight, all lines share a postal group, and a matching country-wide weight band exists. The chosen delivery charge is included in Stripe's payment total. Missing weights, mixed groups, postcode-specific rates, and unmatched baskets stop before payment and direct the customer to request a quote.
+No delivery prices or product weights are inferred or seeded. Checkout offers the configured United Kingdom rates only when every basket line has a packed weight, all lines share a postal group, and a matching weight band exists for the selected postcode or the country-wide fallback. The chosen delivery charge is included in Stripe's payment total. Missing weights, mixed groups, unsupported postcodes, and unmatched baskets stop before payment and direct the customer to request a quote.
 
 ## Orders and customer displays
 

@@ -11,7 +11,8 @@ export async function onRequestPost({ request, env }) {
     let body
     try { body = await request.json() } catch { throw new CartError('Please check your cart and try again.') }
     const lines = await readCheckoutCart(env.DB, body?.items)
-    const postage = quotePostage(lines, await readPostageConfig(env.DB), { country: 'GB' })
+    const postcode = typeof body?.postcode === 'string' ? body.postcode.slice(0, 16) : ''
+    const postage = quotePostage(lines, await readPostageConfig(env.DB), { country: 'GB', postcode })
     return json({
       status: postage.status,
       message: postage.status === 'ready' ? '' : deliveryMessage(postage),

@@ -43,6 +43,22 @@ test('delivery response does not expose internal catalogue gaps or invent a char
   assert.doesNotMatch(JSON.stringify(data),/Salt bowl|Shot glass|packed weight/i)
 })
 
+test('delivery estimate uses the selected checkout postcode', async () => {
+  const rows = [{ id: 94, name: 'Salt bowl', variant_label: '6 inch', packed_weight_g: 3500, postal_group: 'Standard' }]
+    .map(row => ({ ...row, quantity: 1, price_pence: 1000, track_mode: 'quantity' }))
+  const postcodeConfig = {
+    unit: 'kg',
+    show_cards: false,
+    split_parcels: true,
+    rates: [{ ...rate, id: 'stoke', postcodes: 'ST4', price_pence: 450 }],
+  }
+  const DB = { prepare: () => ({ bind: () => ({}), first: async () => ({ value: JSON.stringify(postcodeConfig) }) }), batch: async () => rows.map(row => ({ results: [row] })) }
+  const response = await estimateDelivery({ env: { DB }, request: new Request('http://localhost/api/checkout/delivery', { method: 'POST', body: JSON.stringify({ items: [{ skuId: 94, quantity: 1 }], postcode: 'ST4 3NP' }) }) })
+  const data = await response.json()
+  assert.equal(data.status, 'ready')
+  assert.equal(data.options[0].pricePence, 450)
+})
+
 test('2, 4 and 12 whole lamps automatically use 1, 2 and 6 parcels', () => {
   for (const [quantity, weight, parcels, cost] of [[2,7000,1,650], [4,14000,2,1300], [12,42000,6,3900]]) {
     const result = quote([{ ...line, quantity }])
@@ -101,7 +117,7 @@ test('the real storefront cannot be configured as a sign-in-free owner portal', 
   assert.equal(isAdminOpenHost('salty-lamps-proposal.pages.dev', {
     PUBLIC_HOST: 'www.saltylamps.co.uk', SITE_URL: 'https://salty-lamps-proposal.pages.dev',
     ADMIN_OPEN_HOSTS: 'salty-lamps-proposal.pages.dev',
-  }), true)
+  }), false)
 })
 
 test('customer references from the payment page, email and older links all find the same order', async () => {

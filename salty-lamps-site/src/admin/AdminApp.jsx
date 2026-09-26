@@ -1,3 +1,5 @@
+import { orderVariant } from '../../functions/lib/frame-orientation.mjs'
+import {dirtyForms, allowLeave} from './navigation.mjs'
 import {WeightFields,weightForm,weightPayload,DeliverySettings,BulkWeights,OrderPostage,PostageReport} from './WeightPanels.jsx'
 import {weightInput} from '../../functions/lib/weights.mjs'
 // Salty Lamps admin portal — dashboard, orders, catalog CRUD, inventory, reports.
@@ -6,7 +8,7 @@ import {weightInput} from '../../functions/lib/weights.mjs'
 // its own chrome (sidebar + topbar). All data comes from the auth-gated /api/admin/*
 // endpoints; the shared validation module (../../functions/lib/validation.mjs) gives
 // the forms the exact rules the server enforces, so client and server never diverge.
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   validateProduct,
   validateSku,
@@ -34,6 +36,7 @@ import InfrastructureDoc from './docs/InfrastructureDoc.jsx'
 import TechnicalDoc from './docs/TechnicalDoc.jsx'
 import PricingDoc from './docs/PricingDoc.jsx'
 import MigrationDoc from './docs/MigrationDoc.jsx'
+import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import '../styles/admin.css'
 
@@ -68,13 +71,14 @@ function shadeBetween(hexA, hexB, t) {
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
-const dirtyForms = new Set()
-const allowLeave = () => !dirtyForms.size || window.confirm("Discard unsaved changes?")
+const announceCatalogChange = () => {
+  try { window.localStorage.setItem('salty-lamps:catalog-version', String(Date.now())) } catch { /* Cross-tab refresh is an enhancement. */ }
+  window.dispatchEvent(new Event('salty-lamps:catalog-changed'))
+}
 function navigate(path, force = false) {
   if (!force && !allowLeave()) return
   window.history.pushState({}, '', path)
   window.dispatchEvent(new PopStateEvent('popstate'))
-  window.scrollTo({ top: 0 })
 }
 
 function AdminLink({ href, className, children, onClick }) {
@@ -93,8 +97,8 @@ function AdminLink({ href, className, children, onClick }) {
   )
 }
 
-async function api(path, { method = 'GET', body, isForm } = {}) {
-  const opts = { method, credentials: 'include', headers: {} }
+async function api(path, { method = 'GET', body, isForm, headers = {} } = {}) {
+  const opts = { method, credentials: 'include', headers: { ...headers } }
   if (body && !isForm) {
     opts.headers['content-type'] = 'application/json'
     opts.body = JSON.stringify(body)
@@ -953,6 +957,7 @@ function OrderDetail({ id }) {
 
   const { order, items } = data
   const shipped = ['shipped', 'delivered'].includes(order.fulfilment_status)
+  const refundPending = ['requesting', 'pending', 'requires_action'].includes(order.refund_status)
 
   // The same rule the endpoint enforces, run against the form as it stands, off the
   // one shared definition. Drives the button's disabled state and the hint beneath
@@ -992,7 +997,7 @@ function OrderDetail({ id }) {
             <tbody>
               {items.map(it => (
                 <tr key={it.sku_id}>
-                  <td>{it.name}{it.variant_label ? ` — ${it.variant_label}` : ''}</td>
+                  <td>{it.name}{orderVariant(it) ? ` — ${orderVariant(it)}` : ''}</td>
                   <td>{it.sku}</td>
                   <td>{it.quantity}</td>
                   <td>{it.packed_weight_g==null?"Not recorded":`${weightInput(it.packed_weight_g)} kg`}</td>
@@ -1129,11 +1134,14 @@ function OrderDetail({ id }) {
           <span className="admin-field-hint">Despatch is done with the button above, not from here.</span>
         </div>
 
+        {order.refund_status === 'partial' && <p className="admin-note" role="status">Partially refunded: {gbp(order.refunded_amount_pence || 0)}. The remaining balance is still paid. Refund order returns only the remaining balance.</p>}
+        {refundPending && <p className="admin-note" role="status">Refund processing. The payment remains recorded as paid until Stripe confirms the refund. Check its progress in Stripe before taking another payment action.</p>}
+        {['failed', 'canceled'].includes(order.refund_status) && <p className="admin-state admin-state--error" role="alert">The refund did not complete. Review the payment in Stripe before trying again.</p>}
         <div className="admin-danger-row">
           {order.status === 'paid' && (
             <>
-              <button className="admin-btn admin-btn--danger" disabled={saving} onClick={() => setConfirm('refunded')}><Icon name="undo" size={14} />Refund order</button>
-              <button className="admin-btn admin-btn--ghost" disabled={saving} onClick={() => setConfirm('cancelled')}><Icon name="xCircle" size={14} />Mark cancelled</button>
+              <button className="admin-btn admin-btn--danger" disabled={saving || refundPending} onClick={() => setConfirm('refunded')}><Icon name="undo" size={14} />Refund order</button>
+              <button className="admin-btn admin-btn--ghost" disabled={saving || refundPending} onClick={() => setConfirm('cancelled')}><Icon name="xCircle" size={14} />Mark cancelled</button>
             </>
           )}
         </div>
@@ -1296,7 +1304,9 @@ function ProductEdit({ id }) {
   )
   const [form, setForm] = useState(null)
   const [skus, setSkus] = useState([])
-  const [originalSkuIds, setOriginalSkuIds] = useState([])
+  const saveAttempt = useRef(null)
+  const uploadAttempts = useRef(new Map())
+  const [savePending, setSavePending] = useState(false)
   const [productDirty,setProductDirty] = useState(false)
   useUnsavedChangesWarning(productDirty)
   const [errs, setErrs] = useState({})
@@ -1314,7 +1324,6 @@ function ProductEdit({ id }) {
     if (isNew) {
       setForm({ name: '', slug: '', description: '', categories: '', tags: '', visible: true, image: '' })
       setSkus([blankSku()])
-      setOriginalSkuIds([])
       return
     }
     const p = data?.products?.find(x => x.id === id)
@@ -1325,11 +1334,11 @@ function ProductEdit({ id }) {
       })
       setSkus(p.skus.map(s => ({
         ...weightForm(s), id: s.id, sku: s.sku, variant_label: s.variant_label || '',
+        originalInventory: { track_mode: s.track_mode, quantity: s.quantity, in_stock: s.in_stock },
         price: String(penceToPounds(s.price_pence)), track_mode: s.track_mode,
         quantity: s.quantity == null ? '0' : String(s.quantity), in_stock: !!s.in_stock,
         image_id: s.image_id == null ? '' : String(s.image_id),
       })))
-      setOriginalSkuIds(p.skus.map(s => s.id))
       setImages((p.images || []).map(im => ({ id: im.id, path: im.path })))
     }
   }, [data, id, isNew])
@@ -1346,39 +1355,49 @@ function ProductEdit({ id }) {
 
   // Existing product: each add/delete/replace hits its own endpoint immediately —
   // the gallery isn't deferred to "Save changes" the way Details/SKUs are.
+  const uploadExistingImage = async pending => {
+    setImageBusyId('new')
+    try {
+      const fd = new FormData()
+      fd.append('image', pending.file)
+      const res = await api(`/api/admin/products/${id}/images`, { method: 'POST', body: fd, isForm: true, headers: { 'Idempotency-Key': pending.key } })
+      setImages(list => list.some(image => image.id === res.id) ? list : [...list, { id: res.id, path: res.path }])
+      setPendingImages(list => list.filter(image => image.key !== pending.key))
+      uploadAttempts.current.delete(pending.fingerprint)
+      URL.revokeObjectURL(pending.previewUrl)
+      setField('image', res.primary_path)
+      announceCatalogChange()
+    } catch (e) { setImageErr(`${e.message} Retry the pending image upload to recover its result.`) }
+    finally { setImageBusyId(null) }
+  }
   const addImages = async fileList => {
-    const files = Array.from(fileList || [])
-    if (files.length === 0) return
     setImageErr('')
-    for (const file of files) {
-      if (file.size > MAX_PICK_BYTES) {
-        setImageErr('One of those files is far too large. Choose images under 2 MB.')
-        continue
-      }
-      const resized = await resizeImage(file)
-      if (isNew) {
-        setPendingImages(list => [...list, { key: crypto.randomUUID(), file: resized, previewUrl: URL.createObjectURL(resized) }])
-        continue
-      }
-      setImageBusyId('new')
+    for (const file of Array.from(fileList || [])) {
+      if (file.size > MAX_PICK_BYTES) { setImageErr('One of those files is far too large. Choose images under 2 MB.'); continue }
       try {
-        const fd = new FormData()
-        fd.append('image', resized)
-        const res = await api(`/api/admin/products/${id}/images`, { method: 'POST', body: fd, isForm: true })
-        setImages(list => [...list, { id: res.id, path: res.path }])
-        setField('image', res.primary_path)
-      } catch (e) {
-        setImageErr(e.message)
-      } finally {
-        setImageBusyId(null)
-      }
+        const resized = await resizeImage(file)
+        const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await resized.arrayBuffer())), b => b.toString(16).padStart(2, '0')).join('')
+        const fingerprint = `${id}:${digest}`
+        let pending = uploadAttempts.current.get(fingerprint)
+        if (!pending) {
+          pending = { key: crypto.randomUUID(), fingerprint, file: resized, previewUrl: URL.createObjectURL(resized) }
+          uploadAttempts.current.set(fingerprint, pending)
+          setPendingImages(list => [...list, pending])
+        }
+        setProductDirty(true)
+        if (!isNew) await uploadExistingImage(pending)
+      } catch (e) { setImageErr(`Could not prepare this image: ${e.message}`) }
     }
+  }
+  const retryImages = async () => {
+    setImageErr('')
+    for (const pending of pendingImages) await uploadExistingImage(pending)
   }
 
   const removePendingImage = key => {
     setPendingImages(list => {
       const found = list.find(p => p.key === key)
-      if (found) URL.revokeObjectURL(found.previewUrl)
+      if (found) { URL.revokeObjectURL(found.previewUrl); uploadAttempts.current.delete(found.fingerprint) }
       return list.filter(p => p.key !== key)
     })
   }
@@ -1391,6 +1410,7 @@ function ProductEdit({ id }) {
       setImages(list => list.filter(im => im.id !== imgId))
       setSkus(list => list.map(s => String(s.image_id) === String(imgId) ? { ...s, image_id: '' } : s))
       setField('image', res.primary_path)
+      announceCatalogChange()
     } catch (e) {
       setImageErr(e.message)
     } finally {
@@ -1412,6 +1432,7 @@ function ProductEdit({ id }) {
       const res = await api(`/api/admin/products/${id}/images/${imgId}/replace`, { method: 'POST', body: fd, isForm: true })
       setImages(list => list.map(im => (im.id === imgId ? { ...im, path: res.path } : im)))
       setField('image', res.primary_path)
+      announceCatalogChange()
     } catch (e) {
       setImageErr(e.message)
     } finally {
@@ -1433,39 +1454,43 @@ function ProductEdit({ id }) {
   }
 
   const save = async () => {
-    if (!validateAll()) return
+    if (saving) return
+    if (!saveAttempt.current) {
+      if (!validateAll()) return
+      saveAttempt.current = {
+        payload: { requestId: crypto.randomUUID(), ...(isNew ? {} : { id }), product: form, skus: skus.map(s => ({ ...s, ...weightPayload(s) })) },
+        images: [...pendingImages],
+        result: null,
+      }
+    }
     setSaving(true)
+    setSavePending(true)
     setSaveErr(null)
     try {
-      if (isNew) {
-        const res = await api('/api/admin/products', {
-          method: 'POST',
-          body: { product: form, skus: skus.map(s=>({...s,...weightPayload(s)})) },
-        })
-        for (const pending of pendingImages) {
-          const fd = new FormData()
-          fd.append('image', pending.file)
-          await api(`/api/admin/products/${res.id}/images`, { method: 'POST', body: fd, isForm: true })
-        }
-        setProductDirty(false)
-        navigate(`/admin/products/${res.id}`, true)
-        return
+      const attempt = saveAttempt.current
+      if (!attempt.result) attempt.result = await api('/api/admin/products/save', { method: 'POST', body: attempt.payload })
+      // The same product save and each same image can be safely replayed after a lost response.
+      for (const pending of attempt.images) {
+        const fd = new FormData()
+        fd.append('image', pending.file)
+        await api(`/api/admin/products/${attempt.result.id}/images`, { method: 'POST', body: fd, isForm: true, headers: { 'Idempotency-Key': pending.key } })
       }
-      // Existing: update product, then reconcile SKUs. Image gallery changes are
-      // already live — each add/delete/replace above hit their own endpoint.
-      await api(`/api/admin/products/${id}`, { method: 'PATCH', body: form })
-      for (const s of skus) {
-        if (s.id) await api(`/api/admin/skus/${s.id}`, { method: 'PATCH', body: {...s,...weightPayload(s)} })
-        else await api(`/api/admin/products/${id}/skus`, { method: 'POST', body: {...s,...weightPayload(s)} })
-      }
-      const keptIds = skus.filter(s => s.id).map(s => s.id)
-      for (const oldId of originalSkuIds) {
-        if (!keptIds.includes(oldId)) await api(`/api/admin/skus/${oldId}`, { method: 'DELETE' })
-      }
-      await reload()
+      for (const pending of attempt.images) URL.revokeObjectURL(pending.previewUrl)
+      setPendingImages([])
+      uploadAttempts.current.clear()
+      saveAttempt.current = null
+      setSavePending(false)
       setProductDirty(false)
-      setSaveErr({ message: 'Saved.', ok: true })
+      announceCatalogChange()
+      if (isNew) navigate(`/admin/products/${attempt.result.id}`, true)
+      else { reload(); setSaveErr({ message: 'Saved.', ok: true }) }
     } catch (e) {
+      // A validation rejection did not mutate anything. Network/server failures may
+      // have committed, so retain that exact request until its result is recovered.
+      if (!saveAttempt.current?.result && e.status >= 400 && e.status < 500) {
+        saveAttempt.current = null
+        setSavePending(false)
+      }
       setSaveErr(e)
     } finally {
       setSaving(false)
@@ -1480,6 +1505,8 @@ function ProductEdit({ id }) {
         ? <div className="admin-state admin-state--ok">{saveErr.message}</div>
         : <ErrorState error={saveErr} />)}
 
+      {savePending && !saving && <p className="admin-note" role="status">Retry the save to confirm the previous result before editing further. Your draft is still here.</p>}
+      <fieldset disabled={saving || savePending} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <div className="admin-two-col">
         <section className="admin-card">
           <h2><Icon name="info" tone="amber" className="admin-card-icon" />Details</h2>
@@ -1540,6 +1567,7 @@ function ProductEdit({ id }) {
           </div>
           {images.length === 0 && pendingImages.length === 0 && <p className="admin-muted">No images yet.</p>}
           {imageErr && <span className="admin-field-error">{imageErr}</span>}
+          {!isNew && pendingImages.length > 0 && <button type="button" className="admin-btn" disabled={imageBusyId !== null} onClick={retryImages}>Retry image uploads</button>}
           {isNew && pendingImages.length > 0 && <p className="admin-muted">Uploads after you create the product.</p>}
         </section>
       </div>
@@ -1608,9 +1636,10 @@ function ProductEdit({ id }) {
         </div>
       </section>
 
+      </fieldset>
       <div className="admin-form-actions">
         <button className="admin-btn admin-btn--primary" disabled={saving} onClick={save}>
-          <Icon name="check" size={15} />{saving ? 'Saving…' : isNew ? 'Create product' : 'Save changes'}
+          <Icon name="check" size={15} />{saving ? 'Saving…' : savePending ? 'Retry save' : isNew ? 'Create product' : 'Save changes'}
         </button>
       </div>
     </>
@@ -2070,7 +2099,7 @@ function EmailTemplates() {
                   >
                     <Icon name="send" size={14} />{testingKey === t.key ? 'Sending…' : 'Test'}
                   </button>
-                  <button className="admin-btn admin-btn--ghost" onClick={() => setOpenKey(openKey === t.key ? null : t.key)}>
+                  <button className="admin-btn admin-btn--ghost" onClick={() => { if (allowLeave()) setOpenKey(openKey === t.key ? null : t.key) }}>
                     {openKey === t.key ? 'Close' : 'Edit'}
                   </button>
                 </td>
@@ -2108,12 +2137,31 @@ function EmailActivity() {
     } finally { setBusyId(null) }
   }
 
+  const retryDelivery = async orderId => {
+    setBusyId(`delivery-${orderId}`); setNote('')
+    try {
+      await api('/api/admin/emails/outbox', { method: 'POST', body: { orderId, action: 'retry' } })
+      setNote('Delivery recovery checked. Review the updated status below.')
+      reload()
+    } catch (e) { setNote(e.message) }
+    finally { setBusyId(null) }
+  }
+
   return (
     <>
       <p className="admin-muted">
-        Every email the shop has tried to send. There is no automatic retry — Cloudflare Pages has no
-        scheduler — so anything that failed is listed here and resent with one click.
+        Email attempts and unfinished order notifications. Retry unfinished delivery to recover
+        the original notification safely. An uncertain provider response needs reconciliation before another send.
       </p>
+      {!loading && !error && ((data.deliveryJobs || []).length > 0 || (data.preparationJobs || []).length > 0) && <section aria-label="Unfinished email delivery" className="admin-state">
+        <h3>Unfinished delivery</h3>
+        {[...(data.preparationJobs || []), ...(data.deliveryJobs || [])].map(job => <div key={job.id || `prepare-${job.order_id}`} className="admin-card">
+          <p><strong>{job.status === 'preparing' ? 'Preparing notification' : job.status === 'review' ? 'Needs delivery review' : job.status === 'failed' ? 'Delivery failed' : 'Delivery pending'}</strong> · <AdminLink href={`/admin/orders/${job.order_id}`}>View order</AdminLink></p>
+          {job.error && <p>{job.error}</p>}
+          <p>{job.instructions || 'Retry unfinished delivery to check the original notification.'}</p>
+          {job.status === 'review' ? <p className="admin-muted">Provider request reference: <code>{job.idempotencyKey}</code>. Confirm the provider result before retrying.</p> : <button className="admin-btn" disabled={busyId !== null} onClick={() => retryDelivery(job.order_id)}>{busyId === `delivery-${job.order_id}` ? 'Checking…' : 'Retry unfinished delivery'}</button>}
+        </div>)}
+      </section>}
       <div className="admin-modal-actions">
         {['', 'sent', 'failed', 'skipped'].map(s => (
           <button
@@ -2125,7 +2173,7 @@ function EmailActivity() {
           </button>
         ))}
       </div>
-      {note && <p className="admin-note">{note}</p>}
+      {note && <p className="admin-note" role="status">{note}</p>}
       {loading ? <Loading /> : error ? <ErrorState error={error} onRetry={reload} /> : !data.rows.length ? (
         <EmptyState>Nothing sent yet.</EmptyState>
       ) : (
@@ -2196,7 +2244,7 @@ function Emails() {
             <button
               key={t.key}
               className={`admin-btn ${tab === t.key ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
-              onClick={() => setTab(t.key)}
+              onClick={() => { if (tab === t.key || allowLeave()) setTab(t.key) }}
             >
               {t.label}
             </button>
@@ -2325,19 +2373,35 @@ function CategoriesList() {
   const editFormRef = useRef(null)
   useUnsavedChangesWarning(dirty)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editing || !editFormRef.current) return undefined
-    const frame = window.requestAnimationFrame(() => {
-      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      editFormRef.current?.querySelector('input, textarea, select, button')?.focus()
+    const scrollToForm = () => {
+      const form = editFormRef.current
+      if (!form) return
+      const topbar = document.querySelector('.admin-topbar')?.getBoundingClientRect().height || 0
+      const targetTop = form.getBoundingClientRect().top + window.scrollY - topbar - 16
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'auto' })
+      form.querySelector('input, textarea, select, button')?.focus({ preventScroll: true })
+    }
+    let second
+    let timer
+    const first = window.requestAnimationFrame(() => {
+      scrollToForm()
+      second = window.requestAnimationFrame(scrollToForm)
+      timer = window.setTimeout(scrollToForm, 80)
     })
-    return () => window.cancelAnimationFrame(frame)
+    return () => {
+      window.cancelAnimationFrame(first)
+      if (second) window.cancelAnimationFrame(second)
+      if (timer) window.clearTimeout(timer)
+    }
   }, [editing])
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
 
   const startNew = () => {
+    if (!allowLeave()) return
     setEditing('__new__')
     setForm({ slug: '', name: '', description: '', image: '', theme: 'lamp', sort_order: '', visible: true })
     setErrs({})
@@ -2346,11 +2410,13 @@ function CategoriesList() {
   }
 
   const startEdit = c => {
+    if (!allowLeave()) return false
     setEditing(c.slug)
     setForm({ ...c, visible: !!c.visible })
     setErrs({})
     setSaveErr(null)
     setDirty(false)
+    return true
   }
 
   const setField = (k, v) => { setDirty(true); setForm(f => ({ ...f, [k]: v })) }
@@ -2392,7 +2458,7 @@ function CategoriesList() {
 
   const requestDelete = c => {
     if (c.product_count > 0) {
-      startEdit(c)
+      if (!startEdit(c)) return
       setSaveErr(new Error(`${c.name} still has ${c.product_count} ${c.product_count === 1 ? 'product' : 'products'}. Hide it here by turning Visible off and saving, or reassign those products before deleting it.`))
       return
     }
@@ -2496,6 +2562,7 @@ function CategoriesList() {
 
 const NAV = [
   { key: '', label: 'Dashboard', href: '/admin', icon: 'home' },
+  { key: 'wix-records', label: 'Wix records', href: '/admin/wix-records', icon: 'book' },
   { key: 'orders', label: 'Orders', href: '/admin/orders', icon: 'receipt' },
   { key: 'products', label: 'Products', href: '/admin/products', icon: 'box' },
   { key: 'categories', label: 'Categories', href: '/admin/categories', icon: 'tag' },
@@ -2519,6 +2586,7 @@ const NAV = [
 
 const TITLES = {
   '': 'Dashboard',
+  'wix-records': 'Wix records',
   orders: 'Orders',
   products: 'Products',
   categories: 'Categories',
@@ -2555,6 +2623,7 @@ export default function AdminApp({ route }) {
 
   let page
   if (section === '') page = <Dashboard />
+  else if (section === 'wix-records') page = <WixRecords />
   else if (section === 'orders') page = params[0] ? <OrderDetail id={params[0]} /> : <OrdersList />
   else if (section === 'products') page = params[0] ? <ProductEdit id={params[0]} /> : <ProductsList />
   else if (section === 'categories') page = <CategoriesList />

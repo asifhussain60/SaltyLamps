@@ -9,6 +9,8 @@ import authUrl from '../../../docs/diagrams/admin-auth.svg'
 export default function InfrastructureDoc() {
   return (
     <article className="admin-doc">
+      <p><strong>Reviewed 26 September 2026: production migration is not complete. The Migration and Pricing pages hold current access evidence, release gates and free-tier limits. This architecture guide describes the intended services; diagrams are high-level summaries.</strong></p>
+      <p>Checkout now collects a UK address before embedded Stripe payment, fixes delivery to that address, and reserves stock before exposing payment. Retry identities recover interrupted checkout and product saves. Signed payment events consume or release reservations; signed refund events distinguish pending, partial, failed and completed refunds. New-order, dispatch, delivery and cancellation notification jobs survive interrupted delivery and retain provider retry identities; uncertain delivery requires provider reconciliation in Email Activity. Apply migrations 014 and 015 before releasing these application changes.</p>
       <p className="admin-doc__lead">
         This page explains, in plain terms, what runs the Salty Lamps website — the services it
         uses, what each one does, and roughly what it costs. No technical background needed.
@@ -22,7 +24,7 @@ export default function InfrastructureDoc() {
 
       <h2>The big picture</h2>
       <p>
-        A shopper's web browser only ever talks to Cloudflare. Behind the scenes, small Cloudflare
+        The browser loads the shop from Cloudflare and secure payment fields from Stripe. Behind the scenes, small Cloudflare
         programs fetch products from the database, serve images, and hand payments to Stripe.
       </p>
       <Figure
@@ -67,8 +69,7 @@ export default function InfrastructureDoc() {
 
       <h2>How a purchase works</h2>
       <p>
-        The important thing to know: card details are only ever entered on Stripe's own page, never
-        on the shop. Once Stripe confirms payment, it tells the site to record the order.
+        Card details are entered in Stripe’s secure embedded payment form and handled by Stripe. Once Stripe confirms payment, it tells the site to record the order.
       </p>
       <Figure
         src={checkoutUrl}

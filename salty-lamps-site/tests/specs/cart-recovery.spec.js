@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
+import { fixtureCartProduct } from '../helpers/cart-product.js'
 
 async function addLamp(page) {
+  await fixtureCartProduct(page)
   await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
   await page.getByRole('button', { name: 'Add to cart', exact: true }).click()
   return page.getByRole('dialog', { name: 'Shopping cart' })

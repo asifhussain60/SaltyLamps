@@ -24,3 +24,8 @@ backups/
 
 # Generated review, verification, and workbook artifacts
 outputs/
+
+# Local screenshots and Python rehearsal caches are not project source.
+.visual-qa/
+__pycache__/
+*.py[cod]

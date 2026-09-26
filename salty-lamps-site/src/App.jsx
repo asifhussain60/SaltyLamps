@@ -1,10 +1,17 @@
+import FrameOrientation from './components/FrameOrientation.jsx'
+import { needsFrameOrientation, cartLineKey, cartRequestItem, FRAME_ORIENTATIONS } from '../functions/lib/frame-orientation.mjs'
+import {CHECKOUT_ATTEMPT_KEY, checkoutPayload, nextCheckoutAttempt} from './content/checkout-attempt.mjs'
+import { installHistoryGuard } from './admin/navigation.mjs'
 import { ProductWeight } from './components/WeightDisplay.jsx'
 import QuantityInput from './components/QuantityInput.jsx'
 import CartDelivery from './components/CartDelivery.jsx'
 import CartOption from './components/CartOption.jsx'
+import CheckoutAddress from './components/CheckoutAddress.jsx'
+import PostcodeTypeahead from './components/PostcodeTypeahead.jsx'
+import EmbeddedPayment from './components/EmbeddedPayment.jsx'
 import { PENDING_CHECKOUT_KEY, reconcilePurchasedCart, changeCartOption } from './content/cart-session.mjs'
 import { MAX_CART_QUANTITY } from '../functions/lib/cart.mjs'
-import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 // Loaded on demand rather than imported, because the admin portal is ~2,500 lines
 // that no shopper will ever run, and a static import puts every one of them in the
@@ -13,7 +20,8 @@ import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'rea
 // and a bounce — so the shop does not carry the back office around with it.
 const AdminApp = lazy(() => import('./admin/AdminApp.jsx'))
 import { img, media, siteUrl } from './content/site-content.mjs'
-import { combineSchemas, listSchema, productSchema, storeSchema } from './content/schema.mjs'
+import { combineSchemas, listSchema, productGroupSchema, productSchema, storeSchema } from './content/schema.mjs'
+import { categoryMetaDescription, collectionCategoryMetaDescription, productMetaDescription } from './content/seo.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
 import { publicCollectionSections } from '../functions/lib/public-copy.mjs'
@@ -199,15 +207,27 @@ const categoryPageCopy = (content, taxonomy, slug) => {
   }
 }
 
-const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperPath, currentProduct, page }) => {
+const activePageMeta = ({ content, taxonomy, route, categorySlug, collectionCategorySlug, activeShopperPath, currentProduct, page }) => {
   const pageTitle = title => pageTitleOf(content, title)
 
   if (currentProduct) {
     return {
       title: pageTitle(currentProduct.name),
-      description: currentProduct.description,
+      description: productMetaDescription(currentProduct),
       image: currentProduct.image,
       type: 'product',
+    }
+  }
+
+  if (activeShopperPath && collectionCategorySlug) {
+    const category = taxonomy.get(collectionCategorySlug)
+    const describedCategory = category || {
+      name: collectionCategorySlug.split('-').map(word => `${word[0]?.toUpperCase() || ''}${word.slice(1)}`).join(' '),
+    }
+    return {
+      title: pageTitle(`${category?.name || activeShopperPath.name} for ${activeShopperPath.shortName}`),
+      description: collectionCategoryMetaDescription(describedCategory, activeShopperPath),
+      image: category?.image || activeShopperPath.background,
     }
   }
 
@@ -223,7 +243,7 @@ const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperP
     const copy = categoryPageCopy(content, taxonomy, categorySlug)
     return {
       title: pageTitle(copy.title),
-      description: copy.description,
+      description: categoryMetaDescription(taxonomy.get(categorySlug)),
       image: taxonomy.imageOf(categorySlug) || media('salty-lamps-og-card.jpg'),
     }
   }
@@ -235,6 +255,8 @@ const activePageMeta = ({ content, taxonomy, route, categorySlug, activeShopperP
   if (route === '/reviews') return { title: pageTitle('Customer Guestbook'), description: 'Read archived Salty Lamps guestbook comments by customer theme.', image: img('lamp-natural-gemini.jpg') }
   if (route === '/returns-exchanges' || route === '/return-refund-policy') return { title: pageTitle('Returns and Exchanges'), description: 'Review Salty Lamps return and exchange next steps.', image: media('salty-lamps-og-card.jpg') }
   if (route === '/checkout') return { title: pageTitle('Review your order'), description: 'Review your Salty Lamps order before secure payment.', robots: 'noindex,follow' }
+  if (route === '/checkout/address') return { title: pageTitle('Delivery address'), description: 'Enter your UK delivery address before secure payment.', robots: 'noindex,follow' }
+  if (route === '/checkout/payment') return { title: pageTitle('Payment'), description: 'Complete secure payment for your Salty Lamps order.', robots: 'noindex,follow' }
   if (route === '/checkout/success') return { title: pageTitle('Order Confirmed'), description: 'Your Salty Lamps order is confirmed.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
   if (route === '/checkout/cancelled') return { title: pageTitle('Checkout Cancelled'), description: 'Your Salty Lamps checkout was cancelled.', image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
   // noindex like the checkout routes, and for the same reason: a form that needs an
@@ -260,7 +282,7 @@ async function readJsonOrThrow(res) {
   return res.json()
 }
 
-// Only { skuId, qty } survives a refresh; the product itself is re-attached from the
+// Only identity, quantity and orientation survive a refresh; the product itself is re-attached from the
 // live catalogue once it loads, so a stored line can never show a stale price.
 function readStoredCart() {
   try {
@@ -273,7 +295,7 @@ function readStoredCart() {
       // A placeholder product, replaced by the real one on rehydrate. Priced at 0 so
       // that if anything ever rendered before rehydration it would look obviously
       // wrong rather than plausibly wrong.
-      .map(line => ({ key: `sku-${line.skuId}`, qty: line.qty, product: { skuId: line.skuId, price: 0, stock: true } }))
+      .map(line => ({ key: cartLineKey(line.skuId, line.orientation), qty: line.qty, ...(FRAME_ORIENTATIONS.includes(line.orientation) ? { orientation: line.orientation } : {}), product: { skuId: line.skuId, price: 0, stock: true } }))
   } catch {
     return []
   }
@@ -311,7 +333,6 @@ function Link({ href, children, className, onClick, ...props }) {
     event.preventDefault()
     window.history.pushState({}, '', href)
     window.dispatchEvent(new PopStateEvent('popstate'))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
     onClick?.(event)
   }
 
@@ -576,10 +597,17 @@ export default function App() {
   const [reviewCorpus, setReviewCorpus] = useState(null)
   const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const checkoutAttempt = useRef(undefined)
+  const [deliveryPostcode, setDeliveryPostcode] = useState('')
+  const [checkoutAddress, setCheckoutAddress] = useState({ email: '', name: '', line1: '', line2: '', city: '', postcode: '' })
+  const [paymentSession, setPaymentSession] = useState(() => {
+    try { return JSON.parse(window.sessionStorage.getItem(PENDING_CHECKOUT_KEY) || 'null') } catch { return null }
+  })
   const [checkoutResult, setCheckoutResult] = useState({ status: 'idle' })
   const [cartOpen, setCartOpen] = useState(false)
   const [quickViewId, setQuickViewId] = useState(null)
   const [quickViewSkuId, setQuickViewSkuId] = useState(null)
+  const [frameOrientation, setFrameOrientation] = useState('portrait')
   const [formMessage, setFormMessage] = useState('')
   const [newsletterMessage, setNewsletterMessage] = useState('')
   const [chatMessage, setChatMessage] = useState('')
@@ -599,10 +627,29 @@ export default function App() {
   const cartDialogRef = useRef(null)
   const quickViewDialogRef = useRef(null)
 
+  useEffect(() => installHistoryGuard(), [])
+
   useEffect(() => {
     const updateRoute = () => setRoute(getRoute())
     window.addEventListener('popstate', updateRoute)
     return () => window.removeEventListener('popstate', updateRoute)
+  }, [])
+
+  // Route changes must paint at the start of the new page. Doing this inside Link
+  // ran before React replaced the old page and used a smooth animation, so a product
+  // could visibly open thousands of pixels down before drifting to the top. This runs
+  // after every storefront or admin route has rendered but before the browser paints.
+  // Same-page anchors keep their native target, such as the Trade section on Home.
+  useLayoutEffect(() => {
+    if (window.location.hash) return
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [route])
+
+  useEffect(() => {
+    if (!('scrollRestoration' in window.history)) return undefined
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+    return () => { window.history.scrollRestoration = previous }
   }, [])
 
   // All three requests go out together, so the cost is max(a, b, c) rather than the
@@ -612,11 +659,11 @@ export default function App() {
   // show the error panel, but a content outage should not blank the shop — the
   // committed snapshot is real, last-deployed copy, so falling back to it degrades to
   // slightly stale wording instead of a page with no headings.
-  const loadCatalog = React.useCallback(() => {
+  const loadCatalog = React.useCallback((options = {}) => {
     let alive = true
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 15000)
-    setCatalog(current => ({ ...current, status: 'loading' }))
+    if (!options?.background) setCatalog(current => ({ ...current, status: 'loading' }))
     Promise.all([
       fetch('/api/products', { cache: 'no-cache', signal: controller.signal }).then(readJsonOrThrow),
       fetch('/api/categories', { signal: controller.signal }).then(readJsonOrThrow),
@@ -638,6 +685,30 @@ export default function App() {
   }, [])
 
   useEffect(() => loadCatalog(), [loadCatalog, route.startsWith('/admin')])
+
+  // An admin edit can happen in this tab or another one. Reload quietly so a new
+  // product photo, price or visibility change reaches an already-open shop without
+  // replacing the page with a loading state or asking the owner to clear a cache.
+  useEffect(() => {
+    if (route.startsWith('/admin')) return undefined
+    const refresh = () => loadCatalog({ background: true })
+    const onStorage = event => {
+      if (event.key === 'salty-lamps:catalog-version') refresh()
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    window.addEventListener('salty-lamps:catalog-changed', refresh)
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('salty-lamps:catalog-changed', refresh)
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [loadCatalog, route])
 
   useEffect(() => {
     if (route !== '/reviews' || reviewCorpus) return
@@ -688,6 +759,12 @@ export default function App() {
           const pending = JSON.parse(window.sessionStorage.getItem(PENDING_CHECKOUT_KEY) || 'null')
           if (pending?.sessionId === sessionId) {
             window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+            const attempt = JSON.parse(window.sessionStorage.getItem(CHECKOUT_ATTEMPT_KEY) || 'null')
+            if (attempt?.checkoutAttemptId === pending.checkoutAttemptId) {
+              window.sessionStorage.removeItem(CHECKOUT_ATTEMPT_KEY)
+              checkoutAttempt.current = null
+            }
+            setPaymentSession(null)
             setCart(items => reconcilePurchasedCart(items, pending.items))
           }
         } catch { /* Preserve the basket when this browser has no reliable checkout record. */ }
@@ -704,7 +781,7 @@ export default function App() {
     try {
       window.sessionStorage.setItem(
         CART_STORAGE_KEY,
-        JSON.stringify(cart.map(item => ({ skuId: item.product.skuId, qty: item.qty }))),
+        JSON.stringify(cart.map(item => ({ skuId: item.product.skuId, qty: item.qty, ...(item.orientation ? { orientation: item.orientation } : {}) }))),
       )
     } catch {
       // Private browsing or a full quota. A cart that isn't persisted is a much
@@ -805,13 +882,15 @@ export default function App() {
     route !== '/returns-exchanges' &&
     route !== '/return-refund-policy' &&
     route !== '/checkout' &&
+    route !== '/checkout/address' &&
+    route !== '/checkout/payment' &&
     route !== '/checkout/success' &&
     route !== '/checkout/cancelled' &&
     route !== '/refund-request' &&
     !(categorySlug && isKnownCategoryRoute)
   const meta = notFound
     ? { title: pageTitleOf(content, notFoundCopyOf(content).title), description: notFoundCopyOf(content).description, image: media('salty-lamps-og-card.jpg'), robots: 'noindex,follow' }
-    : activePageMeta({ content, taxonomy, route, categorySlug, activeShopperPath, currentProduct, page })
+    : activePageMeta({ content, taxonomy, route, categorySlug, collectionCategorySlug, activeShopperPath, currentProduct, page })
   const canonicalPath = currentProduct
     ? `/product-page/${currentProduct.slug}`
     : collectionSlug
@@ -1033,7 +1112,8 @@ export default function App() {
   const addProduct = product => {
     if (!product.stock) return
 
-    const key = String(product.id)
+    const orientation = needsFrameOrientation(product) ? frameOrientation : undefined
+    const key = cartLineKey(product.skuId, orientation)
     // A UX affordance only. The checkout endpoint re-reads stock from the database
     // and still returns a 409 — this just means the shopper finds out here rather
     // than at the highest-intent click, and the published depth can be a little
@@ -1041,7 +1121,8 @@ export default function App() {
     const cap = Math.min(product.stockQty ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY)
     const existing = cart.find(item => item.key === key)
 
-    if (existing && existing.qty >= cap) {
+    const sharedQuantity = cart.filter(item => item.product.skuId === product.skuId).reduce((sum,item)=>sum+item.qty,0)
+    if (sharedQuantity >= cap) {
       setNotice(`Only ${cap} of ${product.name} ${cap === 1 ? 'is' : 'are'} available.`)
       setCartOpen(true)
       return
@@ -1050,7 +1131,7 @@ export default function App() {
     setCart(items => (
       items.some(item => item.key === key)
         ? items.map(item => (item.key === key ? { ...item, qty: item.qty + 1 } : item))
-        : [...items, { key, product, qty: 1 }]
+        : [...items, { key, product, qty: 1, ...(orientation ? { orientation } : {}) }]
     ))
     setCartOpen(true)
     closeQuickView()
@@ -1094,7 +1175,7 @@ export default function App() {
     window.requestAnimationFrame(() => (cartOpen ? cartDialogRef.current?.querySelector('header button') : document.getElementById('order-review-title'))?.focus())
   }
 
-  const changeOption = (key, skuId) => {
+  const changeOption = (key, skuId, orientation) => {
     if (checkoutLoading || catalog.status !== 'ready') return
     const product = products.find(option => option.skuId === skuId)
     const target = cart.find(item => item.product.skuId === skuId)
@@ -1102,7 +1183,7 @@ export default function App() {
       setNotice('Please correct the quantity before changing this option.')
       return
     }
-    const result = changeCartOption(cart, key, product, MAX_CART_QUANTITY)
+    const result = changeCartOption(cart, key, product, MAX_CART_QUANTITY, orientation)
     if (result.error) { setNotice(result.error); return }
     setCart(result.cart)
     setInvalidQuantities(values => { const next = { ...values }; delete next[key]; return next })
@@ -1112,29 +1193,49 @@ export default function App() {
 
   const handleCheckout = async () => {
     if (checkoutLoading || cart.some(item => invalidQuantities[item.key])) return
+    for (const field of document.querySelectorAll('.checkout-address input[required]')) {
+      if (!field.reportValidity()) { field.focus(); return }
+    }
     setCheckoutLoading(true)
     setNotice('')
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 20000)
     try {
-      const items = cart.map(item => ({ skuId: item.product.skuId, quantity: item.qty }))
+      const items = cart.map(cartRequestItem)
+      const payload = checkoutPayload(items, checkoutAddress)
+      if (checkoutAttempt.current === undefined) {
+        try { checkoutAttempt.current = JSON.parse(window.sessionStorage.getItem(CHECKOUT_ATTEMPT_KEY) || 'null') } catch { checkoutAttempt.current = null }
+      }
+      const attempt = nextCheckoutAttempt(checkoutAttempt.current, payload)
+      checkoutAttempt.current = attempt
+      try { window.sessionStorage.setItem(CHECKOUT_ATTEMPT_KEY, JSON.stringify(attempt)) } catch { /* In-memory retry protection remains available. */ }
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ ...payload, checkoutAttemptId: attempt.checkoutAttemptId, previousCheckoutAttemptId: attempt.previousCheckoutAttemptId }),
         signal: controller.signal,
       })
       const data = await res.json()
       if (!res.ok) {
+        if (data.code === 'checkout_expired') {
+          checkoutAttempt.current = null
+          setPaymentSession(null)
+          try { window.sessionStorage.removeItem(CHECKOUT_ATTEMPT_KEY); window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY) } catch { /* Storage may be unavailable. */ }
+        }
         setNotice(data.error || 'Checkout failed. Please try again.')
         setCheckoutLoading(false)
         return
       }
-      if (!data.url || !data.sessionId) throw new Error('Missing payment link')
+      if (!data.clientSecret || !data.sessionId || !data.publishableKey) throw new Error('Missing payment details')
+      const pending = { sessionId: data.sessionId, clientSecret: data.clientSecret, publishableKey: data.publishableKey, items, checkoutAttemptId: attempt.checkoutAttemptId }
       try {
-        window.sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify({ sessionId: data.sessionId, items }))
+        window.sessionStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(pending))
       } catch { /* Checkout remains available when browser storage is unavailable. */ }
-      window.location.href = data.url
+      setPaymentSession(pending)
+      setCheckoutLoading(false)
+      window.history.pushState({}, '', '/checkout/payment')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      window.scrollTo(0, 0)
     } catch {
       setNotice('We could not open the payment page. Your basket is saved. Please try again.')
       setCheckoutLoading(false)
@@ -1155,9 +1256,16 @@ export default function App() {
   const itemSchema = currentProduct
     ? productSchema(currentProduct, {
         url: absoluteUrl(`/product-page/${currentProduct.slug}`),
-        imageUrl: absoluteUrl(currentProduct.image),
+        imageUrls: (currentProduct.images || [currentProduct.image]).map(absoluteUrl),
+        description: productMetaDescription(currentProduct),
         categoryName: taxonomy.nameOf(taxonomy.primaryCategoryOf(currentProduct)),
+        groupId: currentGroup?.variantCount > 1 ? currentProduct.productId : undefined,
+        groupRef: currentGroup?.variantCount > 1 ? '#product-group' : undefined,
       })
+    : null
+
+  const groupSchema = currentProduct && currentGroup?.variantCount > 1
+    ? productGroupSchema(currentProduct, { ref: '#product-group' })
     : null
 
   const collectionSchema = (route === '/shop' || activeShopperPath || categorySlug)
@@ -1182,7 +1290,7 @@ export default function App() {
       }
     : null
 
-  const schema = combineSchemas([shopSchema, itemSchema, collectionSchema, processSchema])
+  const schema = combineSchemas([shopSchema, groupSchema, itemSchema, collectionSchema, processSchema])
 
   const renderShop = () => {
     const shopCopy = categorySlug && isKnownCategoryRoute ? categoryPageCopy(content, taxonomy, categorySlug) : shopCopyOf(content)
@@ -1726,6 +1834,7 @@ export default function App() {
             {group.variantCount > 1 && (
               <OptionPicker group={group} active={product} onSelect={selectVariant} />
             )}
+            {needsFrameOrientation(product) && <FrameOrientation value={frameOrientation} onChange={setFrameOrientation} />}
             <div className="detail-meta">
               <strong>{priceLabel(product)}</strong>
               <span>{product.stock ? 'In stock' : 'Out of stock'}</span>
@@ -2129,6 +2238,19 @@ export default function App() {
     window.scrollTo(0, 0)
     window.requestAnimationFrame(() => document.getElementById('order-review-title')?.focus())
   }
+  const openAddressStep = () => {
+    if (!deliveryPostcode.trim()) {
+      setNotice('Enter your delivery postcode before continuing.')
+      document.getElementById('delivery-postcode')?.focus()
+      return
+    }
+    setCheckoutAddress(value => ({ ...value, postcode: deliveryPostcode.trim().toUpperCase() }))
+    setNotice('')
+    window.history.pushState({}, '', '/checkout/address')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.scrollTo(0, 0)
+    window.requestAnimationFrame(() => document.getElementById('delivery-address-title')?.focus())
+  }
   const renderCartLines = () => (
     <div className="cart-lines">
           {cart.length ? cart.map(item => (
@@ -2140,9 +2262,9 @@ export default function App() {
                 <ProductWeight product={item.product} quantity={item.qty} compact />
               </div>
               <CartOption item={item} options={productGroups.find(group => group.productId === item.product.productId)?.variants || [item.product]}
-                disabled={checkoutLoading || catalog.status !== 'ready'} onChange={skuId => changeOption(item.key, skuId)} />
+                disabled={checkoutLoading || catalog.status !== 'ready'} onChange={skuId => changeOption(item.key, skuId)} onOrientationChange={value => changeOption(item.key, item.product.skuId, value)} />
               <div className="cart-line-actions">
-                <QuantityInput value={item.qty} max={Math.min(item.product.stockQty ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY)} name={item.product.name}
+                <QuantityInput value={item.qty} max={Math.max(1, Math.min(item.product.stockQty ?? MAX_CART_QUANTITY, MAX_CART_QUANTITY) - cart.filter(other => other.key !== item.key && other.product.skuId === item.product.skuId).reduce((sum,other)=>sum+other.qty,0))} name={`${item.product.name}${item.orientation ? ` ${item.orientation}` : ''}`}
                   disabled={checkoutLoading} onChange={quantity => changeQty(item.key, quantity)}
                   onValidityChange={valid => setInvalidQuantities(values => ({ ...values, [item.key]: !valid }))} />
                 <div className="cart-line-total"><strong>{money(item.product.price * item.qty)}</strong><button type="button" disabled={checkoutLoading} onClick={() => removeCartItem(item.key)} aria-label={`Remove ${item.product.name}`}>Remove</button></div>
@@ -2153,19 +2275,45 @@ export default function App() {
   )
   const renderOrderReview = () => (
     <section className="checkout-review">
-      <p className="eyebrow">Checkout · Step 1 of 2</p>
+      <p className="eyebrow">Checkout · Step 1 of 3</p>
       <h1 id="order-review-title" tabIndex={-1}>Review your order</h1>
-      <p>Check your items, chosen options and delivery. Next, enter your address and payment details securely.</p>
+      <p>Check your items, chosen options and delivery. Next, complete your UK address before secure payment.</p>
       {cart.length ? <div className="checkout-review-grid">
         <section aria-label="Order items"><h2>Your items</h2>{!cartOpen && renderCartLines()}<Link className="text-button" href="/shop">Continue shopping</Link></section>
         <section className="checkout-order-summary" aria-labelledby="order-summary-title">
           <h2 id="order-summary-title">Order summary</h2>
           <div className="cart-summary-row"><span>Items ({cartCount})</span><strong>{money(cartTotal)}</strong></div>
+          <PostcodeTypeahead value={deliveryPostcode} onChange={setDeliveryPostcode} disabled={checkoutLoading} />
           {notice && <p className="notice" role="status">{notice}</p>}
           <CartDelivery cart={cart} active={!cartOpen} paymentStep catalogStatus={catalog.status} onReloadCatalog={loadCatalog}
-            invalid={cart.some(item => invalidQuantities[item.key])} loading={checkoutLoading} onCheckout={handleCheckout} />
+            invalid={cart.some(item => invalidQuantities[item.key])} loading={checkoutLoading} onCheckout={openAddressStep} postcode={deliveryPostcode} addressStep />
         </section>
       </div> : <div className="checkout-order-summary"><h2>Your cart is empty</h2><p>Add an item to review your order.</p><Link className="button primary" href="/shop">Browse the shop</Link></div>}
+    </section>
+  )
+
+  const renderDeliveryAddress = () => (
+    <section className="checkout-review checkout-address-page">
+      <p className="eyebrow">Checkout · Step 2 of 3</p>
+      <h1 id="delivery-address-title" tabIndex={-1}>Delivery address</h1>
+      <p>Your postcode is ready. Complete the UK address below; it will be filled in on the secure payment page.</p>
+      <div className="checkout-order-summary">
+        <CheckoutAddress value={checkoutAddress} onChange={setCheckoutAddress} onPostcodeChange={setDeliveryPostcode} disabled={checkoutLoading} />
+        {notice && <p className="notice" role="status">{notice}</p>}
+        <button type="button" className="button primary" onClick={handleCheckout} disabled={checkoutLoading || !cart.length}>{checkoutLoading ? 'Opening secure payment…' : 'Continue to payment'}</button>
+        <small>Review your address on the payment page before placing the order.</small>
+      </div>
+    </section>
+  )
+
+  const renderPayment = () => (
+    <section className="checkout-review checkout-payment-page">
+      <p className="eyebrow">Checkout · Step 3 of 3</p>
+      <h1>Payment method</h1>
+      <p>Complete your payment securely below. Your Salty Lamps basket stays available until payment is confirmed.</p>
+      {paymentSession?.clientSecret && paymentSession?.sessionId && paymentSession?.publishableKey
+        ? <div className="checkout-order-summary"><EmbeddedPayment clientSecret={paymentSession.clientSecret} publishableKey={paymentSession.publishableKey} sessionId={paymentSession.sessionId} /></div>
+        : <div className="checkout-order-summary"><p>Your payment session is no longer available.</p><Link className="button primary" href="/checkout/address">Return to delivery address</Link></div>}
     </section>
   )
 
@@ -2410,7 +2558,7 @@ export default function App() {
           <Link href="/shop">Shop</Link>
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
-          <Link href="/admin">Admin</Link>
+          <a href="https://admin.saltylamps.co.uk/admin">Admin</a>
           <a href={contactMailto(content)}>Contact</a>
           <Link className="nav-about" href="/process">How it’s made</Link>
         </nav>
@@ -2426,6 +2574,10 @@ export default function App() {
           ? renderProductPage(currentProduct, currentGroup)
           : route === '/checkout'
             ? renderOrderReview()
+          : route === '/checkout/address'
+            ? renderDeliveryAddress()
+          : route === '/checkout/payment'
+            ? renderPayment()
           : route === '/checkout/success'
             ? renderCheckoutSuccess()
           : route === '/checkout/cancelled'
@@ -2499,6 +2651,7 @@ export default function App() {
           <Link className="footer-link-accent" href="/return-refund-policy">Returns and Exchanges</Link>
           <Link href="/process">Manufacturing Process</Link>
         </nav>
+        <small className="postcode-attribution">Postcode data: Contains OS data © Crown copyright and database right 2026. Contains Royal Mail data © Royal Mail copyright and database right 2026. Source: Office for National Statistics licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</small>
       </footer>
 
       {route !== '/refund-request' && <ChatModule hideTrigger={route.startsWith('/checkout')} onSubmit={handleChatSubmit} message={chatMessage} content={content} busy={formStates.chat === 'sending'} error={formStates.chat === 'error'} />}
@@ -2557,6 +2710,7 @@ export default function App() {
                   }}
                 />
               )}
+              {needsFrameOrientation(quickViewVariant) && <FrameOrientation value={frameOrientation} onChange={setFrameOrientation} />}
               {quickViewVariant.image?.startsWith('/media/light-catalogue/') && <p className="product-preview-label">Illustrative preview. Natural colour and shape vary; size is not shown to scale.</p>}
               <strong>{priceLabel(quickViewVariant)}</strong>
               <ProductWeight product={quickViewVariant}/>

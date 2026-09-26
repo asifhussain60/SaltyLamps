@@ -9,6 +9,9 @@ const weights = {
   weight_public: 1,
 }
 test.beforeAll(async ({ request }, testInfo) => {
+  const target = new URL(testInfo.project.use.baseURL)
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname))
+    throw new Error('Weight fixtures may only write to a disposable local shop.')
   fixtureName = `Weight QA Fixture ${testInfo.project.name}`
   fixtureSlug = `weight-qa-fixture-${testInfo.project.name}`
   config = (await (await request.get('/api/admin/postage')).json()).config
@@ -48,6 +51,22 @@ test.beforeAll(async ({ request }, testInfo) => {
   skuIds = (await (await request.get('/api/admin/products')).json()).products
     .find((p) => p.id === id)
     .skus.map((s) => s.id)
+})
+test.beforeEach(async ({ request }) => {
+  // Each journey starts from explicit fixture values, including when filtered
+  // or retried on its own. No test depends on an earlier editor save.
+  const reset = await request.patch('/api/admin/weights', {
+    data: { lines: [
+      { skuId: skuIds[0], ...weights },
+      { skuId: skuIds[1], ...weights, product_weight_min_g: 4000,
+        product_weight_max_g: 5000, packed_weight_g: 5500 },
+    ] },
+  })
+  expect(reset.status()).toBe(200)
+  const settings = await request.put('/api/admin/postage', {
+    data: { config: { ...config, unit: 'kg' } },
+  })
+  expect(settings.status()).toBe(200)
 })
 test.afterAll(async ({ request }) => {
   if (id) await request.delete(`/api/admin/products/${id}`)
@@ -152,10 +171,10 @@ test('inventory weights and exports carry the same stored values', async ({
 }) => {
   await page.goto('/admin/inventory')
   await page.getByRole('tab', { name: 'Weights', exact: true }).click()
-  await page.getByLabel('Search weights').fill('Weight QA')
+  await page.getByLabel('Search weights').fill(fixtureName)
   await expect(
     page.getByLabel('Packed shipping weight (kg)').first(),
-  ).toHaveValue('3.75')
+  ).toHaveValue('3.5')
   await page.getByLabel('Packed shipping weight (kg)').first().fill('3.8')
   await page
     .getByRole('button', { name: 'Save weights (1)', exact: true })
@@ -163,5 +182,14 @@ test('inventory weights and exports carry the same stored values', async ({
   await expect(page.getByText('Weights saved.', { exact: true })).toBeVisible()
   const res = await request.get('/api/admin/reports/postage?kind=weights')
   expect(res.status()).toBe(200)
-  expect(await res.text()).toContain('3800')
+  const rows = (await res.text()).trim().split(/\r?\n/)
+  // Match this exact option and its grams; another product containing 3800
+  // cannot make a failed fixture save appear successful.
+  expect(rows).toContain(
+    `${skuIds[0]},${fixtureName},Small,WQA-S,2000,3000,3800,QA Standard,1`,
+  )
+  await page.reload()
+  await page.getByRole('tab', { name: 'Weights', exact: true }).click()
+  await page.getByLabel('Search weights').fill(fixtureName)
+  await expect(page.getByLabel('Packed shipping weight (kg)').first()).toHaveValue('3.8')
 })

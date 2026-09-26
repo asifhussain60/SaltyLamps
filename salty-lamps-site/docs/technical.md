@@ -1,5 +1,11 @@
 # Salty Lamps — Technical Documentation
 
+> Reviewed 26 September 2026: production migration is not complete. The Migration and Pricing pages hold current access evidence, release gates and free-tier limits. This architecture guide describes the intended services; diagrams are high-level summaries.
+
+**Account boundary:** `Saltylamps@hotmail.com` owns the approved production Cloudflare account. `asifhussain60@gmail.com` signed in and is an Active member with an account-wide administrator policy; shop administrator Access remains unverified. The former `asifhussain60@hotmail.com` account is retired and must never be used.
+
+Checkout now collects a UK address before embedded Stripe payment, fixes delivery to that address, and reserves stock before exposing payment. Retry identities recover interrupted checkout and product saves. Signed payment events consume or release reservations; signed refund events distinguish pending, partial, failed and completed refunds. New-order, dispatch, delivery and cancellation notification jobs survive interrupted delivery and retain provider retry identities; uncertain delivery requires provider reconciliation in Email Activity. Apply migrations 014 and 015 before releasing these application changes.
+
 A complete engineering reference for the application: stack, architecture, data model, API surface, auth, build/deploy, and a guide to common changes. Everything here reflects the current code.
 
 > This page mirrors the in-admin **Documentation → Technical Doc** page. Both render the same diagrams from [`diagrams/`](diagrams/).
@@ -74,7 +80,7 @@ Pages Functions; the file path is the route. Handlers export `onRequestGet/Post/
 | Route | Method | Purpose |
 |---|---|---|
 | `/api/products` | GET | Flattened visible catalogue (one card per SKU); 60s cache |
-| `/api/checkout` | POST | Re-verifies price/stock in D1, creates a Stripe Checkout Session, returns its URL |
+| `/api/checkout` | POST | Re-verifies price/stock in D1, creates/reuses an embedded Stripe Checkout Session and atomically reserves stock before returning its client secret |
 | `/api/webhook` | POST | Stripe webhook; on `checkout.session.completed` writes the order and decrements stock (idempotent) |
 | `/api/images/*` | GET | Serves R2-stored uploaded images; 1-year immutable cache, ETag |
 
@@ -153,8 +159,8 @@ Every admin response, including 401s and 404s, is stamped `cache-control: no-sto
 ## 11. Build & deploy pipeline
 
 - **Dev:** `vite` serves the SPA and proxies `/api` to a local `wrangler pages dev` (port 8788). Run both for full-stack local testing.
-- **Build:** `npm run build` = `vite build` then `scripts/generate-seo.mjs`, which prerenders per-route HTML shells (title/description/canonical/OG/JSON-LD), plus `robots.txt` and sitemaps. `/admin/*` is excluded from prerender and sitemaps.
-- **Deploy (dev/UAT):** `./deploy-cloudflare.sh` → `wrangler pages deploy dist` to the `salty-lamps-proposal` project (hotmail account).
+- **Build:** `npm run build` uses the committed content snapshot by default, then runs Vite and search-page generation. It makes no remote request to the retired proposal account. Production requires an explicit, verified owner-account live source. `/admin/*` is excluded from prerender and sitemaps.
+- **Former dev/UAT deployment:** The retired proposal-account deployment command is disabled. Use an explicitly verified owner-account destination for further hosted testing.
 - **Deploy (production):** `./deploy-production.sh` — account-agnostic; provisions D1 + R2 on the owner's own account, catalog-only seed, then the owner attaches their own live Stripe keys. See [`PRODUCTION-HANDOVER.md`](../PRODUCTION-HANDOVER.md).
 
 ## 12. Environments & secrets

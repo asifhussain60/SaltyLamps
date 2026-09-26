@@ -24,9 +24,9 @@ test('with ADMIN_HOSTS set, only that hostname serves the admin', () => {
   assert.equal(adminSplitConfigured(env), true)
 })
 
-test('an explicitly named proposal host may use the owner review shortcut', () => {
+test('a deployed proposal host cannot bypass administrator authentication', () => {
   const env = { ADMIN_OPEN_HOSTS: 'salty-lamps-proposal.pages.dev' }
-  assert.equal(isAdminOpenHost('salty-lamps-proposal.pages.dev', env), true)
+  assert.equal(isAdminOpenHost('salty-lamps-proposal.pages.dev', env), false)
   assert.equal(isAdminOpenHost('preview.salty-lamps-proposal.pages.dev', env), false)
   assert.equal(isAdminOpenHost('www.saltylamps.co.uk', env), false)
   assert.equal(isAdminOpenHost('localhost', env), false)

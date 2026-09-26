@@ -61,8 +61,8 @@ export async function readUploadedImage(request) {
 }
 
 // Writes an uploaded image to R2 under a random per-product key. Returns { key, path }.
-export async function putImageObject(env, productId, upload) {
-  const key = `products/${productId}/${crypto.randomUUID()}.${upload.ext}`
+export async function putImageObject(env, productId, upload, objectId = crypto.randomUUID()) {
+  const key = `products/${productId}/${objectId}.${upload.ext}`
   await env.IMAGES.put(key, upload.buffer, { httpMetadata: { contentType: upload.type } })
   return { key, path: `${SERVE_PREFIX}${key}` }
 }
@@ -91,4 +91,9 @@ export async function currentPrimaryPath(db, productId) {
     `SELECT path FROM product_images WHERE product_id = ? ORDER BY sort_order, id LIMIT 1`,
   ).bind(productId).first()
   return row?.path || ''
+}
+
+// Evaluate the cover inside the caller's mutation batch, after its gallery edit.
+export function syncCurrentPrimaryImageStmt(db, productId) {
+  return db.prepare("UPDATE products SET image=COALESCE((SELECT path FROM product_images WHERE product_id=? ORDER BY sort_order,id LIMIT 1),'') WHERE id=?").bind(productId,productId)
 }

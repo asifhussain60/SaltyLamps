@@ -1,5 +1,7 @@
 # Migration playbook
 
+> **Historical reference; do not execute the scenarios below.** They refer to the retired `asifhussain60@hotmail.com` proposal account and an outdated same-account launch. The [account ownership rule](account-ownership.md) now requires the `Saltylamps@hotmail.com` owner account, with `asifhussain60@gmail.com` verified as an Active administrator within it. The retired account and its resources must never be used. Follow the [current migration plan](../salty-lamps-site/docs/migration.md) and [production handover](../salty-lamps-site/PRODUCTION-HANDOVER.md).
+
 > **The runbook people actually follow is elsewhere.** The owner-facing, step-by-step
 > version lives at `/admin/docs/migration` (`salty-lamps-site/src/admin/docs/MigrationDoc.jsx`),
 > mirrored as `salty-lamps-site/docs/migration.md`. This file is the engineer's
@@ -12,8 +14,7 @@ Scenario A alone (adding the real domain) or B alone (going from test to live St
 
 ## Scenario A — new custom domain, same Cloudflare account, same Stripe account
 
-This is what's actually planned next for Salty Lamps (Wix → `www.saltylamps.co.uk` on Cloudflare).
-D1 and Stripe don't need to change at all.
+This was an earlier proposal. It no longer applies: the old proposal account is retired, and the customer domain must only move to the approved owner's new application after the current plan's checks pass.
 
 1. In Cloudflare Pages (`salty-lamps-proposal` project) → **Custom domains** → add the new domain.
 2. Update the `SITE_URL` Pages secret to the new domain:
@@ -57,7 +58,7 @@ carries over automatically.
 5. Redeploy.
 6. Place one real, small, real-money order end to end before announcing the store is live.
 
-## Scenario C — genuinely new Cloudflare account (rare — e.g. selling the business)
+## Scenario C — separate Cloudflare account (historical procedure, not executable)
 
 Everything in [`cloudflare.md`](cloudflare.md) needs recreating from scratch:
 

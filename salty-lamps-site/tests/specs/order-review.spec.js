@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
-async function setup(page,request,items=[{skuId:129,qty:2}]) {
+async function setup(page,request,items=[{skuId:129,qty:2}],deliveryRoute=null) {
  const data=await (await request.get('/api/products')).json()
  const base=data.products[0]
  data.products=data.products.filter(p=>![129,131,133].includes(p.skuId))
@@ -10,14 +10,24 @@ async function setup(page,request,items=[{skuId:129,qty:2}]) {
  }
  await page.route('**/api/products',r=>r.fulfill({json:data}))
  await page.addInitScript(items=>{if(!sessionStorage.getItem('salty-lamps-cart'))sessionStorage.setItem('salty-lamps-cart',JSON.stringify(items))},items)
- await page.route('**/api/checkout/delivery',r=>{
+ await page.route('**/api/checkout/delivery',deliveryRoute || (r=>{
   const items=r.request().postDataJSON().items
   const weight=items.reduce((s,i)=>s+(i.skuId===129?1000:5000)*i.quantity,0)
   return r.fulfill({json:{status:'ready',totalWeightG:weight,options:[{service:'Fixture delivery',pricePence:weight>3000?799:399}]}})
- })
+ }))
  await page.goto('/shop')
  await page.locator('.cart-button').click()
  return page.getByRole('dialog',{name:'Shopping cart'})
+}
+
+async function enterAddress(page) {
+ await page.getByRole('button',{name:'Continue to address',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/address$/)
+ if(process.env.REVIEW_SCREENSHOTS) await page.screenshot({path:'/tmp/salty-lamps-address-empty.png',fullPage:true})
+ await page.getByLabel('Email address').fill('buyer@example.com')
+ await page.getByLabel('Full name').fill('Example Buyer')
+ await page.getByLabel('Address line 1').fill('10 High Street')
+ await page.getByLabel('Town or city').fill('Stoke-on-Trent')
 }
 
 test('weight changes update price, total product weight, shipping and saved option',async({page,request})=>{
@@ -33,11 +43,11 @@ test('weight changes update price, total product weight, shipping and saved opti
  await expect(page).toHaveURL(/\/checkout$/)
  await expect(page.getByRole('heading',{name:'Review your order'})).toBeVisible()
  await expect(page.getByRole('heading',{name:'Review your order'})).toBeFocused()
- await expect(page.getByRole('main').getByRole('combobox')).toHaveValue('131')
+ await expect(page.getByRole('main').getByRole('combobox',{name:/Weight, size or pack/})).toHaveValue('131')
  const saved=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('salty-lamps-cart')))
  expect(saved).toEqual([{skuId:131,qty:2}])
  await page.reload()
- await expect(page.getByRole('main').getByRole('combobox')).toHaveValue('131')
+ await expect(page.getByRole('main').getByRole('combobox',{name:/Weight, size or pack/})).toHaveValue('131')
  await expect(page.getByRole('main').getByRole('spinbutton')).toHaveValue('2')
  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()
  expect(results.violations.map(v=>v.id)).toEqual([])
@@ -63,13 +73,75 @@ test('order review passes the changed option and quantity into secure checkout',
  const cart=await setup(page,request)
  await cart.getByRole('button',{name:'Checkout',exact:true}).click()
  const main=page.getByRole('main')
- await main.getByRole('combobox').selectOption('131')
+ await main.getByRole('combobox',{name:/Weight, size or pack/}).selectOption('131')
  await expect(main.locator('.cart-total strong')).toHaveText('£31.97')
  let payload
- await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{url:new URL('/checkout/cancelled',page.url()).href,sessionId:'cs_test_review'}})})
+ await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{clientSecret:'cs_test_secret_fixture',publishableKey:'pk_test_fixture',sessionId:'cs_test_review'}})})
+ await main.getByLabel('Delivery postcode').fill('ST4 3NP')
+ await enterAddress(page)
  await main.getByRole('button',{name:'Continue to payment',exact:true}).click()
- await expect(page).toHaveURL(/\/checkout\/cancelled$/)
+ await expect(page).toHaveURL(/\/checkout\/payment$/)
+ await expect(page.locator('.site-header')).toBeVisible()
+ await expect(main.getByRole('heading',{name:'Payment method'})).toBeVisible()
  expect(payload.items).toEqual([{skuId:131,quantity:2}])
+ expect(payload.address).toMatchObject({email:'buyer@example.com',line1:'10 High Street',postcode:'ST4 3NP'})
+})
+
+test('postcode carries into the open UK address fields and payment payload',async({page,request})=>{
+ const cart=await setup(page,request,[{skuId:129,qty:2}],r=>{
+  const body=r.request().postDataJSON()
+  const pricePence=body.postcode==='ST4 3NP'?450:799
+  return r.fulfill({json:{status:'ready',totalWeightG:2000,options:[{service:'Fixture delivery',pricePence,parcelCount:1}]}})
+ })
+ await cart.getByRole('button',{name:'Checkout',exact:true}).click()
+ const main=page.getByRole('main')
+ await main.getByLabel('Delivery postcode').fill('ST4 3NP')
+ await expect(main.locator('.cart-total strong')).toHaveText('£12.48')
+ let payload
+ await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{clientSecret:'cs_test_secret_fixture',publishableKey:'pk_test_fixture',sessionId:'cs_test_postcode'}})})
+ await enterAddress(page)
+ await expect(main.getByLabel('Postcode',{exact:true})).toHaveValue('ST4 3NP')
+ await expect(main.getByLabel('Country')).toHaveValue('United Kingdom')
+ await expect(main.getByLabel('Postcode',{exact:true})).toHaveAttribute('autocomplete','off')
+ await expect(main.getByLabel('Address line 1')).toHaveAttribute('autocomplete','off')
+ await expect(main.getByRole('heading',{name:'Email',exact:true})).toHaveCSS('font-size',await main.getByRole('heading',{name:'Shipping address'}).evaluate(element=>getComputedStyle(element).fontSize))
+ const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()
+ expect(accessibility.violations.map(v=>v.id)).toEqual([])
+ if(process.env.REVIEW_SCREENSHOTS) await page.screenshot({path:'/tmp/salty-lamps-address-review.png',fullPage:true})
+ await main.getByRole('button',{name:'Continue to payment',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/payment$/)
+ await expect(page.locator('.site-header')).toBeVisible()
+ expect(payload.postcode).toBe('ST4 3NP')
+ expect(payload.address.city).toBe('Stoke-on-Trent')
+})
+
+test('postcode suggestions work on both checkout pages and stay in sync',async({page,request})=>{
+ const cart=await setup(page,request)
+ if(!process.env.LIVE_POSTCODE) await page.route('**/api/postcode-suggestions?*',route=>{
+  const query=new URL(route.request().url()).searchParams.get('query').replace(/\s/g,'').toUpperCase()
+  const suggestions=['SW1A 2AA','SW1A 1AA'].filter(value=>value.replace(/\s/g,'').startsWith(query))
+  return route.fulfill({json:{suggestions}})
+ })
+ await cart.getByRole('button',{name:'Checkout',exact:true}).click()
+ const main=page.getByRole('main')
+ const reviewPostcode=main.getByRole('combobox',{name:'Delivery postcode'})
+ await reviewPostcode.fill('SW1A 2A')
+ await main.getByRole('option',{name:'SW1A 2AA'}).click()
+ await expect(reviewPostcode).toHaveValue('SW1A 2AA')
+ await expect(reviewPostcode).toHaveAttribute('autocomplete','off')
+ await main.getByRole('button',{name:'Continue to address',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/address$/)
+ const addressPostcode=main.getByRole('combobox',{name:'Postcode',exact:true})
+ await expect(addressPostcode).toHaveValue('SW1A 2AA')
+ await addressPostcode.fill('SW1A 1')
+ await main.getByRole('option',{name:'SW1A 1AA'}).click()
+ await expect(addressPostcode).toHaveValue('SW1A 1AA')
+ await expect(addressPostcode).toHaveAttribute('autocomplete','off')
+ await expect(main.getByLabel('Address line 1')).toHaveAttribute('autocomplete','off')
+ await page.goBack()
+ await expect(reviewPostcode).toHaveValue('SW1A 1AA')
+ await main.getByRole('button',{name:'Continue to address',exact:true}).click()
+ await expect(addressPostcode).toHaveValue('SW1A 1AA')
 })
 
 test('internal delivery gaps stay private and the payment action remains available',async({page,request})=>{
@@ -80,7 +152,7 @@ test('internal delivery gaps stay private and the payment action remains availab
  const main=page.getByRole('main')
  await expect(main).not.toContainText(/Delivery needs confirmation|Test salt|packed weight/i)
  await expect(main.getByRole('button',{name:'Get help with delivery',exact:true})).toHaveCount(0)
- await expect(main.getByRole('button',{name:'Continue to payment',exact:true})).toBeEnabled()
+ await expect(main.getByRole('button',{name:'Continue to address',exact:true})).toBeEnabled()
 })
 
 test('an empty review has a route back to shopping',async({page})=>{

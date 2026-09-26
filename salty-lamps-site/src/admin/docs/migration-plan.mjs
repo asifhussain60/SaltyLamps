@@ -1,0 +1,252 @@
+import { paymentDecisionMarkdown } from './payment-decision.mjs'
+// One reviewed plan feeds the owner page and its checked Markdown mirror.
+export const migrationPlan = {
+  reviewed: '26 September 2026',
+  status: "Cloudflare domain management is active. Following separate explicit owner authorization, www.saltylamps.co.uk now shows the wooden-frame holding page; the bare domain redirects there. Wix remains retained for rollback and Zoho routing is unchanged. The replacement shop, payments and customer data are not live. Administrator Access remains blocked and unprotected; independent migration preparation continues using the accepted single verified backup.",
+  introduction: 'Use the existing replacement shop on Cloudflare. Wix pages cannot simply be exported as a working site to another host. Transfer the business data, images, addresses and domain settings in controlled stages. Retain Wix for recovery and keep the Zoho mailbox running while the public domain displays the approved holding page.',
+  progress: {
+  "access": [
+    "In progress",
+    "Saltylamps@hotmail.com is the approved owner account. Asifhussain60@gmail.com signed in to that account and appears as an Active member; its entire-account policy lists Administrator and Super Administrator - All Privileges. An empty EU-jurisdiction D1 database was created there, establishing that resource-creation action only. The former asifhussain60@hotmail.com account is retired and prohibited and did not appear in the displayed member list. Shop administrator Access sign-in and other business account permissions remain open. Owner-account Pages creation, holding-only deployment and www custom-domain attachment are now verified; this does not establish other untested permissions. Follow-up member/invitation audit completed: the unfiltered owner-account All members page lists exactly the owner and Gmail, both Active, and no Invite Pending entries. Official Cloudflare guidance confirms pending invitations appear in this member list; no separate invitation page is required. No membership changes were necessary."
+  ],
+  "backup": [
+    "Verified copy available; preparation unblocked",
+    "Fresh continuation verification passed after correcting a local SQL dump ordering defect: all four original export files recovered byte-for-byte and 294 fields / 480,778 cells survived import, SQL restore and CSV re-export. A private recovery bundle restored and hash-verified 236 captured files on this Mac; this is a partial-material recovery test, not a complete business restore or independent second copy. Full HTML saved for 56 inventoried pages; the three public policy pages were hash-verified and their visible text extracted. Checkout policy settings still need review. 142 of 144 catalogue media references recovered, with two still returning access denied. Wix Storage Manager reports 443 site files using 819.09 MB. A selected batch of 100 offered Download, but Chrome blocked the Wix archive destination and no file was saved; full original media remains unbacked up. A historical proposal database backup restored locally, but its retired account does not satisfy the owner-account production backup gate. Signed-in review recorded both promotions, zero Wix subscriptions, gift-card setup state, stock timing and checkout toggles. Owner-account R2, remaining settings and a complete business restore remain open. The owner accepts the single verified local recovery bundle for continued preparation and explicitly defers the independent second copy. Missing media/settings stay recorded; they do not block independent catalogue review, account checks or local shop testing. This does not authorize production import, launch, payments or cancellation."
+  ],
+  "provision": [
+    "In progress",
+    "An empty EU-jurisdiction D1 database was created in the verified Salty Lamps owner account and its identifier was pinned in the separate production configuration. The dashboard shows the European Union jurisdiction and Eastern Europe region, with no shop or Wix data imported. The retired Asif Hotmail proposal account and database remain prohibited; its old deployment paths are disabled. The salty-lamps Pages project now serves only the approved seven-file holding bundle. Its www custom domain is Active with SSL enabled; the public wooden-frame page and email links were verified in desktop and phone browsers. No commerce application, customer data or database bindings were uploaded. R2, protected administrator Access, scoped credentials and the reviewed production schema/catalogue remain outstanding."
+  ],
+  "protect": [
+    "Blocked; browser form deferred",
+    "Admin menu now targets the dedicated administrator hostname. Deployed bypass disabled; local direct-page and API denial tests pass. The approved owner dashboard now reports Zero Trust Free active, and Cloudflare is its only listed identity provider. No Access application or policy was saved: selecting the exact Emails rule in the application policy form crashed the dashboard with Maximum call stack size exceeded on two attempts. The owner independently reproduced the same crash. Browser form retries are deferred; a narrowly scoped API alternative needs a separate review. The administrator site is not protected. No public DNS answer for the administrator hostname; live Cloudflare sign-in, approved-user and revoked-user tests remain open."
+  ],
+  "import": [
+    "In progress",
+    "Fresh separate local rehearsal verified 294 source columns and 480,778 cells after a SQL dump ordering repair; four original export files were recovered byte-for-byte and repeat import made no changes. Five Python regression checks passed. The proposed Wix schema is excluded from automatic production migrations. Historical views/search/downloads and review notes require a dedicated archive database binding, not the shop database; no production binding is configured. The owner and operator must revisit the two database structures and approve any live mapping at this stage. No production import performed. Local catalogue comparison found 35 Wix parent records versus 34 public replacement groups; the missing public bath salt is an existing hidden product. Asif approved including its three sizes, retaining wooden-frame size/orientation choices and sharing stock per size. Local database copies disagree with the saved snapshot; prices, stock, copy and exact working source still require reconciliation. No duplicate products or orientation inventory were created. Owner approved bath-salt rehearsal prices of £4.49/£11.99/£16.99. Separate local rehearsal preserved all 76 public option objects, added three bath sizes with existing identities and retained three frame stock pools for six size/orientation choices. Shared-stock contention, release/reuse and SQL restore passed. Bath stock remains unavailable pending current counts and packed weights. Local orientation integration now preserves choices through basket, checkout metadata and immutable order-item JSON; no remote schema change or import occurred."
+  ],
+  "delivery": [
+    "In progress",
+    "Observed and privately recorded 11 Wix weight bands, free shipping threshold, pickup and inactive international shipping. Recorded UK automated tax, included-in-price setting and four non-VAT assignments. Wix updates stock after payment and has no minimum shipping subtotal. Active culinary-salt promotion remains a launch requirement. These are preserved settings, not validated replacement behavior. Local mixed-orientation frame reservations use the existing per-size stock pool; last-unit contention and replay/release checks pass. Actual opening counts and packed weights still require business review. Eight desktop/mobile weight journeys now pass for editor save/reload, validation, product/basket display, unit conversion and exact export rows. The two export cases also pass independently after removing test-order dependence. The owner explicitly left current bath/frame counts and packed weights pending; no historic values were substituted."
+  ],
+  "payments": [
+    "Decision documented; verification pending",
+    "Stripe plus existing PayPal is the conditional preference. Alternatives and administrator handoff are prepared. Business Stripe ownership, PayPal administrator approval, fees, methods and sandbox/live tests remain outstanding. No replacement route connected or tested."
+  ],
+  "email": [
+    "Local rehearsal complete; provider delivery pending",
+    "Zoho mail routing rechecked unchanged. Mailbox archive, account access and actual customer email delivery remain unverified. All eleven templates rendered through the real local Pages Functions renderer with nonempty subject/plain text, no unresolved tokens and valid local image assets. Eleven synthetic test attempts were deliberately skipped under MAIL_DRY_RUN and reconciled to eleven outbox records. No emails were sent and no provider credentials were loaded; actual provider/inbox delivery remains pending. Fourteen desktop/mobile email checks passed with zero retries, covering the admin page, previews, assets, outbox, incomplete-delivery notices and draft preservation."
+  ],
+  "rehearse": [
+    "In progress",
+    "Local build passed. The complete local unit suite passed 138 checks; three additional holding-route safety checks passed. Twelve rebuilt desktop/mobile checks for product saves, refunds, images, search metadata and the Admin link passed. The earlier broad browser run had 250 passes and 12 failures before local fixture repair; the earlier isolated weight/export failure was a test-order dependency, now repaired with explicit per-test setup. All eight desktop/mobile weight journeys pass, and both export cases pass when run alone with no retries. These checks used a new disposable local Pages/D1/R2 runtime with synthetic fixture data and no provider credentials. Live protected admin, redirects and full shop acceptance remain open. Current complete unit suite: 148 passed. New frame checks cover mixed choices, server validation, shared stock, payment metadata, order/receipt preservation and webhook replay using a mocked provider. Compiled local browser checks passed for mixed orientations, refresh, size edits, shared quantity cap and 390-pixel layout. Bath prices were verified across all three sizes in a separate read-only rehearsal."
+  ],
+  "dns": [
+    "Complete for DNS-only move",
+    "The original DNS-only move passed 46 comparisons. Asif subsequently explicitly authorized a holding-only public website switch. Only www changed from cdn3.wixdns.net (DNS only) to salty-lamps.pages.dev (Proxied); the Pages domain is Active with SSL enabled. The apex remains on its original Wix addresses and redirects to www. Thirty-six post-change comparisons across both authoritative servers and two public resolvers confirmed unchanged apex and mail-related records. Wix service remains retained for rollback. This is not full-shop launch or proof of delivered mail."
+  ],
+  "cutover": [
+    "Pending",
+    "Holding-only public website switch completed under separate explicit owner authorization. The replacement shop remains unpublished. Final delta, order reconciliation, timed full-shop rollback rehearsal and explicit business launch approval remain required. Exact prior Wix www routing and holding bundles are retained."
+  ],
+  "retire": [
+    "Pending until after launch",
+    "Keep Wix, Zoho and additional redirect domains. No cancellation or service retirement performed."
+  ]
+},
+  access: [
+    ['Wix', 'Site owner or collaborator rights to export products, all order lines, contacts, media and site settings; inspect payment provider and domain records.', 'Signed-in Salty Lamps site and complete domain settings verified. All 14 service records backed up and reconciled. Export rights verified: 35 products, 62 variant rows, 148 media rows, 609 orders across 770 item rows and 4,412 contacts downloaded privately. Wix Payments and PayPal are active; 609 order-summary rows also match the item export by order ID. Local export round-trip and recovery checks have passed; partial settings and media backups are recorded in the numbered status. Complete business backup and operational parity remain outstanding. Two additional Wix-registered redirect domains must be preserved before cancellation.'],
+    ['Retired Cloudflare proposal', 'Historical provenance only; no further account, project or database access.', 'The old proposal belonged to the prohibited Asif Hotmail account. Its historical backup does not satisfy a production backup or access gate.'],
+    ['Cloudflare production', 'Owner account; Pages, D1 and R2 management; zone and DNS management; Access applications/policies and service tokens; Email Routing if selected.', 'Owner account dashboard verified. Gmail signed in and appears as an Active member with an entire-account policy listing Administrator and Super Administrator - All Privileges. An empty D1 database was created in the owner account with European Union jurisdiction and Eastern Europe region; this confirms that resource-creation action only, not other rights. Zero Trust Free is active with Cloudflare as the only listed identity provider, but no administrator Access application exists yet. Primary saltylamps.co.uk Free zone originally preserved all 14 source records. The separately authorized holding-page change updates only www to the Pages target with proxying; the other records remain unchanged. Zoho mail priorities 10/20/50 verified. Assigned nameservers: james.ns.cloudflare.com and tani.ns.cloudflare.com; registrar and Nominet delegation now use that pair; Cloudflare activation and propagation through Cloudflare/Google public resolvers are confirmed. Existing salty-lamps.com remains separate. Owner-account Pages creation, holding-only deployment and www domain attachment are now verified. Scoped deployment token, R2 and Access application still require setup.'],
+    ['Domain registrar', 'Nameserver and DNSSEC management for saltylamps.co.uk, with recovery access.', 'Nominet RDAP confirms 123-Reg. Wix identifies registration as third-party and cannot edit nameservers. Registrar login and domain management access verified. After explicit owner approval, temporarily unlocked the domain, saved james.ns.cloudflare.com and tani.ns.cloudflare.com, and restored Domain Lock. Registrar read-back and Nominet verify the new pair and restored update/transfer/delete/renew restrictions. Delegation remains unsigned. Old Wix pair is preserved in the rollback procedure.'],
+    ['Stripe / PayPal', 'Owner business account, active GBP payments, matched live credentials, webhook configuration and refund rights.', 'Replacement code uses Stripe. Only test configuration is evidenced; the owner is unsure whether a business Stripe account exists. An existing business PayPal account is reported by the owner; its live access and capabilities remain unverified. The current Wix shop uses Wix Payments and PayPal, so live account setup and payment-method parity must be checked separately.'],
+    ['Email', 'Zoho mailbox/archive access, destination inbox verification, Resend account and sending-domain records.', 'Public MX records currently point to Zoho EU. Mailbox, sending domain and owner Resend access remain unverified.'],
+  ],
+  costs: [
+    ['Website and backend', 'Cloudflare Pages and Functions free tier: $0/month within limits', '500 Pages builds per month and 100,000 shared Worker/Function requests per day, with 10 ms CPU per invocation. Static requests do not use the Function allowance. Free-limit exhaustion can interrupt dynamic requests.'],
+    ['Database', 'Cloudflare D1 free tier: $0/month within limits', '5 million rows read and 100,000 rows written per day; 5 GB total account storage. The new EU-jurisdiction database is empty. Daily limit exhaustion interrupts queries; there is no assumed automatic paid upgrade.'],
+    ['Administrator sign-in', 'Cloudflare Zero Trust Free: $0/month for the two approved users', 'The owner account now shows the Free plan active, with a 50-user limit and Cloudflare as the only listed identity provider. The checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user allow policy are not yet configured.'],
+    ['Uploaded images', 'Cloudflare R2 Standard free allowance: estimated $0/month within limits', '10 GB-month storage, 1 million Class A and 10 million Class B operations per month. Wix reports 819.09 MB of site files, but full original media is not yet backed up, so final size is unverified. R2 requires the owner to accept a recurring, usage-billed subscription; no subscription or bucket has been created. Standard overages are $0.015 per GB-month, $4.50 per million Class A requests and $0.36 per million Class B requests; billed units round up.'],
+    ['Incoming email', 'Cloudflare Email Routing is free', 'Forwarding to an existing verified inbox; it is not a mailbox archive or a complete business reply service. Keep Zoho until inbound and branded replies are proven.'],
+    ['Customer order emails', 'Retain Resend free plan initially', 'Already integrated. Free plan has a 100-email daily limit; verify the account monthly allowance, sending domain and all message types before launch.'],
+    ['Cloudflare outgoing email', 'Requires Workers Paid', 'Sending to arbitrary customers is unavailable on Workers Free. Paid starts at $5 USD/month, including 3,000 outgoing emails, then $0.35 per 1,000. Optional later choice, not approved spend.'],
+    ['Estimated incremental Cloudflare total', '$0/month if all free limits hold', 'This is a conditional estimate, not a spending cap or launch approval. Existing Wix, Zoho, registrar, payment-processing and email-service charges are separate; usage must be measured before and after launch.'],
+    ['Payments and domain', 'Stripe and registrar', 'Stripe and PayPal processing fees and domain renewal remain separate. Cloudflare does not replace the payment processor.'],
+  ],
+  phases: [
+    {
+      id: 'access', title: 'Verify ownership and the exact permissions', owner: 'Salty Lamps account holder or Asif as delegated reviewer, with migration operator',
+      summary: 'Use the owner’s own production accounts, separate from the test shop. Confirm access by reading the intended resources before changing them.',
+      checks: [
+        'Confirm the destination Cloudflare account and record its account, project, database and bucket identifiers privately.',
+        'Use only the Cloudflare account owned by Saltylamps@hotmail.com for Salty Lamps resources. Asifhussain60@gmail.com signed in and is listed as an Active member with an entire-account administrator policy; record any write scope that future operations actually exercise. Never use the retired asifhussain60@hotmail.com account, its project, database or credentials. The unfiltered All members audit shows only the owner and Gmail as Active, with no Invite Pending entries; the retired address is absent. Recheck before launch and remove any future invitation for that address without using it. Shop administrator Access policies are separate and still need confirmation.',
+        'Open the specific Salty Lamps Wix site; verify export permissions and inspect its current payment provider without changing it.',
+        'Verify registrar nameserver and DNSSEC rights, plus recovery access and the current Wix connection method.',
+        'Verify owner Stripe, Zoho and Resend access; record which permissions still require the owner.',
+        'Use scoped credentials in the platform secret store or Keychain. Never paste credentials into chat, documents, source control or command history.',
+      ], gate: 'Every required account is identified and accessible; read access alone is not recorded as proof of write permission.',
+    },
+    {
+      id: 'backup', title: 'Take complete backups and prove they restore', owner: 'Migration operator with Wix export access',
+      summary: 'Capture the old business and the replacement catalogue before imports or domain changes. A successful command is not enough: verify the files and restore into a disposable database.',
+      checks: [
+        'Export all Wix products/options, orders in both order and line-item form, contacts with consent fields, discounts, tax and delivery rules, outstanding refunds, vouchers and any subscriptions.',
+        'Download original media, public page copy, blog posts, policy versions and all indexed URLs; record counts and hashes in a private manifest.',
+        'Export the entire DNS zone, including Wix web records, Zoho MX, SPF, DKIM, DMARC, CAA, subdomains and DNSSEC status. Automatic DNS scans are not complete backups.',
+        'Export D1 and all R2 objects with exact key mapping, size and checksum verification. Use the verified backup helper with bucket-scoped R2 Object Read credentials. It validates a local database restore and exact object keys, lengths and checksums; incomplete backup remains a launch/recovery gap but does not block independent preparation under the owner-approved single-copy decision.',
+        'Restore the database to a disposable target; compare table counts, product/option identities, order totals, image references and foreign-key integrity.',
+        'Store customer exports privately outside the public repository. The owner accepts one verified recoverable local copy for continued preparation; an independent second copy is explicitly deferred and must not be recorded as complete. Record the last export boundary for the final delta.',
+      ], commands: ['node scripts/backup-wix.mjs --no-images --compare-redirects'],
+      gate: 'Independent preparation may continue using the verified local recovery bundle, as accepted by the owner. Full backup completion still requires all required pages/data/media and a documented restore; deferred second-copy and missing-material gaps remain visible. This gate grants no production import, launch or cancellation approval.',
+    },
+    {
+      id: 'provision', title: 'Prepare a separate production environment', owner: 'Owner and migration operator',
+      summary: 'Keep the authorized public holding page separate from the commerce build. Prepare the remaining owner-account resources and build the shop only from a reviewed production catalogue.',
+      checks: [
+        'Keep the newly created, empty EU-jurisdiction D1 database in the confirmed owner account. The separate Pages project and www holding-page attachment are completed under explicit authorization. Provision R2 Standard only after its billing step is approved. Do not replace the holding bundle with the shop until launch gates pass.',
+        'Verify the production configuration pins the owner account and new database and contains no proposal account or database binding.',
+        'Prepare a reviewed schema/import plan: schema first, initial catalogue only when empty, then applicable migrations. Never reseed an existing catalogue.',
+        'Use a hash-verified migration ledger. Existing databases with unknown or partly applied migrations require explicit reconciliation before adoption; never assume duplicate-column errors mean completion.',
+        'Require a fresh production content snapshot with production credentials. Authentication/network failures must block release, not substitute the proposal snapshot.',
+      ], gate: 'Production target, schema history, source catalogue and backup evidence are verified; the guarded deployment entry point accepts the target.',
+    },
+    {
+      id: 'protect', title: 'Protect the admin before importing through it', owner: 'Cloudflare account administrator',
+      summary: 'Set up the protected admin hostname before any tool depends on the admin service. The public shop must never inherit the proposal’s open access.',
+      checks: [
+        'The shop Admin menu must open https://admin.saltylamps.co.uk/admin (admin.{primary domain}). Protect the entire admin hostname with Cloudflare Access SSO using Cloudflare itself as the identity provider (Sign in with Cloudflare), restricted to account members plus an explicit approved owner/operator allowlist. Verify this option in the owner account before activation; do not grant broad account membership just to enable shop administration.',
+        'Set ADMIN_HOSTS, ACCESS_AUD and ACCESS_TEAM_DOMAIN. Keep DEV_ADMIN_BYPASS disabled and ADMIN_OPEN_HOSTS empty on production.',
+        'Use a scoped Access service token for migration automation and confirm the application identity is accepted by the backend.',
+        'Test the Admin menu from desktop and mobile: it opens the admin subdomain, signed-out users must complete Cloudflare SSO, approved users reach the requested page, and unapproved users are denied. Protect direct admin links and admin APIs as well as the menu.',
+        'Test anonymous reads and writes: public shop admin paths return no private data; unauthenticated admin-host requests are denied. No legacy hostname or direct deployment URL may bypass SSO.',
+        'Verify authorized access, private no-cache responses and owner recovery steps, then revoke temporary migration access after handover.',
+      ], gate: 'Admin authorization works before the catalogue importer runs; no temporary public admin bypass is permitted.',
+    },
+    {
+      id: 'import', title: 'Reconcile the catalogue without changing identities', owner: 'Migration operator and shop owner',
+      summary: 'Keep Wix backups and rehearsals in a separate private database. The replacement shop already has its own structure and working catalogue; do not load Wix records into it as a side effect of backup, rehearsal or deployment. At this stage, review both structures and the existing shop with the owner before deciding whether any live merge is needed.',
+      checks: [
+        'Before any production schema change or import, pause with the owner to compare the separate Wix archive and replacement database. Agree which source fields need live behavior, which stay as history, how identities map, and how approved shop copy, media and stock remain intact. Record that decision and require a fresh backup and reversible, reviewed import plan. Historical admin views must use a dedicated archive database binding; never point them at the shop database.',
+        'Inventory every exported column and nested value for products, variants, media, orders, line items, contacts, consent, discounts and business settings. Create a field-by-field source-to-destination mapping before import; preserve source names, types, blanks, units, identifiers and relationships.',
+        'Add matching storage fields, validation, import/export support and admin views for operational data that the replacement lacks. Keep original values alongside normalized values; do not truncate addresses, option choices, notes, payment/refund details or consent states. An archive alone does not satisfy operational field parity.',
+        'Preserve every source field in a protected, lossless record linked to its original identity. Historical records must remain searchable and exportable in the admin without replaying charges, refunds or customer emails. Any unsupported behavior or archive-only field requires an explicit owner decision before launch.',
+        'Dry-run the import and review additions, changes, omissions, duplicate stock codes and source-to-destination identities. Source identifiers must remain stable.',
+        'Prove that applying the same import twice creates no extra products/options and preserves historical order references, weights and owner edits.',
+        'Transfer every gallery and option-specific image to owned storage; verify dimensions, hashes, references and absence of runtime dependency on Wix media.',
+        'Reconcile product, option and category counts, prices, stock, visibility, descriptions and image assignments against the reviewed export.',
+        'Reconcile every source column and populated value after import, including row counts, relationships, totals, media hashes and consent statuses. Round-trip export and compare against the source; unknown columns, unexplained omissions or lossy conversions block launch. Keep historical orders clearly identified and prevent old payment or email actions.',
+      ], gate: 'Owner and operator approve the boundary and mapping before any live schema change or import. Every source field has a verified destination and every populated value is preserved; required operational fields work in the admin. Round-trip reconciliation passes, import rerun is a no-op, existing shop content survives, and every discrepancy or archive-only exception has an explicit resolution. Fresh export rehearsal and schema gaps remain open.',
+    },
+    {
+      id: 'delivery', title: 'Prove delivery prices and stock rules', owner: 'Shop owner with migration operator',
+      summary: 'Confirm the business inputs the application cannot safely invent. Missing weights or uncovered postcodes must lead to a quote request rather than an incorrect charge.',
+      checks: [
+        'Review actual product/packed weights and parcel grouping for every purchasable option, including multi-packs.',
+        'Approve postage bands, remote-area exclusions, postcode prefixes, free-delivery rules and tax treatment with the owner.',
+        'Verify UK address suggestions have a populated, licensed dataset and a working manual-entry fallback; an empty table is not a complete address service.',
+        'Exercise light/heavy baskets, multiple parcels, unavailable stock, excluded postcodes and postcode changes before payment.',
+        'Prove competing purchases cannot pay for the same last unit and that expired/failed sessions release only their own reservations.',
+      ], gate: 'Every saleable basket has a truthful final charge and deliverable address; quote-only products remain explicitly quote-only.',
+    },
+    {
+      id: 'payments', title: 'Preserve payment methods and verify the chosen processors', owner: 'Business owner, Stripe administrator and existing PayPal administrator',
+      summary: 'Preferred route: Stripe for cards and eligible wallets plus the existing business PayPal account, subject to account access, fees and payment-method checks. Assess PayPal through Stripe first, with direct PayPal alongside Stripe as an alternative. Wix-managed checkout remains a documented alternative with continuing Wix dependency. No replacement route is connected or tested. Follow the payment decision and administrator handoff below.',
+      checks: [
+        'Have the separate PayPal administrator sign in and personally approve the connection in their own browser only after the business Stripe account, fees and settlement choice are confirmed. Never share passwords, codes or secrets in chat. Verify the existing PayPal business account and current Wix connection without changing it. Direct PayPal requires a provider-aware order model, server-side create/capture/refund handling, verified webhooks, replay protection, pending/reversed payment handling and the same stock/email reconciliation as Stripe. A PayPal login alone does not make the current Stripe integration compatible.',
+        'Confirm the legal business, settlement bank, GBP capability and activated live account. Check required wallets/payment methods and embedded-checkout domain registration. Current Wix checkout accepts Wix Payments and PayPal; inventory actual Wix methods and check required cards, Apple Pay, Google Pay, Clearpay and Klarna individually; provider evidence alone does not prove those methods are offered.',
+        'Set matching STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY, plus STRIPE_WEBHOOK_SECRET and SITE_URL, in the production secret store.',
+        'Register every event consumed by the current webhook, including completed/expired checkout, asynchronous success/failure and refund lifecycle events. Redeploy after secret changes.',
+        'Run sandbox success, decline, authentication, cancellation, expiration, webhook retry and pending/failed refund cases. Confirm orders, stock and email jobs agree.',
+        'The owner approves and performs a low-value live purchase and refund at launch validation; confirm bank-facing payment and actual refund status. Do not record a pending refund as returned money.',
+      ], gate: 'Both sandbox lifecycle checks and owner-authorized live payment/refund proof pass; a mocked payment page is not evidence of Stripe readiness.',
+    },
+    {
+      id: 'email', title: 'Keep business mail working and verify customer emails', owner: 'Mailbox owner and migration operator',
+      summary: 'Prefer free Cloudflare services where they fit. Retain Resend for customer emails and preserve Zoho until incoming mail, archives and branded replies have a proven replacement.',
+      checks: [
+        'Verify the owner’s Resend sending domain and sender/reply-to identity, publish the required records and test delivery to an unrelated mailbox.',
+        'Check the free account’s daily/monthly allowance against all receipts, dispatch notices, support alerts, refunds and retries, with alerting before exhaustion.',
+        'If using free Cloudflare Email Routing, verify the destination inbox and export Zoho mail first. Do not replace MX records during the initial website switch.',
+        'Test incoming mail and replies sent as the business address. Routing alone does not provide outbound mailbox replies; keep Zoho if the replacement cannot do this.',
+        'Verify each customer/admin template, bounce/failure logging, durable retry and no duplicate receipts. Cancellation notices must not promise a refund that has not completed.',
+      ], gate: 'Customer emails and business correspondence are proven end-to-end; no mailbox is cancelled merely because forwarding works.',
+    },
+    {
+      id: 'rehearse', title: 'Rehearse every critical shop and admin journey', owner: 'Migration operator and owner tester',
+      summary: 'Run the same tests on desktop and phone against the exact candidate release. Track skipped, mocked and blocked checks separately from passes.',
+      checks: [
+        'Run unit and real-runtime browser suites with a disposable database; verify full production build and media references.',
+        'Exercise browsing, search, filters, option/gallery selection, basket edits, address, payment, refresh, Back/Forward and receipt reconciliation.',
+        'Exercise product/category edits, images, inventory, orders, dispatch, refunds, reports, exports, settings, email retry and unsaved-change recovery.',
+        'Verify keyboard focus, readable errors, loading/empty/failure states and narrow-screen layout. Inspect current screenshots, not only automated scores.',
+        'On the protected production candidate, verify authorization, signed webhook delivery, provider email, quotas, monitoring and restore procedure. Record exact release identity and unresolved blockers.',
+      ], commands: ['npm run test:unit', 'CONTENT_SNAPSHOT_SOURCE=committed npm run build', 'cd tests && npm test'],
+      gate: 'No unresolved high-severity defect; required production/provider checks are completed rather than skipped. The committed-snapshot build above is local validation only.',
+    },
+    {
+      id: 'dns', title: 'Move DNS while preserving the current website and mail', owner: 'Registrar and Cloudflare administrators',
+      summary: 'Separate the nameserver move from the website cutover. Cloudflare must initially reproduce the working Wix and Zoho records so the move has a clear rollback.',
+      checks: [
+        'Verify the complete copied zone against the private export, including both root and www records, mail records and all subdomains.',
+        'Prepare the registrar DNSSEC transition correctly; stale DS records can make the whole domain unreachable. Re-enable DNSSEC only with the new matching records.',
+        'Confirm the Wix site will remain connected by pointing under its current plan. Keep the recorded Wix web targets while switching nameservers.',
+        'Change nameservers only in an agreed window after review; verify several independent resolvers, website TLS and incoming/outgoing mail before proceeding.',
+        'Record observed propagation and rollback targets. Do not promise instant recovery: cached DNS and nameserver delegation can delay it.',
+      ], gate: 'Cloudflare serves the authoritative zone while Wix web traffic and Zoho email still work.',
+    },
+    {
+      id: 'cutover', title: 'Switch the shop after a final reconciliation', owner: 'Owner approves; migration operator executes',
+      summary: 'Use an agreed sales/content freeze and final delta export to prevent lost orders or stock drift. The actual customer-domain change is a separate release decision after this plan is reviewed.',
+      checks: [
+        'Freeze Wix catalogue changes and new checkout during the final handover window; record pending Wix payments/orders and complete the final stock/order delta.',
+        'Take fresh recoverable backups, reconcile totals/identities and verify zero demo orders in the production destination.',
+        'Attach the production domain, verify certificates, SITE_URL, canonical URLs, sitemap, redirects and payment-domain registration. Keep test deployments unindexed.',
+        'Publish only through the guarded production deployment entry point with the verified production configuration; switch the saved web records while preserving mail records.',
+        'Verify real customer journeys and the owner-approved purchase/refund, webhooks, stock and emails; record a go/no-go outcome and retain the old shop for rollback.',
+        'If payments, orders, mail or critical pages fail, pause new checkout and restore the recorded Wix web records. Reconcile every order accepted on either platform before reopening; never overwrite new sales with an old backup.',
+      ], gate: 'Owner accepts the release and reconciliation is complete; unresolved production access or provider checks block the switch.',
+    },
+    {
+      id: 'retire', title: 'Monitor before retiring Wix or the old mailbox', owner: 'Shop owner',
+      summary: 'Keep the old services through a documented observation and reconciliation period. Close them only after their data and responsibilities have been accounted for.',
+      checks: [
+        'Monitor paid orders against Stripe, fulfillment, failed webhooks, pending refunds, stuck reservations, email jobs, errors and free-tier limits daily during stabilization.',
+        'Check old indexed URLs and redirects, submit the new sitemap and monitor search coverage and customer support reports.',
+        'Document ownership, backups, restore steps, access recovery, monthly limits and support responsibilities; revoke temporary migration credentials.',
+        'Cancel Wix only after final exports, outstanding orders/refunds/subscriptions and renewal implications are checked and the owner authorizes cancellation.',
+        'Retire Zoho only after archive, inbound delivery and business-address replies pass independently. Domain renewal continues with the registrar unless separately transferred.',
+      ], gate: 'No unresolved handover obligation and explicit owner approval for each service cancellation.',
+    },
+  ],
+  sources: [
+    ['Wix external hosting restriction', 'https://support.wix.com/en/article/exporting-or-embedding-your-wix-site-elsewhere'],
+    ['Cloudflare account sign-in for Access', 'https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/cloudflare/'],
+    ['Wix checkout from an external frontend', 'https://dev.wix.com/docs/go-headless/business-solutions/wix-hosted-pages/redirect-using-the-js-sdk'],
+    ['PayPal Checkout integration', 'https://developer.paypal.com/studio/checkout/standard/integrate'],
+    ['PayPal through Stripe eligibility', 'https://support.stripe.com/questions/paypal-payment-method-availability?locale=en-GB'],
+    ['Wix product export', 'https://support.wix.com/en/article/wix-stores-exporting-your-product-list'],
+    ['Wix Media Manager download limits', 'https://support.wix.com/en/article/wix-media-downloading-files-from-the-media-manager'],
+    ['Cloudflare Workers pricing', 'https://developers.cloudflare.com/workers/platform/pricing/'],
+    ['Cloudflare Pages free limits', 'https://developers.cloudflare.com/pages/platform/limits/'],
+    ['Cloudflare D1 pricing', 'https://developers.cloudflare.com/d1/platform/pricing/'],
+    ['Cloudflare R2 pricing', 'https://developers.cloudflare.com/r2/pricing/'],
+    ['Cloudflare Zero Trust pricing', 'https://www.cloudflare.com/plans/zero-trust-services/'],
+    ['Cloudflare Zero Trust onboarding', 'https://developers.cloudflare.com/cloudflare-one/setup/'],
+    ['Cloudflare Email Service pricing', 'https://developers.cloudflare.com/email-service/platform/pricing/'],
+    ['Cloudflare inbound email setup', 'https://developers.cloudflare.com/email-service/get-started/route-emails/'],
+    ['Resend pricing', 'https://resend.com/pricing'],
+  ],
+}
+
+export function migrationMarkdown() {
+  const p = migrationPlan
+  const table = (head, rows) => [head, head.map(() => '---'), ...rows].map(row => `| ${row.join(' | ')} |`).join('\n')
+  return `# Salty Lamps — Wix to Cloudflare migration plan\n\nReviewed ${p.reviewed}. Generated from the same plan as the admin Migration page; test/migration-plan.test.mjs enforces parity.\n\n> ${p.status}\n\n${p.introduction}\n\n## Numbered migration status\n\n${table(["Number", "Item", "Status", "Evidence and remaining work"], p.phases.map((phase, index) => [index + 1, phase.title, ...p.progress[phase.id]]))}\n\n## Access evidence\n\n${table(['Service', 'Required access', 'Verified state'], p.access)}\n\n## Free-first service choices\n\n${table(['Need', 'Choice', 'Boundary'], p.costs)}\n\n${p.phases.map((phase, index) => `## ${index + 1}. ${phase.title}\n\n${phase.summary}\n\nOwner: ${phase.owner}.\n\n${phase.checks.map(check => `- [ ] ${check}`).join('\n')}\n\n${(phase.commands || []).map(command => `\`\`\`sh\n${command}\n\`\`\`\n\n`).join('')}**Exit gate:** ${phase.gate}`).join('\n\n')}\n\n${paymentDecisionMarkdown().replace('# Salty Lamps payment decision and administrator handoff', '## Payment decision and administrator handoff')}\n## Sources verified for this review\n\n${p.sources.map(([label, url]) => `- [${label}](${url})`).join('\n')}\n\nChecklist ticks are personal browser notes, not proof of account permissions or completed checks. The revised checklist uses a new storage key; prior ticks remain stored and are not silently treated as current verification.\n`
+}
+
+export const pricingIntroduction = 'Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero Trust and R2 Standard stay within their free allowances. This is a conditional estimate, not a fixed bill or spending cap. The EU-jurisdiction database is empty. The owner dashboard now shows Zero Trust Free active; its $0/month checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user policy are not yet configured. R2 separately requires a recurring, usage-billed subscription before a bucket can be created. Payment processing, domain renewal, existing Wix and Zoho service, and customer email delivery are separate costs. No paid Cloudflare upgrade is selected.'
+export const pricingDomainNote = 'Nominet confirms 123-Reg as the registrar. Cloudflare DNS is active; domain registration and renewals remain at 123-Reg. Moving DNS and hosting does not require transferring the domain registration. Verify the owner’s registrar access and renewal invoice; do not assume a renewal or transfer price.'
+export const pricingStripeNote = 'The replacement code uses Stripe, but a business Stripe account and live connection remain unconfirmed. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs.'
+export function pricingMarkdown() {
+  return `# Salty Lamps — Pricing\n\nReviewed ${migrationPlan.reviewed}. This guide and the admin Pricing page share the same cost data.\n\n${pricingIntroduction}\n\n| Need | Choice | Boundary |\n| --- | --- | --- |\n${migrationPlan.costs.map(row => `| ${row.join(' | ')} |`).join('\n')}\n\n## Stripe payment costs\n\n${pricingStripeNote} [Stripe UK pricing](https://stripe.com/gb/pricing).\n\n## Domain and mailbox costs\n\n${pricingDomainNote}\n\nKeep the current Zoho mailbox until the mail archive, incoming forwarding and replies from the business address have all been proven. Free email forwarding alone does not replace a full mailbox.\n\n## Provider sources\n\n${migrationPlan.sources.filter(([label]) => !label.startsWith('Wix')).map(([label, url]) => `- [${label}](${url})`).join('\n')}\n`
+}

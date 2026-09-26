@@ -1,12 +1,14 @@
 # Production Cloudflare — the owner's own account
 
+> **Historical reference.** The September 26 review supersedes execution instructions below. The [account ownership rule](account-ownership.md) is authoritative: `Saltylamps@hotmail.com` is the approved owner, `asifhussain60@gmail.com` is an Active administrator in that owner account, and `asifhussain60@hotmail.com` is retired and prohibited. Use [the current migration plan](../salty-lamps-site/docs/migration.md) and [production handover](../salty-lamps-site/PRODUCTION-HANDOVER.md). Do not execute the older snippets as a launch procedure.
+
+> **Current state:** Cloudflare DNS is active on the approved owner account. Wix still serves the customer shop, Zoho still handles mail, and production application resources are not ready. The older Wix-nameserver and empty-owner-account statements below are dated history.
+
 The plan and the reference for standing Salty Lamps up on the **owner's** Cloudflare
 account (`saltylamps@hotmail.com`), moving `saltylamps.co.uk` off Wix DNS, and
 verifying a real sending domain with Resend.
 
-This is the **production** counterpart to [`cloudflare.md`](cloudflare.md), which
-documents Asif's dev/UAT stack on `Asifhussain60@hotmail.com`. Nothing here touches
-that. The two stacks share only source code.
+The old proposal stack is a historical artifact only. No new Salty Lamps work may use its account or credentials.
 
 **No secret values in this directory, ever — only where each one lives.** This repo
 is public.
@@ -23,9 +25,9 @@ together here once.
 
 | Account | Holds | Role |
 |---|---|---|
-| `saltylamps@hotmail.com` | *(nothing yet)* | **Target.** The owner's own account — production Pages project, D1, R2, and the `saltylamps.co.uk` zone |
-| `Asifhussain60@hotmail.com` | `salty-lamps-proposal` Pages, `salty-lamps-db` D1 | Dev/UAT. Stays exactly as it is |
-| `asifhussain60@gmail.com` | `safinaverse.com` zone, Podcast Factory Worker | Unrelated. Nothing Salty Lamps may ever deploy here |
+| `Saltylamps@hotmail.com` | Active `saltylamps.co.uk` zone; production application resources pending | **Approved owner and sole Salty Lamps deployment account.** |
+| `asifhussain60@gmail.com` | Active member with an account-wide administrator policy in the owner account; also has a separate personal account | **Authorized administrator within the owner account**, not a separate deployment destination. |
+| `asifhussain60@hotmail.com` | Historical proposal project and database | **Retired and prohibited. Never use its account, resources or credentials.** |
 
 The global deploy helper `~/.claude/skills/cloudflare-safina/scripts/cf-deploy.sh` is bound to the
 **gmail** account and hard-aborts on any other. It is the wrong tool for this work.

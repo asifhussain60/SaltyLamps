@@ -11,8 +11,13 @@ const parseLocs = xml => [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map(
 const pathOf = url => { try { return new URL(url).pathname } catch { return url } }
 
 test.describe('robots and sitemaps', () => {
-  test('robots.txt allows the shop, hides the admin, and names the sitemap', async ({ request }) => {
-    const body = await (await request.get('/robots.txt')).text()
+  test('robots.txt either names the sitemap or truthfully blocks a duplicate host', async ({ request }) => {
+    const response = await request.get('/robots.txt')
+    const body = await response.text()
+    if (/^Disallow: \/$/m.test(body)) {
+      expect(response.headers()['x-robots-tag'] || '').toContain('noindex')
+      return
+    }
     expect(body).toMatch(/Sitemap:\s*https?:\/\/\S+\/sitemap\.xml/i)
     expect(body).toContain('/admin')
   })
@@ -73,6 +78,44 @@ test.describe('what a crawler reads on each page', () => {
     await page.goto('/admin')
     const robots = await page.locator('meta[name="robots"]').getAttribute('content').catch(() => null)
     expect(robots || '').toContain('noindex')
+  })
+
+  test('every indexable page has complete and distinctive metadata', async ({ request }) => {
+    const sitemapIndex = parseLocs(await (await request.get('/sitemap.xml')).text())
+      .filter(url => !/images-sitemap|videos-sitemap/.test(url))
+    const urls = new Set()
+    for (const child of sitemapIndex) {
+      for (const loc of parseLocs(await (await request.get(pathOf(child))).text())) urls.add(loc)
+    }
+
+    const titles = new Map()
+    const descriptions = new Map()
+    const failures = []
+    for (const url of urls) {
+      const html = await (await request.get(pathOf(url))).text()
+      const title = html.match(/<title>(.*?)<\/title>/s)?.[1]?.trim()
+      const description = html.match(/<meta name="description" content="(.*?)"\s*\/>/s)?.[1]?.trim()
+      const canonical = html.match(/<link rel="canonical" href="(.*?)"\s*\/>/s)?.[1]
+      const robots = html.match(/<meta name="robots" content="(.*?)"\s*\/>/s)?.[1]
+      const jsonLd = html.match(/<script type="application\/ld\+json" data-prerender-jsonld>(.*?)<\/script>/s)?.[1]
+      if (!title || !description || !canonical || !robots || !jsonLd) failures.push(`${url} is missing core metadata`)
+      if (canonical && new URL(canonical).pathname !== new URL(url).pathname) failures.push(`${url} canonicalises to ${canonical}`)
+      if (robots && !robots.includes('index')) failures.push(`${url} is listed in a sitemap but carries ${robots}`)
+      try { JSON.parse(jsonLd) } catch { failures.push(`${url} has invalid JSON-LD`) }
+      if (title) titles.set(title, [...(titles.get(title) || []), url])
+      if (description) descriptions.set(description, [...(descriptions.get(description) || []), url])
+      for (const tag of ['og:title', 'og:description', 'og:url', 'og:image']) {
+        if (!html.includes(`property="${tag}"`)) failures.push(`${url} is missing ${tag}`)
+      }
+      for (const tag of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) {
+        if (!html.includes(`name="${tag}"`)) failures.push(`${url} is missing ${tag}`)
+      }
+    }
+
+    const duplicates = map => [...map.entries()].filter(([, matches]) => matches.length > 1)
+    expect(failures, failures.join('\n')).toEqual([])
+    expect(duplicates(titles), 'duplicate page titles').toEqual([])
+    expect(duplicates(descriptions), 'duplicate page descriptions').toEqual([])
   })
 })
 

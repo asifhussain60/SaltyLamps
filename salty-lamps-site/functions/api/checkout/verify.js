@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { allCheckoutLines, checkoutAddress } from '../../lib/checkout-state.mjs'
 import { orderRef } from '../../lib/email-render.mjs'
 
 export function paidCheckoutSummary(session, { imagesBySkuId = new Map(), emailDelivery = null } = {}) {
@@ -60,6 +61,10 @@ export async function onRequestGet({ request, env }) {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items.data.price.product', 'shipping_cost.shipping_rate'],
     })
+    if (session.metadata?.store !== 'salty-lamps' || session.status !== 'complete' || session.payment_status !== 'paid') return json({ error: 'Payment is not confirmed.' }, 409)
+    session.line_items = { data: await allCheckoutLines(stripe, session.id), has_more: false }
+    const address = await checkoutAddress(env.DB, session.id)
+    if (address) session.shipping_details = { name: address.name, address: { city: address.city, postal_code: address.postcode } }
     const summary = paidCheckoutSummary(session, await readPresentationDetails(env.DB, session))
     if (!summary) return json({ error: 'Payment is not confirmed.' }, 409)
     return json(summary, 200)
@@ -101,7 +106,10 @@ async function readPresentationDetails(db, session) {
          WHERE order_id = ? AND template_key = 'order_confirmation'
          ORDER BY id DESC LIMIT 1`,
       ).bind(session.id).first()
-      if (row?.status === 'sent') emailDelivery = { status: 'sent', to: row.to_address || customerEmail }
+      const job=await db.prepare("SELECT status FROM commerce_email_jobs WHERE order_id=? AND json_extract(payload,'$.templateKey')='order_confirmation' LIMIT 1").bind(session.id).first()
+      if (job?.status === 'sent') emailDelivery = { status: 'sent', to: row?.to_address || customerEmail }
+      else if (job && ['failed','review'].includes(job.status)) emailDelivery = { status: 'failed', to: customerEmail }
+      else if (row?.status === 'sent') emailDelivery = { status: 'sent', to: row.to_address || customerEmail }
       else if (row?.status === 'failed') emailDelivery = { status: 'failed', to: row.to_address || customerEmail }
       else if (row?.status === 'skipped') emailDelivery = { status: 'disabled', to: row.to_address || customerEmail }
     } catch {

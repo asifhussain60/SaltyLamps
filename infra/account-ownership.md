@@ -1,0 +1,23 @@
+# Salty Lamps Cloudflare account boundary
+
+Reviewed with Asif on 26 September 2026. This is the account rule for every Salty Lamps migration step.
+
+| Identity | Role | Current verification |
+| --- | --- | --- |
+| `Saltylamps@hotmail.com` | Approved Salty Lamps Cloudflare owner account. All production hosting, database, images, zone and administrator Access setup belong here. | Owner dashboard sign-in and account-wide super-administrator rights were observed during the DNS-only move. An empty EU-jurisdiction D1 database now exists in this account. Pages now hosts the approved holding-only site with its www custom domain. R2, administrator Access and scoped deployment credentials are not set up. |
+| `asifhussain60@gmail.com` | Authorized administrator of the **Salty Lamps owner account**. May review the access decision on the owner's behalf. | Signed in and opened the approved owner account. The member list shows Gmail as Active; its entire-account permission policy lists Administrator and Super Administrator - All Privileges. Creating the empty D1 database in this owner account established that resource-creation action only; other rights remain untested. Its separate personal account is not a production destination. |
+| `asifhussain60@hotmail.com` | **Retired and prohibited. Never use this Cloudflare account, its database, proposal project, tokens, saved credentials or dashboard for further work.** | A historical proposal backup used it before Asif's correction; a daily database-read alert followed. Historical artifacts may identify it as provenance only. |
+
+The owner account is the **destination**; the Gmail identity is an **active administrator within that account**. The approved account ID observed in its dashboard is `e35d5918c507bc2cf4e920fe38b5e318`. These are not interchangeable deployment destinations. Cloudflare account membership is separate from the shop administrator sign-in policy at `admin.saltylamps.co.uk`, which is not yet configured or tested.
+
+The owner-account All members list displayed two Active identities: the owner and Gmail. The retired Asif Hotmail identity was not listed. That initial check had not yet established where pending invitations appear. If any invitation or membership for that retired address is later found, remove it without accepting, signing in with, or testing that identity.
+
+Continuation read-back on 26 September 2026 reopened Members in the explicitly identified owner account and again showed exactly those two Active rows. At that earlier check, the pending-invitation subcheck remained open. This read-only check did not change membership, permissions, credentials or Access configuration.
+
+Before any remote command, read the intended account and resource identifiers from the approved owner session, compare them with the explicit production configuration, and stop if any value points to the retired account or an unverified personal account. The production configuration pins the owner account and the new empty database (`4637fb18-2b0a-498d-b6c0-a90d6e50d3f4`); missing R2, administrator Access, credentials and reviewed import evidence still block full-shop deployment. No passwords, one-time codes or API secrets belong in chat, documents or source control.
+
+The later explicit owner instruction authorized a holding-only public website switch at www.saltylamps.co.uk. That Pages domain is Active with SSL enabled and the wooden-frame page is verified. Wix service remains retained for rollback, the bare domain still redirects via Wix, and Zoho mail routing is unchanged. No live payment, production import, replacement-commerce launch or cancellation is authorized by the holding-page instruction.
+
+## Completed membership and invitation audit
+
+The later 26 September follow-up inspected the unfiltered **All members** page in the explicitly identified owner account. It displayed exactly the two approved identities above, both **Active**, with no **Invite Pending** entries or additional pages. [Cloudflare's member-management guidance](https://developers.cloudflare.com/fundamentals/manage-members/manage/) places pending invitations in this same list, rather than requiring a separate invitation page. This closes the pending-invitation audit for the observed account state. The retired identity is absent; no removal or other membership change was needed. This does not establish shop administrator Access protection, provider permissions or untested write scopes.

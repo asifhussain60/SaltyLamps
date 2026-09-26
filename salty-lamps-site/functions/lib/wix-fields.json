@@ -1,0 +1,1202 @@
+{
+  "products": {
+    "file": "products.csv",
+    "table": "wix_products",
+    "fields": [
+      {
+        "source": "handle",
+        "column": "handle"
+      },
+      {
+        "source": "fieldType",
+        "column": "fieldtype"
+      },
+      {
+        "source": "name",
+        "column": "name"
+      },
+      {
+        "source": "visible",
+        "column": "visible"
+      },
+      {
+        "source": "plainDescription",
+        "column": "plaindescription"
+      },
+      {
+        "source": "categorySlugs",
+        "column": "categoryslugs"
+      },
+      {
+        "source": "primaryCategorySlug",
+        "column": "primarycategoryslug"
+      },
+      {
+        "source": "media",
+        "column": "media"
+      },
+      {
+        "source": "mediaAltText",
+        "column": "mediaalttext"
+      },
+      {
+        "source": "ribbon",
+        "column": "ribbon"
+      },
+      {
+        "source": "brand",
+        "column": "brand"
+      },
+      {
+        "source": "price",
+        "column": "price"
+      },
+      {
+        "source": "strikethroughPrice",
+        "column": "strikethroughprice"
+      },
+      {
+        "source": "baseUnit",
+        "column": "baseunit"
+      },
+      {
+        "source": "baseUnitMeasurement",
+        "column": "baseunitmeasurement"
+      },
+      {
+        "source": "totalUnits",
+        "column": "totalunits"
+      },
+      {
+        "source": "totalUnitsMeasurement",
+        "column": "totalunitsmeasurement"
+      },
+      {
+        "source": "cost",
+        "column": "cost"
+      },
+      {
+        "source": "inventory",
+        "column": "inventory"
+      },
+      {
+        "source": "preOrderEnabled",
+        "column": "preorderenabled"
+      },
+      {
+        "source": "preOrderMessage",
+        "column": "preordermessage"
+      },
+      {
+        "source": "preOrderLimit",
+        "column": "preorderlimit"
+      },
+      {
+        "source": "sku",
+        "column": "sku"
+      },
+      {
+        "source": "barcode",
+        "column": "barcode"
+      },
+      {
+        "source": "weight",
+        "column": "weight"
+      },
+      {
+        "source": "packageLength",
+        "column": "packagelength"
+      },
+      {
+        "source": "packageWidth",
+        "column": "packagewidth"
+      },
+      {
+        "source": "packageHeight",
+        "column": "packageheight"
+      },
+      {
+        "source": "packageUnit",
+        "column": "packageunit"
+      },
+      {
+        "source": "productOptionName1",
+        "column": "productoptionname1"
+      },
+      {
+        "source": "productOptionType1",
+        "column": "productoptiontype1"
+      },
+      {
+        "source": "productOptionChoices1",
+        "column": "productoptionchoices1"
+      },
+      {
+        "source": "productOptionName2",
+        "column": "productoptionname2"
+      },
+      {
+        "source": "productOptionType2",
+        "column": "productoptiontype2"
+      },
+      {
+        "source": "productOptionChoices2",
+        "column": "productoptionchoices2"
+      },
+      {
+        "source": "productOptionName3",
+        "column": "productoptionname3"
+      },
+      {
+        "source": "productOptionType3",
+        "column": "productoptiontype3"
+      },
+      {
+        "source": "productOptionChoices3",
+        "column": "productoptionchoices3"
+      },
+      {
+        "source": "productOptionName4",
+        "column": "productoptionname4"
+      },
+      {
+        "source": "productOptionType4",
+        "column": "productoptiontype4"
+      },
+      {
+        "source": "productOptionChoices4",
+        "column": "productoptionchoices4"
+      },
+      {
+        "source": "productOptionName5",
+        "column": "productoptionname5"
+      },
+      {
+        "source": "productOptionType5",
+        "column": "productoptiontype5"
+      },
+      {
+        "source": "productOptionChoices5",
+        "column": "productoptionchoices5"
+      },
+      {
+        "source": "productOptionName6",
+        "column": "productoptionname6"
+      },
+      {
+        "source": "productOptionType6",
+        "column": "productoptiontype6"
+      },
+      {
+        "source": "productOptionChoices6",
+        "column": "productoptionchoices6"
+      },
+      {
+        "source": "modifierName1",
+        "column": "modifiername1"
+      },
+      {
+        "source": "modifierType1",
+        "column": "modifiertype1"
+      },
+      {
+        "source": "modifierCharLimit1",
+        "column": "modifiercharlimit1"
+      },
+      {
+        "source": "modifierMandatory1",
+        "column": "modifiermandatory1"
+      },
+      {
+        "source": "modifierDescription1",
+        "column": "modifierdescription1"
+      },
+      {
+        "source": "modifierName2",
+        "column": "modifiername2"
+      },
+      {
+        "source": "modifierType2",
+        "column": "modifiertype2"
+      },
+      {
+        "source": "modifierCharLimit2",
+        "column": "modifiercharlimit2"
+      },
+      {
+        "source": "modifierMandatory2",
+        "column": "modifiermandatory2"
+      },
+      {
+        "source": "modifierDescription2",
+        "column": "modifierdescription2"
+      },
+      {
+        "source": "modifierName3",
+        "column": "modifiername3"
+      },
+      {
+        "source": "modifierType3",
+        "column": "modifiertype3"
+      },
+      {
+        "source": "modifierCharLimit3",
+        "column": "modifiercharlimit3"
+      },
+      {
+        "source": "modifierMandatory3",
+        "column": "modifiermandatory3"
+      },
+      {
+        "source": "modifierDescription3",
+        "column": "modifierdescription3"
+      },
+      {
+        "source": "modifierName4",
+        "column": "modifiername4"
+      },
+      {
+        "source": "modifierType4",
+        "column": "modifiertype4"
+      },
+      {
+        "source": "modifierCharLimit4",
+        "column": "modifiercharlimit4"
+      },
+      {
+        "source": "modifierMandatory4",
+        "column": "modifiermandatory4"
+      },
+      {
+        "source": "modifierDescription4",
+        "column": "modifierdescription4"
+      },
+      {
+        "source": "modifierName5",
+        "column": "modifiername5"
+      },
+      {
+        "source": "modifierType5",
+        "column": "modifiertype5"
+      },
+      {
+        "source": "modifierCharLimit5",
+        "column": "modifiercharlimit5"
+      },
+      {
+        "source": "modifierMandatory5",
+        "column": "modifiermandatory5"
+      },
+      {
+        "source": "modifierDescription5",
+        "column": "modifierdescription5"
+      },
+      {
+        "source": "modifierName6",
+        "column": "modifiername6"
+      },
+      {
+        "source": "modifierType6",
+        "column": "modifiertype6"
+      },
+      {
+        "source": "modifierCharLimit6",
+        "column": "modifiercharlimit6"
+      },
+      {
+        "source": "modifierMandatory6",
+        "column": "modifiermandatory6"
+      },
+      {
+        "source": "modifierDescription6",
+        "column": "modifierdescription6"
+      },
+      {
+        "source": "modifierName7",
+        "column": "modifiername7"
+      },
+      {
+        "source": "modifierType7",
+        "column": "modifiertype7"
+      },
+      {
+        "source": "modifierCharLimit7",
+        "column": "modifiercharlimit7"
+      },
+      {
+        "source": "modifierMandatory7",
+        "column": "modifiermandatory7"
+      },
+      {
+        "source": "modifierDescription7",
+        "column": "modifierdescription7"
+      },
+      {
+        "source": "modifierName8",
+        "column": "modifiername8"
+      },
+      {
+        "source": "modifierType8",
+        "column": "modifiertype8"
+      },
+      {
+        "source": "modifierCharLimit8",
+        "column": "modifiercharlimit8"
+      },
+      {
+        "source": "modifierMandatory8",
+        "column": "modifiermandatory8"
+      },
+      {
+        "source": "modifierDescription8",
+        "column": "modifierdescription8"
+      },
+      {
+        "source": "modifierName9",
+        "column": "modifiername9"
+      },
+      {
+        "source": "modifierType9",
+        "column": "modifiertype9"
+      },
+      {
+        "source": "modifierCharLimit9",
+        "column": "modifiercharlimit9"
+      },
+      {
+        "source": "modifierMandatory9",
+        "column": "modifiermandatory9"
+      },
+      {
+        "source": "modifierDescription9",
+        "column": "modifierdescription9"
+      },
+      {
+        "source": "modifierName10",
+        "column": "modifiername10"
+      },
+      {
+        "source": "modifierType10",
+        "column": "modifiertype10"
+      },
+      {
+        "source": "modifierCharLimit10",
+        "column": "modifiercharlimit10"
+      },
+      {
+        "source": "modifierMandatory10",
+        "column": "modifiermandatory10"
+      },
+      {
+        "source": "modifierDescription10",
+        "column": "modifierdescription10"
+      }
+    ]
+  },
+  "orders": {
+    "file": "orders.csv",
+    "table": "wix_orders",
+    "fields": [
+      {
+        "source": "Order number",
+        "column": "order_number"
+      },
+      {
+        "source": "Date created",
+        "column": "date_created"
+      },
+      {
+        "source": "Time",
+        "column": "time"
+      },
+      {
+        "source": "Fulfill by",
+        "column": "fulfill_by"
+      },
+      {
+        "source": "Total order quantity",
+        "column": "total_order_quantity"
+      },
+      {
+        "source": "Contact email",
+        "column": "contact_email"
+      },
+      {
+        "source": "Note from customer",
+        "column": "note_from_customer"
+      },
+      {
+        "source": "Additional checkout info",
+        "column": "additional_checkout_info"
+      },
+      {
+        "source": "Business location",
+        "column": "business_location"
+      },
+      {
+        "source": "Tags",
+        "column": "tags"
+      },
+      {
+        "source": "Order ID",
+        "column": "order_id"
+      },
+      {
+        "source": "Delivery method",
+        "column": "delivery_method"
+      },
+      {
+        "source": "Delivery time",
+        "column": "delivery_time"
+      },
+      {
+        "source": "Recipient name",
+        "column": "recipient_name"
+      },
+      {
+        "source": "Recipient phone",
+        "column": "recipient_phone"
+      },
+      {
+        "source": "Recipient company name",
+        "column": "recipient_company_name"
+      },
+      {
+        "source": "Delivery country",
+        "column": "delivery_country"
+      },
+      {
+        "source": "Delivery state",
+        "column": "delivery_state"
+      },
+      {
+        "source": "Delivery state name",
+        "column": "delivery_state_name"
+      },
+      {
+        "source": "Delivery city",
+        "column": "delivery_city"
+      },
+      {
+        "source": "Delivery address",
+        "column": "delivery_address"
+      },
+      {
+        "source": "Delivery zip/postal code",
+        "column": "delivery_zip_postal_code"
+      },
+      {
+        "source": "Billing name",
+        "column": "billing_name"
+      },
+      {
+        "source": "Billing phone",
+        "column": "billing_phone"
+      },
+      {
+        "source": "Billing company name",
+        "column": "billing_company_name"
+      },
+      {
+        "source": "Billing country",
+        "column": "billing_country"
+      },
+      {
+        "source": "Billing state",
+        "column": "billing_state"
+      },
+      {
+        "source": "Billing state name",
+        "column": "billing_state_name"
+      },
+      {
+        "source": "Billing city",
+        "column": "billing_city"
+      },
+      {
+        "source": "Billing address",
+        "column": "billing_address"
+      },
+      {
+        "source": "Billing zip/postal code",
+        "column": "billing_zip_postal_code"
+      },
+      {
+        "source": "Payment status",
+        "column": "payment_status"
+      },
+      {
+        "source": "Payment method",
+        "column": "payment_method"
+      },
+      {
+        "source": "Global coupon code",
+        "column": "global_coupon_code"
+      },
+      {
+        "source": "Global discount amount",
+        "column": "global_discount_amount"
+      },
+      {
+        "source": "Gift card amount",
+        "column": "gift_card_amount"
+      },
+      {
+        "source": "Shipping rate",
+        "column": "shipping_rate"
+      },
+      {
+        "source": "Total tax",
+        "column": "total_tax"
+      },
+      {
+        "source": "Total",
+        "column": "total"
+      },
+      {
+        "source": "Currency",
+        "column": "currency"
+      },
+      {
+        "source": "Refunded amount",
+        "column": "refunded_amount"
+      },
+      {
+        "source": "Net amount",
+        "column": "net_amount"
+      },
+      {
+        "source": "Additional fees",
+        "column": "additional_fees"
+      },
+      {
+        "source": "Amount paid",
+        "column": "amount_paid"
+      },
+      {
+        "source": "Fulfillment status",
+        "column": "fulfillment_status"
+      },
+      {
+        "source": "Item fulfillment locations",
+        "column": "item_fulfillment_locations"
+      },
+      {
+        "source": "Tracking number",
+        "column": "tracking_number"
+      },
+      {
+        "source": "Fulfillment service",
+        "column": "fulfillment_service"
+      },
+      {
+        "source": "Shipping label",
+        "column": "shipping_label"
+      }
+    ]
+  },
+  "items": {
+    "file": "order-items.csv",
+    "table": "wix_items",
+    "fields": [
+      {
+        "source": "Order number",
+        "column": "order_number"
+      },
+      {
+        "source": "Date created",
+        "column": "date_created"
+      },
+      {
+        "source": "Time",
+        "column": "time"
+      },
+      {
+        "source": "Fulfill by",
+        "column": "fulfill_by"
+      },
+      {
+        "source": "Total order quantity",
+        "column": "total_order_quantity"
+      },
+      {
+        "source": "Contact email",
+        "column": "contact_email"
+      },
+      {
+        "source": "Note from customer",
+        "column": "note_from_customer"
+      },
+      {
+        "source": "Additional checkout info",
+        "column": "additional_checkout_info"
+      },
+      {
+        "source": "Business location",
+        "column": "business_location"
+      },
+      {
+        "source": "Tags",
+        "column": "tags"
+      },
+      {
+        "source": "Order ID",
+        "column": "order_id"
+      },
+      {
+        "source": "Item",
+        "column": "item"
+      },
+      {
+        "source": "Fulfillment location",
+        "column": "fulfillment_location"
+      },
+      {
+        "source": "Variant",
+        "column": "variant"
+      },
+      {
+        "source": "Modifiers/Add-ons",
+        "column": "modifiers_add_ons"
+      },
+      {
+        "source": "SKU",
+        "column": "sku"
+      },
+      {
+        "source": "Qty",
+        "column": "qty"
+      },
+      {
+        "source": "Quantity refunded",
+        "column": "quantity_refunded"
+      },
+      {
+        "source": "Price",
+        "column": "price"
+      },
+      {
+        "source": "Item coupon code",
+        "column": "item_coupon_code"
+      },
+      {
+        "source": "Item discount amount",
+        "column": "item_discount_amount"
+      },
+      {
+        "source": "Weight",
+        "column": "weight"
+      },
+      {
+        "source": "Custom text",
+        "column": "custom_text"
+      },
+      {
+        "source": "Deposit amount",
+        "column": "deposit_amount"
+      },
+      {
+        "source": "Delivery method",
+        "column": "delivery_method"
+      },
+      {
+        "source": "Delivery time",
+        "column": "delivery_time"
+      },
+      {
+        "source": "Recipient name",
+        "column": "recipient_name"
+      },
+      {
+        "source": "Recipient phone",
+        "column": "recipient_phone"
+      },
+      {
+        "source": "Recipient company name",
+        "column": "recipient_company_name"
+      },
+      {
+        "source": "Delivery country",
+        "column": "delivery_country"
+      },
+      {
+        "source": "Delivery state",
+        "column": "delivery_state"
+      },
+      {
+        "source": "Delivery state name",
+        "column": "delivery_state_name"
+      },
+      {
+        "source": "Delivery city",
+        "column": "delivery_city"
+      },
+      {
+        "source": "Delivery address",
+        "column": "delivery_address"
+      },
+      {
+        "source": "Delivery zip/postal code",
+        "column": "delivery_zip_postal_code"
+      },
+      {
+        "source": "Billing name",
+        "column": "billing_name"
+      },
+      {
+        "source": "Billing phone",
+        "column": "billing_phone"
+      },
+      {
+        "source": "Billing company name",
+        "column": "billing_company_name"
+      },
+      {
+        "source": "Billing country",
+        "column": "billing_country"
+      },
+      {
+        "source": "Billing state",
+        "column": "billing_state"
+      },
+      {
+        "source": "Billing state name",
+        "column": "billing_state_name"
+      },
+      {
+        "source": "Billing city",
+        "column": "billing_city"
+      },
+      {
+        "source": "Billing address",
+        "column": "billing_address"
+      },
+      {
+        "source": "Billing zip/postal code",
+        "column": "billing_zip_postal_code"
+      },
+      {
+        "source": "Payment status",
+        "column": "payment_status"
+      },
+      {
+        "source": "Payment method",
+        "column": "payment_method"
+      },
+      {
+        "source": "Global coupon code",
+        "column": "global_coupon_code"
+      },
+      {
+        "source": "Global discount amount",
+        "column": "global_discount_amount"
+      },
+      {
+        "source": "Gift card amount",
+        "column": "gift_card_amount"
+      },
+      {
+        "source": "Shipping rate",
+        "column": "shipping_rate"
+      },
+      {
+        "source": "Total tax",
+        "column": "total_tax"
+      },
+      {
+        "source": "Total",
+        "column": "total"
+      },
+      {
+        "source": "Currency",
+        "column": "currency"
+      },
+      {
+        "source": "Refunded amount",
+        "column": "refunded_amount"
+      },
+      {
+        "source": "Net amount",
+        "column": "net_amount"
+      },
+      {
+        "source": "Additional fees",
+        "column": "additional_fees"
+      },
+      {
+        "source": "Amount paid",
+        "column": "amount_paid"
+      },
+      {
+        "source": "Fulfillment status",
+        "column": "fulfillment_status"
+      },
+      {
+        "source": "Item fulfillment locations",
+        "column": "item_fulfillment_locations"
+      },
+      {
+        "source": "Tracking number",
+        "column": "tracking_number"
+      },
+      {
+        "source": "Fulfillment service",
+        "column": "fulfillment_service"
+      },
+      {
+        "source": "Shipping label",
+        "column": "shipping_label"
+      }
+    ]
+  },
+  "contacts": {
+    "file": "contacts.csv",
+    "table": "wix_contacts",
+    "fields": [
+      {
+        "source": "First Name",
+        "column": "first_name"
+      },
+      {
+        "source": "Last Name",
+        "column": "last_name"
+      },
+      {
+        "source": "Email 1",
+        "column": "email_1"
+      },
+      {
+        "source": "Phone 1",
+        "column": "phone_1"
+      },
+      {
+        "source": "Phone 2",
+        "column": "phone_2"
+      },
+      {
+        "source": "Phone 3",
+        "column": "phone_3"
+      },
+      {
+        "source": "Address 1 - Type",
+        "column": "address_1_type"
+      },
+      {
+        "source": "Address 1 - Street",
+        "column": "address_1_street"
+      },
+      {
+        "source": "Address 1 - Street Line 2",
+        "column": "address_1_street_line_2"
+      },
+      {
+        "source": "Address 1 - City",
+        "column": "address_1_city"
+      },
+      {
+        "source": "Address 1 - State/Region",
+        "column": "address_1_state_region"
+      },
+      {
+        "source": "Address 1 - Zip",
+        "column": "address_1_zip"
+      },
+      {
+        "source": "Address 1 - Country",
+        "column": "address_1_country"
+      },
+      {
+        "source": "Address 2 - Type",
+        "column": "address_2_type"
+      },
+      {
+        "source": "Address 2 - Street",
+        "column": "address_2_street"
+      },
+      {
+        "source": "Address 2 - Street Line 2",
+        "column": "address_2_street_line_2"
+      },
+      {
+        "source": "Address 2 - City",
+        "column": "address_2_city"
+      },
+      {
+        "source": "Address 2 - State/Region",
+        "column": "address_2_state_region"
+      },
+      {
+        "source": "Address 2 - Zip",
+        "column": "address_2_zip"
+      },
+      {
+        "source": "Address 2 - Country",
+        "column": "address_2_country"
+      },
+      {
+        "source": "Address 3 - Type",
+        "column": "address_3_type"
+      },
+      {
+        "source": "Address 3 - Street",
+        "column": "address_3_street"
+      },
+      {
+        "source": "Address 3 - Street Line 2",
+        "column": "address_3_street_line_2"
+      },
+      {
+        "source": "Address 3 - City",
+        "column": "address_3_city"
+      },
+      {
+        "source": "Address 3 - State/Region",
+        "column": "address_3_state_region"
+      },
+      {
+        "source": "Address 3 - Zip",
+        "column": "address_3_zip"
+      },
+      {
+        "source": "Address 3 - Country",
+        "column": "address_3_country"
+      },
+      {
+        "source": "Address 4 - Type",
+        "column": "address_4_type"
+      },
+      {
+        "source": "Address 4 - Street",
+        "column": "address_4_street"
+      },
+      {
+        "source": "Address 4 - Street Line 2",
+        "column": "address_4_street_line_2"
+      },
+      {
+        "source": "Address 4 - City",
+        "column": "address_4_city"
+      },
+      {
+        "source": "Address 4 - State/Region",
+        "column": "address_4_state_region"
+      },
+      {
+        "source": "Address 4 - Zip",
+        "column": "address_4_zip"
+      },
+      {
+        "source": "Address 4 - Country",
+        "column": "address_4_country"
+      },
+      {
+        "source": "Address 5 - Type",
+        "column": "address_5_type"
+      },
+      {
+        "source": "Address 5 - Street",
+        "column": "address_5_street"
+      },
+      {
+        "source": "Address 5 - Street Line 2",
+        "column": "address_5_street_line_2"
+      },
+      {
+        "source": "Address 5 - City",
+        "column": "address_5_city"
+      },
+      {
+        "source": "Address 5 - State/Region",
+        "column": "address_5_state_region"
+      },
+      {
+        "source": "Address 5 - Zip",
+        "column": "address_5_zip"
+      },
+      {
+        "source": "Address 5 - Country",
+        "column": "address_5_country"
+      },
+      {
+        "source": "Address 6 - Type",
+        "column": "address_6_type"
+      },
+      {
+        "source": "Address 6 - Street",
+        "column": "address_6_street"
+      },
+      {
+        "source": "Address 6 - Street Line 2",
+        "column": "address_6_street_line_2"
+      },
+      {
+        "source": "Address 6 - City",
+        "column": "address_6_city"
+      },
+      {
+        "source": "Address 6 - State/Region",
+        "column": "address_6_state_region"
+      },
+      {
+        "source": "Address 6 - Zip",
+        "column": "address_6_zip"
+      },
+      {
+        "source": "Address 6 - Country",
+        "column": "address_6_country"
+      },
+      {
+        "source": "Address 7 - Type",
+        "column": "address_7_type"
+      },
+      {
+        "source": "Address 7 - Street",
+        "column": "address_7_street"
+      },
+      {
+        "source": "Address 7 - Street Line 2",
+        "column": "address_7_street_line_2"
+      },
+      {
+        "source": "Address 7 - City",
+        "column": "address_7_city"
+      },
+      {
+        "source": "Address 7 - State/Region",
+        "column": "address_7_state_region"
+      },
+      {
+        "source": "Address 7 - Zip",
+        "column": "address_7_zip"
+      },
+      {
+        "source": "Address 7 - Country",
+        "column": "address_7_country"
+      },
+      {
+        "source": "Address 8 - Type",
+        "column": "address_8_type"
+      },
+      {
+        "source": "Address 8 - Street",
+        "column": "address_8_street"
+      },
+      {
+        "source": "Address 8 - Street Line 2",
+        "column": "address_8_street_line_2"
+      },
+      {
+        "source": "Address 8 - City",
+        "column": "address_8_city"
+      },
+      {
+        "source": "Address 8 - State/Region",
+        "column": "address_8_state_region"
+      },
+      {
+        "source": "Address 8 - Zip",
+        "column": "address_8_zip"
+      },
+      {
+        "source": "Address 8 - Country",
+        "column": "address_8_country"
+      },
+      {
+        "source": "Address 9 - Type",
+        "column": "address_9_type"
+      },
+      {
+        "source": "Address 9 - Street",
+        "column": "address_9_street"
+      },
+      {
+        "source": "Address 9 - Street Line 2",
+        "column": "address_9_street_line_2"
+      },
+      {
+        "source": "Address 9 - City",
+        "column": "address_9_city"
+      },
+      {
+        "source": "Address 9 - State/Region",
+        "column": "address_9_state_region"
+      },
+      {
+        "source": "Address 9 - Zip",
+        "column": "address_9_zip"
+      },
+      {
+        "source": "Address 9 - Country",
+        "column": "address_9_country"
+      },
+      {
+        "source": "Address 10 - Type",
+        "column": "address_10_type"
+      },
+      {
+        "source": "Address 10 - Street",
+        "column": "address_10_street"
+      },
+      {
+        "source": "Address 10 - City",
+        "column": "address_10_city"
+      },
+      {
+        "source": "Address 10 - State/Region",
+        "column": "address_10_state_region"
+      },
+      {
+        "source": "Address 10 - Zip",
+        "column": "address_10_zip"
+      },
+      {
+        "source": "Address 10 - Country",
+        "column": "address_10_country"
+      },
+      {
+        "source": "Company",
+        "column": "company"
+      },
+      {
+        "source": "Labels",
+        "column": "labels"
+      },
+      {
+        "source": "Created At (UTC+0)",
+        "column": "created_at_utc_0"
+      },
+      {
+        "source": "Email subscriber status",
+        "column": "email_subscriber_status"
+      },
+      {
+        "source": "SMS subscriber status",
+        "column": "sms_subscriber_status"
+      },
+      {
+        "source": "Last Activity",
+        "column": "last_activity"
+      },
+      {
+        "source": "Last Activity Date (UTC+0)",
+        "column": "last_activity_date_utc_0"
+      },
+      {
+        "source": "Source",
+        "column": "source"
+      },
+      {
+        "source": "Language",
+        "column": "language"
+      },
+      {
+        "source": "Message",
+        "column": "message"
+      },
+      {
+        "source": "Subject",
+        "column": "subject"
+      }
+    ]
+  }
+}

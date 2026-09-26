@@ -1,34 +1,41 @@
-# Production Wrangler config — the OWNER'S OWN Cloudflare account.
+# Production Wrangler config — Saltylamps@hotmail.com's approved owner account.
+# asifhussain60@gmail.com is an Active member with an account-wide administrator policy.
+# Never use the retired asifhussain60@hotmail.com account or its resources.
 #
-# WHY THIS FILE EXISTS. `wrangler.toml` hardcodes the DEV/UAT database_id, which
-# belongs to Asif's hotmail account. A D1 database id is account-specific, so the
-# two environments cannot share one config file: pointing production at the dev
-# id would either fail to bind or, worse, bind the production site to the UAT
-# database and its simulated orders.
+# WHY THIS FILE EXISTS. `wrangler.toml` now has only a synthetic local database
+# identifier. The retired proposal database is explicitly rejected by production
+# validation. The approved owner account has a new empty EU-jurisdiction database;
+# Pages, R2, Access and the remaining bindings are still unprovisioned;
+# no proposal or simulated orders may be copied into the customer destination.
 #
 # `deploy-production.sh` passes this file to every wrangler call via the global
-# `-c` flag when PROD_CONFIG is set (the default). Nothing else reads it, so the
-# dev workflow — `wrangler pages dev`, `deploy-cloudflare.sh` — is untouched and
-# still uses `wrangler.toml`.
+# `-c` flag. The production snapshot also validates this config. The
+# local `wrangler pages dev` uses the synthetic identifier in `wrangler.toml`.
+# The former proposal deployment command is disabled.
 #
-# FIRST RUN. `database_id` below is a placeholder. `deploy-production.sh` creates
-# the database, prints its real id, and stops. Paste the id in here, commit it
-# (a D1 id is an identifier, not a secret — see infra/README.md), and re-run.
+# FIRST RUN. Provision remaining resources explicitly on the owner's account,
+# verify the pinned database, configure Pages bindings/access/payment/email,
+# and rehearse the offline database migration before importing it under the runbook.
+# deploy-production.sh performs read-only preflight then builds/deploys; it never
+# creates resources, seeds the catalog, adopts history, or replays migrations.
+# Missing migration ledger entries and deferred media cutover block deployment.
+# The production snapshot uses this same selected config and explicit API token.
 #
 # The project `name` must match PROD_PROJECT in the environment, or wrangler
 # refuses the deploy with a project-name mismatch.
 
 name = "salty-lamps"
+account_id = "e35d5918c507bc2cf4e920fe38b5e318"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # --- D1 database ---------------------------------------------------------------
-# Created by: wrangler d1 create salty-lamps-db   (on the OWNER's account)
+# Created in the owner's dashboard with European Union jurisdiction on 26 September 2026.
 [[d1_databases]]
 binding = "DB"
 database_name = "salty-lamps-db"
-database_id = "REPLACE_WITH_PRODUCTION_DATABASE_ID"
+database_id = "4637fb18-2b0a-498d-b6c0-a90d6e50d3f4"
 
 # --- R2 bucket for admin-uploaded product images -------------------------------
 # Created by: wrangler r2 bucket create salty-lamps-images
@@ -39,10 +46,14 @@ binding = "IMAGES"
 bucket_name = "salty-lamps-images"
 
 # --- Secrets -------------------------------------------------------------------
-# NEVER in this file. Set interactively by the owner, after the first deploy:
+# NEVER in this file. Set interactively by the owner before the launch deployment:
 #   npx wrangler pages secret put STRIPE_SECRET_KEY     --project-name salty-lamps
+#   npx wrangler pages secret put STRIPE_PUBLISHABLE_KEY --project-name salty-lamps
 #   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name salty-lamps
-#   npx wrangler pages secret put SITE_URL              --project-name salty-lamps
+# SITE_URL, PUBLIC_HOST and ADMIN_HOSTS must be explicit plain-text environment
+# variables matching PROD_SITE_URL and PROD_ADMIN_HOST for preflight verification.
+# ACCESS_AUD and ACCESS_TEAM_DOMAIN must also be present; never configure an admin
+# hostname bypass or DEV_ADMIN_BYPASS in production.
 #   npx wrangler pages secret put RESEND_API_KEY        --project-name salty-lamps
 #
 # Pages binds secrets at DEPLOY time. Setting one does nothing to the running

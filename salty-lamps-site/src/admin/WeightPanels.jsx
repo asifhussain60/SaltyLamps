@@ -252,8 +252,8 @@ export function DeliverySettings({ api, useDirty }) {
         then add the applicable weight bands below.
       </p>
       <p className="admin-weight-hint">
-        Online checkout currently uses GB rates with blank postcode prefixes.
-        Postcode-specific rates are available for the order postage check after an address is known.
+        Checkout matches GB rates against the delivery postcode entered by the customer.
+        A rate with blank postcode prefixes is the country-wide fallback. The order postage check also uses the saved delivery postcode.
       </p>
       <Message {...message} />
       {!form.rates.length && (

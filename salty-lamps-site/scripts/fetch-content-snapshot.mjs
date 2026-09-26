@@ -12,28 +12,28 @@
 //
 //   2. The build hard-failed when D1 was unreachable — top-level await, no fallback,
 //      with a database id hardcoded to the DEV database, so the owner's production
-//      account could never build correctly. This script NEVER throws on a fetch
-//      failure: it falls back to the committed snapshot, warns loudly with the file's
-//      age, and exits 0. A deploy is never blocked by an expired token.
+//      account could never build correctly. Development builds fall back to the committed snapshot, warns loudly with the file's
+//      age, and exit 0. Production builds require fresh live data and fail closed.
 //
 // The snapshot is COMMITTED. That makes it the storefront's first-paint content too
 // (src/App.jsx imports it), so the shop renders real content with zero network and
 // degrades to last-deployed content instead of a blank page.
 //
-// SOURCES  (env CONTENT_SNAPSHOT_SOURCE, default 'live')
-//   live       Cloudflare D1 HTTP API. Needs CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_D1_TOKEN
-//              + a database id (see resolveDatabaseId below). Falls back on any failure.
+// SOURCES  (env CONTENT_SNAPSHOT_SOURCE, default 'committed' for local builds)
+//   live       Cloudflare D1 HTTP API, only with the validated owner-account
+//              production config and token. No development remote fallback.
 //   local      the running `wrangler pages dev` server — no cloud credentials needed.
 //   committed  Use the checked-in file as-is. Never touches the network.
 //
 // USAGE
-//   node scripts/fetch-content-snapshot.mjs
+//   node scripts/fetch-content-snapshot.mjs   # offline, no legacy account access
+//   Production uses deploy-production.sh after all owner-account gates pass.
 //   CONTENT_SNAPSHOT_SOURCE=local node scripts/fetch-content-snapshot.mjs
 //   CONTENT_SNAPSHOT_SOURCE=committed node scripts/fetch-content-snapshot.mjs
 
+import { RETIRED_PROPOSAL_ACCOUNT_ID, RETIRED_PROPOSAL_DATABASE_ID, validateProductionTarget } from './production-target.mjs'
 import fs from 'node:fs'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { PRODUCTS_QUERY, PRODUCT_IMAGES_QUERY, flattenProductRows } from '../functions/lib/flatten-products.mjs'
 import {
@@ -45,44 +45,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const outPath = path.join(root, 'src/content/content-snapshot.json')
 
-const SOURCE = process.env.CONTENT_SNAPSHOT_SOURCE || 'live'
+const PRODUCTION = process.env.CONTENT_SNAPSHOT_PRODUCTION === '1'
+const SOURCE = process.env.CONTENT_SNAPSHOT_SOURCE || (PRODUCTION ? 'live' : 'committed')
+if (PRODUCTION && SOURCE !== 'live') throw new Error('Production snapshots require a live source; committed/local fallback is forbidden.')
+if (SOURCE === 'live' && (
+  process.env.CLOUDFLARE_ACCOUNT_ID?.toLowerCase() === RETIRED_PROPOSAL_ACCOUNT_ID
+  || process.env.CLOUDFLARE_D1_DATABASE_ID?.toLowerCase() === RETIRED_PROPOSAL_DATABASE_ID
+)) throw new Error('Retired proposal Cloudflare account and database are forbidden.')
+if (SOURCE === 'live' && !PRODUCTION) throw new Error('Live snapshots require the reviewed Salty Lamps owner-account production target.')
+const productionTarget = PRODUCTION ? validateProductionTarget(process.env, root) : null
 const DB_NAME = process.env.D1_DATABASE_NAME || 'salty-lamps-db'
 
 const warn = msg => console.warn(`\x1b[33m!\x1b[0m ${msg}`)
 const ok = msg => console.log(`  \x1b[32m✓\x1b[0m ${msg}`)
 
 // ---------------------------------------------------------------------------
-// Credentials and database id
-
-function keychainSecret(service, account = 'salty-lamps-proposal') {
-  try {
-    return execFileSync('security', ['find-generic-password', '-s', service, '-a', account, '-w'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
-  } catch {
-    return ''
-  }
-}
-
-// Resolution order matters. The env var wins so CI and the owner's production account
-// can target their own database; wrangler.toml is next because deploy-production.sh
-// already instructs the owner to write the new database_id there, and the Pages runtime
-// binds from that same file — so production self-heals with no extra step. The Keychain
-// is last and dev-machine-only.
-function resolveDatabaseId() {
-  if (process.env.CLOUDFLARE_D1_DATABASE_ID) {
-    return { id: process.env.CLOUDFLARE_D1_DATABASE_ID, from: 'CLOUDFLARE_D1_DATABASE_ID' }
-  }
-  const tomlPath = path.join(root, 'wrangler.toml')
-  if (fs.existsSync(tomlPath)) {
-    const match = fs.readFileSync(tomlPath, 'utf8').match(/^\s*database_id\s*=\s*"([^"]+)"/m)
-    if (match) return { id: match[1], from: 'wrangler.toml' }
-  }
-  const kc = keychainSecret('salty-lamps-proposal-cloudflare-d1-database-id')
-  if (kc) return { id: kc, from: 'Keychain' }
-  return { id: '', from: 'nowhere' }
-}
+// Remote credentials and resource IDs come only from the validated owner target.
 
 // ---------------------------------------------------------------------------
 // Product sources
@@ -99,16 +77,14 @@ const REMOTE_QUERIES = [
 ]
 
 async function fromRemote() {
-  const token = process.env.CLOUDFLARE_D1_TOKEN
-    || keychainSecret('salty-lamps-proposal-cloudflare-d1-token')
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-    || keychainSecret('salty-lamps-proposal-cloudflare-account-id')
-  const { id: databaseId, from } = resolveDatabaseId()
+  const token = process.env.CLOUDFLARE_API_TOKEN
+  const accountId = productionTarget.accountId
+  const databaseId = productionTarget.databaseId
 
   const missing = [
-    !token && 'CLOUDFLARE_D1_TOKEN',
+    !token && 'CLOUDFLARE_API_TOKEN',
     !accountId && 'CLOUDFLARE_ACCOUNT_ID',
-    !databaseId && 'CLOUDFLARE_D1_DATABASE_ID (or a database_id in wrangler.toml)',
+    !databaseId && 'CLOUDFLARE_D1_DATABASE_ID',
   ].filter(Boolean)
   if (missing.length) throw new Error(`missing ${missing.join(', ')}`)
 
@@ -116,12 +92,13 @@ async function fromRemote() {
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
     {
       method: 'POST',
+      signal: AbortSignal.timeout(30000),
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ sql: REMOTE_QUERIES.map(q => q.trim().replace(/;\s*$/, '')).join(';\n') }),
     },
   )
   const body = await res.json()
-  if (!body.success) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
+  if (!res.ok || !body.success || !Array.isArray(body.result) || body.result.some(r => r.success === false)) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
 
   const sets = body.result.map(r => r.results || [])
   const [productRows, imageRows, categoryRows, aliasRows, ...contentSets] = sets
@@ -129,7 +106,7 @@ async function fromRemote() {
     throw new Error(`expected ${REMOTE_QUERIES.length} result sets, got ${sets.length} — is migration 004 applied?`)
   }
 
-  ok(`products, taxonomy and content from remote D1 (database id via ${from})`)
+  ok(`products, taxonomy and content from the reviewed owner-account D1 target`)
   return {
     resolvedFrom: 'live',
     products: flattenProductRows(productRows, imageRows),
@@ -207,14 +184,14 @@ async function resolveSnapshot() {
   try {
     return SOURCE === 'local' ? await fromLocal() : await fromRemote()
   } catch (err) {
+    if (PRODUCTION) throw new Error(`Production snapshot unavailable; refusing stale/proposal fallback: ${err.message}`)
     const prev = committedSnapshot()
     if (!prev) {
       // No fallback available. This is the one case worth failing on: a first build
       // with no snapshot and no database would emit a sitemap with zero products and
       // a site with no copy, which is far worse for SEO than a failed build.
       console.error(`\n\x1b[31m✘\x1b[0m Could not read the catalogue (${err.message}) and no committed snapshot exists.`)
-      console.error('  Set CLOUDFLARE_D1_TOKEN + CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_D1_DATABASE_ID,')
-      console.error('  or run with CONTENT_SNAPSHOT_SOURCE=local against a seeded local D1.\n')
+      console.error('  Use a committed snapshot or CONTENT_SNAPSHOT_SOURCE=local against a seeded local D1.\n')
       process.exit(1)
     }
     const ageDays = Math.floor((Date.now() - new Date(prev.generatedAt).getTime()) / 86400000)
@@ -259,6 +236,7 @@ const snapshot = {
   source: SOURCE,
   resolvedFrom: resolved.resolvedFrom || SOURCE,
   siteUrl,
+  ...(productionTarget ? { target: { accountId: productionTarget.accountId, databaseId: productionTarget.databaseId }, verifiedAt: new Date().toISOString() } : {}),
   ...resolved,
 }
 

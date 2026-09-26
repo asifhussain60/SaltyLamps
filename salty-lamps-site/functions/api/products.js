@@ -17,7 +17,10 @@ export async function onRequestGet({ env }) {
 
     return new Response(JSON.stringify({ products }), {
       status: 200,
-      headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=60' },
+      // Catalogue edits, stock changes and newly uploaded photos must be visible on
+      // the next shop read. Browser and edge caching used to hold an old gallery for
+      // up to a minute after the admin had already confirmed the change.
+      headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
     })
   } catch (err) {
     // This used to be unhandled. A D1 failure threw, Pages returned a 500 HTML page,
@@ -25,8 +28,8 @@ export async function onRequestGet({ env }) {
     // product list — which renders as "No matching products. Try another search
     // term." So during an outage the shop told customers they had searched wrong.
     //
-    // 503 says "dependency down, retry"; no-store stops the 60s edge cache on the
-    // success path from freezing a momentary failure in place for a whole minute.
+    // 503 says "dependency down, retry"; no-store prevents a momentary failure from
+    // being replayed after the database has recovered.
     return apiError(`Could not load the catalogue: ${err.message}`, 503, { code: 'catalog_unavailable' }, {
       'cache-control': 'no-store',
     })

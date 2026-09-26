@@ -1,29 +1,24 @@
-name = "salty-lamps-proposal"
+# Local-only placeholder. The former remote proposal account is retired.
+# Remote deployment and database commands must use the reviewed owner config.
+name = "salty-lamps-local"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# --- D1 database binding ---
-# 1. Create the database once:  wrangler d1 create salty-lamps-db
-# 2. Copy the "database_id" it prints into the line below, then uncomment this block.
-# 3. Apply the schema:          wrangler d1 execute salty-lamps-db --file=d1/schema.sql
-# 4. Load the catalog:          wrangler d1 execute salty-lamps-db --file=d1/seed.sql
+# --- Local D1 binding only ---
+# This synthetic ID identifies a disposable local database. It does not belong
+# to any Cloudflare account. Never use this config with --remote or for deploy.
 #
 [[d1_databases]]
 binding = "DB"
 database_name = "salty-lamps-db"
-database_id = "e8e40717-628d-481d-9175-e9c473620125"
+database_id = "00000000-0000-4000-8000-000000000001"
 
-# --- R2 bucket for admin-uploaded product images ---
-# 1. Create the bucket once:  wrangler r2 bucket create salty-lamps-images
-# 2. Local dev serves/uploads to a simulated bucket automatically via this binding.
-#    (Or pass explicitly: wrangler pages dev dist --r2 IMAGES=salty-lamps-images)
+# --- Local simulated R2 binding for admin-uploaded product images ---
 # Uploaded images are served publicly at /api/images/<key> (see functions/api/images).
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "salty-lamps-images"
 
-# --- Stripe secrets (never put these in this file) ---
-# wrangler pages secret put STRIPE_SECRET_KEY
-# wrangler pages secret put STRIPE_WEBHOOK_SECRET
-# wrangler pages secret put SITE_URL   (e.g. https://www.saltylamps.co.uk)
+# Local-only credentials belong in gitignored .dev.vars. No Pages secrets are
+# managed through this config.

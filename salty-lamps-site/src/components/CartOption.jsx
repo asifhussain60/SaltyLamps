@@ -1,9 +1,10 @@
+import { needsFrameOrientation } from '../../functions/lib/frame-orientation.mjs'
 import React from 'react'
 import { weightLabel } from '../../functions/lib/weights.mjs'
 
 const money = value => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value)
 
-export default function CartOption({ item, options, disabled, onChange }) {
+export default function CartOption({ item, options, disabled, onChange, onOrientationChange }) {
   const weight = weightLabel(item.product)
   return <div className="cart-option">
     {options.length > 1 ? <label>
@@ -16,6 +17,14 @@ export default function CartOption({ item, options, disabled, onChange }) {
         </option>)}
       </select>
     </label> : item.product.variantLabel ? <p><strong>Selected option:</strong> {item.product.variantLabel}</p> : null}
+    {needsFrameOrientation(item.product) && <label>
+      <span>Orientation</span>
+      <select aria-label={`Orientation for ${item.product.name}`} value={item.orientation || ''} disabled={disabled}
+        onChange={event => onOrientationChange(event.target.value)}>
+        <option value="" disabled>Choose orientation</option>
+        <option value="portrait">Portrait</option><option value="landscape">Landscape</option>
+      </select>
+    </label>}
     {weight && <p>Product weight: <strong>{weight}</strong> per item or pack{item.qty > 1 ? ` · ${weightLabel(item.product, item.qty)} for ${item.qty}` : ''}. Excludes packaging.</p>}
   </div>
 }

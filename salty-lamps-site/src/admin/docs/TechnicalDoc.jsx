@@ -11,10 +11,12 @@ import authUrl from '../../../docs/diagrams/admin-auth.svg'
 export default function TechnicalDoc() {
   return (
     <article className="admin-doc">
+      <p><strong>Reviewed 26 September 2026: production migration is not complete. The Migration and Pricing pages hold current access evidence, release gates and free-tier limits. This architecture guide describes the intended services; diagrams are high-level summaries.</strong></p>
+      <p><strong>Account boundary:</strong> Saltylamps@hotmail.com owns the approved production Cloudflare account. Asifhussain60@gmail.com is an Active member with an account-wide administrator policy; shop administrator Access remains unverified. The former Asifhussain60@hotmail.com account is retired and must never be used.</p>
+      <p>Checkout now collects a UK address before embedded Stripe payment, fixes delivery to that address, and reserves stock before exposing payment. Retry identities recover interrupted checkout and product saves. Signed payment events consume or release reservations; signed refund events distinguish pending, partial, failed and completed refunds. New-order, dispatch, delivery and cancellation notification jobs survive interrupted delivery and retain provider retry identities; uncertain delivery requires provider reconciliation in Email Activity. Apply migrations 014 and 015 before releasing these application changes.</p>
       <p className="admin-doc__lead">
         A full technical account of the application: stack, architecture, data model, API surface,
-        auth, build/deploy, and a guide to making common changes. Everything here reflects the
-        current code, including a few things worth knowing before you touch them.
+        auth, build/deploy, and a guide to making common changes. Read the current release notes above alongside the detailed architecture below.
       </p>
 
       <h2>1. Overview &amp; tech stack</h2>
@@ -103,9 +105,9 @@ export default function TechnicalDoc() {
       </Callout>
 
       <h2>Customer experience audit update — September 2026</h2>
-      <p>Checkout opens an editable order review before handing off to Stripe for address and payment entry. The payment action stays available while delivery is calculated. Internal catalogue gaps are never named in the customer interface or public delivery response; secure checkout gives one neutral recovery message if it cannot prepare delivery. Weight, size and pack selectors update prices and delivery; selecting an option already in the basket combines quantities within available stock. Product weight is separate from packed shipping weight.</p>
+      <p>Checkout opens an editable order review before UK address entry and embedded Stripe payment. The payment action stays available while delivery is calculated. Internal catalogue gaps are never named in the customer interface or public delivery response; secure checkout gives one neutral recovery message if it cannot prepare delivery. Weight, size and pack selectors update prices and delivery; selecting an option already in the basket combines quantities within available stock. Product weight is separate from packed shipping weight.</p>
       <p>The cart accepts typed whole quantities and bulk orders, shows line totals, and offers a separate Remove action. Delivery estimates and checkout share the same database checks for price, stock, product visibility, packed weight, and duplicate option lines.</p>
-      <p>Delivery multiplies each complete item or pack’s shipping weight by quantity. In Delivery settings, enable multiple parcels only when the courier charges the entered rates per parcel. Items and packs are never split; different postal groups travel separately. Missing weights, rates, or unsupported destinations retain a contact route. Online checkout uses country-wide GB rates; postcode-specific estimates remain an owner order-postage feature.</p>
+      <p>Delivery multiplies each complete item or pack’s shipping weight by quantity. In Delivery settings, enable multiple parcels only when the courier charges the entered rates per parcel. Items and packs are never split; different postal groups travel separately. Missing weights, rates, or unsupported destinations retain a contact route. Online checkout calculates delivery against the submitted UK postcode and supported rates.</p>
       <p>Failed contact forms keep the customer’s input. Success appears only after acknowledgement. Only a matching pending checkout reconciles purchased cart quantities, once. Payment confirmation does not promise email delivery. Admin date labels use the shop timezone in all browsers. Payment confirmation and emails use the same short reference, and return requests also accept the previous twelve-character reference.</p>
       <p>Payment notifications must belong to this shop and confirm payment before creating an order. Configure both <code>checkout.session.completed</code> and <code>checkout.session.async_payment_succeeded</code>. Both payment-provider shipping-address formats remain supported.</p>
       <p>Run the unit checks, production build, and separate browser suite against a disposable local database without payment or email credentials. Browser coverage includes automatic accessibility checks and optional screenshots; manual screen-reader and real-device testing remain distinct acceptance work.</p>
@@ -119,7 +121,7 @@ export default function TechnicalDoc() {
           <tbody>
             <tr><td><code>/api/products</code></td><td>GET</td><td>Flattened visible catalogue (one card per SKU); 60s cache</td></tr>
             <tr><td><code>/api/checkout/delivery</code></td><td>POST</td><td>Returns a trusted UK delivery estimate from the cart quantities and packed weights</td></tr>
-            <tr><td><code>/api/checkout</code></td><td>POST</td><td>Re-verifies price/stock in D1, creates a Stripe Checkout Session, returns its URL</td></tr>
+            <tr><td><code>/api/checkout</code></td><td>POST</td><td>Re-verifies price/stock in D1, creates/reuses embedded Stripe Checkout and reserves stock before returning its client secret</td></tr>
             <tr><td><code>/api/webhook</code></td><td>POST</td><td>Stripe webhook; on a paid shop checkout completion or delayed payment success writes the order and decrements stock (idempotent)</td></tr>
             <tr><td><code>/api/images/*</code></td><td>GET</td><td>Serves R2-stored uploaded images; 1-year immutable cache, ETag</td></tr>
           </tbody>
@@ -236,8 +238,8 @@ export default function TechnicalDoc() {
       <h2>11. Build &amp; deploy pipeline</h2>
       <ul className="admin-doc__list">
         <li><strong>Dev:</strong> <code>vite</code> serves the SPA and proxies <code>/api</code> to a local <code>wrangler pages dev</code> (port 8788). Run both for full-stack local testing.</li>
-        <li><strong>Build:</strong> <code>npm run build</code> = <code>vite build</code> then <code>scripts/generate-seo.mjs</code>, which prerenders per-route HTML shells (title/description/canonical/OG/JSON-LD), plus <code>robots.txt</code> and sitemaps. <code>/admin/*</code> is excluded from prerender and sitemaps.</li>
-        <li><strong>Deploy (dev/UAT):</strong> <code>./deploy-cloudflare.sh</code> → <code>wrangler pages deploy dist</code> to the <code>salty-lamps-proposal</code> project (hotmail account).</li>
+        <li><strong>Build:</strong> <code>npm run build</code> uses the committed content snapshot by default, then runs Vite and search-page generation. It makes no remote request to the retired proposal account. Production requires an explicit, verified owner-account live source. <code>/admin/*</code> is excluded from prerender and sitemaps.</li>
+        <li><strong>Former dev/UAT deployment:</strong> the retired proposal-account deployment command is disabled. Use an explicitly verified owner-account destination for further hosted testing.</li>
         <li><strong>Deploy (production):</strong> <code>./deploy-production.sh</code> — account-agnostic; provisions D1 + R2 on the owner's own account, catalog-only seed, then the owner attaches their own live Stripe keys. See <code>PRODUCTION-HANDOVER.md</code>.</li>
       </ul>
 

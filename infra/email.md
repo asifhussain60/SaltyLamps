@@ -6,20 +6,21 @@ orders, enquiries, refund requests and low stock. One provider, called from one 
 
 **No secret values in this file** — only where each one lives. See [`README.md`](README.md).
 
-## Why not Cloudflare
+## Cloudflare choice — reviewed 26 September 2026
 
-Asked and answered on 2026-08-01, so it doesn't get re-opened. Cloudflare cannot send this shop's
-email, for two independent reasons:
+The earlier statement that Cloudflare cannot send customer email is obsolete. Cloudflare Email Service now offers outgoing customer email through its API, but arbitrary recipients require **Workers Paid**. The current official price is a $5/month Workers minimum, including 3,000 outgoing emails per month, then $0.35 per 1,000. Sends to preverified destination addresses remain free, but that does not cover arbitrary shoppers.
 
-- **Email Routing is a receiving product.** It forwards inbound mail to a mailbox elsewhere.
-- **The Workers `send_email` binding only delivers to pre-verified destination addresses**
-  (`E_RECIPIENT_NOT_ALLOWED` otherwise). Order confirmations go to customers nobody has verified in
-  advance, so it is structurally unusable for a shop. Admin-only alerts would work; the customer
-  half, which is most of the system, would not.
-- **And it isn't available here anyway** — that binding is a Workers feature, and this site runs on
-  Cloudflare **Pages**, which supports only a subset of bindings. Email Routing is not among them.
+The free-first migration plan therefore retains the existing **Resend** integration for order mail and considers free **Cloudflare Email Routing** for incoming forwarding. Routing is not a hosted mailbox or a business-reply service. Preserve Zoho until archive, inbound and outbound reply requirements are proven. No paid upgrade is authorized by this review.
 
-Cloudflare's role is holding the API key as a Pages secret. That is all.
+Sources: [Cloudflare Email Service pricing](https://developers.cloudflare.com/email-service/platform/pricing/), [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/), [Resend pricing](https://resend.com/pricing).
+
+The dated UAT observations below are historical, not fresh proof of owner-account access or current delivery. The authoritative launch sequence and access evidence now live in `salty-lamps-site/docs/migration.md` and the matching admin page.
+
+## Current migration verification — 26 September 2026
+
+DNS is now managed by Cloudflare; the historical Wix nameserver limitation below no longer describes the current domain. Zoho routing remains retained. No owner-account Resend configuration or real customer delivery has been verified for the replacement. Do not reuse retired Cloudflare credentials or act on the historical delete/re-add advice without inspecting the current authorized Resend account.
+
+Local preparation passed: all eleven templates rendered with resolved tokens, plain text and valid image assets; eleven deliberately suppressed test attempts reconciled to eleven skipped outbox records. No mail was sent. Evidence: `../outputs/email-rehearsal-2026-09-26/report.json`. Paid-order/refund notifications now use durable delivery jobs and replay/reconciliation guards; the older no-retry description below is historical. Actual provider delivery, inbox receipt and Zoho backup remain pending.
 
 ## Account and credentials
 

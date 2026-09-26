@@ -2,7 +2,7 @@
 // If it was the primary (lowest sort_order), the next remaining image is promoted;
 // if none remain, the product's cover image is cleared.
 import { json, apiError, auditStmt } from '../../../../../lib/admin-helpers.mjs'
-import { deleteImageObject, syncPrimaryImageStmt, currentPrimaryPath } from '../../../../../lib/image-upload.mjs'
+import { deleteImageObject, syncCurrentPrimaryImageStmt, currentPrimaryPath } from '../../../../../lib/image-upload.mjs'
 
 export async function onRequestDelete({ params, env, data }) {
   try {
@@ -11,15 +11,14 @@ export async function onRequestDelete({ params, env, data }) {
     ).bind(params.imageId, params.id).first()
     if (!row) return apiError('Image not found.', 404, { code: 'not_found' })
 
-    await env.DB.prepare(`DELETE FROM product_images WHERE id = ?`).bind(row.id).run()
-    await deleteImageObject(env, row.key)
-
-    const primaryPath = await currentPrimaryPath(env.DB, params.id)
     await env.DB.batch([
-      syncPrimaryImageStmt(env.DB, params.id, primaryPath),
+      env.DB.prepare(`DELETE FROM product_images WHERE id = ?`).bind(row.id),
+      syncCurrentPrimaryImageStmt(env.DB, params.id),
       auditStmt(env.DB, data.actorEmail, 'image.delete', 'product', params.id, { imageId: row.id }),
     ])
 
+    await deleteImageObject(env, row.key)
+    const primaryPath = await currentPrimaryPath(env.DB, params.id)
     return json({ id: row.id, deleted: true, primary_path: primaryPath })
   } catch (err) {
     return apiError(`Could not delete image: ${err.message}`, 500, { code: 'server_error' })

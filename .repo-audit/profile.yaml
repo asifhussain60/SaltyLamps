@@ -34,12 +34,12 @@ protected:
 
 # What proves a change is safe. Phase 6 runs these after every group.
 #
-# There is no test suite. This command IS the repo's verification: it pulls content
-# from D1, type-checks nothing but builds every module, asserts every referenced
-# media file exists, and regenerates 102 prerendered route shells. A break in any of
-# those fails the command.
+# Unit regressions and deterministic committed-content build are available.
+# Browser tests also run against an isolated local database with no payment/mail
+# credentials; see the dated review evidence before selecting a live target.
 verify:
-  - cd salty-lamps-site && npm run build
+  - cd salty-lamps-site && npm run test:unit
+  - cd salty-lamps-site && CONTENT_SNAPSHOT_SOURCE=committed npm run build
 
 # Files that MUST change together.
 #
@@ -59,10 +59,10 @@ mirrors:
     pinned_by: null
   - a: salty-lamps-site/docs/pricing.md
     b: salty-lamps-site/src/admin/docs/PricingDoc.jsx
-    pinned_by: null
+    pinned_by: salty-lamps-site/test/migration-plan.test.mjs
   - a: salty-lamps-site/docs/migration.md
     b: salty-lamps-site/src/admin/docs/MigrationDoc.jsx
-    pinned_by: null
+    pinned_by: salty-lamps-site/test/migration-plan.test.mjs
 
 # Areas the owner has declared fragile or mid-migration.
 fragile:

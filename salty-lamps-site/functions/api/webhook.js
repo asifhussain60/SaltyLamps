@@ -1,3 +1,4 @@
+import { frameChoicesFromMetadata } from '../lib/frame-orientation.mjs'
 import {weightsFromMetadata,WEIGHT_FIELDS} from '../lib/weights.mjs'
 // POST /api/webhook — Stripe webhook endpoint.
 // Configure this URL in the Stripe dashboard (Developers > Webhooks) listening
@@ -9,7 +10,10 @@ import {weightsFromMetadata,WEIGHT_FIELDS} from '../lib/weights.mjs'
 //           admin emails are recorded as 'skipped' and nothing else changes.
 
 import Stripe from 'stripe'
-import { sendTemplated, orderTokens, orderBlocks, loadEmailConfig } from '../lib/mailer.mjs'
+import { orderTokens, orderBlocks, loadEmailConfig } from '../lib/mailer.mjs'
+import { allCheckoutLines, checkoutAddress, releaseCheckout } from '../lib/checkout-state.mjs'
+import { emailJobStatement, deliverOrderEmails } from '../lib/durable-email.mjs'
+import { syncRefund } from '../lib/refunds.mjs'
 import { lowStockThreshold } from '../lib/admin-helpers.mjs'
 
 export async function onRequestPost({ request, env }) {
@@ -28,6 +32,23 @@ export async function onRequestPost({ request, env }) {
     return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 })
   }
 
+  try {
+    if (['checkout.session.expired','checkout.session.async_payment_failed'].includes(event.type) && event.data?.object?.metadata?.store === 'salty-lamps') {
+      const current=await stripe.checkout.sessions.retrieve(event.data.object.id)
+      if (current.payment_status !== 'paid') {
+        if (current.status === 'expired') await releaseCheckout(env.DB,current.id)
+        else if (event.type === 'checkout.session.async_payment_failed' && current.payment_intent) {
+          const intent=await stripe.paymentIntents.retrieve(current.payment_intent)
+          if (['canceled','requires_payment_method'].includes(intent.status)) await releaseCheckout(env.DB,current.id)
+        }
+      }
+    }
+    if (['refund.created','refund.updated','refund.failed'].includes(event.type)) {
+      const refund=await stripe.refunds.retrieve(event.data.object.id)
+      await syncRefund(env,refund,new URL(request.url).origin,stripe)
+    }
+  } catch { return new Response('Payment reconciliation is awaiting retry', {status:500}) }
+
   if (isPaidShopCheckoutEvent(event)) {
     const session = event.data.object
     try {
@@ -36,8 +57,8 @@ export async function onRequestPost({ request, env }) {
       // Stripe retries on a non-2xx, which is what we want here: this only fires on
       // a genuine write failure (or two retried deliveries racing each other), and
       // the idempotency check above makes a retry safe either way.
-      console.error('webhook: recordOrder failed', err)
-      return new Response(JSON.stringify({ received: false, error: err.message }), {
+      console.error('webhook: paid order or notification is awaiting retry')
+      return new Response(JSON.stringify({ received: false, error: 'Order processing is awaiting retry' }), {
         status: 500,
         headers: { 'content-type': 'application/json' },
       })
@@ -60,12 +81,11 @@ export function isPaidShopCheckoutEvent(event) {
 async function recordOrder(env, stripe, session, origin) {
   const db = env.DB
   const existing = await db.prepare('SELECT id FROM orders WHERE id = ?').bind(session.id).first()
-  if (existing) return // already processed (Stripe may retry webhooks)
+  if (existing) return resumeOrderNotifications(env, session.id, origin, stripe)
 
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-    limit: 100,
-    expand: ['data.price.product'],
-  })
+  const lineItems = { data: await allCheckoutLines(stripe, session.id) }
+  const submitted = await checkoutAddress(db, session.id)
+  if (session.metadata?.checkout_version === '2' && !submitted) throw new Error('Checkout delivery snapshot missing')
 
   // Capture the shipping address Stripe collected — needed to pack and post the
   // order.
@@ -82,7 +102,7 @@ async function recordOrder(env, stripe, session, origin) {
   //
   // The billing fallback stays, but it is now genuinely a fallback rather than the
   // path every order took.
-  const ship = session.shipping_details || session.collected_information?.shipping_details || {}
+  const ship = submitted ? { name: submitted.name, address: { line1: submitted.line1, line2: submitted.line2, city: submitted.city, postal_code: submitted.postcode, country: 'GB' } } : session.shipping_details || session.collected_information?.shipping_details || {}
   const addr = ship.address || session.customer_details?.address || {}
   const shipName = ship.name || session.customer_details?.name || null
 
@@ -94,7 +114,7 @@ async function recordOrder(env, stripe, session, origin) {
     ).bind(
       session.id,
       session.payment_intent,
-      session.customer_details?.email ?? null,
+      submitted?.email || session.customer_details?.email || null,
       session.amount_total,
       session.currency,
       shipName,
@@ -109,19 +129,20 @@ async function recordOrder(env, stripe, session, origin) {
   // sku_id -> units ordered, collected while building the insert statements so the
   // low-stock check below has the quantities without walking the Stripe payload twice.
   const orderedBySkuId = new Map()
+  statements.push(db.prepare("UPDATE checkout_reservations SET status='consumed' WHERE session_id=? AND status='active'").bind(session.id))
 
   for (const line of lineItems.data) {
     // sku_id was stamped into the Stripe product's metadata in checkout.js, straight
     // from the D1-verified row — more trustworthy than anything echoed from the client.
     const skuId = Number(line.price?.product?.metadata?.sku_id)
-    if (!Number.isInteger(skuId)) continue // metadata missing — skip rather than write a bad row
+    if (!Number.isSafeInteger(skuId) || skuId < 1 || !Number.isSafeInteger(line.quantity) || line.quantity < 1) throw new Error('Paid order contains an invalid item')
 
     orderedBySkuId.set(skuId, (orderedBySkuId.get(skuId) || 0) + line.quantity)
 
     statements.push(
       db.prepare(
-        `INSERT INTO order_items (order_id, sku_id, quantity, unit_price_pence) VALUES (?, ?, ?, ?)`
-      ).bind(session.id, skuId, line.quantity, line.price.unit_amount)
+        `INSERT INTO order_items (order_id, sku_id, quantity, unit_price_pence, frame_choices_json) VALUES (?, ?, ?, ?, ?)`
+      ).bind(session.id, skuId, line.quantity, line.price.unit_amount, line.price?.product?.metadata?.frame_choices ? JSON.stringify(frameChoicesFromMetadata(line.price.product.metadata.frame_choices, line.quantity)) : null)
     )
 
     const recordedWeights=weightsFromMetadata(line.price?.product?.metadata||{})
@@ -145,17 +166,24 @@ async function recordOrder(env, stripe, session, origin) {
   // the same alert on every subsequent order until the item was restocked.
   const before = await readStockBefore(db, [...orderedBySkuId.keys()])
 
+  statements.push(db.prepare('INSERT INTO order_notification_jobs(order_id,payload) VALUES(?,?)')
+    .bind(session.id,JSON.stringify({session, ordered:[...orderedBySkuId], before:[...before]})))
   await db.batch(statements)
+  await resumeOrderNotifications(env,session.id,origin,stripe)
+}
 
-  // Everything past this point is best-effort. The order is committed; nothing
-  // below may throw, or Stripe retries and the idempotency check above swallows
-  // the reprocess. sendTemplated() never throws, and the rest is wrapped.
-  try {
-    await sendOrderEmails(env, db, session, orderedBySkuId, before, origin, stripe)
-  } catch {
-    // Deliberately silent: an order that is recorded but unannounced is a support
-    // problem, an order that is lost is a business one.
+export async function resumeOrderNotifications(env,orderId,origin,stripe) {
+  const job=await env.DB.prepare('SELECT * FROM order_notification_jobs WHERE order_id=?').bind(orderId).first()
+  if (!job) return deliverOrderEmails(env,orderId,origin) // also handles refund-only jobs
+  if (!job.prepared) {
+    const {session,ordered,before}=JSON.parse(job.payload)
+    const messages=await prepareOrderEmails(env,env.DB,session,new Map(ordered),new Map(before),origin,stripe)
+    await env.DB.batch([
+      ...messages.map((message,index)=>emailJobStatement(env.DB,`order:${orderId}:${message.templateKey}:${index}`,orderId,message)),
+      env.DB.prepare('UPDATE order_notification_jobs SET prepared=1 WHERE order_id=?').bind(orderId),
+    ])
   }
+  await deliverOrderEmails(env,orderId,origin)
 }
 
 async function readStockBefore(db, skuIds) {
@@ -172,12 +200,12 @@ async function readStockBefore(db, skuIds) {
   return new Map((results || []).map(r => [r.id, r]))
 }
 
-async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin, stripe) {
+async function prepareOrderEmails(env, db, session, orderedBySkuId, before, origin, stripe) {
   const order = await db.prepare(`SELECT * FROM orders WHERE id = ?`).bind(session.id).first()
-  if (!order) return
+  if (!order) throw new Error('Notification order missing')
 
   const items = await db.prepare(
-    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
+    `SELECT oi.quantity, oi.unit_price_pence, oi.frame_choices_json, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
      FROM order_items oi
      JOIN skus s ON s.id = oi.sku_id
      JOIN products p ON p.id = s.product_id
@@ -236,7 +264,7 @@ async function sendOrderEmails(env, db, session, orderedBySkuId, before, origin,
     messages.push(message)
   }
 
-  await sendTemplated(env, messages, { origin })
+  return messages
 }
 
 // One alert per SKU that crossed the threshold on THIS order, and none for a SKU

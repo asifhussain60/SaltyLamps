@@ -1,0 +1,21 @@
+; Read from the signed-in Wix Manage DNS Records page, 26 September 2026.
+; Source snapshot only. Do not import old authoritative NS into Cloudflare.
+; No TXT or SRV rows were listed. 14 service records plus 2 old NS records.
+$ORIGIN saltylamps.co.uk.
+$TTL 3600
+@ IN A 185.230.63.171
+@ IN A 185.230.63.186
+@ IN A 185.230.63.107
+_dmarc IN CNAME _dmarc.wixemails.com.
+s1._domainkey IN CNAME s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com.
+s2._domainkey IN CNAME s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com.
+sel1._domainkey IN CNAME sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com.
+sel2._domainkey IN CNAME sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com.
+sg IN CNAME sg.saltylamps.co.uk.s007.ascendbywix.com.
+www IN CNAME cdn3.wixdns.net.
+zac85392650 IN CNAME domain.zoho.com.
+@ IN MX 10 mx.zoho.eu.
+@ IN MX 20 mx2.zoho.eu.
+@ IN MX 50 mx3.zoho.eu.
+@ 86400 IN NS ns5.wixdns.net.
+@ 86400 IN NS ns4.wixdns.net.

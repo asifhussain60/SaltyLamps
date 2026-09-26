@@ -1,5 +1,7 @@
 # Stripe
 
+> **Historical test-account evidence.** This note describes the old proposal sandbox, not a connected Salty Lamps business payment route. The Cloudflare account behind that proposal is retired and prohibited. Follow the [current payment decision](../salty-lamps-site/docs/payment-decision.md) and [account ownership rule](account-ownership.md) before any provider connection or deployment.
+
 ## Account
 
 - Currently a **test-mode sandbox account** named "New business sandbox" — not yet a verified real

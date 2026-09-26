@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { fixtureCartProduct } from '../helpers/cart-product.js'
 
 const routes = ['/', '/shop', '/product-page/angel-shape-himalayan-rock-salt-lamp', '/collection/home-gifts', '/gallery', '/process', '/reviews', '/refund-request', '/privacy-policy', '/admin', '/admin/settings/delivery']
 for (const route of routes) {
@@ -29,6 +30,7 @@ for (const route of routes) {
 }
 
 test('the cart remains accessible while editing quantities', async ({ page }, testInfo) => {
+  await fixtureCartProduct(page)
   await page.setViewportSize(testInfo.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
   await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
   await page.getByRole('button', { name: 'Add to cart', exact: true }).click()

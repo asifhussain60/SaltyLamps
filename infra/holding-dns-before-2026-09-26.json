@@ -1,0 +1,77 @@
+{
+  "checked_at": "2026-09-26T19:49:48.950958+00:00",
+  "records": [
+    {
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "cdn3.wixdns.net."
+      ]
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "answer": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ]
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "answer": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ]
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "TXT",
+      "answer": []
+    },
+    {
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "_dmarc.wixemails.com."
+      ]
+    },
+    {
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "domain.zoho.com."
+      ]
+    },
+    {
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ]
+    },
+    {
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ]
+    },
+    {
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ]
+    },
+    {
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "answer": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ]
+    }
+  ]
+}

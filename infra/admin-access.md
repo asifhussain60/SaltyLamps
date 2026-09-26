@@ -1,93 +1,13 @@
-# Getting into the admin on the test site
+# Salty Lamps administrator access
 
-> **Current proposal state, 2026-09-13:** the owner-review site is deliberately open only on
-> `salty-lamps-proposal.pages.dev` through the hostname-scoped `ADMIN_OPEN_HOSTS` exception. This
-> restores the original sample-data review workflow. Remove that exception and complete the Access
-> setup below before any customer-domain cutover.
+The administrator address is `https://admin.saltylamps.co.uk/admin`. This is a future production requirement; the replacement shop has not launched. The Admin menu points there, but public DNS and live Cloudflare Access protection are not yet verified.
 
-The production design keeps the admin API closed until Cloudflare Access verifies the owner. The
-proposal site currently uses the explicit hostname-scoped review exception described above; no
-other deployed hostname inherits it.
+Use the [approved Salty Lamps owner account](account-ownership.md), held by `Saltylamps@hotmail.com`. `asifhussain60@gmail.com` is an Active member with an account-wide administrator policy in that account. This membership does not itself grant entry to the future shop administrator hostname. The retired `asifhussain60@hotmail.com` Cloudflare account, its proposal hostname and its saved credentials must never be used for access setup or testing.
 
-This is what it takes to open it again for the right people.
+The owner dashboard now reports **Zero Trust Free active**. Its only listed identity provider is **Cloudflare**, under the team name `steep-voice-d86f`. No protected application or admission policy was saved. On two attempts, choosing the exact **Emails** selector in the new application policy form crashed the dashboard with `Maximum call stack size exceeded`; stop this browser route until the error is resolved or a reviewed alternative is ready. Neither attempt reached the Save policy or Create application action.
 
-## What was wrong
+Before importing customer records or deploying an administrator interface, configure Cloudflare Access on the **entire admin hostname** with **Sign in with Cloudflare**, limited to the owner and `asifhussain60@gmail.com` only. Account membership and shop Access admission are separate checks. Test a signed-out direct admin page, a signed-out admin API request, an approved user, and a revoked or unapproved user. The public shop hostname must not serve admin pages or APIs. Keep development bypasses local only and never enable them on a deployed host.
 
-A switch called `DEV_ADMIN_BYPASS` exists so a laptop can exercise the admin without
-signing in. It had been set as a **production** secret on the test site and left
-there, and the gate trusted it wherever it found it. With it set, every admin
-endpoint answered anyone who asked — the whole catalogue, the whole order list, and
-the routes that delete a product, delete a variant and issue a refund.
+The code's local denial tests pass, but these live checks remain open. The current [migration plan](../salty-lamps-site/docs/migration.md) is the release gate and records the result when completed. No one should send passwords, one-time codes or API secrets in chat.
 
-Two things changed on 2 August 2026:
-
-1. **The gate no longer trusts the switch on its own.** It now also requires the
-   request to have arrived at a local address. Cloudflare routes to a Pages project
-   by hostname, so a deployed copy never sees one — the switch is inert anywhere but
-   a laptop, whether or not anyone remembers to unset it.
-2. **The production secret was deleted** and the project redeployed.
-
-Verified afterwards: fourteen admin endpoints, three rounds, forty-two anonymous
-requests, nothing answered with data. Delete and refund included. The shop,
-checkout, category pages and product pages were unaffected throughout.
-
-## Why the admin is shut rather than asking you to sign in
-
-Cloudflare Access was never set up on this project. There is no sign-in page to
-send you to — `/admin` was reachable only because the bypass was answering for it.
-So the gate does the only safe thing available and refuses everyone.
-
-## Restoring access — about fifteen minutes, and it needs your login
-
-Do this in the Cloudflare dashboard on the account that owns the Pages project
-(the hotmail one, `Asifhussain60@hotmail.com`).
-
-1. **Zero Trust → Access → Applications → Add an application → Self-hosted.**
-2. Give it a name (`Salty Lamps admin` does fine) and add these two paths on the
-   test-site hostname `salty-lamps-proposal.pages.dev`:
-   - `/admin*`
-   - `/api/admin*`
-   Add the same two on the real domain when the shop moves there.
-3. **Add a policy**: action *Allow*, rule *Emails* → your address, plus anyone else
-   who should get in. Keep it to named addresses; do not use a whole-domain rule.
-4. Save, then open the application's **Overview** tab and copy the **Application
-   Audience (AUD) Tag**. Note your **team domain** too — the first part of
-   `<team>.cloudflareaccess.com`, shown under Zero Trust → Settings → Custom Pages,
-   or in the URL of your Zero Trust dashboard.
-5. Set both as Pages secrets and redeploy:
-
-```bash
-cd ~/PROJECTS/SaltyLamps/salty-lamps-site && npx wrangler pages secret put ACCESS_AUD --project-name salty-lamps-proposal
-```
-
-```bash
-cd ~/PROJECTS/SaltyLamps/salty-lamps-site && npx wrangler pages secret put ACCESS_TEAM_DOMAIN --project-name salty-lamps-proposal
-```
-
-```bash
-cd ~/PROJECTS/SaltyLamps/salty-lamps-site && ./deploy-cloudflare.sh
-```
-
-6. **Check it.** Open the test site's admin in a browser — you should be sent to a
-   Cloudflare sign-in page, and land in the admin after signing in. Then confirm a
-   request carrying no session is still refused:
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' https://salty-lamps-proposal.pages.dev/api/admin/orders
-```
-
-That must print `401`, not `200`. Once Access is configured the message changes from
-"not configured" to "Not signed in", which is how you know step 5 took effect.
-
-## Two things to keep in mind
-
-- **`DEV_ADMIN_BYPASS` stays in `.dev.vars` and only there.** It is what lets the
-  local dev server, the catalogue import tool and the reset tool work without a
-  token. It is now harmless if it escapes, but there is still no reason to set it
-  anywhere but a laptop.
-- **Admin responses must never be cached.** The gate stamps every one of them
-  `no-store`. During the checks above, one endpoint briefly returned a stale
-  edge-cached copy after the fix had already landed — an empty order list, so
-  nothing was disclosed, and it cleared on its own. If you ever change how admin
-  responses are built, leave that header alone: it is the only thing stopping
-  Cloudflare from replaying an authorised answer to a stranger.
+Continuation decision, 26 September 2026: Asif independently reproduced the exact Emails-selector crash and instructed that this form be deferred. No form retry was made during the continuation. Keep the administrator site classified as unprotected. A narrowly scoped API alternative may be prepared for a separate review later; it is not approved or executed by this deferral. Continue independent local backup, recovery, reconciliation and read-only account checks.

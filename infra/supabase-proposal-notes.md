@@ -1,5 +1,7 @@
 # Supabase — proposal-site notes database
 
+> **Historical record only.** The former proposal deployment's Cloudflare account is retired and prohibited for Salty Lamps work. Use the [current account ownership rule](account-ownership.md); do not redeploy or recover the old proposal through its saved credentials.
+
 Database record for the notes and brainstorm board behind the **Salty Lamps
 proposal site** (`salty-lamps-proposal.pages.dev`).
 

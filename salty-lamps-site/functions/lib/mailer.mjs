@@ -1,23 +1,12 @@
+import { orderVariant } from './frame-orientation.mjs'
 import {weightLabel} from './weights.mjs'
 // Sending. One provider, one place.
 //
-// THE GOVERNING RULE: an email may never break a business transaction. The Stripe
-// webhook records a paid order; if a send threw from inside that handler, Stripe
-// would retry, the idempotency check would short-circuit, and the order could be
-// lost outright. So sendTemplated() catches everything, returns a result array
-// instead of throwing, and is always called AFTER the write it accompanies has
-// already committed — never inside the same db.batch().
-//
-// WHY SYNCHRONOUS. An earlier design deferred sends with ctx.waitUntil(). That
-// bought latency isolation this shop's volume does not need, and cost something
-// real: an outbox row stuck at 'pending' whenever an isolate died, with no
-// scheduler in Pages Functions to ever resolve it. Sending inline — all messages
-// for one event in parallel, five seconds each — costs ~500ms against Stripe's
-// 20-second webhook budget and gives every row a true final status.
-//
-// There is no automatic retry. A failed send is recorded and resent with one click
-// from Emails -> Activity. Automatic retry needs a scheduler, which means a
-// companion Worker on a cron trigger; that is deliberately out of scope.
+// Sending never rolls back business state. Paid-order and refund notifications use
+// durable-email.mjs: their intent commits with the business change, and provider
+// idempotency keys protect retry after an uncertain response. Other callers retain
+// synchronous best-effort delivery and the existing manual activity-log resend.
+// No waitUntil work is needed; webhook retries resume unfinished durable jobs.
 
 import { renderEmail, orderRef, formatMoney } from './email-render.mjs'
 
@@ -75,10 +64,10 @@ export async function loadTemplates(env, keys) {
 }
 
 /** One HTTP call to Resend. Throws on a non-2xx so the caller can record why. */
-export async function sendMail({ apiKey, from, to, subject, html, text, replyTo }) {
+export async function sendMail({ apiKey, from, to, subject, html, text, replyTo, idempotencyKey }) {
   const res = await fetch(RESEND_ENDPOINT, {
     method: 'POST',
-    headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
+    headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
     body: JSON.stringify({
       from,
       to: [to],
@@ -136,7 +125,7 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
         : !config.apiKey ? 'No RESEND_API_KEY configured.'
         : null
 
-      const rendered = template
+      const rendered = message.transport || (template
         ? renderEmail({
             template,
             data: message.data || {},
@@ -144,7 +133,7 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
             siteUrl: config.siteUrl,
             shopName: config.fromName,
           })
-        : { subject: '', html: '', text: '' }
+        : { subject: '', html: '', text: '' })
 
       return { message, rendered, skip }
     })
@@ -152,15 +141,16 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
     const outcomes = await Promise.allSettled(
       prepared.map(async ({ message, rendered, skip }) => {
         if (skip) return { status: 'skipped', error: skip, providerId: null }
-        const providerId = await sendMail({
-          apiKey: config.apiKey,
+        const transport=message.transport || {
           from: `${config.fromName} <${config.fromAddress}>`,
           to: message.to,
           subject: rendered.subject,
           html: rendered.html,
           text: rendered.text,
           replyTo: message.replyTo,
-        })
+        }
+        if (message.persistTransport && !message.transport) await message.persistTransport(transport)
+        const providerId = await sendMail({...transport,apiKey:config.apiKey,idempotencyKey:message.idempotencyKey})
         return { status: 'sent', error: null, providerId }
       }),
     )
@@ -189,7 +179,7 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
           r.error,
           r.message.orderId ?? null,
           r.providerId,
-          JSON.stringify({ data: r.message.data || {}, blocks: r.message.blocks || [], to: r.message.to, replyTo: r.message.replyTo || null }),
+          JSON.stringify({ data: r.message.data || {}, blocks: r.message.blocks || [], to: r.message.to, replyTo: r.message.replyTo || null, idempotencyKey: r.message.idempotencyKey || null, durableJobId: r.message.durableJobId || null }),
         )))
     } catch {
       // Nothing to do but continue: the email either went or it did not, and that
@@ -263,7 +253,7 @@ export function orderBlocks(order, items, { includeAddress = true } = {}) {
     title: 'Order details',
     items: (items || []).map(item => ({
       name: item.name,
-      variant: item.variant_label || '',
+      variant: orderVariant(item),
       sku: item.sku || '',
       weight: item.weight_public===1?weightLabel({productWeightMinG:item.product_weight_min_g,productWeightMaxG:item.product_weight_max_g}):'',
       qty: item.quantity,

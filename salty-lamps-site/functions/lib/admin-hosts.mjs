@@ -81,10 +81,9 @@ export function isAdminHost(hostname, env) {
   return hostMatches(hostname, list)
 }
 
-export function isAdminOpenHost(hostname, env) {
-  if (!hostname || isLocalHost(hostname)) return false
-  if (hostname === publicHost(env)) return false
-  return hostMatches(hostname, env?.ADMIN_OPEN_HOSTS)
+export function isAdminOpenHost() {
+  // Every deployed admin surface requires Access, including preview aliases.
+  return false
 }
 
 // Has an admin host actually been configured? Distinct from isAdminHost() because

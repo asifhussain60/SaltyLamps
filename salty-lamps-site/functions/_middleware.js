@@ -1,3 +1,4 @@
+import { onRequest as authenticateAdmin } from './api/admin/_middleware.js'
 // Runs before every request to the site — storefront pages, static assets, API
 // routes, all of it. Two jobs, and nothing else belongs here.
 //
@@ -18,13 +19,12 @@
 // photograph on the real domain — does two string comparisons and returns. Nothing
 // is parsed, nothing is fetched, and the response is not even copied.
 //
-// Deliberately NOT here: authentication. The admin API gate lives in
-// functions/api/admin/_middleware.js and stays there. This file decides WHERE the
-// admin exists; that one decides WHO may use it. Collapsing the two would put
-// token verification on the path of every image request on the site.
+// Administrator pages reuse the API authentication gate after hostname checks.
+// Public storefront and image requests never invoke token verification.
 
 import {
   hostnameOf,
+  isLocalHost,
   isAdminHost,
   primaryAdminHost,
   shouldDiscourageIndexing,
@@ -34,7 +34,8 @@ const ROBOTS_KEEP_OUT = 'User-agent: *\nDisallow: /\n'
 const PUBLIC_PAGES = new Set([
   '/', '/shop', '/gallery', '/process', '/reviews', '/privacy-policy',
   '/terms-and-conditions', '/return-refund-policy', '/returns-exchanges',
-  '/refund-request', '/checkout/success', '/checkout/cancelled',
+  '/refund-request', '/checkout', '/checkout/address', '/checkout/payment',
+  '/checkout/success', '/checkout/cancel', '/checkout/cancelled',
 ])
 const PUBLIC_PAGE_PREFIXES = ['/product-page/', '/category/', '/collection/']
 
@@ -69,6 +70,17 @@ export async function onRequest(context) {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex, nofollow' },
     })
+  }
+
+  // Access at the edge provides the sign-in screen. This origin check also
+  // protects direct admin links when an Access application is missing/mis-scoped.
+  if (isAdminPath(pathname) && !isLocalHost(hostname)) {
+    return authenticateAdmin({ ...context, next: async () => {
+      const response = await next()
+      const protectedPage = new Response(response.body, response)
+      protectedPage.headers.set('x-robots-tag', 'noindex, nofollow')
+      return protectedPage
+    } })
   }
 
   // The SPA fallback must carry a real 404 status for arbitrary addresses while

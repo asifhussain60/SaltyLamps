@@ -1,0 +1,616 @@
+{
+  "checked_at": "2026-09-26T19:25:36.268840+00:00",
+  "scope": "Read-only public DNS and HTTPS; not a mailbox delivery test, signed-in account check or executed rollback",
+  "queries": [
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "expected": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "actual": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "_dmarc.wixemails.com."
+      ],
+      "actual": [
+        "_dmarc.wixemails.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "sg.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "domain.zoho.com."
+      ],
+      "actual": [
+        "domain.zoho.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "james.ns.cloudflare.com",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "expected": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "actual": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "_dmarc.wixemails.com."
+      ],
+      "actual": [
+        "_dmarc.wixemails.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "sg.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "domain.zoho.com."
+      ],
+      "actual": [
+        "domain.zoho.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "tani.ns.cloudflare.com",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "expected": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "actual": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "_dmarc.wixemails.com."
+      ],
+      "actual": [
+        "_dmarc.wixemails.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "sg.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "domain.zoho.com."
+      ],
+      "actual": [
+        "domain.zoho.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns4.wixdns.net",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "expected": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "actual": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "_dmarc.wixemails.com."
+      ],
+      "actual": [
+        "_dmarc.wixemails.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "actual": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "sg.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "actual": [
+        "sg.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "domain.zoho.com."
+      ],
+      "actual": [
+        "domain.zoho.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "ns5.wixdns.net",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "1.1.1.1",
+      "name": "saltylamps.co.uk",
+      "type": "NS",
+      "expected": [
+        "james.ns.cloudflare.com.",
+        "tani.ns.cloudflare.com."
+      ],
+      "actual": [
+        "james.ns.cloudflare.com.",
+        "tani.ns.cloudflare.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "1.1.1.1",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "1.1.1.1",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    },
+    {
+      "server": "8.8.8.8",
+      "name": "saltylamps.co.uk",
+      "type": "NS",
+      "expected": [
+        "james.ns.cloudflare.com.",
+        "tani.ns.cloudflare.com."
+      ],
+      "actual": [
+        "james.ns.cloudflare.com.",
+        "tani.ns.cloudflare.com."
+      ],
+      "passed": true
+    },
+    {
+      "server": "8.8.8.8",
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "expected": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "actual": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "passed": true
+    },
+    {
+      "server": "8.8.8.8",
+      "name": "www.saltylamps.co.uk",
+      "type": "CNAME",
+      "expected": [
+        "cdn3.wixdns.net."
+      ],
+      "actual": [
+        "cdn3.wixdns.net."
+      ],
+      "passed": true
+    }
+  ],
+  "web": [
+    {
+      "url": "https://saltylamps.co.uk",
+      "status": 200,
+      "final_url": "https://www.saltylamps.co.uk/"
+    },
+    {
+      "url": "https://www.saltylamps.co.uk",
+      "status": 200,
+      "final_url": "https://www.saltylamps.co.uk"
+    }
+  ],
+  "queries_passed": 46,
+  "queries_total": 46
+}

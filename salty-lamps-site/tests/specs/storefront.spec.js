@@ -5,6 +5,25 @@
 // someone deciding whether it is safe to move the domain.
 import { expect, test } from '@playwright/test'
 
+const STOREFRONT_ROUTES = [
+  '/',
+  '/shop',
+  '/category/salt-lamps',
+  '/product-page/angel-shape-himalayan-rock-salt-lamp',
+  '/collection/home-gifts',
+  '/gallery',
+  '/process',
+  '/reviews',
+  '/refund-request',
+  '/privacy-policy',
+  '/terms-and-conditions',
+  '/return-refund-policy',
+  '/checkout',
+  '/checkout/success',
+  '/checkout/cancelled',
+  '/this-page-does-not-exist',
+]
+
 test.describe('the shop is open', () => {
   test('the homepage loads, with its collections and a basket', async ({ page }) => {
     await page.goto('/')
@@ -16,14 +35,13 @@ test.describe('the shop is open', () => {
   })
 
   test('the proposal navigation includes the owner’s Admin shortcut', async ({ page }) => {
-    // The proposal has always doubled as the owner's review surface, so keep the
-    // original direct shortcut visible alongside the customer navigation.
+    // The shortcut remains visible, but opens the protected administrator host.
     await page.goto('/')
     const menu = page.getByRole('button', { name: /menu/i })
     if (await menu.isVisible()) await menu.click()
     const admin = page.getByRole('link', { name: 'Admin', exact: true })
     await expect(admin).toBeVisible()
-    await expect(admin).toHaveAttribute('href', '/admin')
+    await expect(admin).toHaveAttribute('href', 'https://admin.saltylamps.co.uk/admin')
   })
 
   test('the shop page lists products with prices', async ({ page }) => {
@@ -71,6 +89,46 @@ test.describe('the shop is open', () => {
     expect(response.status()).toBe(404)
     await expect(page.getByText(/not available|not found/i).first()).toBeVisible()
   })
+
+  test('every storefront page starts at the top during in-app navigation', async ({ page }) => {
+    await page.goto('/shop')
+    await page.evaluate(() => {
+      const sentinel = document.createElement('div')
+      sentinel.dataset.scrollSentinel = 'true'
+      sentinel.style.height = '6000px'
+      document.body.appendChild(sentinel)
+    })
+
+    for (const path of STOREFRONT_ROUTES) {
+      await page.evaluate(() => window.scrollTo(0, 4000))
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(1000)
+      await page.evaluate(nextPath => {
+        window.history.pushState({}, '', nextPath)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      }, path)
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)))
+      expect(await page.evaluate(() => window.scrollY), `${path} should open at the top`).toBe(0)
+    }
+  })
+
+  test('opening a product never shows the old shop scroll position', async ({ page }) => {
+    await page.goto('/shop')
+    const product = page.locator('a[href^="/product-page/"]').last()
+    await product.scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await product.click()
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await page.goBack()
+    await expect(page).toHaveURL(/\/shop$/)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await page.goForward()
+    await expect(page).toHaveURL(/\/product-page\//)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  })
 })
 
 test.describe('the basket', () => {
@@ -105,6 +163,64 @@ test.describe('the basket', () => {
     await expect(page.getByRole('button', { name: /checkout/i })).toHaveCount(0)
     await page.locator('.cart-button').click()
     await expect(page.getByRole('button', { name: /checkout/i }).first()).toBeVisible()
+  })
+})
+
+test.describe('product photographs', () => {
+  test('every product photo is visible and can be enlarged', async ({ page, request }) => {
+    const data = await (await request.get('/api/products')).json()
+    let product = data.products.find(item => (item.images || []).length > 1)
+    if (!product) {
+      product = {
+        ...data.products[0],
+        images: [data.products[0].image, '/media/light-catalogue/uploaded-basket.webp'],
+      }
+      data.products = data.products.map(item => item.id === product.id ? product : item)
+      await page.route('**/api/products', route => route.fulfill({ json: data }))
+    }
+
+    await page.goto(`/product-page/${product.slug}`)
+
+    const thumbnails = page.getByRole('group', { name: 'Product photos' }).getByRole('button')
+    await expect(thumbnails).toHaveCount(product.images.length)
+    for (let index = 0; index < product.images.length; index += 1) {
+      await expect(thumbnails.nth(index)).toBeVisible()
+    }
+
+    const enlarge = page.getByRole('button', { name: /enlarge .* photo/i })
+    await enlarge.click()
+    const viewer = page.getByRole('dialog', { name: /product photo viewer/i })
+    await expect(viewer).toBeVisible()
+    await expect(viewer.getByText(`1 of ${product.images.length}`)).toBeVisible()
+
+    await viewer.getByRole('button', { name: /next photo/i }).click()
+    await expect(viewer.getByText(`2 of ${product.images.length}`)).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(viewer).toHaveCount(0)
+    await expect(enlarge).toBeFocused()
+  })
+
+  test('an admin catalogue change refreshes an already-open product page', async ({ page, request }) => {
+    const data = await (await request.get('/api/products')).json()
+    const product = { ...data.products[0], images: [data.products[0].image] }
+    let current = { ...data, products: data.products.map(item => item.id === product.id ? product : item) }
+    await page.route('**/api/products', route => route.fulfill({ json: current }))
+    await page.goto(`/product-page/${product.slug}`)
+    await expect(page.getByRole('group', { name: 'Product photos' })).toHaveCount(0)
+
+    current = {
+      ...current,
+      products: current.products.map(item => item.id === product.id
+        ? { ...item, images: [item.image, '/media/light-catalogue/uploaded-basket.webp'] }
+        : item),
+    }
+    await page.evaluate(() => window.dispatchEvent(new Event('salty-lamps:catalog-changed')))
+    await expect(page.getByRole('group', { name: 'Product photos' }).getByRole('button')).toHaveCount(2)
+  })
+
+  test('the live catalogue is never served stale after an admin change', async ({ request }) => {
+    const response = await request.get('/api/products')
+    expect(response.headers()['cache-control']).toMatch(/no-store/i)
   })
 })
 

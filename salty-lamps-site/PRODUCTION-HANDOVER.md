@@ -1,194 +1,64 @@
-# Salty Lamps — Production hand-over to the owner
+# Production handover — reviewed 26 September 2026
 
-This guide moves the shop from the **dev / UAT** environment (which Asif runs on
-his own Cloudflare account at `salty-lamps-proposal.pages.dev`) onto the
-**owner's own** Cloudflare account and the **owner's own** Stripe account, so the
-owner controls hosting, data, and payments end-to-end.
+The current authoritative walkthrough is [the migration plan](docs/migration.md), also rendered in Admin → Documentation → Migration. It separates preparation, account access, backups, protected administration, catalogue reconciliation, payments, email, rehearsal, DNS and cutover.
 
-Nothing here touches the dev environment. Production is a clean, separate stack.
+**Status: local review complete; DNS-only migration active on Cloudflare, confirmed through two public resolvers. No replacement-shop production deployment, Wix cancellation, mailbox migration or paid upgrade has been performed.** Existing proposal credentials do not establish production authorization. Owner browser sign-in and account-wide Super Administrator privileges are now verified. The owner confirmed saltylamps.co.uk remains primary; the separate salty-lamps.com domain is already active in the account. A scoped production deployment credential and production database still require setup.
 
----
+**Account boundary:** The owner reports the former Asif Hotmail Cloudflare account deleted and forbids further use of it or related credentials. A proposal database backup earlier on 26 September used that legacy target; its two source-count passes recorded 3,522,376 rows read before the account alert. The alert's total usage cannot be attributed from the email alone. Local builds now use the committed content snapshot by default, the historical proposal deployment/demo-refresh paths stop, and production validation rejects the legacy account. Do not run remote proposal data commands or treat its resources as the owner destination.
 
-## The two environments, side by side
+The approved production owner is `Saltylamps@hotmail.com`. `asifhussain60@gmail.com` is an Active administrator **within that owner account**; the member policy applies to the entire account and lists Administrator and Super Administrator - All Privileges. An empty EU-jurisdiction D1 database was created there, but other rights and shop administrator Access are separate, unverified controls. Gmail's separate personal Cloudflare account is not the shop destination. `asifhussain60@hotmail.com` is retired and must never be used. The full account rule is in [account ownership](../infra/account-ownership.md).
 
-| | Dev / UAT (Asif) | Production (owner) |
-|---|---|---|
-| Cloudflare account | `Asifhussain60@hotmail.com` | **owner's account** |
-| Pages project | `salty-lamps-proposal` | `salty-lamps` (or owner's choice) |
-| URL | `salty-lamps-proposal.pages.dev` | owner's domain (e.g. `www.saltylamps.co.uk`) |
-| D1 database | `salty-lamps-db` (hotmail) | `salty-lamps-db` (owner's) |
-| Orders data | **simulated** demo orders for UAT | **real** customer orders only |
-| Stripe | Asif's test keys | **owner's live keys** |
+For a future approved-account backup, the backup helper now omits remote source-count scans of the large postcode reference table. It still restores and checks those exported rows locally and marks their source count as unverified in the manifest. Business-table source counts and schema are compared before and after the export. The full owner-account backup remains pending.
 
----
+Owner Wix sign-in now works in normal Chrome. Source DNS was captured in `../infra/dns-source-2026-09-26.zone`: 14 service records, plus the old nameservers for rollback reference. Cloudflare now contains all 14 service records as DNS-only; four email/verification CNAMEs omitted by its scan were added and Zoho priorities 10/20/50 verified. Cloudflare assigned `james.ns.cloudflare.com` and `tani.ns.cloudflare.com`, and registrar/Nominet now confirm this delegation. Domain Lock has been restored after the owner-approved temporary unlock; Cloudflare activation is confirmed; both Cloudflare and Google public resolvers now return the new pair. Nominet RDAP confirms 123-Reg as registrar and unsigned delegation. Registrar sign-in and nameserver write access are verified. Rollback and before/after DNS evidence are preserved under infra; all 14 records match, both HTTPS addresses return 200 and Zoho MX records are unchanged. Preserve the Wix-registered redirect domains rocksaltexchange.com and himalayansaltexchange.com before any Wix retirement.
 
-## What the owner needs before starting
+## Business backup and owner additions — 26 September 2026
 
-1. A **Cloudflare account** (free tier is fine to begin).
-2. A **Cloudflare API token** on that account with these three permissions:
-   `Account › Cloudflare Pages › Edit`, `Account › D1 › Edit`,
-   `Account › Workers R2 Storage › Edit`.
-3. A **Stripe account** in the owner's name, activated for live payments, and
-   **registered in the United Kingdom** — see the warning below.
-4. **DNS access to `saltylamps.co.uk`**, to add the sending-domain records the
-   transactional emails require (see "Email" below).
+Private, ignored exports under `../backups/wix/business-2026-09-26/` contain 35 products, 62 variant rows, 148 media rows, 609 order summaries, 770 order-item rows and 4,412 contacts. Order identities match across both order exports. Contacts include email/SMS subscription status. The private manifest records counts and SHA-256 hashes. All 294 source columns and 480,778 cells round-tripped through a separate local archive and disposable restore; this is historical preservation, not approval to merge Wix data into the replacement shop. The historical admin service now requires a separate archive database binding, which production does not have. The public archive captured 56 pages; 142 of 144 referenced originals were recovered and two return access denied. Signed-in Wix checks recorded promotions, zero subscriptions, gift-card setup state, stock timing and checkout toggles. This remains a partial business backup: full Media Manager originals, complete settings and policy versions, independent second-copy recovery and a complete restore rehearsal remain open.
 
-> ### ⚠️ The Stripe account MUST be registered in the United Kingdom
->
-> This cannot be changed afterwards. A Stripe account's country is fixed at
-> creation; moving country means abandoning the account and starting again with
-> new keys, a new webhook, and no payment history.
->
-> Two things depend on it:
->
-> - **PayPal.** Stripe offers PayPal only to accounts based in the UK, the EU,
->   Norway, Liechtenstein and Switzerland. On a non-UK account PayPal does not
->   appear in the dashboard at all — it is not a setting that can be switched on.
->   Verified on 2026-08-01 against the dev sandbox, which is a **US** account and
->   has no `paypal` entry in its payment-method configuration.
-> - **Currency.** The shop prices and charges in GBP. A non-UK account converts
->   every transaction and charges a currency fee on it.
->
-> Apple Pay and Google Pay are unaffected by country, but **Google Pay must be
-> switched on** in Stripe → Settings → Payment methods; it is off by default.
-> Apple Pay needs no domain registration because this shop uses Stripe's *hosted*
-> checkout page rather than an embedded form.
+The owner requires matching new-shop fields for all source data. Extend operational schema, validation, imports/exports and admin views where needed; preserve originals and verify field-by-field round-trip coverage. An archive alone does not satisfy operational parity. Historical orders must not replay payments or send receipts. No production import before reconciliation.
 
-> **Why the owner creates the token and enters the Stripe keys, not Asif:** live
-> payment keys and account credentials must only ever be handled by the owner.
-> The scripts below never store a key in this repo — every secret is entered
-> interactively by the owner and held by Cloudflare.
+The Admin menu must lead to `https://admin.saltylamps.co.uk/admin`, protected by Cloudflare Access using **Sign in with Cloudflare**. Restrict authentication and authorization to intended owners/operators, protect direct URLs and APIs, and prove deployment hostnames cannot bypass access. This is a launch requirement, not a claim that SSO is configured.
 
----
+Current Wix provider inspection confirms Wix Payments and PayPal active. Wix Payments includes cards, Apple Pay, Google Pay, Clearpay and Klarna; replacement code currently implements Stripe. Owner is unsure whether a Stripe business account exists and reports an existing PayPal business account. Verify PayPal access and compare direct integration against PayPal through eligible UK Stripe; neither route is selected or configured yet. Do not drop existing payment methods without an explicit decision.
 
-## Step 1 — Provision + deploy the code and catalog
+Public archive redirect comparison found two uncovered blog URLs: `/post/how-to-choose-the-right-himalayan-salt-lamp-for-your-home` and `/post/rock-salt-lamps-benefits-uses-care-tips-and-plug-in-vs-usb-guide`. Resolve content/redirect destinations before launch.
 
-From `salty-lamps-site/`:
+## Environment boundary
 
-```bash
-export CLOUDFLARE_API_TOKEN=...          # owner's token (Pages+D1+R2 Edit)
-export CLOUDFLARE_ACCOUNT_ID=...         # owner's account id
-export PROD_PROJECT=salty-lamps          # or the owner's preferred project name
-export PROD_SITE_URL=https://www.saltylamps.co.uk
-export SEED_CATALOG=1                     # ONLY on a brand-new empty database
+The proposal project and its demo orders stay separate from the owner’s production Pages project, D1 database and R2 bucket. The owner account now has an empty EU-jurisdiction D1 database; its ID is pinned in the production config, but Pages and R2 are not provisioned and no Wix or shop data has been imported. Supply an explicit production account, configuration and scoped token. Never copy the proposal database wholesale into production or replace the production config with the default Wrangler config.
 
-./deploy-production.sh
-```
+## Production deployment now fails closed
 
-The script will:
+`deploy-production.sh` no longer provisions resources, seeds the catalogue or blindly replays migrations. It first runs `scripts/production-preflight.mjs`, which validates the selected target, reads the hash-verified migration ledger, checks catalogue/foreign keys and verifies resource bindings. It then builds from a fresh production content snapshot and deploys with the selected production configuration. Missing source data is a release failure, never a reason to substitute proposal content.
 
-1. Create the **D1 database** if it doesn't exist (first run prints a
-   `database_id` — paste it into the `[[d1_databases]]` block of `wrangler.toml`
-   for the owner's account, then re-run).
-2. Apply the **schema + migrations**, and — only when `SEED_CATALOG=1` on an
-   empty database — load the **product catalog** (`d1/seed.sql`). It refuses to
-   reseed if any orders already exist, so it can never wipe real sales history.
-3. Create the **R2 image bucket** (`salty-lamps-images`) for admin-uploaded
-   product photos.
-4. Build the site and **deploy** it to the owner's Pages project.
+Use the owner dashboard or a separately reviewed provisioning procedure to create the target resources and configure bindings. Production deployment is intentionally blocked until the schema/import history is proven. Read-only preflight does not establish write rights or provider readiness.
 
-No demo/simulated orders are ever loaded into production — that data lives only
-in the dev environment.
+## Rehearse migrations offline
 
----
+Run `python3 scripts/plan-production-migrations.py --help` for the supported options. Fresh rehearsal uses `--seed --output /tmp/salty-bootstrap-review.sql`; it refuses to overwrite an existing plan. Existing local database exports are opened read-only and copied into memory. Unknown historical migration state requires reconciliation, not automatic adoption.
 
-## Step 2 — Attach the owner's live Stripe keys
+The checked-in catalogue currently fails the reviewed-media migration guard. Do not disable that guard. A plan with media deferred is useful for rehearsal but cannot pass production preflight. Complete catalogue/image mapping and verify the resulting media assignments before release.
 
-After the deploy, the script prints these commands. The owner runs them and
-pastes each value when prompted:
+Generated SQL still requires reviewed application to the intended remote target, a private backup, a maintenance window and post-import reconciliation. It is not a promise that remote imports are atomic.
 
-```bash
-npx wrangler pages secret put STRIPE_SECRET_KEY      --project-name salty-lamps
-npx wrangler pages secret put STRIPE_WEBHOOK_SECRET  --project-name salty-lamps
-npx wrangler pages secret put SITE_URL               --project-name salty-lamps
-npx wrangler pages secret put RESEND_API_KEY         --project-name salty-lamps
-```
+## Required application configuration
 
-- `STRIPE_SECRET_KEY` — the owner's **live** secret key (`sk_live_…`) from
-  Stripe → Developers → API keys.
-- `SITE_URL` — the production domain, e.g. `https://www.saltylamps.co.uk`.
-- `STRIPE_WEBHOOK_SECRET` — see Step 3.
-- `RESEND_API_KEY` — the transactional email sender. Without it the shop runs
-  normally and every email is recorded in admin → Emails → Activity as `skipped`.
-  Also add the sending-domain DNS records, then switch **Send transactional
-  email** on in admin → Settings *after* a successful test send from
-  admin → Emails → Templates.
+- `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`: matching keys from the owner account and intended mode.
+- `STRIPE_WEBHOOK_SECRET`: signature secret for that environment’s endpoint.
+- `SITE_URL` and `PUBLIC_HOST`: the intended customer origin and host.
+- `ADMIN_HOSTS`, `ACCESS_AUD`, `ACCESS_TEAM_DOMAIN`: protected admin configuration. No open-host bypass in production.
+- `RESEND_API_KEY`: owner sending account, with a verified domain and reviewed sender/reply-to settings.
+- D1 binding `DB` and R2 binding `IMAGES`: the owner resources selected in production configuration.
 
----
+Never put secrets in this repository or chat. Set them in the platform secret store and redeploy. Register the events used by the current webhook: checkout completion/expiry, asynchronous success/failure, and refund lifecycle changes. Verify embedded-checkout domain registration and live payment methods with the owner.
 
-## Step 3 — Point Stripe's webhook at production
+## Email and costs
 
-In the **owner's** Stripe Dashboard → Developers → Webhooks → Add endpoint:
+The selected Cloudflare tiers are Pages/Workers Free, D1 Free, Zero Trust Free for the two approved users, and R2 Standard's free allowance. Estimated incremental Cloudflare charge is $0/month while usage remains inside those limits. The owner dashboard now shows Zero Trust Free active; its $0/month checkout required agreement to terms and authorization for charges beyond free limits. The administrator Access application is not configured: selecting the exact Emails policy rule crashed the dashboard twice. R2 onboarding separately offers a recurring, usage-billed subscription; its bucket does not yet exist. Keep Resend for customer order emails; Cloudflare outgoing email to arbitrary recipients requires Workers Paid. Free Email Routing forwards incoming mail to a verified inbox, but is not a complete mailbox/reply service. Preserve existing Zoho mail until archives, inbound messages and branded replies have all been tested. See [pricing](docs/pricing.md).
 
-- Endpoint URL: `https://<owner-domain>/api/webhook`
-- Event to send: `checkout.session.completed`
+## Launch evidence
 
-> **On the endpoint's API version.** Stripe serialises a webhook event at the
-> version pinned on the *endpoint*, not the one in the application's Stripe
-> client. The delivery address moved between versions — up to `2024-06-20` it is
-> `session.shipping_details`, from 2025 onwards it is
-> `session.collected_information.shipping_details`. `functions/api/webhook.js`
-> reads both, so either version records the correct address. Do not "simplify"
-> that to one path: on 2026-08-01 the dev endpoint was pinned to
-> `2026-06-24.dahlia`, and reading only the old path silently fell through to the
-> customer's **billing** address — meaning any order where billing and delivery
-> differ would have been posted to the wrong place.
+Record the candidate release, complete backups and restore, catalogue/stock totals, image coverage, redirect coverage, anonymous/authorized admin checks, desktop/mobile journeys, signed webhook replay, actual provider email, and the owner-authorized low-value live purchase/refund. Skipped or mocked tests do not satisfy live-service gates.
 
-Copy the endpoint's **Signing secret** (`whsec_…`) and set it as
-`STRIPE_WEBHOOK_SECRET` (Step 2). This is what lets the site mark orders paid.
-
----
-
-## Step 4 — Custom domain
-
-In the owner's Cloudflare dashboard → Pages → `salty-lamps` project → Custom
-domains → add `www.saltylamps.co.uk` (and the apex if wanted). Cloudflare issues
-the certificate automatically. The site's `SITE_URL` secret should match.
-
----
-
-## Step 5 — Verify before announcing
-
-1. Load the production URL — catalog and images render.
-2. Sign into the admin portal (`/admin`) — dashboard shows **zero** orders
-   (clean prod), products and stock are correct.
-3. Place one real low-value test order end-to-end; confirm it appears in the
-   admin Orders list and in the owner's Stripe Dashboard, then refund it.
-4. Confirm no `demo_order_` rows exist:
-   `wrangler d1 execute salty-lamps-db --remote --command "SELECT COUNT(*) FROM orders WHERE id LIKE 'demo_order_%';"`
-   → must return `0`.
-
----
-
-## About "handing over Stripe"
-
-There are two separate things, and both are owner-driven:
-
-- **Using the owner's own Stripe account (recommended):** the cleanest hand-over.
-  The owner creates their own Stripe account and their own live keys, and Steps
-  2–3 wire the site to it. Payouts, tax, and liability sit with the owner from
-  day one. Nothing of Asif's carries over.
-- **Transferring an existing Stripe account:** Stripe does not let you reassign a
-  live account's ownership by API. If the shop's Stripe account was opened under
-  Asif's details and must become the owner's, that's done in the Stripe
-  Dashboard (Settings → Business/Account, and Stripe support for a legal-entity
-  change) by the account holder — not something these scripts do.
-
-Asif never enters or transmits live Stripe keys on the owner's behalf; the owner
-enters them directly into Cloudflare via the commands above.
-
----
-
-## Known catalog-update caveat (fix before heavy prod use)
-
-`d1/seed.sql` currently **deletes and reinserts** all products/skus. Because
-`skus.id` is autoincrement, re-running it after real orders exist would orphan
-`order_items.sku_id`. `deploy-production.sh` guards against this (it refuses to
-reseed once orders exist), but for ongoing catalog edits in production, use the
-admin portal or a targeted `UPSERT` keyed on `(product_id, sku)` rather than the
-full seed file.
-
-
-## Required generated-media cutover
-
-Follow [the reviewed media cutover plan](docs/media-cutover.md) during catalogue import and again at domain cutover. It includes the entire generated media tree, 100 lighter images, all 73 option assignments, supporting posters and films, original recovery files and remaining R2 uploads. The bootstrap defers migration 010 until after the final catalogue import. The deployment must pass `npm run media:verify-cutover -- --url=https://YOUR-DESTINATION` and the full-media/browser checks before switching the domain.
+Only after those checks pass should the owner approve customer-domain cutover. Keep Wix available for rollback, freeze changes for the final delta, and reconcile any orders accepted on either system before reopening after a rollback. Cancel Wix or Zoho only under separate owner authorization after stabilization.

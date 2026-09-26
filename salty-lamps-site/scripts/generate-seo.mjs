@@ -6,14 +6,15 @@ import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 // The Store, Product and CollectionPage schemas are defined once and shared with
 // the runtime copy in src/App.jsx. They used to be written out twice and had
 // already drifted — see the header of that module.
-import { combineSchemas, listSchema, productSchema, storeSchema } from '../src/content/schema.mjs'
+import { combineSchemas, listSchema, productGroupSchema, productSchema, storeSchema } from '../src/content/schema.mjs'
+import { categoryMetaDescription, collectionCategoryMetaDescription, productMetaDescription } from '../src/content/seo.mjs'
 import { makeTaxonomy } from '../src/content/taxonomy.mjs'
 import { publicProduct } from '../functions/lib/public-copy.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const distDir = path.join(root, 'dist')
-const today = new Date().toISOString().slice(0, 10)
+const PROCESS_VIDEO_UPLOAD_DATE = '2026-06-22'
 
 // Content comes from the committed build snapshot written by
 // scripts/fetch-content-snapshot.mjs, which runs first in `npm run build`.
@@ -68,6 +69,20 @@ const absolute = urlPath => `${siteUrl}${resolveMedia(urlPath)}`
 const asset = urlPath => `${siteUrl}${resolveMedia(urlPath)}`
 
 const staticRoutes = [
+  ...[
+    ['/checkout', 'Review your order'],
+    ['/checkout/address', 'Delivery address'],
+    ['/checkout/payment', 'Payment'],
+    ['/checkout/success', 'Order confirmation'],
+    ['/checkout/cancel', 'Checkout cancelled'],
+  ].map(([routePath, label]) => ({
+    path: routePath,
+    title: `${label} | Salty Lamps`,
+    description: `${label} at Salty Lamps.`,
+    image: '/media/salty-lamps-og-card.jpg',
+    robots: 'noindex,follow',
+    excludeFromSitemap: true,
+  })),
   {
     path: '/',
     title: 'Salty Lamps | Himalayan Salt Lamps, Gifts, Saltware and Trade Supply',
@@ -102,7 +117,7 @@ const staticRoutes = [
       description:
         'Manufacturing process for Salty Lamps Himalayan rock salt products, from raw rock salt through sorting, cutting, finishing, packing, and export.',
       thumbnailUrl: [asset('/media/video/salty-lamps-manufacturing-process-poster-16x9.jpg')],
-      uploadDate: today,
+      uploadDate: PROCESS_VIDEO_UPLOAD_DATE,
       contentUrl: asset('/media/video/salty-lamps-manufacturing-process-16x9.mp4'),
     },
   },
@@ -134,7 +149,7 @@ const staticRoutes = [
 const productRoutes = products.map(product => ({
   path: productRoute(product),
   title: `${product.name} | Salty Lamps`,
-  description: product.description,
+  description: productMetaDescription(product),
   image: product.image,
   product,
 }))
@@ -143,8 +158,8 @@ const categoryRoutes = categories
   .filter(category => category.slug !== 'all-products')
   .map(category => ({
     path: categoryRoute(category.slug),
-    title: `${category.name} | Salty Lamps`,
-    description: category.description,
+    title: `Shop ${category.name} | Salty Lamps`,
+    description: categoryMetaDescription(category),
     image: category.image,
     category,
     products: products.filter(product => product.categories.includes(category.slug)),
@@ -161,10 +176,13 @@ const collectionRoutes = shopperPaths.flatMap(shopperPath => [
   },
   ...shopperPath.categories.map(categorySlug => {
     const category = categories.find(item => item.slug === categorySlug)
+    const describedCategory = category || {
+      name: categorySlug.split('-').map(word => `${word[0]?.toUpperCase() || ''}${word.slice(1)}`).join(' '),
+    }
     return {
       path: collectionRoute(shopperPath.slug, categorySlug),
       title: `${category?.name || shopperPath.name} for ${shopperPath.shortName} | Salty Lamps`,
-      description: category?.description || shopperPath.description,
+      description: collectionCategoryMetaDescription(describedCategory, shopperPath),
       image: category?.image || shopperPath.background,
       shopperPath,
       category,
@@ -206,8 +224,7 @@ function sitemapUrlEntries(items, extra = '') {
     .filter(item => !item.excludeFromSitemap)
     .map(
       item => `  <url>
-    <loc>${xmlEscape(absolute(item.path))}</loc>
-    <lastmod>${today}</lastmod>${extra ? `\n${extra(item)}` : ''}
+    <loc>${xmlEscape(absolute(item.path))}</loc>${extra ? `\n${extra(item)}` : ''}
   </url>`,
     )
     .join('\n')
@@ -235,11 +252,27 @@ function itemListSchema(route) {
 // two things only this build script knows — how to make a URL absolute, and which
 // category the site actually builds a page for.
 function buildProductSchema(product) {
+  const grouped = productsByGroup.get(product.productId) || []
+  const hasVariants = grouped.length > 1
   return productSchema(product, {
     url: absolute(productRoute(product)),
-    imageUrl: asset(product.image),
+    imageUrls: (product.images || [product.image]).map(asset),
+    description: productMetaDescription(product),
     categoryName: primaryCategoryName(product),
+    groupId: hasVariants ? product.productId : undefined,
+    groupRef: hasVariants ? '#product-group' : undefined,
   })
+}
+
+const productsByGroup = new Map()
+for (const product of products) {
+  if (!productsByGroup.has(product.productId)) productsByGroup.set(product.productId, [])
+  productsByGroup.get(product.productId).push(product)
+}
+
+function buildProductGroupSchema(product) {
+  if ((productsByGroup.get(product.productId) || []).length < 2) return null
+  return productGroupSchema(product, { ref: '#product-group' })
 }
 
 // The same taxonomy the storefront builds, from the same snapshot, so the category
@@ -322,6 +355,7 @@ function schemaFor(route) {
   return combineSchemas([
     buildStoreSchema(),
     breadcrumbSchema(route),
+    route.product ? buildProductGroupSchema(route.product) : null,
     route.product ? buildProductSchema(route.product) : null,
     itemListSchema(route),
     route.schema,
@@ -395,6 +429,7 @@ writeFile(
   `User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /admin
 
 Sitemap: ${siteUrl}/sitemap.xml
 `,
@@ -404,11 +439,11 @@ writeFile(
   path.join(distDir, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>${siteUrl}/pages-sitemap.xml</loc><lastmod>${today}</lastmod></sitemap>
-  <sitemap><loc>${siteUrl}/products-sitemap.xml</loc><lastmod>${today}</lastmod></sitemap>
-  <sitemap><loc>${siteUrl}/categories-sitemap.xml</loc><lastmod>${today}</lastmod></sitemap>
-  <sitemap><loc>${siteUrl}/images-sitemap.xml</loc><lastmod>${today}</lastmod></sitemap>
-  <sitemap><loc>${siteUrl}/videos-sitemap.xml</loc><lastmod>${today}</lastmod></sitemap>
+  <sitemap><loc>${siteUrl}/pages-sitemap.xml</loc></sitemap>
+  <sitemap><loc>${siteUrl}/products-sitemap.xml</loc></sitemap>
+  <sitemap><loc>${siteUrl}/categories-sitemap.xml</loc></sitemap>
+  <sitemap><loc>${siteUrl}/images-sitemap.xml</loc></sitemap>
+  <sitemap><loc>${siteUrl}/videos-sitemap.xml</loc></sitemap>
 </sitemapindex>
 `,
 )
@@ -422,15 +457,15 @@ writeFile(
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${products
-  .map(
-    product => `  <url>
+  .map(product => {
+    const images = [...new Set(product.images || [product.image])]
+    return `  <url>
     <loc>${xmlEscape(absolute(productRoute(product)))}</loc>
-    <image:image>
-      <image:loc>${xmlEscape(asset(product.image))}</image:loc>
-      <image:title>${xmlEscape(product.name)}</image:title>
-    </image:image>
-  </url>`,
-  )
+${images.map(image => `    <image:image>
+      <image:loc>${xmlEscape(asset(image))}</image:loc>
+    </image:image>`).join('\n')}
+  </url>`
+  })
   .join('\n')}
 </urlset>
 `,

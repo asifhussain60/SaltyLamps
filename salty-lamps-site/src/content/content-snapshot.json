@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-19T20:11:08.369Z",
+  "generatedAt": "2026-09-26T17:50:59.821Z",
   "source": "live",
   "resolvedFrom": "live",
   "siteUrl": "https://www.saltylamps.co.uk",
@@ -45,8 +45,8 @@
       "productName": "Ball - Sphere Shaped Himalayan Rock Salt Lamp",
       "variantLabel": "Small",
       "sku": "RSL-B",
-      "productWeightMinG": 2500,
-      "productWeightMaxG": 3500,
+      "productWeightMinG": null,
+      "productWeightMaxG": null,
       "weightUnit": "kg",
       "showWeightCards": false,
       "deliveryNeedsConfirmation": false,
@@ -76,8 +76,8 @@
       "productName": "Ball - Sphere Shaped Himalayan Rock Salt Lamp",
       "variantLabel": "Large",
       "sku": "RSL-BB",
-      "productWeightMinG": 6500,
-      "productWeightMaxG": 8500,
+      "productWeightMinG": 8000,
+      "productWeightMaxG": 9000,
       "weightUnit": "kg",
       "showWeightCards": false,
       "deliveryNeedsConfirmation": false,
@@ -145,7 +145,7 @@
       "deliveryNeedsConfirmation": false,
       "price": 5.99,
       "stock": true,
-      "stockQty": 200,
+      "stockQty": 197,
       "trackMode": "quantity",
       "categories": [
         "all-products",
@@ -2148,6 +2148,72 @@
       "tags": []
     },
     {
+      "id": "sku-155",
+      "skuId": 155,
+      "productId": "product_1984920f-d499-367d-8f0f-e622486c621a",
+      "slug": "saltwood-frames-medium",
+      "name": "Saltwood Frames — Medium",
+      "productName": "Saltwood Frames",
+      "variantLabel": "Medium",
+      "sku": "SW2",
+      "productWeightMinG": 10000,
+      "productWeightMaxG": 12000,
+      "weightUnit": "kg",
+      "showWeightCards": false,
+      "deliveryNeedsConfirmation": false,
+      "price": 299,
+      "stock": true,
+      "stockQty": 10,
+      "trackMode": "quantity",
+      "categories": [
+        "all-products",
+        "salt-wall-panels"
+      ],
+      "image": "/media/live-site-products/wix-1984920f-d49.png",
+      "imageId": null,
+      "hasOptionImage": false,
+      "images": [
+        "/media/live-site-products/wix-1984920f-d49.png",
+        "/api/images/products/product_1984920f-d499-367d-8f0f-e622486c621a/82bbda17-0c46-4d4b-935e-ff5ab42ed735.png",
+        "/api/images/products/product_1984920f-d499-367d-8f0f-e622486c621a/aa1d983e-d7c4-4ac9-a2ab-6eb5841e7026.png"
+      ],
+      "description": "Himalayan Salt Frames",
+      "tags": []
+    },
+    {
+      "id": "sku-156",
+      "skuId": 156,
+      "productId": "product_1984920f-d499-367d-8f0f-e622486c621a",
+      "slug": "saltwood-frames-large",
+      "name": "Saltwood Frames — Large",
+      "productName": "Saltwood Frames",
+      "variantLabel": "Large",
+      "sku": "SW3",
+      "productWeightMinG": 15000,
+      "productWeightMaxG": 16000,
+      "weightUnit": "kg",
+      "showWeightCards": false,
+      "deliveryNeedsConfirmation": false,
+      "price": 599,
+      "stock": true,
+      "stockQty": 5,
+      "trackMode": "quantity",
+      "categories": [
+        "all-products",
+        "salt-wall-panels"
+      ],
+      "image": "/media/live-site-products/wix-1984920f-d49.png",
+      "imageId": null,
+      "hasOptionImage": false,
+      "images": [
+        "/media/live-site-products/wix-1984920f-d49.png",
+        "/api/images/products/product_1984920f-d499-367d-8f0f-e622486c621a/82bbda17-0c46-4d4b-935e-ff5ab42ed735.png",
+        "/api/images/products/product_1984920f-d499-367d-8f0f-e622486c621a/aa1d983e-d7c4-4ac9-a2ab-6eb5841e7026.png"
+      ],
+      "description": "Himalayan Salt Frames",
+      "tags": []
+    },
+    {
       "id": "sku-95",
       "skuId": 95,
       "productId": "product_a197ccb4-1208-6b6f-a57e-bd2bcb1fcb9e",
@@ -2321,7 +2387,7 @@
       "description": "Warm-glow lamps for bedrooms, counters, lounges, and gifts.",
       "image": "/media/light-catalogue/block-lamp.webp",
       "theme": "lamp",
-      "sort_order": 20,
+      "sort_order": 1,
       "is_virtual": 0
     },
     {
@@ -2385,6 +2451,15 @@
       "image": "/media/light-catalogue/apple-holder.webp",
       "theme": "deal",
       "sort_order": 90,
+      "is_virtual": 0
+    },
+    {
+      "slug": "salt-wall-panels",
+      "name": "Saltwood Frames",
+      "description": "Illuminated Himalayan salt wall art in hand-finished wood frames.",
+      "image": "/media/live-site-products/saltwood-frames-frame-detail-live-site.jpg",
+      "theme": "panel",
+      "sort_order": 100,
       "is_virtual": 0
     }
   ],

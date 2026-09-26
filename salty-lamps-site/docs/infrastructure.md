@@ -1,5 +1,11 @@
 # Salty Lamps — Infrastructure (plain-English)
 
+> **Cloudflare account rule:** `Saltylamps@hotmail.com` is the approved owner; `asifhussain60@gmail.com` is an Active member with an account-wide administrator policy in that account. Shop administrator Access remains unverified. The old `asifhussain60@hotmail.com` account is retired and must never be used. See [account ownership](../../infra/account-ownership.md).
+
+> Reviewed 26 September 2026: production migration is not complete. The Migration and Pricing pages hold current access evidence, release gates and free-tier limits. This architecture guide describes the intended services; diagrams are high-level summaries.
+
+Checkout now collects a UK address before embedded Stripe payment, fixes delivery to that address, and reserves stock before exposing payment. Retry identities recover interrupted checkout and product saves. Signed payment events consume or release reservations; signed refund events distinguish pending, partial, failed and completed refunds. New-order, dispatch, delivery and cancellation notification jobs survive interrupted delivery and retain provider retry identities; uncertain delivery requires provider reconciliation in Email Activity. Apply migrations 014 and 015 before releasing these application changes.
+
 This document explains, in plain terms, what runs the Salty Lamps website — the services it uses, what each one does, and roughly what it costs. No technical background needed.
 
 > **The one-sentence version:** the entire site runs on **Cloudflare** (hosting, database, image storage, and admin security), and **Stripe** handles card payments. There are no other servers to manage.
@@ -27,7 +33,7 @@ A shopper's web browser only ever talks to Cloudflare. Behind the scenes, small 
 
 ## How a purchase works
 
-Card details are only ever entered on Stripe's own page, never on the shop. Once Stripe confirms payment, it tells the site to record the order.
+Card details are entered in Stripe’s secure embedded payment form and handled by Stripe. Once Stripe confirms payment, it tells the site to record the order.
 
 ![Checkout flow: shopper clicks pay, the site creates a Stripe session, the shopper pays on Stripe, Stripe notifies the site, and the order is saved.](diagrams/checkout-flow.svg)
 

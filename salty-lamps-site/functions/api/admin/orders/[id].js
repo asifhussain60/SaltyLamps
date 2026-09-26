@@ -1,12 +1,14 @@
 // GET   /api/admin/orders/:id  — order with line items and shipping address.
 // PATCH /api/admin/orders/:id  — fulfilment status, tracking, or refund/cancel.
 import Stripe from 'stripe'
+import { requestOrderRefund, readOrderWithRefund } from '../../../lib/refunds.mjs'
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
 import {
   validateOrderPatch, despatchErrors, ORDER_PATCH_FIELDS,
   carrierByCode, carrierTrackingUrl,
 } from '../../../lib/validation.mjs'
-import { sendTemplated, orderTokens, orderBlocks } from '../../../lib/mailer.mjs'
+import { deliverOrderEmails } from '../../../lib/durable-email.mjs'
+import { orderTokens, orderBlocks } from '../../../lib/mailer.mjs'
 
 // Which customer email a status change earns, and only on an ACTUAL change.
 // Re-saving an order that is already 'shipped' — which the admin form does every
@@ -26,11 +28,11 @@ const STATUS_EMAILS = [
 
 export async function onRequestGet({ params, env }) {
   try {
-    const order = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
+    const order = await readOrderWithRefund(env.DB, params.id)
     if (!order) return apiError('Order not found.', 404, { code: 'not_found' })
 
     const items = await env.DB.prepare(
-      `SELECT oi.sku_id, oi.quantity, oi.unit_price_pence,
+      `SELECT oi.sku_id, oi.quantity, oi.unit_price_pence, oi.frame_choices_json,
               s.sku, s.variant_label, s.track_mode,
               p.id AS product_id, p.name, p.image, ow.packed_weight_g
        FROM order_items oi
@@ -54,7 +56,7 @@ export async function onRequestPatch({ params, request, env, data }) {
   if (!ok) return validationError(errors)
 
   try {
-    const order = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
+    const order = await readOrderWithRefund(env.DB, params.id)
     if (!order) return apiError('Order not found.', 404, { code: 'not_found' })
 
     // Resolve the despatch details server-side as well as in the form. The admin
@@ -100,10 +102,9 @@ export async function onRequestPatch({ params, request, env, data }) {
         // An idempotency key, not a DB guard, is what actually stops a double-click
         // from issuing two real refunds: this call happens before anything is written
         // to the order row, so a compare-and-set there would be too late to help.
-        await stripe.refunds.create(
-          { payment_intent: order.payment_intent },
-          { idempotencyKey: `refund:${order.id}` },
-        )
+        const updated = await requestOrderRefund(env, stripe, order, new URL(request.url).origin)
+        await auditStmt(env.DB, data.actorEmail, 'order.refund', 'order', params.id, { status: updated.refund_status }).run()
+        return json({ order: updated })
       } catch (stripeErr) {
         return apiError(`Stripe refund failed: ${stripeErr.message}`, 502, { code: 'stripe_error' })
       }
@@ -144,8 +145,20 @@ export async function onRequestPatch({ params, request, env, data }) {
     const updateStmt = env.DB
       .prepare(`UPDATE orders SET ${set.join(', ')} WHERE id = ?${guard}`)
       .bind(...binds, params.id, ...guardBinds)
+    // Prepare replayable customer content before changing state. If preparation
+    // fails the owner can retry without having changed the order. The intent is
+    // inserted immediately after the guarded UPDATE, in the same transaction.
+    const messages = await prepareStatusMessages(env, order, { ...order, ...value }, value)
+    // Validation allows payment and fulfilment changes only in separate requests,
+    // so a single update can earn at most one customer status notification.
+    if (messages.length > 1) throw new Error('Ambiguous order notification')
+    const notificationStatements = messages.map(message => env.DB.prepare(
+      `INSERT INTO commerce_email_jobs(id,order_id,payload)
+       SELECT ?,?,? WHERE changes() > 0`,
+    ).bind(`status:${params.id}:${crypto.randomUUID()}`, params.id, JSON.stringify(message)))
     const [writeResult] = await env.DB.batch([
       updateStmt,
+      ...notificationStatements,
       auditStmt(env.DB, data.actorEmail, 'order.update', 'order', params.id, value),
     ])
 
@@ -158,12 +171,11 @@ export async function onRequestPatch({ params, request, env, data }) {
 
     const updated = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(params.id).first()
 
-    // After the update has committed, never inside its batch: a mail failure must
-    // not undo a fulfilment change the admin has already been told succeeded.
-    // sendTemplated() does not throw, and this is wrapped regardless.
+    // Delivery may fail after commit, but its durable intent remains visible in
+    // Emails and can be retried without repeating the fulfilment transition.
     try {
-      await notifyStatusChange(env, request, order, updated, value)
-    } catch { /* the status change stands; the email is best-effort */ }
+      await deliverOrderEmails(env, params.id, new URL(request.url).origin)
+    } catch { /* the saved change stands; the delivery queue records recovery */ }
 
     return json({ order: updated })
   } catch (err) {
@@ -171,17 +183,17 @@ export async function onRequestPatch({ params, request, env, data }) {
   }
 }
 
-async function notifyStatusChange(env, request, before, after, patch) {
-  if (!after?.customer_email) return
+async function prepareStatusMessages(env, before, after, patch) {
+  if (!after?.customer_email) return []
 
   const rules = STATUS_EMAILS
     .filter(rule => patch[rule.field] === rule.to && before[rule.field] !== rule.to)
-  if (rules.length === 0) return
+  if (rules.length === 0) return []
 
   // Same join the GET handler above uses, so the despatch email lists the order
   // exactly as the admin sees it on screen.
   const items = await env.DB.prepare(
-    `SELECT oi.quantity, oi.unit_price_pence, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
+    `SELECT oi.quantity, oi.unit_price_pence, oi.frame_choices_json, s.sku, s.variant_label, p.name,ow.product_weight_min_g,ow.product_weight_max_g,ow.weight_public
      FROM order_items oi
      JOIN skus s ON s.id = oi.sku_id
      JOIN products p ON p.id = s.product_id
@@ -192,9 +204,7 @@ async function notifyStatusChange(env, request, before, after, patch) {
   const tokens = orderTokens(after)
   const blocks = orderBlocks(after, items.results || [])
 
-  await sendTemplated(
-    env,
-    rules.map(rule => ({
+  return rules.map(rule => ({
       templateKey: rule.template,
       to: after.customer_email,
       orderId: after.id,
@@ -205,7 +215,5 @@ async function notifyStatusChange(env, request, before, after, patch) {
         ? { ...tokens, ctaHref: after[rule.ctaField] }
         : tokens,
       blocks,
-    })),
-    { origin: new URL(request.url).origin },
-  )
+    }))
 }

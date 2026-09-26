@@ -8,6 +8,7 @@
 // the owner fixed a typo after the original send, the resend carries the fix; and
 // nothing here has to trust markup written by an earlier deployment.
 import { json, apiError, auditStmt } from '../../../../../lib/admin-helpers.mjs'
+import { deliverOrderEmails } from '../../../../../lib/durable-email.mjs'
 import { sendTemplated } from '../../../../../lib/mailer.mjs'
 
 export async function onRequestPost({ params, request, env, data }) {
@@ -23,6 +24,22 @@ export async function onRequestPost({ params, request, env, data }) {
       payload = JSON.parse(row.payload || '{}')
     } catch {
       return apiError('That log entry has no replayable content.', 409, { code: 'conflict' })
+    }
+
+    if (payload.idempotencyKey) {
+      const job=await env.DB.prepare('SELECT * FROM commerce_email_jobs WHERE id=?').bind(payload.durableJobId || payload.idempotencyKey).first()
+      if (!job) return apiError('The durable delivery record needs reconciliation.',409)
+      if (job.status==='review') return apiError('Check the provider delivery record before retrying this message.',409)
+      // A configured-off message never reached the provider; the explicit owner
+      // retry can safely enable that same job. Completed sends are never repeated.
+      if(job.status==='skipped') {
+        const message=JSON.parse(job.payload)
+        await env.DB.prepare("UPDATE commerce_email_jobs SET status='pending',first_attempt_at=NULL,payload=? WHERE id=? AND status='skipped'").bind(JSON.stringify({...message,force:true}),job.id).run()
+      }
+      await deliverOrderEmails(env,job.order_id,new URL(request.url).origin)
+      const current=await env.DB.prepare('SELECT status,error FROM commerce_email_jobs WHERE id=?').bind(job.id).first()
+      await auditStmt(env.DB,data.actorEmail,'email.retry','commerce_email_job',job.id,{status:current.status}).run()
+      return json({status:current.status,error:current.error,to:payload.to || row.to_address})
     }
 
     const to = payload.to || row.to_address

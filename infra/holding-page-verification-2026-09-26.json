@@ -1,0 +1,66 @@
+{
+  "recorded_at": "2026-09-26T19:59:25.096452+00:00",
+  "owner_account": "e35d5918c507bc2cf4e920fe38b5e318",
+  "project": "salty-lamps",
+  "url": "https://www.saltylamps.co.uk/",
+  "custom_domain_status": "Active",
+  "ssl_enabled": true,
+  "browser_checks": {
+    "desktop_render": true,
+    "phone_width": 390,
+    "phone_overflow": false,
+    "images_loaded": true,
+    "contact_links": [
+      "mailto:info@saltylamps.co.uk",
+      "mailto:info@saltylamps.co.uk",
+      "mailto:info@saltylamps.co.uk"
+    ],
+    "apex_redirect_to_www": true,
+    "admin_path_holding_only": true
+  },
+  "local_holding_tests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "dns_unchanged_comparisons": 36,
+  "http_probe": "Command-line HTTP probes returned 403; deployed status/header parity not independently verified",
+  "no_customer_import": true,
+  "admin_access_protected": false,
+  "files": [
+    {
+      "name": "_headers",
+      "bytes": 255,
+      "sha256": "e84c1f6abb20703bfef02d6dd2862846c5fa0f804ad9d079e95d1b367c8beaa6"
+    },
+    {
+      "name": "_worker.js",
+      "bytes": 1648,
+      "sha256": "08efd9a001044871c113e154fba9965a248b4b89fb955130d0317aeb335e1d59"
+    },
+    {
+      "name": "holding-assets/logo.jpeg",
+      "bytes": 18543,
+      "sha256": "88de04e5a359ff1e3e3223dc7c503e03dfd53f006f7a92db7ad1c4b35b2466ab"
+    },
+    {
+      "name": "holding-assets/style.css",
+      "bytes": 4594,
+      "sha256": "920bfe98c270ad94b8f805efa85591faad1dd1b6b67f4a9f2b62236c9626f6f2"
+    },
+    {
+      "name": "holding-assets/wooden-salt-frame.jpg",
+      "bytes": 145710,
+      "sha256": "aa212fc08496fc4005ce50ef72b1d85ebe3e90f5a2e62fc969f3536e71cf548b"
+    },
+    {
+      "name": "index.html",
+      "bytes": 2713,
+      "sha256": "a5c4afe732935771fd1b9b28d0c1b0b9798c9a7486ba31d3492708c6b6f0b3b7"
+    },
+    {
+      "name": "robots.txt",
+      "bytes": 24,
+      "sha256": "e5c4b84484ee4216e9373be99380320c25dd94805f99f0a805846f087636553f"
+    }
+  ]
+}

@@ -38,3 +38,6 @@ tests/test-results/
 
 # Saltwood Frames render and verification cache
 .saltwood-render-cache/
+
+d1/postcodes/*.sql
+d1/postcodes/*.log

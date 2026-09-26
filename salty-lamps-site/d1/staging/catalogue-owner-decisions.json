@@ -1,0 +1,38 @@
+{
+  "reviewed_date": "2026-09-26",
+  "scope": "Approved assortment, shared-stock and local-rehearsal price decisions only; no live schema change, import or launch authorization",
+  "production_import_authorized": false,
+  "bath_salt": {
+    "decision": "Include 1 kg, 5 kg and 10 kg choices using the existing hidden product",
+    "source_handle": "Product_1cf43d30-ba00-4bb9-816f-4091d80a9c15",
+    "source_visible_original": "false",
+    "existing_seed_product_id": "product_7e1452fd-2732-3190-c453-2a75d94db94b",
+    "product_codes": [
+      "BS-1000",
+      "BS-5000",
+      "BS-10"
+    ],
+    "pending": [
+      "Current opening stock approval",
+      "Shipping unit and packed-weight confirmation",
+      "Preserve owner copy and media"
+    ],
+    "approved_rehearsal_prices_pence": {
+      "BS-1000": 449,
+      "BS-5000": 1199,
+      "BS-10": 1699
+    },
+    "price_approval": "Owner replied proceed after these three prices were presented for the local rehearsal."
+  },
+  "wooden_frames": {
+    "decision": "Keep size and portrait/landscape choices",
+    "source_handle": "Product_b584d7ab-2ad3-49be-8278-6b7a89f583f1",
+    "existing_snapshot_product_id": "product_1984920f-d499-367d-8f0f-e622486c621a",
+    "pending": [
+      "Preserve existing prices unless separately approved",
+      "Current working database read-back",
+      "Reversible local rehearsal"
+    ],
+    "stock_decision": "Portrait and landscape share the same stock pool for each size"
+  }
+}

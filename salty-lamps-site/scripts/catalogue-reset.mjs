@@ -307,7 +307,7 @@ async function apply(plan) {
 
   for (const p of plan.createProducts) {
     await attempt(`create product ${p.name}`, () =>
-      api('/api/admin/products', { method: 'POST', body: JSON.stringify({ product: pick(p, PRODUCT_FIELDS), skus: p.skus }) }))
+      api('/api/admin/products', { method: 'POST', body: JSON.stringify({ sourceId: p.id, product: pick(p, PRODUCT_FIELDS), skus: p.skus }) }))
   }
 
   for (const { want } of plan.updateProducts) {

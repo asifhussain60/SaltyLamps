@@ -37,6 +37,16 @@ export async function onRequestPost({ request, env, data }) {
   const [body, bodyErr] = await readJson(request)
   if (bodyErr) return bodyErr
 
+  const sourceId = body.sourceId
+  if (sourceId !== undefined && (typeof sourceId !== 'string' || !/^product_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(sourceId))) {
+    return apiError('The import source identifier is invalid.', 400, { code: 'validation' })
+  }
+  // A retried import must preserve identity without overwriting later owner edits.
+  // The next reconciliation plan reports any differences explicitly.
+  if (sourceId && await env.DB.prepare('SELECT id FROM products WHERE id=?').bind(sourceId).first()) {
+    return json({ id: sourceId, existing: true })
+  }
+
   const product = validateProduct(body.product || {})
   if (!product.ok) return validationError(product.errors)
 
@@ -54,7 +64,7 @@ export async function onRequestPost({ request, env, data }) {
     try { skuValues.push({ ...res.value, ...validateWeights(skuInputs[i]) }) } catch(e) { return apiError(e.message,400) }
   }
 
-  const id = `product_${crypto.randomUUID()}`
+  const id = sourceId || `product_${crypto.randomUUID()}`
   const p = product.value
 
   try {
@@ -75,6 +85,10 @@ export async function onRequestPost({ request, env, data }) {
     await env.DB.batch(stmts)
     return json({ id }, 201)
   } catch (err) {
+    // A concurrent identical import may have won the atomic insert.
+    if (sourceId && await env.DB.prepare('SELECT id FROM products WHERE id=?').bind(sourceId).first()) {
+      return json({ id: sourceId, existing: true })
+    }
     return apiError(`Could not create product: ${err.message}`, 500, { code: 'server_error' })
   }
 }

@@ -1,58 +1,42 @@
-# Salty Lamps — Pricing (plain-English)
+# Salty Lamps — Pricing
 
-What does it actually cost to run the Salty Lamps shop once it's live? In short: hosting is effectively free for a shop this size, and you pay a small fee only when you make a sale.
+Reviewed 26 September 2026. This guide and the admin Pricing page share the same cost data.
 
-> This page mirrors the in-admin **Documentation → Pricing** page. Both render the same diagrams from [`diagrams/`](diagrams/).
+Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero Trust and R2 Standard stay within their free allowances. This is a conditional estimate, not a fixed bill or spending cap. The EU-jurisdiction database is empty. The owner dashboard now shows Zero Trust Free active; its $0/month checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user policy are not yet configured. R2 separately requires a recurring, usage-billed subscription before a bucket can be created. Payment processing, domain renewal, existing Wix and Zoho service, and customer email delivery are separate costs. No paid Cloudflare upgrade is selected.
 
-> **The bottom line:** **Cloudflare** (the website, database and image storage) costs roughly **£0/month** at this scale. **Stripe** has **no monthly fee** — it simply keeps a small cut of each payment (about **1.5% + 20p** on a UK card). So your running cost is essentially "a little bit per sale."
+| Need | Choice | Boundary |
+| --- | --- | --- |
+| Website and backend | Cloudflare Pages and Functions free tier: $0/month within limits | 500 Pages builds per month and 100,000 shared Worker/Function requests per day, with 10 ms CPU per invocation. Static requests do not use the Function allowance. Free-limit exhaustion can interrupt dynamic requests. |
+| Database | Cloudflare D1 free tier: $0/month within limits | 5 million rows read and 100,000 rows written per day; 5 GB total account storage. The new EU-jurisdiction database is empty. Daily limit exhaustion interrupts queries; there is no assumed automatic paid upgrade. |
+| Administrator sign-in | Cloudflare Zero Trust Free: $0/month for the two approved users | The owner account now shows the Free plan active, with a 50-user limit and Cloudflare as the only listed identity provider. The checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user allow policy are not yet configured. |
+| Uploaded images | Cloudflare R2 Standard free allowance: estimated $0/month within limits | 10 GB-month storage, 1 million Class A and 10 million Class B operations per month. Wix reports 819.09 MB of site files, but full original media is not yet backed up, so final size is unverified. R2 requires the owner to accept a recurring, usage-billed subscription; no subscription or bucket has been created. Standard overages are $0.015 per GB-month, $4.50 per million Class A requests and $0.36 per million Class B requests; billed units round up. |
+| Incoming email | Cloudflare Email Routing is free | Forwarding to an existing verified inbox; it is not a mailbox archive or a complete business reply service. Keep Zoho until inbound and branded replies are proven. |
+| Customer order emails | Retain Resend free plan initially | Already integrated. Free plan has a 100-email daily limit; verify the account monthly allowance, sending domain and all message types before launch. |
+| Cloudflare outgoing email | Requires Workers Paid | Sending to arbitrary customers is unavailable on Workers Free. Paid starts at $5 USD/month, including 3,000 outgoing emails, then $0.35 per 1,000. Optional later choice, not approved spend. |
+| Estimated incremental Cloudflare total | $0/month if all free limits hold | This is a conditional estimate, not a spending cap or launch approval. Existing Wix, Zoho, registrar, payment-processing and email-service charges are separate; usage must be measured before and after launch. |
+| Payments and domain | Stripe and registrar | Stripe and PayPal processing fees and domain renewal remain separate. Cloudflare does not replace the payment processor. |
 
-## The two bills
+## Stripe payment costs
 
-There are only two things to pay for to keep the shop running, plus a small yearly cost for the domain name.
+The replacement code uses Stripe, but a business Stripe account and live connection remain unconfirmed. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs. [Stripe UK pricing](https://stripe.com/gb/pricing).
 
-![Cloudflare hosting is about £0/month on free tiers; Stripe has no monthly fee but takes 1.5% + 20p per UK card payment; plus a small yearly domain cost.](diagrams/pricing-overview.svg)
+## Domain and mailbox costs
 
-## How Stripe's fee works
+Nominet confirms 123-Reg as the registrar. Cloudflare DNS is active; domain registration and renewals remain at 123-Reg. Moving DNS and hosting does not require transferring the domain registration. Verify the owner’s registrar access and renewal invoice; do not assume a renewal or transfer price.
 
-Stripe takes its fee automatically out of each payment — a percentage of the sale plus a fixed 20p — and sends the rest to your bank account. The percentage depends on where the customer's card is from.
+Keep the current Zoho mailbox until the mail archive, incoming forwarding and replies from the business address have all been proven. Free email forwarding alone does not replace a full mailbox.
 
-![On a £30 order: a UK card leaves you £29.35 (fee £0.65), a European card £29.05 (fee £0.95), an international card £28.82 (fee £1.18).](diagrams/payment-split.svg)
+## Provider sources
 
-| Customer's card | Stripe fee | On a £30 sale, you keep |
-|---|---|---|
-| UK card | 1.5% + 20p | £29.35 |
-| European (EEA) card | 2.5% + 20p | £29.05 |
-| International card | 3.25% + 20p | £28.82 |
-
-> **One extra to know about:** if a payment needs **currency conversion**, Stripe adds a further **2%**. Most UK sales won't hit this.
-
-## Cloudflare: free for a shop this size
-
-Everything Cloudflare provides for the shop sits comfortably inside its free allowances, so there's normally nothing to pay:
-
-- **Website hosting & the behind-the-scenes functions** — free up to 100,000 visits' worth of requests per day.
-- **The database** (products, stock, orders) — free up to millions of reads a day and 5 GB of data.
-- **Image storage** — free up to 10 GB (a shop's photos are a fraction of that).
-- **Admin sign-in security** (Cloudflare Access) — free for a small team.
-
-You'd only ever pay Cloudflare if the shop became very busy and outgrew those free limits — at which point the paid plan starts at about **$5/month**. For a growing small shop, that's a long way off.
-
-## A simple monthly picture
-
-| What | When you pay | Rough cost |
-|---|---|---|
-| Cloudflare (hosting, database, images, admin security) | Monthly | ≈ £0 at this scale |
-| Stripe (card payments) | Per sale | ~1.5% + 20p per UK sale |
-| Domain name (e.g. saltylamps.co.uk) | Yearly | A few pounds a year |
-
-## Buying or moving the domain
-
-The shop already owns **saltylamps.co.uk** (currently registered at Wix). Two things to know about the cost:
-
-- **Moving it to Cloudflare is free.** `.co.uk` (and other `.uk`) domains have **no transfer fee** and moving them doesn't add a year — so shifting the domain from Wix to Cloudflare costs **£0**. You simply keep paying the normal yearly renewal.
-- **The yearly renewal is small** — a `.co.uk` is typically a few pounds a year (roughly **£8–£12/year**; Cloudflare charges at cost, with no markup).
-- If you ever register a brand-new domain instead of moving this one, it's the same kind of small yearly fee.
-
-> The step-by-step for moving the domain (and everything else) is in the **Migration** page of this Documentation section.
-
-> ⚠️ **Prices can change — always check the official pages.** The figures here were accurate when written but providers update their pricing. Confirm current rates: [Stripe UK pricing](https://stripe.com/gb/pricing), [Cloudflare Workers/Pages](https://developers.cloudflare.com/workers/platform/pricing/), [Cloudflare D1](https://developers.cloudflare.com/d1/platform/pricing/), and [Cloudflare R2](https://developers.cloudflare.com/r2/pricing/).
+- [Cloudflare account sign-in for Access](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/cloudflare/)
+- [PayPal Checkout integration](https://developer.paypal.com/studio/checkout/standard/integrate)
+- [PayPal through Stripe eligibility](https://support.stripe.com/questions/paypal-payment-method-availability?locale=en-GB)
+- [Cloudflare Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)
+- [Cloudflare Pages free limits](https://developers.cloudflare.com/pages/platform/limits/)
+- [Cloudflare D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)
+- [Cloudflare R2 pricing](https://developers.cloudflare.com/r2/pricing/)
+- [Cloudflare Zero Trust pricing](https://www.cloudflare.com/plans/zero-trust-services/)
+- [Cloudflare Zero Trust onboarding](https://developers.cloudflare.com/cloudflare-one/setup/)
+- [Cloudflare Email Service pricing](https://developers.cloudflare.com/email-service/platform/pricing/)
+- [Cloudflare inbound email setup](https://developers.cloudflare.com/email-service/get-started/route-emails/)
+- [Resend pricing](https://resend.com/pricing)
