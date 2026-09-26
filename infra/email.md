@@ -18,7 +18,7 @@ The dated UAT observations below are historical, not fresh proof of owner-accoun
 
 ## Current migration verification — 26 September 2026
 
-DNS is now managed by Cloudflare; the historical Wix nameserver limitation below no longer describes the current domain. Zoho routing remains retained. No owner-account Resend configuration or real customer delivery has been verified for the replacement. Do not reuse retired Cloudflare credentials or act on the historical delete/re-add advice without inspecting the current authorized Resend account.
+DNS is now managed by Cloudflare; the historical Wix nameserver limitation below no longer describes the current domain. Zoho routing remains retained. The owner-account Resend team and Free plan have been verified, and `saltylamps.co.uk` is verified in Ireland for sending only. No API key exists and no real customer delivery has occurred. Do not reuse retired Cloudflare credentials or act on the historical delete/re-add advice.
 
 Local preparation passed: all eleven templates rendered with resolved tokens, plain text and valid image assets; eleven deliberately suppressed test attempts reconciled to eleven skipped outbox records. No mail was sent. Evidence: `../outputs/email-rehearsal-2026-09-26/report.json`. Paid-order/refund notifications now use durable delivery jobs and replay/reconciliation guards; the older no-retry description below is historical. Actual provider delivery, inbox receipt and Zoho backup remain pending.
 
@@ -28,17 +28,17 @@ Asif confirmed on 26 September that Resend should deliver customer emails and se
 
 The settings are in `salty-lamps-site/d1/staging/production-email-settings.sql`, outside automatic migrations. They set sending off and contain no secrets. They have only been applied to an in-memory test fixture, not the empty production database or any existing shop database. Apply them only after the separately required shop schema/catalogue review. Real delivery remains pending.
 
-Two routing tests pass using the actual signed-payment handler, notification/outbox code and enquiry endpoint with fully mocked external transports: buyer confirmation plus Hotmail new-order alert, enquiry routing with customer Reply-To, duplicate-event suppression, and a separate public contact address. These are local routing checks, not inbox-delivery evidence. Customer replies to the proposed `orders@` sender still require a verified receiving address or an explicit customer-message Reply-To decision before sending is enabled.
+Two routing tests pass using the actual signed-payment handler, notification/outbox code and enquiry endpoint with fully mocked external transports: buyer confirmation plus Hotmail new-order alert, enquiry routing with customer Reply-To, duplicate-event suppression, and a separate public contact address. Customer order emails now set Reply-To to the configured public business contact address, so replies are directed to the retained Zoho inbox even though Resend authenticates the sender. These are local routing checks, not inbox-delivery evidence. The actual return path still requires a received-message and reply test before sending is enabled.
 
 ### Provider follow-up
 
-Resend and Stripe both presented login screens. This establishes a sign-in requirement, not that the business accounts do or do not exist. Asif has now asked the owner to create Resend and Stripe accounts. Creation, owner access, team ownership, region, account-specific quota and sending-domain status remain unverified. No historical proposal credentials were loaded.
+The signed-in Incognito Resend dashboard shows the `saltylamps` team under `saltylamps@hotmail.com`, with that owner as its only listed member. Transactional Free had 0 of 3,000 monthly and 0 of 100 daily messages used, one of three allowed domains, no payment method and pay-as-you-go off. The domain was added in Ireland (`eu-west-1`). After the exact records were added manually, Resend verified the domain and all three records and reported it ready to send. Sending was selected, receiving was left off. No API key exists. Stripe remains at the sign-in gate. No historical proposal credentials were loaded.
 
-All 36 preserved web/mail DNS comparisons matched the holding-page baseline. Default Resend sending labels (`send` MX/TXT and `resend._domainkey` TXT) returned NXDOMAIN from both authoritative nameservers and two public resolvers. These are default-label probes only; copy exact names and values from the intended owner-account domain rather than inferring them. Evidence: `infra/provider-dns-verification-2026-09-26.json` and `infra/provider-readiness-2026-09-26.json`.
+All 36 preserved web/mail DNS comparisons matched the holding-page baseline before this setup. The approved owner Cloudflare zone now has 17 records: the original 14, including Zoho root MX at priorities 10, 20 and 50, plus the exact new Resend `resend._domainkey` TXT and DNS-only `rsend` and `send` CNAME records. Both authoritative nameservers and two public resolvers returned the three exact values and unchanged Zoho MX. The public www holding page still served. Exact records and verification state are in `infra/resend-domain-setup-2026-09-26.json`. Historical default-label probes for `send` MX/TXT were not the owner account's actual requirements.
 
-[Resend's public pricing](https://resend.com/pricing) lists Free at 3,000 emails per month and 100 per day. Actual plan and usage remain unchecked. A normal order confirmation plus owner alert consumes two emails, before dispatch, enquiries, stock alerts, refunds or retries. Count both customer and owner messages when sizing the allowance.
+[Resend's public pricing](https://resend.com/pricing) lists Free at 3,000 emails per month and 100 per day; the signed-in owner dashboard confirms those limits and zero usage. A normal order confirmation plus owner alert consumes two emails, before dispatch, enquiries, stock alerts, refunds or retries. Count both customer and owner messages when sizing the allowance.
 
-Use the [official manual Cloudflare setup](https://resend.com/docs/knowledge-base/cloudflare) with the exact reviewed domain records. Preserve Zoho's root MX and existing authentication records; do not enable Resend receiving or replace mailbox routing as part of outbound setup. Provider verification and actual delivery to both the owner inbox and a separately authorized test recipient are distinct checks. No DNS change, email send, provider connection or billing commitment was performed in this follow-up.
+The [official manual Cloudflare setup](https://resend.com/docs/knowledge-base/cloudflare) was used after action-time confirmation. Zoho's root MX and existing authentication records were preserved; Resend receiving was left off. Provider verification and actual delivery to both the owner inbox and a separately authorized test recipient remain distinct checks. No email send, API-key creation or billing commitment was performed in this follow-up.
 
 ## Historical proposal account and credentials — not production setup
 
@@ -131,7 +131,8 @@ All in Admin → Settings, whitelisted in `functions/lib/validation.mjs` (`SETTI
 | `email_enabled` | Master switch. Test sends deliberately bypass it |
 | `email_from_name` | Interpolated into `From: <name> <address>`; rejects `< > " , ; :` and line breaks, which would malform the header |
 | `email_from_address` | Must be on the verified domain, or every send fails |
-| `admin_notify_email` | Where all admin alerts go — **and** the address the shop publishes on the storefront, via `contactEmail` in `/api/content` |
+| `admin_notify_email` | Where admin alerts go. It is separate from the public address. |
+| `public_contact_email` | Address the shop publishes and the Reply-To for customer order messages. |
 | `low_stock_alerts_enabled` | Feature toggle. Off means no alerts and no log rows; a *missing address* is a fault and is logged |
 | `site_url` | Link base for every email. Must be an absolute `http(s)` URL — a bare domain breaks every link and the logo |
 

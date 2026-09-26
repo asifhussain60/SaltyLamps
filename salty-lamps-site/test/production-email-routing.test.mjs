@@ -57,6 +57,7 @@ test('paid order and enquiry route customer mail and business alerts separately 
     assert.ok(customer)
     assert.ok(business)
     assert.deepEqual(customer.to, [fixtureAddress.email])
+    assert.deepEqual(customer.reply_to, ['info@saltylamps.co.uk'])
     assert.deepEqual(business.reply_to, [fixtureAddress.email])
     assert.ok(deliveries.every(mail => mail.from === 'Salty Lamps <orders@saltylamps.co.uk>'))
     assert.equal((await enquiry({ env, request: fixtureRequest('/api/support/enquiry', { source: 'trade', name: 'Fixture Buyer', email: fixtureAddress.email, message: 'Synthetic routing check only.' }) })).status, 200)

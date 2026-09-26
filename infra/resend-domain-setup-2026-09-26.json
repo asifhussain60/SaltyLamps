@@ -1,0 +1,50 @@
+{
+  "purpose": "Owner-account Resend sending-domain setup; no customer sending or mailbox migration",
+  "resend_account": "saltylamps@hotmail.com",
+  "resend_team": "saltylamps",
+  "domain": "saltylamps.co.uk",
+  "domain_id": "9eae575f-c8d3-4acc-ab51-ed3fdaedb1f2",
+  "region": "eu-west-1 (Ireland)",
+  "dashboard_status_after_creation": "Not Started",
+  "dashboard_status_after_dns_verification_request": "Verified; Resend reports domain and all three individual records verified and ready to send",
+  "sending_selected": true,
+  "receiving_selected": false,
+  "cloudflare_account": "Saltylamps@hotmail.com's Account",
+  "cloudflare_zone_record_count_before": 14,
+  "zoho_root_mx_before": [
+    { "priority": 10, "target": "mx.zoho.eu" },
+    { "priority": 20, "target": "mx2.zoho.eu" },
+    { "priority": 50, "target": "mx3.zoho.eu" }
+  ],
+  "records_requested_by_resend": [
+    {
+      "type": "TXT",
+      "name": "resend._domainkey",
+      "content": "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAyRFNu1EcVMhtqKcgnHOwkHptydHeBFnaMEB+6kZtJiq3ur3wtTsdeOdvRuxDL7jXpmB1Et8w7KRP6dTlbVPJmIvXxBVF/VVtkwjuBrsgstMkffVv6F9dcAMIGemje5Qt6c/kaeus1XEaHoC4VdHL6HtIb7IMC3M5E8Esn8swvQIDAQAB",
+      "ttl": "Auto"
+    },
+    {
+      "type": "CNAME",
+      "name": "rsend",
+      "content": "rsend-euw1.forge.rmta.net",
+      "proxy_status": "DNS only",
+      "ttl": "Auto"
+    },
+    {
+      "type": "CNAME",
+      "name": "send",
+      "content": "send.forge.rmta.net",
+      "proxy_status": "DNS only",
+      "ttl": "Auto"
+    }
+  ],
+  "requested_names_conflict_with_existing_records": false,
+  "cloudflare_records_applied": true,
+  "cloudflare_zone_record_count_after": 17,
+  "authoritative_and_public_dns": "All three exact records matched on both assigned Cloudflare nameservers and on 1.1.1.1 and 8.8.8.8. Zoho root MX priorities 10/20/50 remained unchanged on all four.",
+  "public_holding_page_after": "www.saltylamps.co.uk returned the approved construction page with intentional HTTP 503 and working mailto contact link",
+  "resend_domain_verified": true,
+  "api_key_created": false,
+  "real_email_sent": false,
+  "notes": "Exact record types and values came from the new owner-account Resend domain page, not the historical Resend setup. Only these three records were added manually in the approved Cloudflare owner zone. Zoho MX and existing Wix/Zoho authentication records were preserved. Resend reports Verified; no API key or live sending was enabled."
+}

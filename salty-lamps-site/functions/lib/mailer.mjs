@@ -15,7 +15,7 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 
 const CONFIG_KEYS = [
   'email_enabled', 'email_from_name', 'email_from_address',
-  'admin_notify_email', 'low_stock_alerts_enabled', 'site_url',
+  'admin_notify_email', 'public_contact_email', 'low_stock_alerts_enabled', 'site_url',
 ]
 
 const isTruthy = v => v === '1' || v === 'true' || v === true || v === 1
@@ -48,6 +48,7 @@ export async function loadEmailConfig(env, origin = '') {
     fromName: settings.email_from_name || 'Salty Lamps',
     fromAddress: settings.email_from_address || '',
     adminEmail: settings.admin_notify_email || '',
+    publicEmail: settings.public_contact_email || '',
     siteUrl: (env.SITE_URL || settings.site_url || origin || '').replace(/\/+$/, ''),
     apiKey: env.RESEND_API_KEY || '',
     dryRun: isTruthy(env.MAIL_DRY_RUN),
@@ -147,7 +148,9 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
           subject: rendered.subject,
           html: rendered.html,
           text: rendered.text,
-          replyTo: message.replyTo,
+          // Customer order messages reply to the published, Zoho-backed mailbox.
+          // Admin alerts keep their explicit customer Reply-To for quick handling.
+          replyTo: message.replyTo || (message.templateKey.startsWith('order_') ? config.publicEmail : undefined),
         }
         if (message.persistTransport && !message.transport) await message.persistTransport(transport)
         const providerId = await sendMail({...transport,apiKey:config.apiKey,idempotencyKey:message.idempotencyKey})

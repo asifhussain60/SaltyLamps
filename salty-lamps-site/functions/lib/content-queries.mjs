@@ -15,9 +15,8 @@
 import { PUBLIC_REVIEW_WHERE } from './public-copy.mjs'
 
 // The address the shop publishes as its own — its Contact links, the "Ask a question"
-// button, the footer, and the schema.org Store block. It is the SAME setting the admin
-// notifications are sent to (admin_notify_email), so changing it in admin Settings
-// moves both together instead of leaving the website pointing at an old mailbox.
+// button, the footer, and the schema.org Store block. It is separate from the
+// private admin notification destination and receives replies to customer mail.
 //
 // The fallback is what the site published before this was wired up. It matters because
 // /api/content is allowed to fail without blanking the shop: a fetch failure must

@@ -56,13 +56,15 @@
     "mutations": false
   },
   "resend": {
-    "observed": "Login required",
+    "observed": "Signed-in owner dashboard verified in Chrome Incognito",
     "intended_owner": "Saltylamps@hotmail.com",
-    "account_exists": "unverified",
-    "domain_status": "unverified",
+    "account_exists": "verified: saltylamps team owned by saltylamps@hotmail.com; owner is sole listed member",
+    "domain_status": "Verified: saltylamps.co.uk in Ireland (eu-west-1); all three exact DNS records public and individually verified by Resend",
     "public_free_plan_monthly": 3000,
     "public_free_plan_daily": 100,
-    "actual_plan": "unverified",
+    "actual_plan": "Transactional Free; 0/3,000 monthly and 0/100 daily used; 1/3 domains; pay-as-you-go off; no payment method",
+    "domain_setup_evidence": "infra/resend-domain-setup-2026-09-26.json",
+    "api_keys": "none",
     "actual_delivery": "not tested",
     "sources": [
       "https://resend.com/pricing",
@@ -77,10 +79,11 @@
       "staged_settings": "salty-lamps-site/d1/staging/production-email-settings.sql",
       "sending_enabled": false,
       "applied_remote": false,
-      "local_tests_passed": 2,
+      "local_tests_passed": 26,
       "transport": "mocked; no messages sent",
-      "customer_reply_routing": "pending verification"
-    }
+      "customer_reply_routing": "Configured to public_contact_email in local code; live inbox test pending"
+    },
+    "owner_report": "Asif reported account creation; signed-in owner account and current domain state were subsequently verified."
   },
   "stripe": {
     "observed": "Login required",
@@ -89,7 +92,7 @@
   },
   "dns_evidence": "infra/provider-dns-verification-2026-09-26.json",
   "boundaries": [
-    "No live payments, emails, account creation, connections, DNS changes or billing commitments.",
+    "No live payments, emails, API-key creation or billing commitments; the three reviewed Cloudflare DNS records were added with action-time approval and Resend verified the domain.",
     "No Access form retries or retired Cloudflare account access.",
     "No production import or full-shop deployment.",
     "Opening stock, packed weights and second copy remain deferred."
