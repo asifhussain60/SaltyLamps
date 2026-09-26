@@ -1,0 +1,105 @@
+{
+  "checked_at": "2026-09-26T20:33:10.519221+00:00",
+  "method": "Read-only signed-in Wix UI; Resend and Stripe login UI; public DNS and provider documentation",
+  "wix": {
+    "site": "Salty Lamps",
+    "payment_methods": {
+      "Credit/Debit Cards": {
+        "checkout": "Active",
+        "payouts": "Active"
+      },
+      "Apple Pay": {
+        "checkout": "Active",
+        "payouts": "Active"
+      },
+      "Google Pay": {
+        "checkout": "Active",
+        "payouts": "Active"
+      },
+      "Clearpay": {
+        "checkout": "Active",
+        "payouts": "Active"
+      },
+      "Klarna": {
+        "checkout": "Active",
+        "payouts": "Active"
+      },
+      "Tap to Pay on mobile": {
+        "checkout": "Active",
+        "payouts": "Active"
+      }
+    },
+    "paypal_checkout": "Active",
+    "manual_payments": "Not Connected",
+    "pos": "Accept action shown; not activated by this review",
+    "mutations": false
+  },
+  "checkout_settings": {
+    "terms_enabled": true,
+    "privacy_enabled": true,
+    "returns_enabled": true,
+    "policy_agreement_enabled": true,
+    "policy_agreement_prechecked": true,
+    "marketing_opt_in_enabled": true,
+    "marketing_opt_in_prechecked": false,
+    "separate_sms_email_boxes": false,
+    "digital_policy_enabled": false,
+    "custom_policy_enabled": false,
+    "contact_enabled": true,
+    "owner_review_required": [
+      "Terms return address is in Leyton; privacy and return policies name Unit 45A in Fenton; contact information names Unit 41 in Fenton.",
+      "Terms contain multiple phone numbers and legacy .com privacy/email references.",
+      "Return policy says fourteen days from purchase; terms describe fourteen days from physical receipt. Preserve and reconcile the discrepancy before publication."
+    ],
+    "full_editor_text_archived": false,
+    "legal_review_performed": false,
+    "mutations": false
+  },
+  "resend": {
+    "observed": "Login required",
+    "intended_owner": "Saltylamps@hotmail.com",
+    "account_exists": "unverified",
+    "domain_status": "unverified",
+    "public_free_plan_monthly": 3000,
+    "public_free_plan_daily": 100,
+    "actual_plan": "unverified",
+    "actual_delivery": "not tested",
+    "sources": [
+      "https://resend.com/pricing",
+      "https://resend.com/docs/knowledge-base/cloudflare",
+      "https://resend.com/docs/dashboard/domains/introduction"
+    ],
+    "approved_routing": {
+      "customer": "Order customer email",
+      "business_notifications": "Saltylamps@hotmail.com",
+      "proposed_sender": "orders@saltylamps.co.uk",
+      "public_contact": "info@saltylamps.co.uk",
+      "staged_settings": "salty-lamps-site/d1/staging/production-email-settings.sql",
+      "sending_enabled": false,
+      "applied_remote": false,
+      "local_tests_passed": 2,
+      "transport": "mocked; no messages sent",
+      "customer_reply_routing": "pending verification"
+    }
+  },
+  "stripe": {
+    "observed": "Login required",
+    "business_account_exists": "unverified",
+    "replacement_connection": "not verified"
+  },
+  "dns_evidence": "infra/provider-dns-verification-2026-09-26.json",
+  "boundaries": [
+    "No live payments, emails, account creation, connections, DNS changes or billing commitments.",
+    "No Access form retries or retired Cloudflare account access.",
+    "No production import or full-shop deployment.",
+    "Opening stock, packed weights and second copy remain deferred."
+  ],
+  "owner_followup": "Asif reports asking the owner to create Resend and Stripe accounts. Creation, activation and access are not yet verified.",
+  "validation": {
+    "focused_tests_passed": 16,
+    "failed": 0,
+    "build": "passed with committed local snapshot",
+    "snapshot_unchanged": true,
+    "snapshot_sha256": "498c33301b420efe65c7bc38bad64dd295ba8cacb64d50b31f1e4ed163a33e1b"
+  }
+}

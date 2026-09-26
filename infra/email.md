@@ -22,7 +22,25 @@ DNS is now managed by Cloudflare; the historical Wix nameserver limitation below
 
 Local preparation passed: all eleven templates rendered with resolved tokens, plain text and valid image assets; eleven deliberately suppressed test attempts reconciled to eleven skipped outbox records. No mail was sent. Evidence: `../outputs/email-rehearsal-2026-09-26/report.json`. Paid-order/refund notifications now use durable delivery jobs and replay/reconciliation guards; the older no-retry description below is historical. Actual provider delivery, inbox receipt and Zoho backup remain pending.
 
-## Account and credentials
+### Approved recipient routing
+
+Asif confirmed on 26 September that Resend should deliver customer emails and send shop notifications to the same Salty Lamps Hotmail inbox used by Wix. The prepared settings use `admin_notify_email=Saltylamps@hotmail.com`, with customer notifications addressed to each order's customer. The proposed sender remains `Salty Lamps <orders@saltylamps.co.uk>` subject to owner-account domain verification. Hotmail is a destination, not a domain Resend can authenticate for the shop. The public contact address remains `info@saltylamps.co.uk`; Zoho remains in service.
+
+The settings are in `salty-lamps-site/d1/staging/production-email-settings.sql`, outside automatic migrations. They set sending off and contain no secrets. They have only been applied to an in-memory test fixture, not the empty production database or any existing shop database. Apply them only after the separately required shop schema/catalogue review. Real delivery remains pending.
+
+Two routing tests pass using the actual signed-payment handler, notification/outbox code and enquiry endpoint with fully mocked external transports: buyer confirmation plus Hotmail new-order alert, enquiry routing with customer Reply-To, duplicate-event suppression, and a separate public contact address. These are local routing checks, not inbox-delivery evidence. Customer replies to the proposed `orders@` sender still require a verified receiving address or an explicit customer-message Reply-To decision before sending is enabled.
+
+### Provider follow-up
+
+Resend and Stripe both presented login screens. This establishes a sign-in requirement, not that the business accounts do or do not exist. Asif has now asked the owner to create Resend and Stripe accounts. Creation, owner access, team ownership, region, account-specific quota and sending-domain status remain unverified. No historical proposal credentials were loaded.
+
+All 36 preserved web/mail DNS comparisons matched the holding-page baseline. Default Resend sending labels (`send` MX/TXT and `resend._domainkey` TXT) returned NXDOMAIN from both authoritative nameservers and two public resolvers. These are default-label probes only; copy exact names and values from the intended owner-account domain rather than inferring them. Evidence: `infra/provider-dns-verification-2026-09-26.json` and `infra/provider-readiness-2026-09-26.json`.
+
+[Resend's public pricing](https://resend.com/pricing) lists Free at 3,000 emails per month and 100 per day. Actual plan and usage remain unchecked. A normal order confirmation plus owner alert consumes two emails, before dispatch, enquiries, stock alerts, refunds or retries. Count both customer and owner messages when sizing the allowance.
+
+Use the [official manual Cloudflare setup](https://resend.com/docs/knowledge-base/cloudflare) with the exact reviewed domain records. Preserve Zoho's root MX and existing authentication records; do not enable Resend receiving or replace mailbox routing as part of outbound setup. Provider verification and actual delivery to both the owner inbox and a separately authorized test recipient are distinct checks. No DNS change, email send, provider connection or billing commitment was performed in this follow-up.
+
+## Historical proposal account and credentials — not production setup
 
 | What | Where |
 |---|---|
@@ -73,9 +91,9 @@ both routes. Resend's own dashboard detects this and refuses to proceed.
 Note the domain is *registered* at **123-Reg**, not Wix — Wix only provides the nameservers, so a
 nameserver change is made in the 123-Reg control panel and needs nothing from Wix.
 
-A domain was added to Resend on 2026-08-01 and hit exactly this wall. If it is still listed at
-https://resend.com/domains in an unverified state, delete it before re-adding, so a stale entry
-doesn't confuse a later attempt.
+A domain was added to Resend on 2026-08-01 and hit this historical Wix limitation. The old
+delete-and-re-add recommendation is withdrawn: inspect the intended owner account and its
+current domain state first. Do not delete a domain as routine verification.
 
 **Two ways out**, both covered in [`migration-playbook.md`](migration-playbook.md):
 

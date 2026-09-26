@@ -1,0 +1,511 @@
+{
+  "checked_at": "2026-09-26T20:30:13.203663+00:00",
+  "mode": "read-only public DNS",
+  "baseline": "infra/holding-dns-after-2026-09-26.json",
+  "checks": [
+    {
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "TXT",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "_dmarc.wixemails.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "domain.zoho.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "james.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "TXT",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "_dmarc.wixemails.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "domain.zoho.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NOERROR",
+      "answer": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "TXT",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "_dmarc.wixemails.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "domain.zoho.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "1.1.1.1",
+      "status": "NOERROR",
+      "answer": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "A",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "185.230.63.107",
+        "185.230.63.171",
+        "185.230.63.186"
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "MX",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "10 mx.zoho.eu.",
+        "20 mx2.zoho.eu.",
+        "50 mx3.zoho.eu."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "saltylamps.co.uk",
+      "type": "TXT",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "_dmarc.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "_dmarc.wixemails.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "zac85392650.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "domain.zoho.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "s1._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "s2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "s2._domainkey.saltylamps.co.uk.s007.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel1._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "sel1._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "sel2._domainkey.saltylamps.co.uk",
+      "type": "CNAME",
+      "server": "8.8.8.8",
+      "status": "NOERROR",
+      "answer": [
+        "sel2._domainkey.saltylamps.co.uk.s004.ascendbywix.com."
+      ],
+      "exit_code": 0,
+      "matches_holding_baseline": true
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "MX",
+      "server": "1.1.1.1",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "1.1.1.1",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "resend._domainkey.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "1.1.1.1",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "MX",
+      "server": "8.8.8.8",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "8.8.8.8",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "resend._domainkey.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "8.8.8.8",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "MX",
+      "server": "james.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "james.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "resend._domainkey.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "james.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "MX",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "send.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    },
+    {
+      "name": "resend._domainkey.saltylamps.co.uk",
+      "type": "TXT",
+      "server": "tani.ns.cloudflare.com",
+      "status": "NXDOMAIN",
+      "answer": [],
+      "exit_code": 0
+    }
+  ],
+  "notes": [
+    "Default Resend sending labels only; exact owner-account domain and record values remain unverified.",
+    "Public DNS records do not prove actual inbox delivery or account access."
+  ]
+}
