@@ -15,16 +15,20 @@ On 27 September the owner created the separate Stripe sandbox access policy
 `Salty Lamps Cloudflare sandbox staging`. Dashboard readback showed Advanced
 access restricted to Cloudflare ASN 13335, all countries, and denials for
 anonymous VPNs, public proxies, residential proxies, and Tor exit nodes.
-Default enrollment for future keys is off. The policy protects **zero keys**
-until the staging restricted key is created and explicitly assigned. No
-Cloudflare deployment token or staging webhook endpoint has been created yet.
-The existing Wrangler OAuth session sees only the separate Gmail personal
-account and cannot read the approved owner account; do not use it for deploys.
+Default enrollment for future keys is off. The staging restricted key is now
+assigned to this policy. A separate temporary owner-account deployment token
+was used for the staging publication, and a sandbox webhook destination targets
+the staging shop. These credentials are distinct from the local rehearsal key
+and future live credentials. Do not use the separate Gmail personal account or
+the retired account for deploys.
 
 Before an upload or database write, run `python3.13 scripts/staging-preflight.py`.
 `scripts/prepare-staging-bootstrap.py` produces a fresh import outside the repo;
 it uses the replacement demo seed and migrations, two sample postcode suggestions,
-zero orders, and no Wix archive. It is only for the new staging D1. Do not apply
+zero orders, and no Wix archive. Every demo SKU has an undisclosed synthetic
+packed weight and the two sample `SW1A` postcodes have a zero-cost rate labelled
+"Sandbox test delivery (no fulfilment)". These values are only for test checkout;
+they are not approved shipping weights or tariffs. It is only for the new staging D1. Do not apply
 it to production. The local Wrangler rehearsal executed all 550 statements.
 
 Build the staged frontend with `VITE_STAGING=1` and content fetched from a local
@@ -32,6 +36,14 @@ fixture of the **same** seed. Restore the committed content snapshot after the
 build, because it belongs to the general source tree; the generated `dist` keeps
 the staged build. Use Wrangler Direct Upload so the `functions` directory is
 compiled. Dashboard drag-and-drop does not compile Pages Functions.
+
+The owner-account staging shop is published, and the administrator hostname is
+attached to it behind Cloudflare Access. A simulated Stripe payment reached the
+staging order list; the resulting email jobs were skipped under dry-run mode.
+The signed-out admin page and API redirect to Access sign-in. The approved
+administrator session opened the dashboard; a revoked-user check remains open.
+The public customer domain still serves the holding page, and Zoho MX records
+remain in place. None of this verifies production checkout or customer email.
 
 After publication, verify the owner-account project and D1 binding, test-only
 secrets, dry-run mail, fail-closed Function limit behavior, noindex headers,

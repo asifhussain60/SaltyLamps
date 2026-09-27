@@ -34,7 +34,8 @@ def validate(config, environment):
     for name in ('STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY'):
         require(name not in vars_, 'Stripe keys must be encrypted secrets')
         supplied = environment.get(name, '')
-        require(not supplied or supplied.startswith('sk_test_' if name.endswith('SECRET_KEY') else 'pk_test_'), 'Live Stripe key is forbidden')
+        allowed = ('sk_test_', 'rk_test_') if name.endswith('SECRET_KEY') else ('pk_test_',)
+        require(not supplied or supplied.startswith(allowed), 'Live Stripe key is forbidden')
     require(not environment.get('RESEND_API_KEY'), 'Customer email must remain disabled')
     require(not environment.get('R2_BUCKET'), 'R2 must remain disabled')
     require(not environment.get('DEV_ADMIN_BYPASS'), 'Admin bypass is forbidden')

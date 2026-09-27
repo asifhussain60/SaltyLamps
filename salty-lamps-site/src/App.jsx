@@ -2318,6 +2318,7 @@ export default function App() {
   )
 
   const renderCheckoutSuccess = () => {
+    const staging = import.meta.env.VITE_STAGING === '1'
     if (checkoutResult.status !== 'paid') return (
       <section className="policy-page checkout-status-page">
         <p className="eyebrow">{checkoutResult.status === 'checking' ? 'Checking payment' : 'Confirmation unavailable'}</p>
@@ -2331,7 +2332,9 @@ export default function App() {
     )
 
     const email = checkoutResult.emailDelivery || { status: 'processing', to: checkoutResult.customerEmail || '' }
-    const emailText = email.status === 'sent'
+    const emailText = staging
+      ? <>Email delivery is switched off on this test site. No confirmation or dispatch message will be sent.</>
+      : email.status === 'sent'
       ? <>We sent the order confirmation to <strong>{email.to}</strong>. It may take a few minutes to arrive. Please check your spam or junk folder too.</>
       : email.status === 'disabled'
         ? <>This test order is safely recorded. Email delivery is switched off on this proposal site, so no message was sent. Customers will receive it automatically after launch.</>
@@ -2348,9 +2351,9 @@ export default function App() {
         <header className="confirmation-hero">
           <div className="confirmation-mark" aria-hidden="true">✓</div>
           <div>
-            <p className="eyebrow">Payment complete</p>
-            <h1 id="confirmation-title">Thank you. Your order is confirmed.</h1>
-            <p>We have received your order and will let you know when it is on its way.</p>
+            <p className="eyebrow">{staging ? 'Sandbox payment complete' : 'Payment complete'}</p>
+            <h1 id="confirmation-title">{staging ? 'Your test order is confirmed.' : 'Thank you. Your order is confirmed.'}</h1>
+            <p>{staging ? 'This simulated payment moved no money. No products will be shipped.' : 'We have received your order and will let you know when it is on its way.'}</p>
           </div>
           <dl className="confirmation-reference">
             <div><dt>Order reference</dt><dd>{checkoutResult.orderReference}</dd></div>
@@ -2360,7 +2363,7 @@ export default function App() {
 
         <section className={`confirmation-email confirmation-email--${email.status}`} aria-label="Confirmation email">
           <div className="confirmation-email-icon" aria-hidden="true">✉</div>
-          <div><h2>{email.status === 'disabled' ? 'Email is off on this test site' : email.status === 'failed' ? 'Your receipt needs attention' : 'Your receipt is on its way'}</h2><p>{emailText}</p></div>
+          <div><h2>{staging || email.status === 'disabled' ? 'Email is off on this test site' : email.status === 'failed' ? 'Your receipt needs attention' : 'Your receipt is on its way'}</h2><p>{emailText}</p></div>
         </section>
 
         <div className="confirmation-grid">
@@ -2386,23 +2389,26 @@ export default function App() {
             <dl>
               <div><dt>Products</dt><dd>{money((checkoutResult.totals?.itemsPence || 0) / 100)}</dd></div>
               <div><dt>{checkoutResult.delivery?.service || 'UK delivery'}</dt><dd>{money((checkoutResult.totals?.deliveryPence || 0) / 100)}</dd></div>
-              <div className="confirmation-total"><dt>Total paid</dt><dd>{money((checkoutResult.totals?.totalPence || 0) / 100)}</dd></div>
+              <div className="confirmation-total"><dt>{staging ? 'Simulated total' : 'Total paid'}</dt><dd>{money((checkoutResult.totals?.totalPence || 0) / 100)}</dd></div>
             </dl>
             {(checkoutResult.delivery?.name || checkoutResult.delivery?.postcode) && <div className="confirmation-delivery">
-              <h3>Delivering to</h3>
+              <h3>{staging ? 'Test address' : 'Delivering to'}</h3>
               <p>{checkoutResult.delivery.name}{checkoutResult.delivery.city ? <><br />{checkoutResult.delivery.city}</> : null}{checkoutResult.delivery.postcode ? <><br />{checkoutResult.delivery.postcode}</> : null}</p>
             </div>}
           </aside>
         </div>
 
-        <section className="confirmation-next" aria-labelledby="what-happens-title">
+        {staging ? <section className="confirmation-next" aria-labelledby="what-happens-title">
+          <div><p className="eyebrow">Testing only</p><h2 id="what-happens-title">No fulfilment follows this order</h2></div>
+          <p>This order stays in the sandbox for checkout and administrator testing. It does not create a live charge, email or delivery.</p>
+        </section> : <section className="confirmation-next" aria-labelledby="what-happens-title">
           <div><p className="eyebrow">Next steps</p><h2 id="what-happens-title">What happens now</h2></div>
           <ol>
             <li><span>1</span><div><strong>Order received</strong><p>Your payment and products are confirmed.</p></div></li>
             <li><span>2</span><div><strong>Carefully packed</strong><p>We prepare and protect your natural salt products.</p></div></li>
             <li><span>3</span><div><strong>Dispatch update</strong><p>We will email you when your order leaves us.</p></div></li>
           </ol>
-        </section>
+        </section>}
 
         <div className="confirmation-actions">
           <Link className="button primary" href="/shop">Continue shopping</Link>

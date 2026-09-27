@@ -16,6 +16,10 @@ class StagingPreflightTests(unittest.TestCase):
 
     def test_checked_in_target_passes(self):
         self.assertTrue(module.validate(self.config, {}))
+        self.assertTrue(module.validate(self.config, {
+            'STRIPE_SECRET_KEY': 'rk_test_fixture',
+            'STRIPE_PUBLISHABLE_KEY': 'pk_test_fixture',
+        }))
 
     def test_rejects_production_database_and_live_credentials(self):
         self.config['d1_databases'][0]['database_id'] = module.PRODUCTION_DB

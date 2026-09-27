@@ -1,5 +1,22 @@
 # Continue the Salty Lamps migration
 
+## Published sandbox and service-mapping checkpoint
+
+Asif confirmed that migration work should stay focused on mapping, while
+allowing Stripe and email service changes needed for verification. Preserve the
+approved shop design. The separate owner-account sandbox shop is published at
+`salty-lamps-staging.pages.dev`; the administrator hostname is attached behind
+Cloudflare Access. One test-card payment reached the staging order list. Email
+jobs were skipped under dry-run mode; no live money, customer mail, Wix import,
+or production shop launch occurred. The public customer domain still serves the
+holding page, and Zoho MX remains in place. The signed-out admin page/API
+redirects to Access sign-in; an approved session reached the dashboard, while
+revoked-user denial remains untested. See
+`infra/sandbox-service-mapping-2026-09-27.md` and the updated staging guide.
+The migration plan and its pricing mirror now distinguish staging proof from
+production gates. This checkpoint changed mapping and service documentation,
+not the approved shop layout. Older checkpoints below are historical.
+
 ## Latest access and sandbox refund checkpoint
 
 Asif explicitly requires sandbox-only testing, with no live charges or refunds. The prepared Cloudflare token action was completed after Asif instructed autonomous continuation. The owner-account administrator application and policy are saved and independently read back: whole admin hostname, Cloudflare identity provider, two approved emails AND owner-account membership, one-hour sessions, no Bypass. The temporary credential has only Access Apps and Policies Write and Identity Providers Read, local IPv4 restriction and expiry 28 September. See `infra/admin-access-verification-2026-09-27.json`. It is not a production deployment credential. Administrator DNS/deployment and approved/denied sign-in tests remain pending; the broken browser form was not retried.

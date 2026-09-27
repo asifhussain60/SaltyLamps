@@ -7,11 +7,20 @@ import { onRequestPost as checkout } from '../functions/api/checkout.js'
 import { onRequestGet as verify } from '../functions/api/checkout/verify.js'
 import { onRequestPatch as patchOrder } from '../functions/api/admin/orders/[id].js'
 import { onRequestPost as webhook } from '../functions/api/webhook.js'
+import { isStripeTestKey, stripeModeAllowed } from '../functions/lib/stripe-mode.mjs'
 
 const json=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}})
 const envFor=db=>({DB:db,STRIPE_SECRET_KEY:'sk_test_fixture',STRIPE_PUBLISHABLE_KEY:'pk_test_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture'})
 const buy=env=>checkout({env,request:fixtureRequest('/api/checkout',{address:fixtureAddress,postcode:fixtureAddress.postcode,items:[{skuId:1,quantity:1}]})})
 const signedRequest=event=>{const payload=JSON.stringify(event);return new Request('http://localhost/api/webhook',{method:'POST',body:payload,headers:{'stripe-signature':Stripe.webhooks.generateTestHeaderString({payload,secret:'whsec_fixture'})}})}
+
+test('restricted sandbox keys are allowed while live and malformed keys stay blocked',()=>{
+  assert.equal(isStripeTestKey('rk_test_fixture'),true)
+  assert.equal(isStripeTestKey('sk_test_fixture'),true)
+  assert.equal(isStripeTestKey('rk_live_fixture'),false)
+  assert.equal(stripeModeAllowed({STRIPE_TEST_ONLY:'1',STRIPE_SECRET_KEY:'rk_test_fixture',STRIPE_PUBLISHABLE_KEY:'pk_test_fixture'}),true)
+  assert.equal(stripeModeAllowed({STRIPE_TEST_ONLY:'1',STRIPE_SECRET_KEY:'rk_live_fixture',STRIPE_PUBLISHABLE_KEY:'pk_live_fixture'}),false)
+})
 
 // Real SQLite transactions and triggers; only the external provider is replaced.
 test('a published sandbox shop rejects live keys before checkout or refund',async()=>{
