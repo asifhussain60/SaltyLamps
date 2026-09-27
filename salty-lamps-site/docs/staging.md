@@ -11,6 +11,16 @@ account and EU staging D1. It has no R2 binding, `MAIL_DRY_RUN=true`, and
 `pk_test_` publishable key, and sandbox webhook signing secret. The local rehearsal
 key has an IP policy tied to this computer and must not be reused on Cloudflare.
 
+On 27 September the owner created the separate Stripe sandbox access policy
+`Salty Lamps Cloudflare sandbox staging`. Dashboard readback showed Advanced
+access restricted to Cloudflare ASN 13335, all countries, and denials for
+anonymous VPNs, public proxies, residential proxies, and Tor exit nodes.
+Default enrollment for future keys is off. The policy protects **zero keys**
+until the staging restricted key is created and explicitly assigned. No
+Cloudflare deployment token or staging webhook endpoint has been created yet.
+The existing Wrangler OAuth session sees only the separate Gmail personal
+account and cannot read the approved owner account; do not use it for deploys.
+
 Before an upload or database write, run `python3.13 scripts/staging-preflight.py`.
 `scripts/prepare-staging-bootstrap.py` produces a fresh import outside the repo;
 it uses the replacement demo seed and migrations, two sample postcode suggestions,
