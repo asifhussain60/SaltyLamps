@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-27",
+  "owner_account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "scope": "Owner-account sandbox access restriction; no shop code, design, DNS, payment, email, or production setting changed",
+  "public_site": {
+    "apex": "https://saltylamps.co.uk/",
+    "apex_result": "HTTP 301 to https://www.saltylamps.co.uk/",
+    "www": "https://www.saltylamps.co.uk/",
+    "www_result": "HTTP 503 approved wooden-frame under-construction page, Cache-Control: no-store"
+  },
+  "sandbox_shop": {
+    "url": "https://salty-lamps-staging.pages.dev/shop",
+    "access_application_id": "994649b9-7f5d-4253-ad8e-3612507af855",
+    "protected_destinations": ["salty-lamps-staging.pages.dev", "*.salty-lamps-staging.pages.dev"],
+    "policy_id": "8d4f931f-ba28-4a73-acba-90939e404e4a",
+    "policy": "Cloudflare Pages generated legacy Allow Members policy; account membership is the gate, not an immutable two-email allowlist",
+    "identity_provider": "Cloudflare only; One-time PIN removed",
+    "members_at_verification": ["asifhussain60@gmail.com", "saltylamps@hotmail.com"],
+    "members_status": "Both Active; unfiltered owner-account member list showed exactly these two rows",
+    "signed_out_shop": "HTTP 302 to Cloudflare Access sign-in",
+    "signed_out_checkout_api": "HTTP 302 to Cloudflare Access sign-in",
+    "signed_out_deployment_preview": "HTTP 302 to Cloudflare Access sign-in for 20c11a0e.salty-lamps-staging.pages.dev/shop",
+    "approved_session": "Existing approved Chrome Cloudflare session opened the shop and loaded 33 demo products in 8 categories",
+    "unapproved_identity": "Not directly tested; account-member policy would also admit any future member added to the owner account"
+  },
+  "stripe_sandbox_webhook": {
+    "url": "https://salty-lamps-staging.pages.dev/api/webhook",
+    "access_application_id": "78f202fa-58d9-4aeb-86f6-1edb83382268",
+    "access_policy_id": "45fd3162-ad48-4fee-aa6d-30571c0ca381",
+    "access_policy": "Bypass Everyone for this exact path only, approved by owner to retain Stripe sandbox delivery",
+    "unsigned_post_result": "HTTP 400 from origin; unsigned request rejected without an Access redirect",
+    "signed_stripe_delivery_after_access_change": "Not tested",
+    "charges": "No checkout, charge, refund, or Stripe event attempted in this verification"
+  },
+  "administrator": {
+    "url": "https://admin.saltylamps.co.uk/admin",
+    "signed_out_result": "HTTP 302 to its separate Cloudflare Access sign-in",
+    "policy_changed": false
+  },
+  "production_cutover": false,
+  "remaining": [
+    "Owner-sign-in and an unapproved-user denial have not been directly tested",
+    "The generated shop policy depends on current owner-account membership; adding a new member would extend shop access until an exact allowlist is configured",
+    "A new signed Stripe sandbox webhook delivery should be checked before relying on post-access-change checkout completion"
+  ]
+}
