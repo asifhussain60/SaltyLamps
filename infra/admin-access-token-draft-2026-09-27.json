@@ -1,0 +1,26 @@
+{
+  "status": "draft_only_awaiting_action_time_confirmation",
+  "name": "Salty Lamps temporary admin protection",
+  "account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "permissions": [
+    "Access: Apps and Policies Write",
+    "Access: Identity Providers Read"
+  ],
+  "resource_scope": "approved owner account only",
+  "request_ip_allow": [
+    "73.195.202.11/32"
+  ],
+  "not_before": "2026-09-27T00:00:00Z",
+  "expires_on": "2026-09-28T23:59:59Z",
+  "token_created": false,
+  "credential_saved": false,
+  "access_application_created": false,
+  "intended_application": "admin.saltylamps.co.uk",
+  "intended_allowed_emails": [
+    "Saltylamps@hotmail.com",
+    "asifhussain60@gmail.com"
+  ],
+  "membership_requirement": "Both email allowlist and approved owner-account membership",
+  "browser_form": "Account API tokens review page; existing broken Access Emails form not retried",
+  "approval_reason": "Browser computer-use policy requires action-time confirmation before creating new security-sensitive access and approval to save the resulting credential privately on this Mac."
+}

@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-27",
+  "www_status": 403,
+  "cache_control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0",
+  "holding_page_contact_present": false,
+  "holding_page_title": "error code: 1010\n",
+  "zoho_mx": [
+    "50 mx3.zoho.eu.",
+    "10 mx.zoho.eu.",
+    "20 mx2.zoho.eu."
+  ],
+  "production_preflight": "Blocked before any API call: explicit production API token required. Tested with sanitized environment and owner account ID.",
+  "production_import_performed": false,
+  "shop_launch_performed": false,
+  "mail_sent": false,
+  "automated_request_note": "Python urllib request received Cloudflare error 1010/403. This is not treated as a customer outage.",
+  "browser_check": {
+    "url": "https://www.saltylamps.co.uk/",
+    "title": "Our new website is on its way | Salty Lamps",
+    "heading": "A warmer welcome is on its way.",
+    "contact": "mailto:info@saltylamps.co.uk",
+    "holding_page_verified": true
+  }
+}

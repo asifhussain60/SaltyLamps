@@ -1,0 +1,21 @@
+{
+  "reviewed": "2026-09-27",
+  "account": "acct_1UK2aVQVtEzHT783",
+  "mode": "sandbox",
+  "policy_name": "Salty Lamps local sandbox rehearsal",
+  "saved_policy_observed": true,
+  "protected_keys": 1,
+  "allowlist": [
+    "73.195.202.11/32"
+  ],
+  "default_for_new_keys": false,
+  "evidence": [
+    "Saved policy row listed one protected key",
+    "Policy detail default checkbox unchecked; action menu offered Set as default",
+    "Edit detail persisted the single IPv4 /32; no edit submitted",
+    "Existing approved local test key authenticated to the correct owner sandbox after policy save"
+  ],
+  "denied_network_test": "not performed",
+  "live_policy_changed": false,
+  "production_egress_suitability": "Not established; this is the local rehearsal network only"
+}

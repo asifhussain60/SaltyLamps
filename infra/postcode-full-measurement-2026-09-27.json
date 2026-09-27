@@ -1,0 +1,55 @@
+{
+  "source_sha256": "f704e4aa2c2f4712ebb152bb2bf29c41c5efdf64d397a10baaca66fc9f0afdc2",
+  "rows": 1760216,
+  "sql_bytes": 38845407,
+  "measured_sqlite_bytes": 39669760,
+  "free_database_limit_bytes": 500000000,
+  "fits_postcode_table_alone": true,
+  "maximum_statement_bytes": 9295,
+  "daily_write_budget": 80000,
+  "assumed_writes_per_row": 2,
+  "minimum_days_one_write_per_row": 18,
+  "planned_days": 45,
+  "integrity_check": "ok",
+  "all_chunks_replayed_without_changes": true,
+  "prefix_query_plan": [
+    [
+      4,
+      0,
+      155,
+      "SEARCH uk_postcodes USING PRIMARY KEY (postcode_key>? AND postcode_key<?)"
+    ]
+  ],
+  "prefix_sample": [
+    [
+      "SW1A 0AA"
+    ],
+    [
+      "SW1A 0PW"
+    ],
+    [
+      "SW1A 0RS"
+    ],
+    [
+      "SW1A 1AA"
+    ],
+    [
+      "SW1A 1AB"
+    ],
+    [
+      "SW1A 1AG"
+    ],
+    [
+      "SW1A 1AH"
+    ],
+    [
+      "SW1A 1BA"
+    ]
+  ],
+  "remote_import_performed": false,
+  "remote_write_amplification": "unmeasured; local SQLite changes are not remote D1 billing",
+  "resume_rule": "Verify source/chunk hashes and actual account daily usage. Apply only the next unconfirmed chunk after owner mapping/schema approval. Record remote rows_written and confirmation. After uncertain outcomes, reconcile existing keys before retry; never advance on an error. At most one planned chunk per fresh daily allowance until measured otherwise.",
+  "reviewed": "2026-09-27",
+  "source_dataset": "ONS live postcode layer, August 2026, BT excluded",
+  "source_catalogue": "https://www.data.gov.uk/dataset/f10c1fb7-ae3d-4811-9f37-82d50a5fae83/online-ons-postcode-directory-live3"
+}
