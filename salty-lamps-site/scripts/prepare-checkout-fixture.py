@@ -25,7 +25,12 @@ def main():
     shutil.copytree(ROOT / 'functions', folder / 'functions')
     (folder / 'node_modules').symlink_to(ROOT / 'node_modules', target_is_directory=True)
     shutil.copytree(ROOT / 'dist', folder / 'dist')
-    (folder / '.dev.vars').write_text('# Deliberately no provider credentials.\n')
+    (folder / '.dev.vars').write_text('''# Disposable localhost only; no provider credentials or outbound email.
+DEV_ADMIN_BYPASS=1
+MAIL_DRY_RUN=true
+STRIPE_TEST_ONLY=1
+SITE_URL=http://127.0.0.1:8789
+''')
     (folder / 'wrangler.toml').write_text('''name = "salty-checkout-fixture"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
@@ -34,6 +39,9 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "checkout-fixture"
 database_id = "00000000-0000-4000-8000-000000000099"
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "local-checkout-fixture-images"
 ''')
     spec = importlib.util.spec_from_file_location('planner', ROOT / 'scripts/plan-production-migrations.py')
     planner = importlib.util.module_from_spec(spec)

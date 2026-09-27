@@ -27,7 +27,7 @@ def validate(config, environment):
     vars_ = config['vars']
     require(vars_.get('STRIPE_TEST_ONLY') == '1', 'Sandbox mode is required')
     require(vars_.get('MAIL_DRY_RUN') == 'true', 'Mail dry run is required')
-    require(vars_.get('SITE_URL') == 'https://salty-lamps-staging.pages.dev', 'Unexpected staging URL')
+    require(vars_.get('SITE_URL') == 'https://test.saltylamps.co.uk', 'Unexpected staging URL')
     require(vars_.get('PUBLIC_HOST') == 'www.saltylamps.co.uk', 'Customer domain must remain canonical')
     require(vars_.get('ADMIN_HOSTS') == 'admin.saltylamps.co.uk', 'Unexpected admin host')
     require(vars_.get('ACCESS_AUD') and vars_.get('ACCESS_TEAM_DOMAIN'), 'Admin Access is required')

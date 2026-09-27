@@ -1171,7 +1171,9 @@ function OrderDetail({ id }) {
         open={confirm === 'refunded'}
         danger
         title="Refund this order?"
-        message="This issues a real Stripe refund to the customer and cannot be undone."
+        message={import.meta.env.VITE_STAGING === '1'
+          ? 'This refunds a Stripe sandbox payment. No real money moves, and the test refund cannot be undone.'
+          : 'This issues a real Stripe refund to the customer and cannot be undone.'}
         confirmLabel="Refund"
         onConfirm={() => patch({ status: 'refunded' })}
         onCancel={() => setConfirm(null)}

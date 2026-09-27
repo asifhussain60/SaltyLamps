@@ -1,13 +1,17 @@
 import { onRequest as authenticateAdmin } from './api/admin/_middleware.js'
 // Runs before every request to the site — storefront pages, static assets, API
-// routes, all of it. Two jobs, and nothing else belongs here.
+// routes, all of it. Three jobs, and nothing else belongs here.
 //
 //   1. KEEP THE ADMIN OFF THE SHOP. When ADMIN_HOSTS names a hostname, /admin is
 //      served there and refused everywhere else. Cloudflare Pages `_redirects`
 //      cannot do this: its sources must be relative paths, so it never sees which
 //      hostname the request arrived at. A Function is the only place that can.
 //
-//   2. KEEP THE DUPLICATES OUT OF GOOGLE. One Pages project answers on several
+//   2. KEEP SHOP ROUTES OFF THE ADMIN HOST. Both hostnames use the same code and
+//      D1 binding, but / on the admin host opens /admin and shop pages move to
+//      SITE_URL. Public APIs are unavailable there except image serving.
+//
+//   3. KEEP THE DUPLICATES OUT OF GOOGLE. One Pages project answers on several
 //      hostnames — the real domain, the .pages.dev address, per-deployment preview
 //      aliases, and now the admin subdomain. Every one of them serves the same
 //      build carrying the same canonical tags pointing at the real domain, so all
@@ -43,6 +47,31 @@ export async function onRequest(context) {
   const { request, env, next } = context
   const hostname = hostnameOf(request)
   const { pathname } = new URL(request.url)
+
+  // The admin and shop share a Pages project and D1 binding, but not browser
+  // destinations. Keep a bare admin bookmark on the dashboard and send customer
+  // pages to this environment's shop URL instead of rendering a second shop on
+  // the protected administrator hostname.
+  if (!isLocalHost(hostname) && isAdminHost(hostname, env)) {
+    if (pathname.startsWith('/api/') &&
+        !pathname.startsWith('/api/admin/') &&
+        !pathname.startsWith('/api/images/')) {
+      return new Response('Not found', { status: 404 })
+    }
+    if ((request.method === 'GET' || request.method === 'HEAD') &&
+        (PUBLIC_PAGES.has(pathname) || PUBLIC_PAGE_PREFIXES.some(prefix => pathname.startsWith(prefix)))) {
+      if (pathname === '/') return Response.redirect(new URL('/admin', request.url), 302)
+      let shop
+      try { shop = new URL(env.SITE_URL) } catch { /* fail closed below */ }
+      if (!shop || shop.protocol !== 'https:' || shop.hostname === hostname) {
+        return new Response('Not found', { status: 404 })
+      }
+      const target = new URL(request.url)
+      target.protocol = shop.protocol
+      target.host = shop.host
+      return Response.redirect(target, 302)
+    }
+  }
 
   // _redirects only accepts relative sources. Canonicalize actual shop page
   // requests here, preserving the full path/query and leaving API methods alone.

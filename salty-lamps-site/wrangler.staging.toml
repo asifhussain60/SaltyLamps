@@ -16,7 +16,7 @@ database_id = "981a6d7b-8eb7-4057-8023-d2a4894c21e4"
 [vars]
 STRIPE_TEST_ONLY = "1"
 MAIL_DRY_RUN = "true"
-SITE_URL = "https://salty-lamps-staging.pages.dev"
+SITE_URL = "https://test.saltylamps.co.uk"
 PUBLIC_HOST = "www.saltylamps.co.uk"
 ADMIN_HOSTS = "admin.saltylamps.co.uk"
 ACCESS_AUD = "72d903a62fcd255a453d435e0564c1da117166a099489adb273e4768b0822957"

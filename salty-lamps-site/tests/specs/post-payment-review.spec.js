@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.use({ timezoneId: 'America/New_York' })
 
-test('confirmation shows a complete receipt and truthful sent-email guidance', async ({ page }) => {
+test('confirmation shows a complete receipt and mode-safe email guidance', async ({ page }) => {
   await page.route('**/api/checkout/verify?*', route => route.fulfill({ json: {
     status: 'paid', orderReference: '#PRACTICE', placedAt: '2026-09-19T15:00:00.000Z', customerEmail: 'asim@example.com',
     emailDelivery: { status: 'sent', to: 'asim@example.com' },
@@ -11,17 +11,18 @@ test('confirmation shows a complete receipt and truthful sent-email guidance', a
     totals: { itemsPence: 2998, deliveryPence: 699, totalPence: 3697 },
   } }))
   await page.goto('/checkout/success?session_id=cs_test_practice1234')
-  await expect(page.getByRole('heading', { name: 'Thank you. Your order is confirmed.' })).toBeVisible()
+  const sandbox = await page.getByText(/test shop · stripe sandbox only/i).isVisible()
+  await expect(page.getByRole('heading', { name: sandbox ? 'Your test order is confirmed.' : 'Thank you. Your order is confirmed.' })).toBeVisible()
   await expect(page.getByText('#PRACTICE')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Products ordered' })).toBeVisible()
   await expect(page.getByText('Himalayan salt bowl — 6\" Dia')).toBeVisible()
   await expect(page.getByText('£36.97')).toBeVisible()
-  await expect(page.getByText('asim@example.com')).toBeVisible()
-  await expect(page.getByText(/spam or junk folder/i)).toBeVisible()
+  if (!sandbox) await expect(page.getByText('asim@example.com')).toBeVisible()
+  await expect(page.getByText(sandbox ? /no confirmation or dispatch message will be sent/i : /spam or junk folder/i)).toBeVisible()
   await expect(page.getByRole('button', { name: "Let's Chat" })).toHaveCount(0)
 })
 
-test('proposal confirmation never claims that a disabled email was sent', async ({ page }) => {
+test('test confirmation never claims that a disabled email was sent', async ({ page }) => {
   await page.route('**/api/checkout/verify?*', route => route.fulfill({ json: {
     status: 'paid', orderReference: '#PRACTICE', customerEmail: 'asim@example.com',
     emailDelivery: { status: 'disabled', to: 'asim@example.com' }, items: [],
@@ -29,7 +30,7 @@ test('proposal confirmation never claims that a disabled email was sent', async 
   } }))
   await page.goto('/checkout/success?session_id=cs_test_practice1234')
   await expect(page.getByRole('heading', { name: 'Email is off on this test site' })).toBeVisible()
-  await expect(page.getByText(/no message was sent/i)).toBeVisible()
+  await expect(page.getByText(/no confirmation or dispatch message will be sent|no message was sent/i)).toBeVisible()
 })
 
 test('Admin chart and order dates use the shop day in a US browser', async ({ page, request }) => {

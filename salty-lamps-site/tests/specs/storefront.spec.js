@@ -34,14 +34,12 @@ test.describe('the shop is open', () => {
     await expect(page.locator('.cart-button')).toBeVisible()
   })
 
-  test('the proposal navigation includes the owner’s Admin shortcut', async ({ page }) => {
-    // The shortcut remains visible, but opens the protected administrator host.
+  test('the shop navigation does not expose an Admin shortcut', async ({ page }) => {
     await page.goto('/')
     const menu = page.getByRole('button', { name: /menu/i })
     if (await menu.isVisible()) await menu.click()
     const admin = page.getByRole('link', { name: 'Admin', exact: true })
-    await expect(admin).toBeVisible()
-    await expect(admin).toHaveAttribute('href', 'https://admin.saltylamps.co.uk/admin')
+    await expect(admin).toHaveCount(0)
   })
 
   test('the shop page lists products with prices', async ({ page }) => {
