@@ -1,5 +1,16 @@
 # Continue the Salty Lamps migration
 
+## Fresh publication check
+
+The public owner-account staging shop loaded its 33 demo products and sandbox
+banner at the shop route. Signed-out requests to the protected administrator
+page and order API redirected to Cloudflare Access. The available browser
+sessions were signed out, so this check did not repeat the earlier successful
+approved-user dashboard visit. The customer domain still displayed the
+approved holding page and returned HTTP 503 with no-store. See
+`infra/published-sandbox-verification-2026-09-27.json`. No deployment, charge,
+email, import or DNS change occurred in this read-only check.
+
 ## Owner email credential checkpoint
 
 The owner signed in to the verified Resend team and created one sending-only

@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-27",
+  "scope": "Read-only public publication check; no deployment, order, payment, email or DNS change",
+  "shop": {
+    "url": "https://salty-lamps-staging.pages.dev/shop",
+    "http_status": 200,
+    "robots_header": "noindex, nofollow",
+    "browser_result": "Shop loaded 33 demo products in 8 categories with the TEST SHOP / STRIPE SANDBOX ONLY / NO REAL PAYMENTS banner",
+    "payment_mode": "Sandbox only; no checkout or charge attempted in this check"
+  },
+  "administrator": {
+    "url": "https://admin.saltylamps.co.uk/admin",
+    "signed_out_page_status": 302,
+    "signed_out_api_status": 302,
+    "redirect_destination": "Cloudflare Access sign-in for admin.saltylamps.co.uk",
+    "signed_in_dashboard_in_this_check": "Not checked; the available browser sessions were signed out",
+    "prior_signed_in_evidence": "An approved owner-account administrator session previously opened the staged dashboard and viewed the simulated order",
+    "revoked_user_denial": "Not checked"
+  },
+  "customer_domain": {
+    "url": "https://www.saltylamps.co.uk/",
+    "http_status": 503,
+    "cache_control": "no-store",
+    "browser_result": "Approved wooden-frame holding page and business contact link visible; replacement shop not at the customer hostname"
+  },
+  "production_cutover": false,
+  "limitations": [
+    "Current signed-in administrator content was not rechecked because the browser was signed out",
+    "Published sandbox catalogue and delivery values remain synthetic and are not live-shop approval",
+    "Business mapping, production data, live payment and customer email gates remain separate"
+  ]
+}
