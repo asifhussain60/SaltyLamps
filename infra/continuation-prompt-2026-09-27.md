@@ -1,5 +1,17 @@
 # Continue the Salty Lamps migration
 
+## Owner email credential checkpoint
+
+The owner signed in to the verified Resend team and created one sending-only
+key restricted to `saltylamps.co.uk`. The dashboard showed zero uses. Its full
+value was moved from the Mac clipboard into a private, Git-ignored, owner-only
+local file; the masked dashboard prefix matched, and the clipboard was cleared.
+See `infra/resend-owner-key-verification-2026-09-27.json` for the non-secret
+readback. The key was not attached to either Pages deployment, staging still
+has mail dry-run, and no message was sent. Provider-backed inbox delivery,
+quota and bounce/retry acceptance remain open. Do not mistake creation and
+private custody for a completed customer email connection.
+
 ## Published sandbox and service-mapping checkpoint
 
 Asif confirmed that migration work should stay focused on mapping, while

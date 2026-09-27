@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-27",
+  "provider": "Resend",
+  "owner_team": "saltylamps",
+  "creator": "saltylamps@hotmail.com",
+  "sending_domain": "saltylamps.co.uk",
+  "sending_domain_status": "Verified",
+  "key_id": "8f3f16be-9de9-4a02-ba9e-5340e2f10bbe",
+  "key_name": "Salty Lamps transactional sending",
+  "permission": "Sending access",
+  "restricted_domain": "saltylamps.co.uk",
+  "dashboard_uses_at_readback": 0,
+  "transactional_plan": "Free, $0 per month",
+  "transactional_monthly_usage_at_readback": "0 / 3000",
+  "transactional_daily_usage_at_readback": "0 / 100",
+  "payment_methods_at_readback": 0,
+  "pay_as_you_go_enabled": false,
+  "private_local_path": "backups/private/resend-owner-transactional-sending.key",
+  "private_file_mode": "0600",
+  "private_folder_mode": "0700",
+  "git_ignored": true,
+  "clipboard_cleared_after_verified_save": true,
+  "installed_in_staging_by_this_step": false,
+  "installed_in_production_by_this_step": false,
+  "test_email_sent": false,
+  "live_customer_email_enabled": false,
+  "remaining": [
+    "Approve a controlled provider-backed test email to a named non-customer inbox",
+    "Verify actual inbox delivery, sender and reply-to behavior",
+    "Review quota, bounce and retry behavior before production connection",
+    "Keep staging mail dry-run until a separately reviewed test plan changes it"
+  ]
+}
