@@ -1,0 +1,12 @@
+{
+  "reviewed": "2026-09-27",
+  "account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "r2_active": false,
+  "activation_page_verified": true,
+  "due_now_usd": 0,
+  "renewal": "automatic with usage charges above free allowances",
+  "existing_payment_method_present": true,
+  "terms_accepted": false,
+  "subscription_activated": false,
+  "blocker": "Action-time approval to accept subscription terms and usage billing is pending. Prepared activation page left open."
+}

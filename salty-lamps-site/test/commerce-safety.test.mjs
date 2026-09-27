@@ -112,13 +112,13 @@ test('failed provider session creation leaves no inventory reservation',async()=
 
 test('refund events follow current provider state and notify only once after a full successful refund',async()=>{
  const {sql,db}=commerceFixture();sql.exec("INSERT INTO orders(id,payment_intent,status,amount_total_pence,customer_email) VALUES('cs_refund_events','pi_fixture','paid',1500,'buyer@example.invalid')")
- const prior=globalThis.fetch;let refundStatus='pending'
- globalThis.fetch=async url=>json(new URL(String(url)).pathname.endsWith('/refunds')?{data:[],has_more:false}:{id:'re_event',status:refundStatus,amount:1500,payment_intent:'pi_fixture'})
+ const prior=globalThis.fetch;let refundStatus='pending',refundId='re_event'
+ globalThis.fetch=async url=>json(new URL(String(url)).pathname.endsWith('/refunds')?{data:[],has_more:false}:{id:refundId,status:refundStatus,amount:1500,payment_intent:'pi_fixture'})
  try{
   const event={type:'refund.updated',data:{object:{id:'re_event'}}}
   assert.equal((await webhook({env:envFor(db),request:signedRequest(event)})).status,200);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'paid')
   refundStatus='failed';assert.equal((await webhook({env:envFor(db),request:signedRequest(event)})).status,200);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'paid');assert.equal(sql.prepare('SELECT status FROM order_refunds').get().status,'failed')
-  refundStatus='succeeded';assert.equal((await webhook({env:envFor(db),request:signedRequest(event)})).status,200);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'refunded')
+  refundId='re_retry';event.data.object.id=refundId;refundStatus='succeeded';assert.equal((await webhook({env:envFor(db),request:signedRequest(event)})).status,200);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'refunded')
   await webhook({env:envFor(db),request:signedRequest(event)});assert.equal(sql.prepare("SELECT COUNT(*) n FROM email_outbox WHERE template_key='order_refunded'").get().n,1)
  }finally{globalThis.fetch=prior;sql.close()}
 })
@@ -185,6 +185,42 @@ test('cumulative partial refunds and a late failed old attempt cannot reverse a 
   await syncRefund(envFor(db),{id:'re_first',status:'succeeded',amount:500,payment_intent:'pi_multi'},'http://localhost',stripe);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'paid')
   total=1500;await syncRefund(envFor(db),{id:'re_second',status:'succeeded',amount:1000,payment_intent:'pi_multi'},'http://localhost',stripe);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'refunded')
   await syncRefund(envFor(db),{id:'re_old_failed',status:'failed',amount:1500,payment_intent:'pi_multi'},'http://localhost',stripe);assert.equal(sql.prepare('SELECT status FROM orders').get().status,'refunded');assert.equal(sql.prepare('SELECT status FROM order_refunds').get().status,'succeeded');assert.equal(sql.prepare("SELECT COUNT(*) n FROM email_outbox WHERE template_key='order_refunded'").get().n,1)
+ }finally{sql.close()}
+})
+
+test('a successful refund that later fails restores the paid balance and cannot be revived by a stale event',async()=>{
+ const {syncRefund}=await import('../functions/lib/refunds.mjs')
+ const {sql,db}=commerceFixture();sql.exec("INSERT INTO orders(id,payment_intent,status,amount_total_pence,customer_email) VALUES('cs_reversed','pi_reversed','paid',1500,'buyer@example.invalid')")
+ let status='succeeded'
+ const current=()=>({id:'re_reversed',status,amount:1500,payment_intent:'pi_reversed'})
+ const stripe={refunds:{list:async()=>({data:[current()],has_more:false})}}
+ try{
+  await syncRefund(envFor(db),current(),'http://localhost',stripe)
+  assert.equal(sql.prepare('SELECT status FROM orders').get().status,'refunded')
+  sql.prepare("UPDATE commerce_email_jobs SET status='failed',error='temporary outage' WHERE id='refund:cs_reversed:confirmation'").run()
+  status='failed';await syncRefund(envFor(db),current(),'http://localhost',stripe)
+  assert.equal(sql.prepare('SELECT status FROM orders').get().status,'paid')
+  assert.deepEqual({...sql.prepare('SELECT status,amount_pence FROM order_refunds').get()},{status:'failed',amount_pence:0})
+  assert.equal(sql.prepare("SELECT status FROM commerce_email_jobs WHERE id='refund:cs_reversed:confirmation'").get().status,'skipped')
+  status='succeeded';await syncRefund(envFor(db),current(),'http://localhost',stripe)
+  assert.equal(sql.prepare('SELECT status FROM orders').get().status,'paid')
+  assert.equal(sql.prepare('SELECT status FROM order_refund_records').get().status,'failed')
+  assert.equal(sql.prepare("SELECT COUNT(*) n FROM email_outbox WHERE template_key='order_refunded'").get().n,1)
+ }finally{sql.close()}
+})
+
+test('a failed part of a full refund leaves only the successful portion returned without changing fulfilment',async()=>{
+ const {syncRefund}=await import('../functions/lib/refunds.mjs')
+ const {sql,db}=commerceFixture();sql.exec("INSERT INTO orders(id,payment_intent,status,amount_total_pence,fulfilment_status) VALUES('cs_partial_failure','pi_partial_failure','paid',1500,'shipped')")
+ const first={id:'re_kept',status:'succeeded',amount:500,payment_intent:'pi_partial_failure'}
+ const second={id:'re_later_failed',status:'succeeded',amount:1000,payment_intent:'pi_partial_failure'}
+ const stripe={refunds:{list:async()=>({data:[first,second],has_more:false})}}
+ try{
+  await syncRefund(envFor(db),second,'http://localhost',stripe)
+  second.status='failed';await syncRefund(envFor(db),second,'http://localhost',stripe)
+  assert.deepEqual({...sql.prepare('SELECT status,amount_pence FROM order_refunds').get()},{status:'partial',amount_pence:500})
+  assert.deepEqual({...sql.prepare('SELECT status,fulfilment_status FROM orders').get()},{status:'paid',fulfilment_status:'shipped'})
+  assert.equal(sql.prepare('SELECT quantity FROM skus').get().quantity,1)
  }finally{sql.close()}
 })
 

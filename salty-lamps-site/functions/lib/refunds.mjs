@@ -1,5 +1,5 @@
 import { orderTokens, orderBlocks } from './mailer.mjs'
-import { emailJobStatement, deliverOrderEmails } from './durable-email.mjs'
+import { deliverOrderEmails } from './durable-email.mjs'
 
 export async function readOrderWithRefund(db,id) {
   return db.prepare('SELECT o.*,r.status AS refund_status,r.refund_id,r.amount_pence AS refunded_amount_pence FROM orders o LEFT JOIN order_refunds r ON r.order_id=o.id WHERE o.id=?').bind(id).first()
@@ -57,29 +57,58 @@ export async function syncRefund(env,refund,origin,stripe) {
   const refunded=[...refunds.values()].reduce((sum,item)=>sum+(item.status==='succeeded'?item.amount:0),0)
   if (!Number.isSafeInteger(refunded) || refunded<0) throw new Error('Refund total is awaiting provider reconciliation')
   const full=refunded>=order.amount_total_pence
-  const currentStatus=full?'succeeded':refund.status==='succeeded'?'partial':refund.status
   const statements=[
     ...[...refunds.values()].map(item=>env.DB.prepare(`INSERT INTO order_refund_records(refund_id,order_id,status,amount_pence) VALUES(?,?,?,?)
-      ON CONFLICT(refund_id) DO UPDATE SET status=excluded.status,amount_pence=excluded.amount_pence,updated_at=datetime('now')`)
+      ON CONFLICT(refund_id) DO UPDATE SET status=CASE
+        WHEN order_refund_records.status IN ('failed','canceled') THEN order_refund_records.status
+        WHEN order_refund_records.status='succeeded' AND excluded.status IN ('pending','requires_action') THEN 'succeeded'
+        ELSE excluded.status END,amount_pence=excluded.amount_pence,updated_at=datetime('now')`)
       .bind(item.id,order.id,item.status,item.amount)),
-    env.DB.prepare(`INSERT INTO order_refunds(order_id,refund_id,status,amount_pence) VALUES(?,?,?,?)
+    // Derive the balance from the transaction's records, not the largest amount
+    // ever seen. Stripe may change a succeeded refund to failed. Failed/canceled
+    // refund IDs are terminal, so a concurrent stale response cannot revive one.
+    env.DB.prepare(`INSERT INTO order_refunds(order_id,refund_id,status,amount_pence)
+      SELECT ?,?,CASE
+        WHEN COALESCE(SUM(CASE WHEN status='succeeded' THEN amount_pence ELSE 0 END),0)>=? THEN 'succeeded'
+        WHEN SUM(status='requires_action')>0 THEN 'requires_action'
+        WHEN SUM(status='pending')>0 THEN 'pending'
+        WHEN SUM(CASE WHEN status='succeeded' THEN amount_pence ELSE 0 END)>0 THEN 'partial'
+        WHEN SUM(status='failed')>0 THEN 'failed' ELSE 'canceled' END,
+        COALESCE(SUM(CASE WHEN status='succeeded' THEN amount_pence ELSE 0 END),0)
+      FROM order_refund_records WHERE order_id=?
       ON CONFLICT(order_id) DO UPDATE SET
-        status=CASE WHEN order_refunds.status='succeeded' OR excluded.status='succeeded' THEN 'succeeded' WHEN order_refunds.refund_id=excluded.refund_id THEN excluded.status ELSE order_refunds.status END,
-        amount_pence=MAX(COALESCE(order_refunds.amount_pence,0),excluded.amount_pence),updated_at=datetime('now')`)
-      .bind(order.id,refund.id,currentStatus,refunded),
+        status=excluded.status,amount_pence=excluded.amount_pence,
+        refund_id=COALESCE(order_refunds.refund_id,excluded.refund_id),updated_at=datetime('now')`)
+      .bind(order.id,refund.id,order.amount_total_pence,order.id),
+    env.DB.prepare(`UPDATE orders SET status=CASE
+      WHEN (SELECT status FROM order_refunds WHERE order_id=orders.id)='succeeded' THEN 'refunded'
+      WHEN status='refunded' THEN 'paid' ELSE status END WHERE id=?`).bind(order.id),
+    // Do not retry an unsent refund confirmation after the refund has failed.
+    // Sent messages remain historical evidence; the administrator sees the
+    // failed refund and must reconcile any customer follow-up.
+    env.DB.prepare(`UPDATE commerce_email_jobs SET status='skipped',error='Refund no longer completed; confirmation suppressed.'
+      WHERE id=? AND status IN ('pending','failed') AND NOT EXISTS
+        (SELECT 1 FROM order_refunds WHERE order_id=? AND status='succeeded')`)
+      .bind(`refund:${order.id}:confirmation`,order.id),
   ]
   if (full) {
-    statements.push(env.DB.prepare("UPDATE orders SET status='refunded' WHERE id=?").bind(order.id))
     if (order.customer_email) {
       const {results}=await env.DB.prepare(`SELECT oi.quantity,oi.unit_price_pence, oi.frame_choices_json,s.sku,s.variant_label,p.name FROM order_items oi
         JOIN skus s ON s.id=oi.sku_id JOIN products p ON p.id=s.product_id WHERE oi.order_id=?`).bind(order.id).all()
       const after={...order,status:'refunded'}
-      statements.push(emailJobStatement(env.DB,`refund:${order.id}:confirmation`,order.id,{
+      const message={
         templateKey:'order_refunded',to:order.customer_email,orderId:order.id,data:orderTokens(after),blocks:orderBlocks(after,results || []),
-      }))
+      }
+      statements.push(env.DB.prepare(`INSERT OR IGNORE INTO commerce_email_jobs(id,order_id,payload)
+        SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM order_refunds WHERE order_id=? AND status='succeeded')`)
+        .bind(`refund:${order.id}:confirmation`,order.id,JSON.stringify(message),order.id))
+      statements.push(env.DB.prepare(`UPDATE commerce_email_jobs SET status='pending',error=NULL
+        WHERE id=? AND status='skipped' AND error='Refund no longer completed; confirmation suppressed.'
+        AND EXISTS(SELECT 1 FROM order_refunds WHERE order_id=? AND status='succeeded')`)
+        .bind(`refund:${order.id}:confirmation`,order.id))
     }
   }
   await env.DB.batch(statements)
-  // A committed refund stays true when mail needs another delivery attempt.
+  // Payment reconciliation remains committed if mail needs another attempt.
   await deliverOrderEmails(env,order.id,origin)
 }

@@ -1,0 +1,154 @@
+{
+  "reviewed": "2026-09-27",
+  "scope": "disposable local fixture and verified owner Stripe sandbox only",
+  "stripe_account_id": "acct_1UK2aVQVtEzHT783",
+  "livemode": false,
+  "live_charges": 0,
+  "live_refunds": 0,
+  "emails_sent": 0,
+  "skipped_email_jobs": 11,
+  "synthetic_orders_total": 4,
+  "sku_quantity_after": 16,
+  "pending_refund": {
+    "case": "pending",
+    "session_id": "cs_test_a1rEtG45nocKZXTUNMZj4UkbtXMqIlMY79BYIwAbq9sYrrCBtgFKdTNIKL",
+    "payment_intent": "pi_3UKJUUQVtEzHT7830LuoIjE5",
+    "refund_id": "re_3UKJUUQVtEzHT7830nZRXaz5",
+    "provider_status": "succeeded",
+    "provider_failure_reason": null,
+    "local_order": {
+      "id": "cs_test_a1rEtG45nocKZXTUNMZj4UkbtXMqIlMY79BYIwAbq9sYrrCBtgFKdTNIKL",
+      "status": "refunded",
+      "amount_total_pence": 3649
+    },
+    "local_refund_records": [
+      {
+        "refund_id": "re_3UKJUUQVtEzHT7830nZRXaz5",
+        "order_id": "cs_test_a1rEtG45nocKZXTUNMZj4UkbtXMqIlMY79BYIwAbq9sYrrCBtgFKdTNIKL",
+        "status": "succeeded",
+        "amount_pence": 3649,
+        "updated_at": "2026-09-27 15:00:56"
+      }
+    ],
+    "sku_quantity": 16,
+    "email_jobs": [
+      {
+        "status": "skipped",
+        "count": 11
+      }
+    ]
+  },
+  "failed_refund_before_fix": {
+    "case": "failed",
+    "session_id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+    "payment_intent": "pi_3UKJWqQVtEzHT7834KFSXN93",
+    "refund_id": "re_3UKJWqQVtEzHT7834nAdEevT",
+    "provider_status": "failed",
+    "provider_failure_reason": "expired_or_canceled_card",
+    "local_order": {
+      "id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+      "status": "refunded",
+      "amount_total_pence": 3649
+    },
+    "local_refund_records": [
+      {
+        "refund_id": "re_3UKJWqQVtEzHT7834nAdEevT",
+        "order_id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+        "status": "failed",
+        "amount_pence": 3649,
+        "updated_at": "2026-09-27 15:00:43"
+      }
+    ],
+    "sku_quantity": 16,
+    "email_jobs": [
+      {
+        "status": "skipped",
+        "count": 11
+      }
+    ]
+  },
+  "failed_refund_after_fix": {
+    "case": "failed",
+    "session_id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+    "payment_intent": "pi_3UKJWqQVtEzHT7834KFSXN93",
+    "refund_id": "re_3UKJWqQVtEzHT7834nAdEevT",
+    "provider_status": "failed",
+    "provider_failure_reason": "expired_or_canceled_card",
+    "local_order": {
+      "id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+      "status": "paid",
+      "amount_total_pence": 3649
+    },
+    "local_refund_records": [
+      {
+        "refund_id": "re_3UKJWqQVtEzHT7834nAdEevT",
+        "order_id": "cs_test_a1vVgi6AlJwwwTKGZL7YNqD1MBV60bJ9K992669FcHf6o8zHNNYOQW7DdF",
+        "status": "failed",
+        "amount_pence": 3649,
+        "updated_at": "2026-09-27 15:02:49"
+      }
+    ],
+    "sku_quantity": 16,
+    "email_jobs": [
+      {
+        "status": "skipped",
+        "count": 11
+      }
+    ]
+  },
+  "local_replays": [
+    {
+      "provider_event_id": "evt_3UKJWqQVtEzHT7834lpIXGDS",
+      "event_type": "refund.failed",
+      "event_payload_status": "failed",
+      "http_status": 200,
+      "local_result": {
+        "status": "paid",
+        "refund_status": "failed",
+        "amount_pence": 0
+      }
+    },
+    {
+      "provider_event_id": "evt_3UKJWqQVtEzHT7834kauOSa2",
+      "event_type": "refund.created",
+      "event_payload_status": "succeeded",
+      "http_status": 200,
+      "local_result": {
+        "status": "paid",
+        "refund_status": "failed",
+        "amount_pence": 0
+      }
+    },
+    {
+      "provider_event_id": "evt_3UKJWqQVtEzHT7834lpIXGDS",
+      "event_type": "refund.failed",
+      "event_payload_status": "failed",
+      "http_status": 200,
+      "local_result": {
+        "status": "paid",
+        "refund_status": "failed",
+        "amount_pence": 0
+      }
+    }
+  ],
+  "replay_boundary": "Actual sandbox provider payloads retrieved, re-signed with local fixture webhook secret and sent to localhost. Not provider retry-transport proof.",
+  "provider_delivery": "Actual signed refund lifecycle events forwarded by official Stripe CLI returned HTTP 200.",
+  "administrator_ui": "Local failed-refund order shows paid with warning that refund did not complete; pending-refund order shows refunded.",
+  "code_fix": "Aggregate current successful amounts in the same batch; preserve terminal failed/canceled refund IDs; restore paid status after reversal; suppress unsent refund confirmation; preserve fulfilment and inventory.",
+  "limitations": [
+    "Already sent confirmation cannot be unsent; administrator must reconcile follow-up.",
+    "Production deployment and protected sign-in are pending.",
+    "Delayed-payment methods, wallets, PayPal and provider retry transport remain unverified."
+  ],
+  "explicit_user_constraint": "Stay in sandbox. No live charges during testing.",
+  "validation": {
+    "unit_tests_passed": 155,
+    "unit_tests_failed": 0,
+    "committed_snapshot_build": "passed",
+    "route_shells": 112,
+    "referenced_media_present": 41,
+    "local_admin_bypass_removed": true,
+    "local_pages_service_stopped": true,
+    "stripe_cli_forwarder_stopped": true
+  }
+}

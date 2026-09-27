@@ -1,5 +1,16 @@
 # Continue the Salty Lamps migration
 
+## Latest access and sandbox refund checkpoint
+
+Asif explicitly requires sandbox-only testing, with no live charges or refunds. The prepared Cloudflare token action was completed after Asif instructed autonomous continuation. The owner-account administrator application and policy are saved and independently read back: whole admin hostname, Cloudflare identity provider, two approved emails AND owner-account membership, one-hour sessions, no Bypass. The temporary credential has only Access Apps and Policies Write and Identity Providers Read, local IPv4 restriction and expiry 28 September. See `infra/admin-access-verification-2026-09-27.json`. It is not a production deployment credential. Administrator DNS/deployment and approved/denied sign-in tests remain pending; the broken browser form was not retried.
+
+Two more actual owner-sandbox checkouts verified pending and later-failed refunds. A provider succeeded-to-failed transition revealed a reconciliation bug; fixed and verified against actual events, duplicate and stale-payload replay, and the local administrator screen. Failed refund now means paid order, failed refund and zero returned money; other successful partial refunds and fulfilment remain intact. Four synthetic orders now exist in the private fixture; all eleven email jobs are skipped and no real mail or live money movement occurred. See `infra/stripe-refund-edge-rehearsal-2026-09-27.json`. Actual provider retry transport, delayed methods, wallets and PayPal remain open.
+
+The R2 activation page is prepared, showing zero due now but recurring terms and usage charges; explicit subscription confirmation remains unanswered. See `infra/storage-activation-readiness-2026-09-27.json`. Resend now redirects to sign-in; the owner must restore their session before credential setup and delivery tests. Owner review of both database structures, live mapping, current stock and packed weights still gates production import. Existing postcode footer acknowledgements were verified locally; deployed-candidate attribution remains a launch check. No production import, shop launch or DNS change occurred.
+
+Validation: 155 unit tests passed; committed-snapshot build passed with 112 route shells and 41 referenced media files. Temporary Pages and Stripe forwarding processes stopped; the fixture-only admin bypass was removed. Private sandbox credentials remain in the approved protected fixture. Earlier checkpoints below are historical and superseded where this checkpoint records later evidence.
+
+
 ## Latest migration preparation checkpoint
 
 The saved Stripe sandbox network restriction is verified in `infra/stripe-sandbox-policy-verification-2026-09-27.json`. The complete national postcode capture and local import measurement passed: 1,760,216 non-BT rows, 39,669,760 SQLite bytes, all 45 chunks replayed without changes, indexed prefix lookup and integrity check passed. See `infra/postcode-full-measurement-2026-09-27.json` and `salty-lamps-site/docs/postcode-import-plan.md`. Source SQL and the full database/chunk manifest remain ignored under `salty-lamps-site/d1/postcodes/` and `backups/postcodes/full-plan-2026-09-27/`. Actual remote write accounting, public attribution and owner-reviewed production import remain pending; no remote import was performed.

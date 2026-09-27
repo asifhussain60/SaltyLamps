@@ -58,10 +58,11 @@ for Northern Ireland data; customers can still enter a postcode manually, subjec
 to the shop's independently configured shipping rules.
 
 ONS permits reuse of the remaining postcode data under the relevant open licence,
-with acknowledgements for ONS, Ordnance Survey and Royal Mail. Before public use,
-display the required current-year attribution statements and licence link in the
-replacement site's data credits. That customer-visible attribution remains a
-launch check; this private planning document alone does not satisfy it.
+with acknowledgements for ONS, Ordnance Survey and Royal Mail. The existing shop
+footer already contains the current-year acknowledgements and licence link; these
+were verified in the rendered local checkout on 27 September. Recheck that footer
+on the deployed candidate before public postcode use. This private planning
+document alone does not satisfy the customer-visible attribution requirement.
 
 ## References checked on 27 September 2026
 

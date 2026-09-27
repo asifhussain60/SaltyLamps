@@ -1,5 +1,5 @@
 {
-  "status": "draft_only_awaiting_action_time_confirmation",
+  "status": "historical_draft_superseded_by_created_and_verified_configuration",
   "name": "Salty Lamps temporary admin protection",
   "account_id": "e35d5918c507bc2cf4e920fe38b5e318",
   "permissions": [
@@ -22,5 +22,7 @@
   ],
   "membership_requirement": "Both email allowlist and approved owner-account membership",
   "browser_form": "Account API tokens review page; existing broken Access Emails form not retried",
-  "approval_reason": "Browser computer-use policy requires action-time confirmation before creating new security-sensitive access and approval to save the resulting credential privately on this Mac."
+  "approval_reason": "Browser computer-use policy requires action-time confirmation before creating new security-sensitive access and approval to save the resulting credential privately on this Mac.",
+  "superseded_by": "infra/admin-access-verification-2026-09-27.json",
+  "historical_boolean_fields": "Describe the draft before the subsequent approved action; see superseding verification for current state."
 }

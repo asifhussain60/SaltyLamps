@@ -1,0 +1,47 @@
+{
+  "reviewed": "2026-09-27",
+  "account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "token_id": "209de2804f59a305636c60005662145f",
+  "token_expires_on": "2026-09-28T23:59:59Z",
+  "application_id": "c13f24a5-4b11-4bcf-9b88-4d34bfab15ee",
+  "domain": "admin.saltylamps.co.uk",
+  "type": "self_hosted",
+  "aud": "72d903a62fcd255a453d435e0564c1da117166a099489adb273e4768b0822957",
+  "allowed_idps": [
+    "47cec4a1-3dae-458b-8be7-78da70cd5552"
+  ],
+  "identity_provider_type": "cloudflare",
+  "session_duration": "1h",
+  "policy_id": "85ba6fb2-d6a3-4654-ae84-06f3b82368f8",
+  "decision": "allow",
+  "include": [
+    {
+      "email": {
+        "email": "Saltylamps@hotmail.com"
+      }
+    },
+    {
+      "email": {
+        "email": "asifhussain60@gmail.com"
+      }
+    }
+  ],
+  "require": [
+    {
+      "cloudflare_account_member": {
+        "account_id": "e35d5918c507bc2cf4e920fe38b5e318"
+      }
+    }
+  ],
+  "exclude": [],
+  "saved_readback_verified": true,
+  "bypass_policy_present": false,
+  "dns_changed": false,
+  "administrator_deployed": false,
+  "approved_signins_tested": false,
+  "revoked_user_tested": false,
+  "status": "application_and_policy_saved; live access acceptance pending",
+  "dashboard_application_list_verified": true,
+  "team_domain": "steep-voice-d86f.cloudflareaccess.com",
+  "team_domain_verified_in_owner_dashboard": true
+}
