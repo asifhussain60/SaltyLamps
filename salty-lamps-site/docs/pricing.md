@@ -18,7 +18,7 @@ Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero
 
 ## Stripe payment costs
 
-The replacement code uses Stripe. Ownership of the Salty Lamps Stripe account is verified, but Stripe has not completed live business verification, live payments are not activated, and no replacement checkout is connected. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs. [Stripe UK pricing](https://stripe.com/gb/pricing).
+The replacement code uses Stripe. Ownership of the Salty Lamps Stripe account is verified, and live Payments and Payouts show Active. No replacement checkout is connected or tested. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs. [Stripe UK pricing](https://stripe.com/gb/pricing).
 
 ## Domain and mailbox costs
 

@@ -1,20 +1,20 @@
 # Salty Lamps payment decision and administrator handoff
 
-Reviewed 27 September 2026. Owner account and sandbox verified; activation, connection and testing outstanding.
+Reviewed 27 September 2026. Live Payments and Payouts are active; shop connection and testing remain outstanding.
 
 ## Preferred route and present evidence
 
 Preferred, conditional decision: leave Wix using Stripe for cards and eligible wallets, plus the existing Salty Lamps business PayPal account. First assess PayPal through Stripe; use direct PayPal alongside Stripe if eligibility, access or commercial terms make that necessary. The preference is recorded, but no replacement payment route is connected or tested.
 
-The retained Wix business has Wix Payments and PayPal configured; the public site currently shows a holding page. Replacement code implements Stripe. The signed-in Stripe dashboard now verifies a Salty Lamps Ltd. account owned by saltylamps@hotmail.com, with a separate sandbox. The live account opens the Activate Payments business-verification flow and is not yet activated. A separate administrator controls the existing PayPal business account. Preserve the current Wix connections throughout preparation.
+The retained Wix business has Wix Payments and PayPal configured; the public site currently shows a holding page. Replacement code implements Stripe. The signed-in Stripe dashboard verifies a Salty Lamps Ltd. account owned by saltylamps@hotmail.com, with a separate sandbox. Following owner setup, the live account status now shows Payments and Payouts Active with no active account tasks. This verifies live account capabilities, not a connected or tested replacement checkout. A separate administrator controls the existing PayPal business account. Preserve the current Wix connections throughout preparation.
 
-Read-only owner-account evidence is recorded in `infra/stripe-owner-readiness-2026-09-27.json`. The live onboarding shows United Kingdom and currently displays Individual / Sole Trader as the business type, despite the account name ending Ltd.; the owner must verify the correct legal structure before submitting details. Later business, representative, bank and review steps are disabled at this first step. No live payment capability or settlement bank has been verified.
+The earlier onboarding state, including its Individual / Sole Trader selection, remains historical evidence in `infra/stripe-owner-readiness-2026-09-27.json`; the later live-account check is recorded separately in `infra/stripe-live-follow-up-2026-09-27.json`. The current legal business type and settlement-bank details were not independently read back. The live payment-method settings show cards, Apple Pay and Klarna enabled, while Google Pay, PayPal and Afterpay / Clearpay are disabled. No live payment-method domain or webhook destination is listed. The account status also lists Cartes Bancaires as Paused, distinct from the active Payments capability.
 
 In the separate sandbox, cards, Apple Pay and Klarna show Enabled; Google Pay, PayPal and Afterpay / Clearpay show Disabled. No payment-method domain or webhook destination is listed. These are sandbox settings, not live eligibility, an approved method choice or a working checkout. No credential was revealed or created and no account setting, payment or PayPal connection was changed.
 
 ## What the Stripe owner must establish before the PayPal handoff
 
-The Salty Lamps Stripe account and its owner are now identified. Have the business owner complete account verification themselves, starting with the correct legal business type. Confirm UK live eligibility, GBP processing, settlement bank and refund/dispute responsibilities after Stripe reviews the submitted details. Do not substitute a developer or proposal account.
+The Salty Lamps Stripe account and its owner are identified, and live Payments and Payouts are active. Record owner confirmation of the legal business type and settlement bank, then confirm GBP processing and refund/dispute responsibilities before live shop connection. Do not substitute a developer or proposal account.
 
 In the intended business account, review PayPal availability and the exact checkout integration in test and live modes. Record only a redacted account reference and capability status in the private evidence ledger. Determine the least permissions the PayPal administrator needs to complete the connection; use an official account invitation if required, never shared credentials.
 

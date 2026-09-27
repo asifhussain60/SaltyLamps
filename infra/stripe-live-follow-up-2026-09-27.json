@@ -1,0 +1,38 @@
+{
+  "reviewed_date": "2026-09-27",
+  "method": "Read-only follow-up in the signed-in live Stripe dashboard in Chrome after the owner reported setup complete",
+  "account_display_name": "Salty Lamps Ltd.",
+  "live_account_id": "acct_1UK2aFHzre0vVbX5",
+  "account_status": {
+    "active_tasks": "No active tasks to complete",
+    "payments_capability": "Active",
+    "payouts_capability": "Active",
+    "cartes_bancaires_payments": "Paused"
+  },
+  "live_payment_method_statuses": {
+    "cards": "Enabled",
+    "apple_pay": "Enabled",
+    "google_pay": "Disabled",
+    "paypal": "Disabled",
+    "afterpay_clear_pay": "Disabled",
+    "klarna": "Enabled"
+  },
+  "live_payment_method_domains": "No domains added",
+  "live_webhook_destinations": "None listed; Workbench offers Create webhook",
+  "not_independently_read_back": [
+    "Current legal business type after owner setup",
+    "Settlement bank details",
+    "GBP payment processing and refund permissions in an actual transaction"
+  ],
+  "replacement_shop": {
+    "owner_account_payment_connection": "Not configured or tested",
+    "payment_lifecycle_tested": false
+  },
+  "actions": {
+    "credentials_created_or_revealed": false,
+    "stripe_settings_changed": false,
+    "payment_or_refund_performed": false,
+    "paypal_connection_started": false
+  },
+  "supersedes": "Only the live-activation status in stripe-owner-readiness-2026-09-27.json; its earlier onboarding observations remain historical evidence"
+}
