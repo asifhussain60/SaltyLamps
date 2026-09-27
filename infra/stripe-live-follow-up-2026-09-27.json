@@ -19,6 +19,15 @@
   },
   "live_payment_method_domains": "No domains added",
   "live_webhook_destinations": "None listed; Workbench offers Create webhook",
+  "owner_sandbox_follow_up": {
+    "account_id": "acct_1UK2aVQVtEzHT783",
+    "active_task": "Verify your business owners and directors",
+    "task_state": "Past due; not started",
+    "dashboard_impact": "Payments and payouts will not be active until task is completed",
+    "owner_action": "Confirm beneficial owners and directors and provide any required information in Stripe",
+    "test_credentials_created_or_used": false,
+    "provider_checkout_attempted": false
+  },
   "not_independently_read_back": [
     "Current legal business type after owner setup",
     "Settlement bank details",
