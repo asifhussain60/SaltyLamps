@@ -1,0 +1,55 @@
+{
+  "reviewed_date": "2026-09-27",
+  "method": "Read-only inspection of the signed-in Stripe dashboard in Chrome",
+  "business_account": {
+    "display_name": "Salty Lamps Ltd.",
+    "live_account_id": "acct_1UK2aFHzre0vVbX5",
+    "sandbox_account_id": "acct_1UK2aVQVtEzHT783",
+    "sandbox_team": {
+      "active_members": 1,
+      "pending_invites": 0,
+      "listed_owner": "saltylamps@hotmail.com",
+      "listed_role": "Super Administrator",
+      "live_roles_inherited_by_sandbox": true
+    }
+  },
+  "live_activation": {
+    "state": "Not activated; dashboard opens Activate Payments onboarding",
+    "business_location_shown": "United Kingdom",
+    "business_type_current_selection": "Individual / Sole Trader",
+    "business_type_owner_review": "The account is named Salty Lamps Ltd.; owner must verify and select the correct legal business type before submitting business details.",
+    "later_steps_shown_disabled": [
+      "Business details",
+      "Account representative",
+      "Products or services",
+      "Public details",
+      "Statement descriptor",
+      "Add your bank",
+      "Secure your account",
+      "Review and submit"
+    ],
+    "live_payment_capability_verified": false,
+    "settlement_bank_verified": false
+  },
+  "sandbox": {
+    "method_statuses": {
+      "cards": "Enabled",
+      "apple_pay": "Enabled",
+      "google_pay": "Disabled",
+      "paypal": "Disabled",
+      "afterpay_clear_pay": "Disabled",
+      "klarna": "Enabled"
+    },
+    "payment_method_domains": "No domains added",
+    "webhook_destinations": "None shown; page offers Add destination",
+    "phone_verification": "Verify now shown; dashboard payments require phone verification",
+    "payment_lifecycle_tested": false
+  },
+  "interpretation": "Sandbox method switches do not establish live eligibility or availability in the replacement checkout. No provider route is connected to the owner-account shop.",
+  "actions": {
+    "credentials_created_or_revealed": false,
+    "settings_changed": false,
+    "payment_or_refund_performed": false,
+    "paypal_connection_started": false
+  }
+}

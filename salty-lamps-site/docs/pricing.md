@@ -1,6 +1,6 @@
 # Salty Lamps — Pricing
 
-Reviewed 26 September 2026. This guide and the admin Pricing page share the same cost data.
+Reviewed 27 September 2026. This guide and the admin Pricing page share the same cost data.
 
 Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero Trust and R2 Standard stay within their free allowances. This is a conditional estimate, not a fixed bill or spending cap. The EU-jurisdiction database is empty. The owner dashboard now shows Zero Trust Free active; its $0/month checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user policy are not yet configured. R2 separately requires a recurring, usage-billed subscription before a bucket can be created. Payment processing, domain renewal, existing Wix and Zoho service, and customer email delivery are separate costs. No paid Cloudflare upgrade is selected.
 
@@ -18,7 +18,7 @@ Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero
 
 ## Stripe payment costs
 
-The replacement code uses Stripe, but a business Stripe account and live connection remain unconfirmed. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs. [Stripe UK pricing](https://stripe.com/gb/pricing).
+The replacement code uses Stripe. Ownership of the Salty Lamps Stripe account is verified, but Stripe has not completed live business verification, live payments are not activated, and no replacement checkout is connected. Fees depend on the owner’s account, card category, payment method and currency conversion. A standard UK card rate is not a universal rate for all UK cards. Verify the current account pricing before estimating net proceeds or refund costs. [Stripe UK pricing](https://stripe.com/gb/pricing).
 
 ## Domain and mailbox costs
 

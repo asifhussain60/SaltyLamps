@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { migrationPlan, migrationMarkdown, pricingMarkdown } from '../src/admin/docs/migration-plan.mjs'
+import { paymentDecisionMarkdown } from '../src/admin/docs/payment-decision.mjs'
 
 test('Wix archive schema stays outside production migrations until the catalogue decision', () => {
   const migrations = fs.readdirSync(new URL('../d1/migrations/', import.meta.url))
@@ -13,6 +14,7 @@ test('Wix archive schema stays outside production migrations until the catalogue
 test('owner migration instructions and Markdown cannot diverge', () => {
   assert.equal(fs.readFileSync(new URL('../docs/migration.md', import.meta.url), 'utf8'), migrationMarkdown())
   assert.equal(fs.readFileSync(new URL('../docs/pricing.md', import.meta.url), 'utf8'), pricingMarkdown())
+  assert.equal(fs.readFileSync(new URL('../docs/payment-decision.md', import.meta.url), 'utf8'), paymentDecisionMarkdown())
 })
 
 test('migration gates protect access, money, existing mail and rollback', () => {

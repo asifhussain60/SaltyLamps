@@ -1,17 +1,19 @@
 export const paymentDecision = {
-  "reviewed": "26 September 2026",
+  "reviewed": "27 September 2026",
   "sections": [
     {
       "title": "Preferred route and present evidence",
       "paragraphs": [
         "Preferred, conditional decision: leave Wix using Stripe for cards and eligible wallets, plus the existing Salty Lamps business PayPal account. First assess PayPal through Stripe; use direct PayPal alongside Stripe if eligibility, access or commercial terms make that necessary. The preference is recorded, but no replacement payment route is connected or tested.",
-        "The live Wix shop uses Wix Payments and PayPal. Replacement code implements Stripe; existing test configuration does not establish a Salty Lamps business Stripe account, production activation or payment-method availability. A separate administrator controls the existing PayPal business account. Preserve the current Wix connections throughout preparation."
+        "The retained Wix business has Wix Payments and PayPal configured; the public site currently shows a holding page. Replacement code implements Stripe. The signed-in Stripe dashboard now verifies a Salty Lamps Ltd. account owned by saltylamps@hotmail.com, with a separate sandbox. The live account opens the Activate Payments business-verification flow and is not yet activated. A separate administrator controls the existing PayPal business account. Preserve the current Wix connections throughout preparation.",
+        "Read-only owner-account evidence is recorded in `infra/stripe-owner-readiness-2026-09-27.json`. The live onboarding shows United Kingdom and currently displays Individual / Sole Trader as the business type, despite the account name ending Ltd.; the owner must verify the correct legal structure before submitting details. Later business, representative, bank and review steps are disabled at this first step. No live payment capability or settlement bank has been verified.",
+        "In the separate sandbox, cards, Apple Pay and Klarna show Enabled; Google Pay, PayPal and Afterpay / Clearpay show Disabled. No payment-method domain or webhook destination is listed. These are sandbox settings, not live eligibility, an approved method choice or a working checkout. No credential was revealed or created and no account setting, payment or PayPal connection was changed."
       ]
     },
     {
       "title": "What the Stripe owner must establish before the PayPal handoff",
       "paragraphs": [
-        "Identify the Salty Lamps business Stripe account or have the business owner complete account creation and verification themselves. Confirm the legal business, UK account eligibility, GBP processing, authorized administrator access, settlement bank and refund/dispute responsibilities. Do not substitute a developer or proposal account.",
+        "The Salty Lamps Stripe account and its owner are now identified. Have the business owner complete account verification themselves, starting with the correct legal business type. Confirm UK live eligibility, GBP processing, settlement bank and refund/dispute responsibilities after Stripe reviews the submitted details. Do not substitute a developer or proposal account.",
         "In the intended business account, review PayPal availability and the exact checkout integration in test and live modes. Record only a redacted account reference and capability status in the private evidence ledger. Determine the least permissions the PayPal administrator needs to complete the connection; use an official account invitation if required, never shared credentials.",
         "Prepare the shop address, business identity, agreed statement descriptor, customer support contact, policies, chosen settlement destination and fee comparison. The business owner must approve both commercial terms and settlement before anyone enables the live connection."
       ]
@@ -78,5 +80,5 @@ export const paymentDecision = {
 }
 
 export function paymentDecisionMarkdown() {
-  return `# Salty Lamps payment decision and administrator handoff\n\nReviewed ${paymentDecision.reviewed}. Prepared; connection and testing outstanding.\n\n${paymentDecision.sections.map(s => `## ${s.title}\n\n${s.paragraphs.join("\n\n")}`).join("\n\n")}\n\n## Provider instructions\n\n${paymentDecision.sources.map(([label, url]) => `- [${label}](${url})`).join("\n")}\n`
+  return `# Salty Lamps payment decision and administrator handoff\n\nReviewed ${paymentDecision.reviewed}. Owner account and sandbox verified; activation, connection and testing outstanding.\n\n${paymentDecision.sections.map(s => `## ${s.title}\n\n${s.paragraphs.join("\n\n")}`).join("\n\n")}\n\n## Provider instructions\n\n${paymentDecision.sources.map(([label, url]) => `- [${label}](${url})`).join("\n")}\n`
 }
