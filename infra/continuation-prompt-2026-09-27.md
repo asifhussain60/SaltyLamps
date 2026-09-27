@@ -12,9 +12,12 @@ has mail dry-run. After explicit approval, one direct provider message to the
 operator's Gmail test inbox returned a provider ID and the dashboard showed
 Sent and Delivered events. Free-plan usage changed to 1/3,000 monthly and
 1/100 daily; no payment, shop order or customer email was involved. See
-`infra/resend-delivery-test-draft-2026-09-27.md`. Actual inbox receipt,
-reply behavior and bounce/retry acceptance remain open. Do not mistake
-provider delivery for a completed customer email connection.
+`infra/resend-delivery-test-draft-2026-09-27.md`. The owner then supplied a
+Gmail inbox screenshot showing the expected sender, recipient, subject and
+body. Reply handling, shop-template buyer/owner delivery and bounce/retry
+acceptance remain open. Do not mistake this one direct test for a completed
+customer email connection. The staging preflight still forbids a Resend key
+and requires mail dry-run.
 
 ## Published sandbox and service-mapping checkpoint
 

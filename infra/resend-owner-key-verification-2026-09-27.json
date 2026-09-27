@@ -26,12 +26,15 @@
   "test_email_id": "01a0e417-6a7f-74ac-88bd-c30ee795687e",
   "test_email_recipient": "asifhussain60@gmail.com",
   "test_email_provider_status": "Delivered",
-  "test_email_inbox_receipt_verified": false,
+  "test_email_inbox_receipt_verified": true,
+  "test_email_inbox_sender_verified": "Salty Lamps <orders@saltylamps.co.uk>",
+  "test_email_inbox_body_verified": true,
+  "test_email_inbox_evidence": "Owner-supplied mailbox screenshot showed the message in the Gmail inbox with expected recipient, sender, subject and body; reply-to was not displayed.",
   "transactional_monthly_usage_after_test": "1 / 3000",
   "transactional_daily_usage_after_test": "1 / 100",
   "live_customer_email_enabled": false,
   "remaining": [
-    "Confirm actual inbox receipt, sender and reply-to behavior",
+    "Verify reply-to handling separately; the inbox screenshot does not show that header",
     "Review quota, bounce and retry behavior before production connection",
     "Keep staging mail dry-run until a separately reviewed test plan changes it"
   ]

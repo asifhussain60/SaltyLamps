@@ -21,8 +21,11 @@ message ID `01a0e417-6a7f-74ac-88bd-c30ee795687e`. The signed-in provider
 shows the intended sender, recipient, reply-to and body, with both Sent and
 Delivered events. The account usage changed to 1/3,000 monthly and 1/100 daily.
 This supports one accepted message within the free allowance; no order or
-payment was created. The test inbox has not been read, so receipt and reply
-behavior are still unverified.
+payment was created. The owner subsequently supplied a screenshot of the Gmail
+inbox showing the message, its `Salty Lamps <orders@saltylamps.co.uk>` sender,
+recipient, subject and expected body. This verifies receipt of the direct test
+message. The screenshot does not show the Reply-To header or a reply reaching
+the Zoho mailbox, so reply handling remains open.
 
 The key remains only in the private local file. It was not connected to the
 test shop, which remains in dry-run mode. Never include the key or a customer
