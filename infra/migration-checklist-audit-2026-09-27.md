@@ -1,5 +1,7 @@
 # Migration checklist audit — 27 September 2026
 
+Later Stripe follow-up: `infra/stripe-owner-completion-verification-2026-09-27.json` records a fresh signed-in review after the owner reported completion. Live and sandbox Payments/Payouts are Active with no active tasks. The earlier sandbox verification blocker is cleared; local key-storage approval, replacement connection and payment lifecycle checks are still pending. No webhook destination exists in either account. The original audit below remains historical.
+
 Later continuation: `infra/checkout-runtime-follow-up-2026-09-27.md` records the repaired disposable postcode fixture, unmocked desktop/mobile results, corrected redirects and measured postcode-capacity estimate. The observations below describe the earlier audit; its postcode and local redirect gaps have since been resolved locally. Provider and production gates remain open.
 
 ## Method and evidence boundary

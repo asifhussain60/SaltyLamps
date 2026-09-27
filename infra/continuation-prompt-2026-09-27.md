@@ -1,5 +1,9 @@
 # Continue the Salty Lamps migration
 
+## Stripe owner-completion follow-up
+
+The owner’s completion report has now been verified in the signed-in dashboard. Both live and the separate owner sandbox have no active tasks and Payments/Payouts Active. The earlier sandbox owner/director verification blocker is cleared. Both accounts still have no webhook destination. A fresh isolated local fixture is ready; the existing owner-sandbox key has not been saved or used, and explicit local credential-storage approval is pending. Read `infra/stripe-owner-completion-verification-2026-09-27.json` before repeating provider work. Account activation is complete; replacement connection and payment lifecycle verification remain pending. Do not use historical proposal credentials.
+
 ## Later checkpoint from this continuation
 
 Read `infra/checkout-runtime-follow-up-2026-09-27.md` first for the latest evidence. The fresh disposable Pages postcode gap is now resolved with unmocked desktop/mobile checks. Unsupported redirect sources and the loop-prone rewrite were removed; middleware also now preserves four legacy redirects previously masked as 404. All 56 saved path rules were checked against the local built candidate. The independent approved-price/shared-stock catalogue rehearsal passed again. The national postcode list contains 1,760,216 non-BT rows; one-day Free import is not feasible. Full-size measurement, actual write accounting and a resumable daily plan remain open. Continue owner stock/weight/mapping review and independent provider preparation; do not repeat the closed fixture investigation or mistake these local passes for production acceptance. The original handoff below is retained as history.

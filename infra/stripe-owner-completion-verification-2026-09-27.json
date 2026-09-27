@@ -1,0 +1,53 @@
+{
+  "reviewed_date": "2026-09-27",
+  "method": "Signed-in Chrome dashboard; refreshed sandbox Account status after owner completion report, then switched to live Account status. Inspected each Workbench webhook view and owner sandbox API-key inventory.",
+  "live": {
+    "account_id": "acct_1UK2aFHzre0vVbX5",
+    "display_name": "Salty Lamps Ltd.",
+    "active_tasks": "No active tasks to complete",
+    "payments": "Active",
+    "payouts": "Active",
+    "cartes_bancaires": "Paused",
+    "webhook_destinations": "None listed"
+  },
+  "sandbox": {
+    "account_id": "acct_1UK2aVQVtEzHT783",
+    "display_name": "Salty Lamps Ltd. sandbox (Salty Lamps Ltd.)",
+    "active_tasks": "No active tasks to complete",
+    "payments": "Active",
+    "payouts": "Active",
+    "cartes_bancaires": "Paused",
+    "webhook_destinations": "None listed",
+    "key_inventory": {
+      "active_standard_test_secret_keys": 1,
+      "permissions": "Full access",
+      "last_used": "Not shown (dash)",
+      "created_date": "2026-09-27",
+      "copied_saved_or_used_by_this_migration": false
+    }
+  },
+  "cleared_blocker": "Earlier sandbox beneficial-owner/director verification task is no longer active.",
+  "replacement_connection": {
+    "status": "Prepared locally; credential storage approval pending",
+    "fixture": "Fresh disposable Pages/D1 fixture; no historical credentials or customer data copied",
+    "provider_checkout_attempted": false,
+    "provider_webhook_verified": false,
+    "provider_refund_verified": false
+  },
+  "not_refreshed": [
+    "Payment-method settings and payment-method domain registration",
+    "Legal business type and settlement bank",
+    "PayPal access or approval",
+    "Actual GBP transaction, refund or payout"
+  ],
+  "actions": {
+    "stripe_settings_changed": false,
+    "credentials_created_or_rotated": false,
+    "existing_keys_saved": false,
+    "live_payment_or_refund": false,
+    "customer_email_sent": false,
+    "deployment_or_dns_change": false
+  },
+  "supersedes": "Sandbox past-due task and paused-payment observation in stripe-live-follow-up-2026-09-27.json only; that file is retained as historical evidence.",
+  "next": "After explicit credential-storage approval, use only this verified sandbox in disposable local fixture, with mail dry-run; verify account match before writing synthetic test transactions. Full launch and real-money validation remain gated."
+}
