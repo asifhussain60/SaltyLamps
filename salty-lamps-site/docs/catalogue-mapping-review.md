@@ -1,6 +1,6 @@
 # Checklist item 5 — operational mapping review
 
-Prepared 26 September 2026. This is a review proposal, not production import authorization. All original Wix values remain preserved separately. The approved owner EU database remains empty and untouched.
+Prepared 26 September 2026; staging boundary checked 27 September. This is a review proposal, not production import authorization. All original Wix values remain preserved separately. The owner production database was previously verified empty and was not targeted by the separate staging test.
 
 ## Two structures and the proposed boundary
 
@@ -32,7 +32,7 @@ Do not silently adopt either local database or run the historical seed against t
 
 The current cart merges by numeric SKU alone; checkout reservations and order_items are also keyed by SKU. Merely adding an orientation selector would lose mixed-orientation choices on refresh or when an order is stored.
 
-A complete implementation needs all of the following before publication:
+A complete implementation needs all of the following before production publication:
 
 1. Customer chooses a validated portrait/landscape value. Basket lines retain size plus orientation through refresh, edits and checkout-attempt fingerprints.
 2. Stock validation and reservation aggregate quantity by the existing size/SKU across both orientations. A basket with two portrait plus two landscape frames requires four units from one pool.
@@ -40,7 +40,7 @@ A complete implementation needs all of the following before publication:
 4. Reject unknown/missing frame choices before creating a provider session. Expiration/cancellation releases only the reservation aggregate, once; webhook retries do not duplicate orientation rows.
 5. Rehearse mixed orientations, combined last-unit contention, refresh, abandoned checkout, replay, refund and historical orders that predate orientation storage.
 
-Local implementation now carries orientation through basket persistence, size/orientation edits, server aggregation, payment metadata, immutable order-item JSON, administrator order display and receipt/refund/dispatch email formatting. Migration 016 adds only nullable order-item choice JSON; it has not been applied to any remote database. The existing stock identity and reservation trigger remain unchanged. See the continuation evidence below.
+Local implementation now carries orientation through basket persistence, size/orientation edits, server aggregation, payment metadata, immutable order-item JSON, administrator order display and receipt/refund/dispatch email formatting. Migration 016 adds only nullable order-item choice JSON. It was included in the separate staging bootstrap, not applied to the production database. The existing stock identity and reservation trigger remain unchanged. See the continuation evidence below.
 
 ## Verified preservation versus remaining approval
 
@@ -56,6 +56,6 @@ Evidence: `backups/catalogue/approved-decisions-2026-09-26-v2/report.json`. The 
 
 The complete Node unit suite passes 148 checks, including seven new frame tests. A mocked provider round-trip verifies one aggregate payment line, immutable orientation quantities in the saved order, shared stock deducted once, webhook replay safety and receipt job content. No Stripe/PayPal connection, charge, refund or delivered email is proven by that mock. Local build passes.
 
-Browser verification against the compiled application and read-only rehearsal database passed: portrait and landscape remain separate basket lines after refresh; size changes retain orientation; nine portrait plus one landscape frame reaches the shared ten-unit limit and disables both increase controls; 390-pixel layout has no horizontal overflow. Bath-salt size switching displays £4.49, £11.99 and £16.99, with purchase disabled until stock/weights are reviewed. The preview serves catalogue/delivery through actual application handlers, snapshot-backed public copy/categories, and blocks payment, messages and mutations. It is not deployed and does not expose an administrator service.
+Browser verification against the compiled application and read-only rehearsal database passed: portrait and landscape remain separate basket lines after refresh; size changes retain orientation; nine portrait plus one landscape frame reaches the shared ten-unit limit and disables both increase controls; 390-pixel layout has no horizontal overflow. Bath-salt size switching displays £4.49, £11.99 and £16.99, with purchase disabled until stock/weights are reviewed. This paragraph describes the local rehearsal preview: it serves catalogue/delivery through actual application handlers, snapshot-backed public copy/categories, and blocks payment, messages and mutations. The later published staging shop is a separate sandbox with demo seed data, synthetic shipping and a protected administrator hostname. Its successful simulated checkout does not approve this catalogue mapping or its postage values.
 
-Remaining validation includes the approved live source/mapping, actual packed weights/stock, provider sandbox/live checks, protected administrator access, and full fulfilment/refund/customer-mail acceptance. Source public snapshot hash remains `498c33301b420efe65c7bc38bad64dd295ba8cacb64d50b31f1e4ed163a33e1b`.
+Remaining validation includes the approved live source/mapping, actual packed weights/stock, remaining provider and live checks, revoked-user administrator denial, and full fulfilment/refund/customer-mail acceptance. Source public snapshot hash remains `498c33301b420efe65c7bc38bad64dd295ba8cacb64d50b31f1e4ed163a33e1b`.
