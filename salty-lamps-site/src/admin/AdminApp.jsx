@@ -2644,7 +2644,7 @@ export default function AdminApp({ route }) {
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <img src="/salty-lamp-logo-256.jpeg" alt="" decoding="async" />
-          <span>Salty Lamps</span>
+          <span>Salty Lamps{import.meta.env.VITE_STAGING === '1' ? ' · Test admin' : ''}</span>
         </div>
         <nav className="admin-nav">
           {NAV.map(item =>

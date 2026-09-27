@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { stripeModeAllowed } from '../../lib/stripe-mode.mjs'
 import { allCheckoutLines, checkoutAddress } from '../../lib/checkout-state.mjs'
 import { orderRef } from '../../lib/email-render.mjs'
 
@@ -50,7 +51,7 @@ export async function onRequestGet({ request, env }) {
   if (!/^cs_(?:test_|live_)?[A-Za-z0-9_]{8,200}$/.test(sessionId)) {
     return json({ error: 'A valid checkout session is required.' }, 400)
   }
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Payment verification is unavailable.' }, 503)
+  if (!env.STRIPE_SECRET_KEY || !stripeModeAllowed(env)) return json({ error: 'Payment verification is unavailable.' }, 503)
 
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     httpClient: Stripe.createFetchHttpClient(),

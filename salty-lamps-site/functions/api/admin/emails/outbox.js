@@ -12,6 +12,7 @@
 import Stripe from 'stripe'
 import { resumeOrderNotifications } from '../../webhook.js'
 import { json, apiError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
+import { stripeModeAllowed } from '../../../lib/stripe-mode.mjs'
 
 const STATUSES = ['sent', 'failed', 'skipped']
 
@@ -88,6 +89,7 @@ export async function onRequestPost({request,env,data}) {
       ])
       return json({status:body.action==='confirm_sent'?'sent':'pending'})
     }
+    if (!stripeModeAllowed(env)) return apiError('Sandbox payment configuration is required.',503)
     const stripe=new Stripe(env.STRIPE_SECRET_KEY,{httpClient:Stripe.createFetchHttpClient(),apiVersion:'2024-06-20'})
     await resumeOrderNotifications(env,body.orderId,new URL(request.url).origin,stripe)
     await auditStmt(env.DB,data.actorEmail,'email.retry','order',body.orderId,{}).run()

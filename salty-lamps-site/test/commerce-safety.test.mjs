@@ -14,6 +14,22 @@ const buy=env=>checkout({env,request:fixtureRequest('/api/checkout',{address:fix
 const signedRequest=event=>{const payload=JSON.stringify(event);return new Request('http://localhost/api/webhook',{method:'POST',body:payload,headers:{'stripe-signature':Stripe.webhooks.generateTestHeaderString({payload,secret:'whsec_fixture'})}})}
 
 // Real SQLite transactions and triggers; only the external provider is replaced.
+test('a published sandbox shop rejects live keys before checkout or refund',async()=>{
+ const {sql,db}=commerceFixture()
+ sql.exec("INSERT INTO orders(id,payment_intent,status,amount_total_pence) VALUES('cs_test_guard','pi_fixture','paid',1500)")
+ const env={...envFor(db),STRIPE_TEST_ONLY:'1',STRIPE_SECRET_KEY:'sk_live_fixture',STRIPE_PUBLISHABLE_KEY:'pk_live_fixture'}
+ const prior=globalThis.fetch
+ globalThis.fetch=async()=>{throw Error('Live Stripe network call attempted')}
+ try{
+  assert.equal((await buy(env)).status,503)
+  assert.equal((await verify({env,request:new Request('http://localhost/api/checkout/verify?session_id=cs_test_guard')})).status,503)
+  assert.equal((await webhook({env,request:signedRequest({livemode:true,type:'checkout.session.completed'})})).status,503)
+  const response=await patchOrder({params:{id:'cs_test_guard'},request:fixtureRequest('/api/admin/orders/cs_test_guard',{status:'refunded'},'PATCH'),env,data:{actorEmail:'fixture@example.invalid'}})
+  assert.equal(response.status,503)
+  assert.equal(sql.prepare("SELECT status FROM orders WHERE id='cs_test_guard'").get().status,'paid')
+ }finally{globalThis.fetch=prior;sql.close()}
+})
+
 test('two buyers cannot both receive payable checkouts for the last tracked unit',async()=>{
  const {sql,db}=commerceFixture();let sessions=0;const prior=globalThis.fetch
  globalThis.fetch=async(url,init)=>String(url).endsWith('/v1/customers')?json({id:'cus_fixture'}):String(url).endsWith('/expire')?json({status:'expired'}):json({id:`cs_test_reserve_${++sessions}`,client_secret:'fixture',expires_at:Math.floor(Date.now()/1000)+1800})

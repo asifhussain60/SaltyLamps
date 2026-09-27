@@ -10,6 +10,7 @@ import {weightsFromMetadata,WEIGHT_FIELDS} from '../lib/weights.mjs'
 //           admin emails are recorded as 'skipped' and nothing else changes.
 
 import Stripe from 'stripe'
+import { stripeModeAllowed, stripeEventAllowed } from '../lib/stripe-mode.mjs'
 import { orderTokens, orderBlocks, loadEmailConfig } from '../lib/mailer.mjs'
 import { allCheckoutLines, checkoutAddress, releaseCheckout } from '../lib/checkout-state.mjs'
 import { emailJobStatement, deliverOrderEmails } from '../lib/durable-email.mjs'
@@ -17,6 +18,7 @@ import { syncRefund } from '../lib/refunds.mjs'
 import { lowStockThreshold } from '../lib/admin-helpers.mjs'
 
 export async function onRequestPost({ request, env }) {
+  if (!stripeModeAllowed(env)) return new Response('Sandbox configuration required', { status: 503 })
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     httpClient: Stripe.createFetchHttpClient(),
     apiVersion: '2024-06-20',
@@ -31,6 +33,8 @@ export async function onRequestPost({ request, env }) {
   } catch (err) {
     return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 })
   }
+
+  if (!stripeEventAllowed(env, event)) return new Response('Live payment events are disabled in this test deployment', { status: 400 })
 
   try {
     if (['checkout.session.expired','checkout.session.async_payment_failed'].includes(event.type) && event.data?.object?.metadata?.store === 'salty-lamps') {

@@ -14,6 +14,7 @@ import { deliveryMessage } from './checkout/delivery.js'
 //   STRIPE_PUBLISHABLE_KEY -> matching Stripe publishable key for embedded Checkout
 
 import Stripe from 'stripe'
+import { stripeModeAllowed } from '../lib/stripe-mode.mjs'
 import { reconcileExpiredCheckouts, checkoutAttemptId, checkoutFingerprint, readCheckoutAttempt, resumeCheckoutAttempt, replaceCheckoutAttempt } from '../lib/checkout-state.mjs'
 
 // Makes Stripe's hosted checkout look like the rest of the shop rather than a
@@ -55,7 +56,7 @@ export async function onRequestPost({ request, env }) {
     if (normalisePostcode(body?.postcode) !== normalisePostcode(address.postcode)) {
       throw new CartError('Your delivery postcode changed. Please review the address and try again.')
     }
-    if (!env.STRIPE_SECRET_KEY) return jsonError('Payment is temporarily unavailable. Your cart is saved; please try again later.', 503)
+    if (!env.STRIPE_SECRET_KEY || !stripeModeAllowed(env)) return jsonError('Payment is temporarily unavailable. Your cart is saved; please try again later.', 503)
     const testMode = env.STRIPE_SECRET_KEY.startsWith('sk_test_')
     const publishableKey = env.STRIPE_PUBLISHABLE_KEY || ''
     if (!publishableKey.startsWith(testMode ? 'pk_test_' : 'pk_live_')) {

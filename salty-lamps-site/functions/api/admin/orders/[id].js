@@ -2,6 +2,7 @@
 // PATCH /api/admin/orders/:id  — fulfilment status, tracking, or refund/cancel.
 import Stripe from 'stripe'
 import { requestOrderRefund, readOrderWithRefund } from '../../../lib/refunds.mjs'
+import { stripeModeAllowed } from '../../../lib/stripe-mode.mjs'
 import { json, apiError, validationError, readJson, auditStmt } from '../../../lib/admin-helpers.mjs'
 import {
   validateOrderPatch, despatchErrors, ORDER_PATCH_FIELDS,
@@ -92,6 +93,7 @@ export async function onRequestPatch({ params, request, env, data }) {
     // If marking refunded, issue the Stripe refund first — don't record a refund
     // we didn't actually make. (Uses the configured Stripe key; safe in test mode.)
     if (value.status === 'refunded') {
+      if (!stripeModeAllowed(env)) return apiError('Sandbox payment configuration is required.', 503)
       if (order.status === 'refunded') return apiError('Order is already refunded.', 409, { code: 'conflict' })
       if (!order.payment_intent) return apiError('No payment on file to refund.', 409, { code: 'conflict' })
       try {

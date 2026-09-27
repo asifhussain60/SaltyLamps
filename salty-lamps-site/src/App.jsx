@@ -2540,7 +2540,7 @@ export default function App() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
       />
       <a className="skip-link" href="#main">Skip to main content</a>
-      <div className="announce">Bulk and trade orders available</div>
+      <div className="announce">{import.meta.env.VITE_STAGING === '1' ? 'Test shop · Stripe sandbox only · no real payments' : 'Bulk and trade orders available'}</div>
       <header className="site-header">
         <Link className="brand" href="/" aria-label="Salty Lamps home">
           {/* The emblem is a square JPEG on a solid black field. No transparent
