@@ -22,11 +22,16 @@
   "clipboard_cleared_after_verified_save": true,
   "installed_in_staging_by_this_step": false,
   "installed_in_production_by_this_step": false,
-  "test_email_sent": false,
+  "test_email_sent": true,
+  "test_email_id": "01a0e417-6a7f-74ac-88bd-c30ee795687e",
+  "test_email_recipient": "asifhussain60@gmail.com",
+  "test_email_provider_status": "Delivered",
+  "test_email_inbox_receipt_verified": false,
+  "transactional_monthly_usage_after_test": "1 / 3000",
+  "transactional_daily_usage_after_test": "1 / 100",
   "live_customer_email_enabled": false,
   "remaining": [
-    "Approve a controlled provider-backed test email to a named non-customer inbox",
-    "Verify actual inbox delivery, sender and reply-to behavior",
+    "Confirm actual inbox receipt, sender and reply-to behavior",
     "Review quota, bounce and retry behavior before production connection",
     "Keep staging mail dry-run until a separately reviewed test plan changes it"
   ]

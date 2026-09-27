@@ -8,9 +8,13 @@ value was moved from the Mac clipboard into a private, Git-ignored, owner-only
 local file; the masked dashboard prefix matched, and the clipboard was cleared.
 See `infra/resend-owner-key-verification-2026-09-27.json` for the non-secret
 readback. The key was not attached to either Pages deployment, staging still
-has mail dry-run, and no message was sent. Provider-backed inbox delivery,
-quota and bounce/retry acceptance remain open. Do not mistake creation and
-private custody for a completed customer email connection.
+has mail dry-run. After explicit approval, one direct provider message to the
+operator's Gmail test inbox returned a provider ID and the dashboard showed
+Sent and Delivered events. Free-plan usage changed to 1/3,000 monthly and
+1/100 daily; no payment, shop order or customer email was involved. See
+`infra/resend-delivery-test-draft-2026-09-27.md`. Actual inbox receipt,
+reply behavior and bounce/retry acceptance remain open. Do not mistake
+provider delivery for a completed customer email connection.
 
 ## Published sandbox and service-mapping checkpoint
 

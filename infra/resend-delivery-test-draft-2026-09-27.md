@@ -1,10 +1,9 @@
-# Resend provider delivery test draft — 27 September 2026
+# Resend provider delivery test — 27 September 2026
 
-This is a proposed one-message test, not authorization to send. Confirm the
-recipient and obtain explicit approval immediately before the send. The owner
-Resend account showed Transactional Free at $0/month, 0/3,000 monthly and
-0/100 daily sends, no payment method and pay-as-you-go disabled. Do not change
-the plan, add a card or enable overages.
+Asif approved this specific one-message test after reviewing the draft. The
+owner Resend account showed Transactional Free at $0/month, 0/3,000 monthly
+and 0/100 daily sends, no payment method and pay-as-you-go disabled before the
+send. No plan, card or overage setting was changed.
 
 | Field | Proposed value |
 | --- | --- |
@@ -14,8 +13,17 @@ the plan, add a card or enable overages.
 | Subject | `Salty Lamps email delivery test — no order` |
 | Body | `This is a one-time test of Salty Lamps outbound email delivery. No purchase, payment, order, shipment, or customer notification is involved. No action is needed.` |
 
-Use the newly created domain-restricted sending-only key from the private local
-file. Send exactly once with an idempotency key; do not connect that key to the
-test shop, which remains in dry-run mode. Record provider acceptance separately
-from recipient inbox receipt and business-address reply acceptance. Never
-include the key or any customer record in evidence or logs.
+The first HTTP request returned a non-JSON 403 with no provider email ID. A
+diagnostic unauthenticated read confirmed the API endpoint was reachable. One
+retry with the exact same payload and idempotency key returned HTTP 200 and
+message ID `01a0e417-6a7f-74ac-88bd-c30ee795687e`. The signed-in provider
+[message detail](https://resend.com/emails/01a0e417-6a7f-74ac-88bd-c30ee795687e)
+shows the intended sender, recipient, reply-to and body, with both Sent and
+Delivered events. The account usage changed to 1/3,000 monthly and 1/100 daily.
+This supports one accepted message within the free allowance; no order or
+payment was created. The test inbox has not been read, so receipt and reply
+behavior are still unverified.
+
+The key remains only in the private local file. It was not connected to the
+test shop, which remains in dry-run mode. Never include the key or a customer
+record in evidence or logs.
