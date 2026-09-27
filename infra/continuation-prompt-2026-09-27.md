@@ -14,10 +14,13 @@ Sent and Delivered events. Free-plan usage changed to 1/3,000 monthly and
 1/100 daily; no payment, shop order or customer email was involved. See
 `infra/resend-delivery-test-draft-2026-09-27.md`. The owner then supplied a
 Gmail inbox screenshot showing the expected sender, recipient, subject and
-body. Reply handling, shop-template buyer/owner delivery and bounce/retry
-acceptance remain open. Do not mistake this one direct test for a completed
-customer email connection. The staging preflight still forbids a Resend key
-and requires mail dry-run.
+body. The owner replied, and Outlook's Sent conversation showed the reply
+addressed to `info@saltylamps.co.uk`; the Zoho mailbox was not signed in, so
+business inbox receipt remains unverified; the owner chose to defer that check
+and continue. Shop-template buyer/owner delivery and bounce/retry acceptance
+also remain open. Do not mistake this one direct
+test for a completed customer email connection. The staging preflight still
+forbids a Resend key and requires mail dry-run.
 
 ## Published sandbox and service-mapping checkpoint
 

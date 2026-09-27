@@ -25,7 +25,14 @@ payment was created. The owner subsequently supplied a screenshot of the Gmail
 inbox showing the message, its `Salty Lamps <orders@saltylamps.co.uk>` sender,
 recipient, subject and expected body. This verifies receipt of the direct test
 message. The screenshot does not show the Reply-To header or a reply reaching
-the Zoho mailbox, so reply handling remains open.
+the Zoho mailbox.
+
+The owner then replied to the test. The Gmail account's Sent conversation in
+Outlook showed the reply addressed to `info@saltylamps.co.uk` with the intended
+test wording. This verifies reply routing in the sender's mail app, but not
+arrival at the business mailbox. The Zoho mailbox was not signed in during the
+check. The owner could not check and chose to move on; receipt remains
+unverified and must not be treated as a passed launch gate.
 
 The key remains only in the private local file. It was not connected to the
 test shop, which remains in dry-run mode. Never include the key or a customer

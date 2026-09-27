@@ -30,11 +30,16 @@
   "test_email_inbox_sender_verified": "Salty Lamps <orders@saltylamps.co.uk>",
   "test_email_inbox_body_verified": true,
   "test_email_inbox_evidence": "Owner-supplied mailbox screenshot showed the message in the Gmail inbox with expected recipient, sender, subject and body; reply-to was not displayed.",
+  "test_reply_sent_verified": true,
+  "test_reply_destination": "info@saltylamps.co.uk",
+  "test_reply_business_inbox_receipt_verified": false,
+  "test_reply_receipt_check_deferred_by_owner": true,
+  "test_reply_evidence": "The Gmail account's Sent conversation in Outlook showed the owner's test reply addressed to info@saltylamps.co.uk. The Zoho business mailbox was not signed in, so receipt was not checked.",
   "transactional_monthly_usage_after_test": "1 / 3000",
   "transactional_daily_usage_after_test": "1 / 100",
   "live_customer_email_enabled": false,
   "remaining": [
-    "Verify reply-to handling separately; the inbox screenshot does not show that header",
+    "Business mailbox receipt of the test reply was deferred by the owner and remains unverified before live mail cutover",
     "Review quota, bounce and retry behavior before production connection",
     "Keep staging mail dry-run until a separately reviewed test plan changes it"
   ]
