@@ -84,6 +84,13 @@ test('production deployment fails before CLI writes if target guard fails', () =
   assert.match(run.stderr, /config|account/i)
 })
 
+test('retired double-click deployment shortcut stops before login or upload', () => {
+  const run = spawnSync('bash', ['cloudflare-deploy.command'], { cwd: root, encoding: 'utf8' })
+  assert.equal(run.status, 1)
+  assert.match(run.stderr, /retired proposal deploy shortcut is disabled/i)
+  assert.equal(run.stdout, '')
+})
+
 test('offline migration planner covers fresh, partial, rerun and seed refusal', () => {
   const run = spawnSync('python3', ['scripts/plan-production-migrations.py', '--self-test'], { cwd: root, encoding: 'utf8' })
   assert.equal(run.status, 0, run.stdout + run.stderr)
