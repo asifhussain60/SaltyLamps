@@ -8,5 +8,8 @@
   "existing_payment_method_present": true,
   "terms_accepted": false,
   "subscription_activated": false,
-  "blocker": "Action-time approval to accept subscription terms and usage billing is pending. Prepared activation page left open."
+  "blocker": "Activation deferred until go-live under owner direction. Final subscription terms must be confirmed at action time; no subscription or bucket exists.",
+  "owner_direction": "Defer R2 activation until go-live; no charges during testing. Owner approved considering subscription at go-live, not activating during test preparation.",
+  "activation_phase": "go_live_only",
+  "testing_subscription_activation_allowed": false
 }
