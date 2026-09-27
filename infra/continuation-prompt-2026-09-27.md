@@ -1,5 +1,11 @@
 # Continue the Salty Lamps migration
 
+## Later checkpoint from this continuation
+
+Read `infra/checkout-runtime-follow-up-2026-09-27.md` first for the latest evidence. The fresh disposable Pages postcode gap is now resolved with unmocked desktop/mobile checks. Unsupported redirect sources and the loop-prone rewrite were removed; middleware also now preserves four legacy redirects previously masked as 404. All 56 saved path rules were checked against the local built candidate. The independent approved-price/shared-stock catalogue rehearsal passed again. The national postcode list contains 1,760,216 non-BT rows; one-day Free import is not feasible. Full-size measurement, actual write accounting and a resumable daily plan remain open. Continue owner stock/weight/mapping review and independent provider preparation; do not repeat the closed fixture investigation or mistake these local passes for production acceptance. The original handoff below is retained as history.
+
+## Original handoff
+
 Continue the Wix-to-Cloudflare migration from the current `develop` checkout. First read `AGENTS.md`, `infra/account-ownership.md`, `salty-lamps-site/docs/migration.md` and `infra/migration-checklist-audit-2026-09-27.md`; inspect Git status and current public evidence before treating recorded dashboard observations as still current. Keep the twelve-stage checklist accurate, with completed, in-progress, blocked and pending work clearly distinguished.
 
 Asif explicitly closed checklist step 1 for the **verified owner account and migration destination**, and step 2 for **one verified local recovery copy sufficient for preparation**. This does not prove every provider permission or a complete business restore. Preserve the missing Wix media/settings, fresh production backup and launch restore requirements in their later stages. Do not request a second independent copy as a prerequisite for independent preparation unless Asif changes that decision. The complete unit suite passed 151 checks on 27 September.

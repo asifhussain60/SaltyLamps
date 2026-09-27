@@ -421,8 +421,8 @@ for (const route of routes) {
 // No per-route `_redirects` rewrites: a rule like `/foo /foo.html 200` gets
 // 308'd straight back to `/foo` by Cloudflare Pages' `.html` canonicalization,
 // producing an infinite loop. Pages serves the flat `.html` files above with no
-// rule; the SPA catch-all (`/* /index.html 200`) in public/_redirects still
-// covers any shell-less route.
+// rule; Pages' native SPA fallback covers shell-less routes. An explicit
+// `/* /index.html 200` rewrite is rejected as a canonicalization loop.
 
 writeFile(
   path.join(distDir, 'robots.txt'),

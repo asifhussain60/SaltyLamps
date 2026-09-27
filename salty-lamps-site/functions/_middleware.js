@@ -44,6 +44,20 @@ export async function onRequest(context) {
   const hostname = hostnameOf(request)
   const { pathname } = new URL(request.url)
 
+  // _redirects only accepts relative sources. Canonicalize actual shop page
+  // requests here, preserving the full path/query and leaving API methods alone.
+  // Static assets excluded by _routes.json still need launch-time zone rules.
+  if ((request.method === 'GET' || request.method === 'HEAD') &&
+      !pathname.startsWith('/api/') && !isAdminPath(pathname) &&
+      (hostname === 'saltylamps.co.uk' ||
+       (hostname === 'www.saltylamps.co.uk' && new URL(request.url).protocol === 'http:'))) {
+    const canonical = new URL(request.url)
+    canonical.protocol = 'https:'
+    canonical.hostname = 'www.saltylamps.co.uk'
+    canonical.port = ''
+    return Response.redirect(canonical.toString(), 301)
+  }
+
   // --- 1. the admin lives on its own hostname ------------------------------
   // Only /admin* is considered here. /api/admin/* is refused by its own
   // middleware, which returns a JSON error the admin UI can read rather than the
@@ -89,6 +103,9 @@ export async function onRequest(context) {
   // their route families stay eligible here and unknown top-level pages do not.
   if (isUnknownBrowserPage(request, pathname)) {
     const response = await next()
+    // Legacy Wix page redirects come from the delegated asset response. Keep
+    // their status: replacing 301 with 404 strands real browser navigations.
+    if (response.status >= 300 && response.status < 400 && response.headers.has('location')) return response
     const missing = new Response(response.body, { status: 404, headers: response.headers })
     missing.headers.set('x-robots-tag', 'noindex, nofollow')
     return missing

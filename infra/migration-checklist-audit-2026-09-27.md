@@ -1,5 +1,7 @@
 # Migration checklist audit — 27 September 2026
 
+Later continuation: `infra/checkout-runtime-follow-up-2026-09-27.md` records the repaired disposable postcode fixture, unmocked desktop/mobile results, corrected redirects and measured postcode-capacity estimate. The observations below describe the earlier audit; its postcode and local redirect gaps have since been resolved locally. Provider and production gates remain open.
+
 ## Method and evidence boundary
 
 Reviewed the twelve source-of-truth stages, their detailed checks and exit gates against the account boundary, private backup manifests, catalogue mapping review, local checkout report, deployment preflight, and current repository state. Independently reran the complete unit suite (151 passed), checked the public holding page and DNS, and ran one browser test with postcode responses **not** intercepted. Checked changing platform limits against current official provider documentation. No signed-in owner dashboard was refreshed during this audit; earlier Stripe, Resend, Wix and Cloudflare dashboard observations remain dated observations rather than proof of current permissions or service health. No production import, provider credential, mail send, payment, Access change, DNS write or deployment was made.

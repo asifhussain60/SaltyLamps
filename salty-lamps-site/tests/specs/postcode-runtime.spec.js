@@ -1,0 +1,38 @@
+import { test, expect } from '@playwright/test'
+
+// Explicit disposable-runtime suite: never seed or exercise a remote shop.
+test.skip(!process.env.LIVE_POSTCODE || !/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(process.env.E2E_BASE_URL || ''), 'Requires an explicit local fixture URL and LIVE_POSTCODE=1')
+
+test('real postcode service, catalogue and manual fallback survive both checkout pages', async ({ page, request }, testInfo) => {
+  const suggestions = await request.get('/api/postcode-suggestions?query=SW1A')
+  expect(suggestions.status()).toBe(200)
+  expect(await suggestions.json()).toEqual({ suggestions: ['SW1A 1AA', 'SW1A 2AA'] })
+  const products = await (await request.get('/api/products')).json()
+  const product = products.products.find(item => item.stock && item.price > 0)
+  expect(product).toBeTruthy()
+  await page.addInitScript(skuId => sessionStorage.setItem('salty-lamps-cart', JSON.stringify([{ skuId, qty: 1 }])), product.skuId)
+  await page.goto('/checkout')
+  const review = page.getByRole('combobox', { name: 'Delivery postcode' })
+  await review.fill('SW1A 2A')
+  await page.getByRole('option', { name: 'SW1A 2AA' }).click()
+  await expect(review).toHaveValue('SW1A 2AA')
+  await page.screenshot({ path: testInfo.outputPath('review-postcode.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Continue to address', exact: true }).click()
+  const address = page.getByRole('combobox', { name: 'Postcode', exact: true })
+  await expect(address).toHaveValue('SW1A 2AA')
+  await address.fill('SW1A 1')
+  await page.getByRole('option', { name: 'SW1A 1AA' }).click()
+  await page.goBack()
+  await expect(review).toHaveValue('SW1A 1AA')
+  // No BT data is offered. Manual entry must remain possible without it.
+  await review.fill('BT1 1AA')
+  await page.getByRole('button', { name: 'Continue to address', exact: true }).click()
+  await expect(address).toHaveValue('BT1 1AA')
+  await address.fill('ST4 3NP')
+  await page.getByLabel('Address line 1').fill('10 Test Street')
+  await page.getByLabel('Town or city').fill('Stoke-on-Trent')
+  await page.screenshot({ path: testInfo.outputPath('address-manual.png'), fullPage: true })
+  await page.goBack()
+  await expect(review).toHaveValue('ST4 3NP')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+})

@@ -1,5 +1,5 @@
 # Cloudflare Pages redirects. FIRST MATCH WINS, so every specific rule must sit
-# above the SPA catch-all on the last line.
+# above wildcard rules. Pages supplies the SPA fallback natively.
 #
 # The bulk of this file exists to carry the OLD WIX SITE'S SEARCH RANKINGS across
 # the cutover. The Wix sitemap listed 54 indexed URLs on 2026-08-11; only 17 of
@@ -18,10 +18,8 @@
 #   curl -s https://www.saltylamps.co.uk/sitemap.xml   # (while Wix is still live)
 # and diff its <loc> values against dist/*sitemap*.xml after `npm run build`.
 
-# --- Canonical host: apex and bare http to https://www --------------------------
-http://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
-https://saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
-http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
+# Canonical-host redirects belong in Functions for page requests and in reviewed
+# zone rules for excluded static assets. Absolute sources are invalid here.
 
 # --- Misspelled category slug that was live on Wix ------------------------------
 /category/himalyan-salt-massage-relaxation-products /category/himalayan-salt-massage-relaxation-products 301
@@ -90,7 +88,6 @@ http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 
 # --- Collection rename: keep bookmarks and indexed media working ----------------
 /collection/aura-collection /collection/saltwood-frames 301
-/collection/aura-collection/* /collection/saltwood-frames/:splat 301
 /media/aura-collection-lifestyle.jpg /media/saltwood-frames-lifestyle.jpg 301
 /media/live-site-products/aura-collection-frame-detail-live-site.jpg /media/live-site-products/saltwood-frames-frame-detail-live-site.jpg 301
 /media/live-site-products/aura-collection-hotel-lobby-live-site.jpg /media/live-site-products/saltwood-frames-hotel-lobby-live-site.jpg 301
@@ -102,7 +99,6 @@ http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 
 # Corrected Saltwood Frames branding; keep previous addresses working.
 /collection/wooden-frame-collection /collection/saltwood-frames 301
-/collection/wooden-frame-collection/* /collection/saltwood-frames/:splat 301
 /media/wooden-frame-collection-lifestyle.jpg /media/saltwood-frames-lifestyle.jpg 301
 /media/video/collection/wooden-frame-collection-hero-poster-16x9.jpg /media/video/collection/saltwood-frames-hero-poster-16x9.jpg 301
 /media/video/collection/wooden-frame-collection-hero-16x9.mp4 /media/video/collection/saltwood-frames-hero-16x9.mp4 301
@@ -111,5 +107,9 @@ http://www.saltylamps.co.uk/* https://www.saltylamps.co.uk/:splat 301
 /media/live-site-products/wooden-frame-collection-hotel-lobby-live-site.jpg /media/live-site-products/saltwood-frames-hotel-lobby-live-site.jpg 301
 /media/live-site-products/wooden-frame-collection-workshop-real-live-site.jpg /media/live-site-products/saltwood-frames-workshop-real-live-site.jpg 301
 
-# --- SPA fallback. MUST REMAIN LAST ---
-/* /index.html 200
+# No catch-all rewrite: Pages' native SPA fallback serves the shell without the
+# /index.html canonicalization loop. Middleware gives unknown browser pages 404.
+
+# Wildcard aliases follow all exact matches.
+/collection/aura-collection/* /collection/saltwood-frames/:splat 301
+/collection/wooden-frame-collection/* /collection/saltwood-frames/:splat 301
