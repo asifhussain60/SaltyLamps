@@ -26,7 +26,8 @@
   ],
   "replacement_shop": {
     "owner_account_payment_connection": "Not configured or tested",
-    "payment_lifecycle_tested": false
+    "payment_lifecycle_tested": false,
+    "ignored_local_stripe_entries": "Test-mode entries are present. Historical infra/stripe.md identifies the earlier proposal sandbox; entries were not used or matched to the current owner account."
   },
   "actions": {
     "credentials_created_or_revealed": false,
