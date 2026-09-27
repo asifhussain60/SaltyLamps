@@ -1,0 +1,87 @@
+{
+  "date": "2026-09-27",
+  "scope": "Owner Stripe sandbox plus disposable local Pages/D1 fixture; no live transaction, customer data, mail send, deployment or DNS change",
+  "approval": "Asif explicitly approved saving existing owner sandbox test keys privately on this Mac and simulated checkout/webhook/refund tests; also requested configuration of the shown network access policy",
+  "account_verification": {
+    "account_id": "acct_1UK2aVQVtEzHT783",
+    "charges_enabled": true,
+    "payouts_enabled": true,
+    "details_submitted": true,
+    "default_currency": "gbp",
+    "key_mode": "test",
+    "live_keys_saved": false
+  },
+  "credential_storage": "Disposable fixture .dev.vars; mode 0600; directory mode 0700; no old proposal credentials; no live key; no secret values in evidence",
+  "network_policy": {
+    "name": "Salty Lamps local sandbox rehearsal",
+    "method": "single verified current public IPv4 /32",
+    "keys_selected": 1,
+    "default_for_new_keys": false,
+    "status": "Draft prepared and submitted; Stripe requires authenticator/passkey verification before save; not confirmed created or active",
+    "boundary": "Local sandbox key only; unsuitable for future Cloudflare production until actual egress is verified; re-evaluate after network/public-IP changes"
+  },
+  "provider_transport": {
+    "method": "Official Stripe CLI listen forwarding seven consumed event types to loopback /api/webhook",
+    "api_version": "2026-08-26.dahlia",
+    "dashboard_webhook_created": false,
+    "signature_verification": "Actual Stripe CLI signing secret in private fixture; genuine provider deliveries returned 200"
+  },
+  "tests": {
+    "decline": "Documented generic-decline test card produced visible decline; basket retained, no order, stock remained 20",
+    "success": "Actual embedded sandbox checkout; 3649 GBP minor units; order confirmed in browser, cart cleared, one order, stock 20 to 19",
+    "duplicate_replay": "Actual provider completed-event payload fetched and locally re-signed twice; both returned 200; still one order and stock 19. This is local replay, not evidence of Stripe retry scheduling.",
+    "partial_refund": "Provider refund 1000 succeeded; local refund partial and order remained paid",
+    "full_refund": "Second provider refund 2649 succeeded; cumulative 3649; order refunded; stock remained 19 because refund reconciliation does not imply physical restock",
+    "expiry": "A fresh unpaid shop checkout was expired through the sandbox API; genuine expiration webhook returned 200 and reservation became released; no order or stock decrement",
+    "authentication_failure": "Stripe 3DS Required test card; simulated Fail showed unable-to-authenticate message, basket retained and no second order",
+    "authentication_success": "Retry and simulated Complete produced second 3649 GBP paid order; browser confirmed, cart cleared; stock 19 to 18",
+    "mail": "Five durable jobs skipped; email_enabled=0 plus MAIL_DRY_RUN=true; no Resend key or real delivery"
+  },
+  "final_orders": [
+    {
+      "id": "cs_test_a1QxOCHYs2dcTvFz3D61lTu7tXCiABpiZ2oOOtshwDMzMD5snNUeOEoUc2",
+      "status": "refunded",
+      "amount_total_pence": 3649,
+      "currency": "gbp"
+    },
+    {
+      "id": "cs_test_a1GXenZzy1AOAOha2gg3EWxQsZba8btkv76fy349jEaoCBNPcG6AsbEQZn",
+      "status": "paid",
+      "amount_total_pence": 3649,
+      "currency": "gbp"
+    }
+  ],
+  "final_reservations": [
+    {
+      "session_id": "cs_test_a1QxOCHYs2dcTvFz3D61lTu7tXCiABpiZ2oOOtshwDMzMD5snNUeOEoUc2",
+      "status": "consumed"
+    },
+    {
+      "session_id": "cs_test_a1LFAGz3o67dYUAN4vKoZn96SRfVbqS6L0742aNB60Jj9Hu4RiJ652YDI4",
+      "status": "released"
+    },
+    {
+      "session_id": "cs_test_a1GXenZzy1AOAOha2gg3EWxQsZba8btkv76fy349jEaoCBNPcG6AsbEQZn",
+      "status": "consumed"
+    }
+  ],
+  "final_refunds": [
+    {
+      "status": "succeeded",
+      "amount_pence": 1000
+    },
+    {
+      "status": "succeeded",
+      "amount_pence": 2649
+    }
+  ],
+  "remaining": [
+    "Complete Stripe step-up verification and verify network policy assignment/enforcement",
+    "Delayed-payment and pending/failed-refund provider scenarios; out-of-order refund/event replay; interrupted delivery retry scheduling",
+    "Actual device wallet/payment-method parity including PayPal; owner commercial/settlement choices",
+    "Observed sandbox offered USD conversion based on tester location; GBP selected for both successful tests. Currency presentation/fees require owner decision before launch.",
+    "Production secret store, protected administrator access, registered production webhook and payment domain",
+    "Authorized live purchase/refund, real email delivery, catalogue/delivery approval and all remaining launch gates"
+  ],
+  "local_services": "Credential receiver, Pages server and Stripe CLI listener stopped after validation. Private test-key file retained under the explicit local-storage approval."
+}

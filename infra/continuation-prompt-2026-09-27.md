@@ -1,5 +1,10 @@
 # Continue the Salty Lamps migration
 
+## Later approved sandbox rehearsal
+
+Owner sandbox connection is now verified in a disposable local fixture. Actual embedded checkout passed decline, success, failed and successful 3D Secure authentication, signed provider webhook delivery, local duplicate replay, partial/full refund reconciliation and expired-reservation release. Two simulated GBP orders were created; one fully refunded. Five email jobs were skipped and no real mail was sent. Production connection, remaining provider edge cases, payment-method parity and live validation remain pending. See `infra/stripe-sandbox-rehearsal-2026-09-27.json`. The sandbox network policy is prepared but not saved: Stripe requires the owner’s authenticator/passkey check in the open tab. Do not repeat the credential approval request; Asif approved it. Preserve the private local fixture separately from production. Prior checkpoints below are historical.
+
+
 ## Stripe owner-completion follow-up
 
 The owner’s completion report has now been verified in the signed-in dashboard. Both live and the separate owner sandbox have no active tasks and Payments/Payouts Active. The earlier sandbox owner/director verification blocker is cleared. Both accounts still have no webhook destination. A fresh isolated local fixture is ready; the existing owner-sandbox key has not been saved or used, and explicit local credential-storage approval is pending. Read `infra/stripe-owner-completion-verification-2026-09-27.json` before repeating provider work. Account activation is complete; replacement connection and payment lifecycle verification remain pending. Do not use historical proposal credentials.

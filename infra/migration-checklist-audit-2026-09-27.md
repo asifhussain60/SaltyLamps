@@ -1,5 +1,10 @@
 # Migration checklist audit — 27 September 2026
 
+## Later approved sandbox rehearsal
+
+Owner sandbox connection is now verified in a disposable local fixture. Actual embedded checkout passed decline, success, failed and successful 3D Secure authentication, signed provider webhook delivery, local duplicate replay, partial/full refund reconciliation and expired-reservation release. Two simulated GBP orders were created; one fully refunded. Five email jobs were skipped and no real mail was sent. Production connection, remaining provider edge cases, payment-method parity and live validation remain pending. See `infra/stripe-sandbox-rehearsal-2026-09-27.json`. The sandbox network policy is prepared but not saved: Stripe requires the owner’s authenticator/passkey check in the open tab. Do not repeat the credential approval request; Asif approved it. Preserve the private local fixture separately from production. Prior checkpoints below are historical.
+
+
 Later Stripe follow-up: `infra/stripe-owner-completion-verification-2026-09-27.json` records a fresh signed-in review after the owner reported completion. Live and sandbox Payments/Payouts are Active with no active tasks. The earlier sandbox verification blocker is cleared; local key-storage approval, replacement connection and payment lifecycle checks are still pending. No webhook destination exists in either account. The original audit below remains historical.
 
 Later continuation: `infra/checkout-runtime-follow-up-2026-09-27.md` records the repaired disposable postcode fixture, unmocked desktop/mobile results, corrected redirects and measured postcode-capacity estimate. The observations below describe the earlier audit; its postcode and local redirect gaps have since been resolved locally. Provider and production gates remain open.
