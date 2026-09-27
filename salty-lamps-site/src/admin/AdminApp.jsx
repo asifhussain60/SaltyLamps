@@ -38,6 +38,7 @@ import PricingDoc from './docs/PricingDoc.jsx'
 import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
+import { storeHref } from './store-url.mjs'
 import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
@@ -2689,7 +2690,7 @@ export default function AdminApp({ route }) {
             )
           )}
         </nav>
-        <a className="admin-nav-link admin-nav-link--foot" href="/" onClick={e => { e.preventDefault(); navigate('/') }}>
+        <a className="admin-nav-link admin-nav-link--foot" href={storeHref('/', window.location.hostname, import.meta.env.VITE_STAGING === '1')}>
           <Icon name="externalLink" size={15} className="admin-nav-icon" />View store
         </a>
       </aside>

@@ -2564,7 +2564,6 @@ export default function App() {
           <Link href="/shop">Shop</Link>
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
-          <a href="https://admin.saltylamps.co.uk/admin">Admin</a>
           <a href={contactMailto(content)}>Contact</a>
           <Link className="nav-about" href="/process">How it’s made</Link>
         </nav>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ASIM_GROUPS } from './asim-checks.mjs'
 import { Confirm, Icon } from './Confirm.jsx'
+import { storeHref } from './store-url.mjs'
 import '../styles/asim-test-suite.css'
 
 const STORAGE_KEY = 'salty-lamps-asim-tests-v1'
@@ -164,7 +165,7 @@ export default function AsimTestSuite() {
               {needsSetup(item) && <div className="asim-setup"><strong>Needs setup</strong><p>{preparation(group.id)} If it is not ready, choose “Couldn’t test” and add a note.</p></div>}
               <ol>{steps.map(step => <li key={step}>{step}</li>)}</ol>
               <div className="asim-expect"><strong>What should happen</strong><p>{expected}</p></div>
-              {link && <p className="asim-shortcut"><a className="admin-btn" href={link[0]} target="asim-test-shop">{link[1]} <Icon name="externalLink" size={13} /></a></p>}
+              {link && <p className="asim-shortcut"><a className="admin-btn" href={storeHref(link[0], window.location.hostname, import.meta.env.VITE_STAGING === '1')} target="asim-test-shop">{link[1]} <Icon name="externalLink" size={13} /></a></p>}
               <p className="asim-answer-prompt">How did it go? Choose one answer.</p>
               <div className="asim-results" role="group" aria-label={`Result for ${title}`}>{Object.entries(LABELS).map(([value, label]) => <button type="button" key={value} aria-labelledby={`asim-answer-${id}-${value}`} aria-describedby={`asim-answer-help-${id}-${value}`} aria-pressed={current === value} onClick={() => mark(id, value)}><strong id={`asim-answer-${id}-${value}`}>{label}</strong><span id={`asim-answer-help-${id}-${value}`}>{{ works: 'It did what the instructions said.', problem: 'Something went wrong or was confusing.', blocked: 'I could not try this or need help.' }[value]}</span></button>)}</div>
               <label className="asim-note">{current === 'problem' ? 'What went wrong? (optional)' : current === 'blocked' ? 'What stopped you? (optional)' : 'Add a note (optional)'}<textarea maxLength={3000} rows={2} placeholder="A few words are enough. Please leave out customer or card details." value={state.notes[recordKey(state.device, id)] || ''} onChange={event => note(id, event.target.value)} /></label>
