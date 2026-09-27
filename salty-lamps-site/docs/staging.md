@@ -1,8 +1,11 @@
 # Owner-account sandbox shop
 
-This is a separate test publication. `salty-lamps-staging.pages.dev` is the shop
-preview; `admin.saltylamps.co.uk` is the intended Access-protected administrator
-host. The customer-facing `www.saltylamps.co.uk` holding page and empty production
+This is a separate test publication. `test.saltylamps.co.uk` is the private shop;
+`salty-lamps-staging.pages.dev` remains a protected staging address, with a
+path-specific exception for Stripe's signed sandbox webhook.
+`admin.saltylamps.co.uk` is the Access-protected administrator host. Both custom
+hostnames use the existing exact owner/operator sign-in policy. The
+customer-facing `www.saltylamps.co.uk` holding page and empty production
 D1 database remain unchanged until the go-live review.
 
 The staging project is pinned in `wrangler.staging.toml` to the approved owner
@@ -37,11 +40,14 @@ build, because it belongs to the general source tree; the generated `dist` keeps
 the staged build. Use Wrangler Direct Upload so the `functions` directory is
 compiled. Dashboard drag-and-drop does not compile Pages Functions.
 
-The owner-account staging shop is published, and the administrator hostname is
-attached to it behind Cloudflare Access. A simulated Stripe payment reached the
+The owner-account staging shop is published at the private custom hostname,
+and the administrator hostname is attached to the same project behind
+Cloudflare Access. Signed-out root, shop, checkout and administrator requests
+redirect to sign-in; an approved session loaded the 33-product demo shop and
+administrator dashboard. A simulated Stripe payment reached the
 staging order list; the resulting email jobs were skipped under dry-run mode.
-The signed-out admin page and API redirect to Access sign-in. The approved
-administrator session opened the dashboard; a revoked-user check remains open.
+The signed-out administrator API also redirects to Access sign-in. A revoked-user
+check remains open.
 The public customer domain still serves the holding page, and Zoho MX records
 remain in place. None of this verifies production checkout or customer email.
 

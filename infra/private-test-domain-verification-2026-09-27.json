@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-27",
+  "scope": "Owner-account custom-domain attachment and private sandbox verification; no shop code, approved design, payment, email, or production data change",
+  "owner_account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "test_shop": {
+    "url": "https://test.saltylamps.co.uk/shop",
+    "pages_project": "salty-lamps-staging",
+    "custom_domain_status": "Active; SSL enabled",
+    "dns": "Proxied CNAME test -> salty-lamps-staging.pages.dev",
+    "signed_out_root_shop_and_checkout": "HTTP 302 to Cloudflare Access sign-in",
+    "signed_in_browser": "33 demo products in 8 categories; test-shop and Stripe-sandbox-only banner visible",
+    "access_application_id": "c13f24a5-4b11-4bcf-9b88-4d34bfab15ee",
+    "access_policy_id": "85ba6fb2-d6a3-4654-ae84-06f3b82368f8",
+    "access_policy": "Existing exact owner and Gmail operator allowlist intersected with approved owner-account membership; Cloudflare identity provider; one-hour session",
+    "temporary_waf_rule_id": "111cde5602a241f690d03c48f4441282",
+    "temporary_waf_rule_final_status": "Disabled after Access was saved and signed-out HTTP 302 confirmed"
+  },
+  "administrator": {
+    "url": "https://admin.saltylamps.co.uk/admin",
+    "signed_out_status": "HTTP 302 to Cloudflare Access sign-in",
+    "signed_in_browser": "Test dashboard loaded and displayed the earlier simulated order"
+  },
+  "public_site": {
+    "url": "https://www.saltylamps.co.uk/",
+    "http_status": 503,
+    "content": "Under Construction holding page",
+    "dns": "Unchanged proxied CNAME www -> salty-lamps.pages.dev"
+  },
+  "payments_and_email": {
+    "stripe_test_only": "1 in owner-account staging Pages settings",
+    "mail_dry_run": "true in owner-account staging Pages settings",
+    "checkout_return": "Current checkout handler derives the return URL from the request origin, so test-host checkout returns to test.saltylamps.co.uk",
+    "sandbox_webhook": "Remains at signed, path-exempt salty-lamps-staging.pages.dev/api/webhook; not migrated to the new hostname",
+    "payment_or_email_attempted_in_this_check": false,
+    "live_charge_attempted": false
+  },
+  "remaining_limits": [
+    "Only the approved Gmail browser session was exercised; the owner and revoked-user sign-in paths were not independently tested",
+    "The previously configured SITE_URL text variable still names salty-lamps-staging.pages.dev; staging email sends are dry-run, and checkout returns use the actual request origin",
+    "The test catalogue, sample postage and prior simulated order are not production acceptance",
+    "No production payment, customer email, Wix cancellation or customer-data import was performed"
+  ]
+}
