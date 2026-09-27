@@ -15,7 +15,7 @@ owner has not given the later go-live instruction to replace that holding page.
 No production data import, live credential connection, real payment, service
 cancellation or public commerce switch is included in the test publication.
 
-The test deployment uses the replacement application's code, built with a
+The current test source revision is `e42dc11f4e8248e8c4cbee9e7db4f460c3aa8307` on `develop`; the final deployment was built from that same reviewed file tree before its commit. The test deployment uses the replacement application's code, built with a
 staging flag and bound to an isolated **demo** D1 database. The owner-account
 production D1 database is empty. Passing tests against the demo database will
 not make its catalogue, stock, orders, customer identities, shipping values or
