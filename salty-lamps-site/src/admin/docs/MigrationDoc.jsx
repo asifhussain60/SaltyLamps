@@ -24,7 +24,7 @@ export default function MigrationDoc() {
     <PlanTable headings={['Service', 'Required access', 'Verified state']} rows={plan.access} />
     <h2>Use free services where they fit</h2>
     <PlanTable headings={['Need', 'Choice', 'Boundary']} rows={plan.costs} />
-    <Checklist storageKey="salty-lamps-migration-readiness-2026-09">
+    <Checklist storageKey="salty-lamps-migration-readiness-2026-09-audit2">
       <div className="admin-doc__phases">
         {plan.phases.map((phase, index) => <Phase key={phase.id} number={String(index + 1)} title={phase.title}
           summary={phase.summary} ids={phase.checks.map((_, i) => `readiness-${phase.id}-${i}`)}>
