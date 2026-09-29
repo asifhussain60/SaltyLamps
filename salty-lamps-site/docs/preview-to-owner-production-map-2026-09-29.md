@@ -1,5 +1,11 @@
 # Owner-confirmed preview to owner-account production: data map
 
+The 29 September implementation review and offline rehearsal are recorded in
+`docs/production-catalogue-review-2026-09-29.md`. The rehearsal applies all
+current migrations to the public catalogue, but missing packed weights, hidden
+and admin-only fields, a fresh Wix delta, and owner-account image storage keep
+the production import blocked.
+
 The owner has confirmed that `https://salty-lamps-proposal.pages.dev/` shows the
 correct **public catalogue data and prices**. Treat its public read-only responses
 as the content reference, not its retired Cloudflare account, database, dashboard,
