@@ -62,3 +62,29 @@ remaining media and backup gaps, live Stripe credentials and webhook, actual
 customer-email delivery, R2 terms and activation, final Wix reconciliation,
 customer-domain switch, and production order/payment/rollback checks. No staging
 test proves those gates complete.
+
+## Publishing a reviewed release to the test shop
+
+`deploy-staging.sh` is the one supported way to put a committed release on the
+private test shop. It is run by the owner (or the approved Gmail administrator
+inside the owner account) after `npx wrangler login`, never with a saved token.
+`STAGING_DRY_RUN=1 ./deploy-staging.sh` runs only the offline half: the
+fail-closed preflight, a clean-commit check, the test build from the committed
+snapshot, and the guarded price correction, with no network use.
+
+A full run then confirms the login can reach the owner account and cannot reach
+the retired one, saves a D1 export and Time Travel bookmark, creates the
+image-storage tables (`CREATE TABLE IF NOT EXISTS`), applies the price
+correction (each `UPDATE` fires only while the price still equals the old demo
+value), reads all 43 prices back, and deploys to `salty-lamps-staging`. Every
+remote write waits for an explicit `yes`. It cannot address production, DNS,
+Access, secrets or R2. Nothing it prints or saves contains a credential.
+
+Its final step lists the checks a machine cannot make for this shop: a real
+photo upload, reorder and primary change in the Access-protected admin, and the
+same photo and prices in the shop, in Chrome.
+
+`scripts/capture-public-preview.py` re-captures the owner-confirmed public
+catalogue read-only, twice per endpoint, into the folder that
+`scripts/rehearse-public-catalogue.py` reads. It has been run against a local
+server only; run it against the real preview from a machine with network access.
