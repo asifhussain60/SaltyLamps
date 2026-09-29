@@ -1,16 +1,17 @@
-// GET /api/images/* — public serve of uploaded product images from R2.
+// GET /api/images/* — serve uploaded product images from the configured store.
 //
 // Public on purpose (shoppers load these), so it sits outside /api/admin and its
 // auth middleware. A long immutable cache means Cloudflare's edge serves repeat
 // loads without re-invoking this Worker; keys are random so they never collide.
+import { getImageObject, hasImageStorage } from '../../lib/image-upload.mjs'
 async function serveImage({ params, env, request }) {
-  if (!env.IMAGES) return new Response('Image storage not configured', { status: 503 })
+  if (!hasImageStorage(env)) return new Response('Image storage not configured', { status: 503 })
 
   const key = Array.isArray(params.path) ? params.path.join('/') : String(params.path || '')
   if (!key) return new Response('Not found', { status: 404 })
 
   const headOnly = request.method === 'HEAD'
-  const object = headOnly ? await env.IMAGES.head(key) : await env.IMAGES.get(key)
+  const object = await getImageObject(env, key, headOnly)
   if (!object || (!headOnly && !object.body)) return new Response('Not found', { status: 404 })
 
   // Honour conditional requests so the edge/browser can revalidate cheaply.

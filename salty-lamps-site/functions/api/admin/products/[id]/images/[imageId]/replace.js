@@ -1,10 +1,10 @@
 // POST /api/admin/products/:id/images/:imageId/replace — swap the file behind an
 // existing gallery slot in place (keeps its position/id; only the R2 object changes).
 import { json, apiError, auditStmt } from '../../../../../../lib/admin-helpers.mjs'
-import { readUploadedImage, putImageObject, deleteImageObject, syncCurrentPrimaryImageStmt, currentPrimaryPath } from '../../../../../../lib/image-upload.mjs'
+import { readUploadedImage, putImageObject, deleteImageObject, syncCurrentPrimaryImageStmt, currentPrimaryPath, hasImageStorage } from '../../../../../../lib/image-upload.mjs'
 
 export async function onRequestPost({ params, request, env, data }) {
-  if (!env.IMAGES) return apiError('Image storage is not configured.', 503, { code: 'no_storage' })
+  if (!hasImageStorage(env)) return apiError('Image storage is not configured.', 503, { code: 'no_storage' })
 
   const [upload, uploadErr] = await readUploadedImage(request)
   if (uploadErr) return uploadErr

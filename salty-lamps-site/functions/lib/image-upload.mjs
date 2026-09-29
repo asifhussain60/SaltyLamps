@@ -10,6 +10,18 @@ import { MAX_IMAGE_BYTES } from './validation.mjs'
 
 const SERVE_PREFIX = '/api/images/'
 const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
+const STAGING_CHUNK_BYTES = 512 * 1024
+
+export function hasImageStorage(env) {
+  return !!env.IMAGES || (
+    env.STAGING_IMAGE_STORAGE === 'd1' && env.STRIPE_TEST_ONLY === '1' &&
+    env.MAIL_DRY_RUN === 'true' && !!env.DB
+  )
+}
+
+function usesStagingDatabase(env) {
+  return !env.IMAGES && hasImageStorage(env)
+}
 
 // Returns 'image/jpeg' | 'image/png' | 'image/webp' | null by inspecting bytes.
 function sniffImageType(bytes) {
@@ -60,19 +72,61 @@ export async function readUploadedImage(request) {
   return [{ buffer, type, ext: EXT[type] }, null]
 }
 
-// Writes an uploaded image to R2 under a random per-product key. Returns { key, path }.
+// The protected sandbox stores small uploads in its existing D1 database until
+// the owner activates R2 for production. Chunks stay below D1's 2 MB row limit.
 export async function putImageObject(env, productId, upload, objectId = crypto.randomUUID()) {
   const key = `products/${productId}/${objectId}.${upload.ext}`
-  await env.IMAGES.put(key, upload.buffer, { httpMetadata: { contentType: upload.type } })
+  if (usesStagingDatabase(env)) {
+    const bytes = new Uint8Array(upload.buffer)
+    const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), byte => byte.toString(16).padStart(2, '0')).join('')
+    const statements = [env.DB.prepare(
+      'INSERT OR REPLACE INTO staging_image_objects(key,content_type,size,etag) VALUES(?,?,?,?)',
+    ).bind(key, upload.type, bytes.length, `"${digest}"`)]
+    for (let offset = 0, part = 0; offset < bytes.length; offset += STAGING_CHUNK_BYTES, part++) {
+      statements.push(env.DB.prepare(
+        'INSERT OR REPLACE INTO staging_image_chunks(key,part,bytes) VALUES(?,?,?)',
+      ).bind(key, part, bytes.slice(offset, offset + STAGING_CHUNK_BYTES)))
+    }
+    await env.DB.batch(statements)
+  } else {
+    await env.IMAGES.put(key, upload.buffer, { httpMetadata: { contentType: upload.type } })
+  }
   return { key, path: `${SERVE_PREFIX}${key}` }
 }
 
-// Deletes an R2 object, ignoring keys that aren't ours to manage (legacy static
-// /media/... images have no key) and tolerating a stray object that's already gone.
+export async function getImageObject(env, key, headOnly = false) {
+  if (!usesStagingDatabase(env)) return headOnly ? env.IMAGES.head(key) : env.IMAGES.get(key)
+  const row = await env.DB.prepare(
+    'SELECT content_type,size,etag FROM staging_image_objects WHERE key=?',
+  ).bind(key).first()
+  if (!row) return null
+  const metadata = { size: row.size, httpEtag: row.etag, httpMetadata: { contentType: row.content_type } }
+  if (headOnly) return metadata
+  const parts = await env.DB.prepare(
+    'SELECT bytes FROM staging_image_chunks WHERE key=? ORDER BY part',
+  ).bind(key).all()
+  const bytes = new Uint8Array(row.size)
+  let offset = 0
+  for (const part of parts.results || []) {
+    const chunk = new Uint8Array(part.bytes)
+    bytes.set(chunk, offset)
+    offset += chunk.length
+  }
+  if (offset !== row.size) throw new Error('Stored image is incomplete')
+  return { ...metadata, body: bytes }
+}
+
+// Deletes an uploaded object, ignoring static /media/... images without a key
+// and tolerating a stray object that's already gone.
 export async function deleteImageObject(env, key) {
   if (!key) return
   try {
-    await env.IMAGES.delete(key)
+    if (usesStagingDatabase(env)) {
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM staging_image_chunks WHERE key=?').bind(key),
+        env.DB.prepare('DELETE FROM staging_image_objects WHERE key=?').bind(key),
+      ])
+    } else if (env.IMAGES) await env.IMAGES.delete(key)
   } catch {
     // Non-fatal: a stray old object is harmless.
   }

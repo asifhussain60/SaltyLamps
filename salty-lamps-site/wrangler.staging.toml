@@ -11,9 +11,10 @@ binding = "DB"
 database_name = "salty-lamps-staging-db"
 database_id = "981a6d7b-8eb7-4057-8023-d2a4894c21e4"
 
-# Cloudflare R2 remains inactive until go-live. Product images in the bundle work;
-# administrator uploads return a clear storage-not-configured response.
+# Cloudflare R2 remains inactive until go-live. Sandbox uploads use only the
+# existing isolated test database; production continues to require R2.
 [vars]
+STAGING_IMAGE_STORAGE = "d1"
 STRIPE_TEST_ONLY = "1"
 MAIL_DRY_RUN = "true"
 SITE_URL = "https://test.saltylamps.co.uk"

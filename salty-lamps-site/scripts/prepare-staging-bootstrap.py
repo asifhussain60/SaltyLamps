@@ -19,6 +19,7 @@ spec.loader.exec_module(planner)
 def build():
     db = sqlite3.connect(':memory:')
     planner.rehearse(db, seed=True)
+    db.executescript((ROOT / 'd1/staging/image-storage.sql').read_text())
     # Deliberately synthetic shipping: it allows a provider-backed checkout
     # rehearsal only for the two sample postcodes, never a real delivery quote.
     db.executemany(
