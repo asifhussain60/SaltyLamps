@@ -77,6 +77,8 @@ test('sandbox image upload, retry, serving, replacement and deletion use only it
  assert.deepEqual(await (await send()).json(),image)
  assert.equal(sql.prepare('SELECT count(*) n FROM product_images').get().n,1)
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,2)
+ const optionId=sql.prepare('SELECT id FROM skus WHERE product_id=?').get(id).id
+ sql.prepare('INSERT INTO sku_images(sku_id,image_id) VALUES(?,?)').run(optionId,image.id)
  const path=image.path.slice('/api/images/'.length).split('/')
  const context=method=>({params:{path},env,request:new Request('http://localhost'+image.path,{method})})
  const head=await headImage(context('HEAD'));assert.equal(head.status,200)
@@ -89,10 +91,12 @@ test('sandbox image upload, retry, serving, replacement and deletion use only it
  assert.equal(swapped.status,200)
  assert.equal((await getImage(context('GET'))).status,404)
  const replacement=await swapped.json()
+ assert.equal(sql.prepare('SELECT image_id FROM sku_images WHERE sku_id=?').get(optionId).image_id,image.id)
  const nextContext={params:{path:replacement.path.slice('/api/images/'.length).split('/')},env,request:new Request('http://localhost'+replacement.path)}
  assert.deepEqual(new Uint8Array(await (await getImage(nextContext)).arrayBuffer()),next)
  assert.equal((await remove({params:{id,imageId:String(image.id)},env,data:{actorEmail:'qa@example.invalid'}})).status,200)
  assert.equal((await getImage(nextContext)).status,404)
+ assert.equal(sql.prepare('SELECT count(*) n FROM sku_images WHERE sku_id=?').get(optionId).n,0)
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_objects').get().n,0)
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,0)
  const {putImageObject,deleteImageObject}=await import('../functions/lib/image-upload.mjs')
