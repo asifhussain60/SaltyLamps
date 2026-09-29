@@ -88,3 +88,26 @@ same photo and prices in the shop, in Chrome.
 catalogue read-only, twice per endpoint, into the folder that
 `scripts/rehearse-public-catalogue.py` reads. It has been run against a local
 server only; run it against the real preview from a machine with network access.
+
+## Syncing the test shop's catalogue to the owner-confirmed preview
+
+`scripts/prepare-staging-catalogue-sync.py --rehearsal <rehearsal folder> --output <new .sql outside the repository>`
+writes a catalogue-only update, keyed on product id and option label, so the Stripe sandbox
+orders keep pointing at real options. It was applied to `salty-lamps-staging-db` on
+29 September 2026 (recovery export and Time Travel bookmark saved first) and read back:
+34 of 34 products and 76 of 76 options equal the preview, all 10 sandbox orders intact.
+
+What it does **not** establish, and what a reader must not assume:
+
+- **Stock counts are the preview's numbers, not confirmed counts.** It overwrote the test shop's
+  quantities on 12 options (some had been reduced by sandbox orders). The owner has not confirmed
+  opening stock; treat every quantity as a placeholder.
+- **Packed weights are untouched and still sandbox values** (1000, 5000 or 6000 g). New options got
+  1000 g. No real packed weight exists yet.
+- **Two gallery photos are absent** (their bytes live only in the old preview's database).
+- **Nothing here moves to the live shop.** The live database is separate and empty; test-shop edits
+  never carry over. The owner workbook's `Ref` numbers (78 to 156) are the *preview's* option ids, and
+  in the test shop those numbers now belong to different options, so the workbook importer's guard
+  refuses it there. Load the workbook into the live database, or supply `--ref-source`.
+- **The test shop cannot take a real payment.** `STRIPE_TEST_ONLY=1` refuses live keys, and email is
+  off (`MAIL_DRY_RUN=true`, `email_enabled=0`). A real charge, refund or email needs the live shop.
