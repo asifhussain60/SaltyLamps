@@ -5,6 +5,7 @@
 //   - reject before buffering if Content-Length exceeds the cap
 //   - sniff magic bytes; only real JPEG/PNG/WebP pass (SVG and everything else rejected)
 //   - store under a generated key, never the client's filename
+import { Buffer } from 'node:buffer'
 import { apiError } from './admin-helpers.mjs'
 import { MAX_IMAGE_BYTES } from './validation.mjs'
 
@@ -73,7 +74,10 @@ export async function readUploadedImage(request) {
 }
 
 // The protected sandbox stores small uploads in its existing D1 database until
-// the owner activates R2 for production. Chunks stay below D1's 2 MB row limit.
+// the owner activates R2 for production. Chunks are base64 text, not BLOBs: the
+// D1 binding marshals a BLOB as one JS number per byte, which costs tens of
+// milliseconds of Worker CPU per photo against the Free plan's 10 ms. A 512 KiB
+// chunk becomes ~683 KiB of text, still below D1's 2 MB row limit.
 export async function putImageObject(env, productId, upload, objectId = crypto.randomUUID()) {
   const key = `products/${productId}/${objectId}.${upload.ext}`
   if (usesStagingDatabase(env)) {
@@ -83,9 +87,10 @@ export async function putImageObject(env, productId, upload, objectId = crypto.r
       'INSERT OR REPLACE INTO staging_image_objects(key,content_type,size,etag) VALUES(?,?,?,?)',
     ).bind(key, upload.type, bytes.length, `"${digest}"`)]
     for (let offset = 0, part = 0; offset < bytes.length; offset += STAGING_CHUNK_BYTES, part++) {
+      const chunk = Buffer.from(bytes.buffer, bytes.byteOffset + offset, Math.min(STAGING_CHUNK_BYTES, bytes.length - offset))
       statements.push(env.DB.prepare(
         'INSERT OR REPLACE INTO staging_image_chunks(key,part,bytes) VALUES(?,?,?)',
-      ).bind(key, part, bytes.slice(offset, offset + STAGING_CHUNK_BYTES)))
+      ).bind(key, part, chunk.toString('base64')))
     }
     await env.DB.batch(statements)
   } else {
@@ -108,7 +113,8 @@ export async function getImageObject(env, key, headOnly = false) {
   const bytes = new Uint8Array(row.size)
   let offset = 0
   for (const part of parts.results || []) {
-    const chunk = new Uint8Array(part.bytes)
+    // Base64 text; a BLOB byte array is still read in case one was stored earlier.
+    const chunk = typeof part.bytes === 'string' ? Buffer.from(part.bytes, 'base64') : new Uint8Array(part.bytes)
     bytes.set(chunk, offset)
     offset += chunk.length
   }

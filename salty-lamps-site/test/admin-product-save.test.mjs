@@ -106,6 +106,8 @@ test('sandbox image upload, retry, serving, replacement and deletion use only it
  assert.deepEqual(await (await send()).json(),image)
  assert.equal(sql.prepare('SELECT count(*) n FROM product_images').get().n,1)
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,2)
+ // Text, not BLOB: the D1 binding would marshal a BLOB as one JS number per byte.
+ assert.deepEqual(sql.prepare('SELECT DISTINCT typeof(bytes) t FROM staging_image_chunks').all().map(row=>row.t),['text'])
  const optionId=sql.prepare('SELECT id FROM skus WHERE product_id=?').get(id).id
  sql.prepare('INSERT INTO sku_images(sku_id,image_id) VALUES(?,?)').run(optionId,image.id)
  const path=image.path.slice('/api/images/'.length).split('/')
@@ -135,6 +137,16 @@ test('sandbox image upload, retry, serving, replacement and deletion use only it
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_objects').get().n,1)
  assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,2)
  await deleteImageObject(env,orphan.key)
+})
+
+test('sandbox image storage still serves a chunk stored earlier as a BLOB',async()=>{
+ const {sql,db}=fixture()
+ const env={DB:db,STAGING_IMAGE_STORAGE:'d1',STRIPE_TEST_ONLY:'1',MAIL_DRY_RUN:'true'}
+ const bytes=new Uint8Array([137,80,78,71,13,10,26,10,7,7,7])
+ sql.prepare('INSERT INTO staging_image_objects(key,content_type,size,etag) VALUES(?,?,?,?)').run('products/p/legacy.png','image/png',bytes.length,'"legacy"')
+ sql.prepare('INSERT INTO staging_image_chunks(key,part,bytes) VALUES(?,?,?)').run('products/p/legacy.png',0,bytes)
+ const {getImageObject}=await import('../functions/lib/image-upload.mjs')
+ assert.deepEqual(new Uint8Array((await getImageObject(env,'products/p/legacy.png')).body),bytes)
 })
 
 test('sandbox image storage fails closed outside the protected test mode',async()=>{
