@@ -106,8 +106,14 @@ PY
 
 say "8/8 Publish to the private test project"
 confirm "Deploy commit ${COMMIT:0:7} to the Pages project $PROJECT on branch '$BRANCH'? The customer domain and production are not involved."
-wr pages deploy dist --project-name "$PROJECT" --branch "$BRANCH" \
+# Pages rejects -c/--config; it only reads ./wrangler.toml. Put the pinned staging config
+# there for the length of the deploy and always remove it, so it can never be picked up later.
+[ ! -e wrangler.toml ] || die "wrangler.toml already exists here; refusing to overwrite it."
+cp "$CONFIG" wrangler.toml
+trap 'rm -f wrangler.toml' EXIT
+npx wrangler pages deploy dist --project-name "$PROJECT" --branch "$BRANCH" \
   --commit-hash "$COMMIT" --commit-message "private test release ${COMMIT:0:7}" --commit-dirty=false
+rm -f wrangler.toml
 
 say "Published. Still to verify by hand, in Chrome, signed in through Cloudflare Access"
 cat <<'EOF'
