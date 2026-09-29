@@ -20,6 +20,16 @@ The later explicit owner instruction authorized a holding-only public website sw
 
 On 27 September, a read-only public check confirmed that `www.saltylamps.co.uk` still returns the approved holding page with HTTP 503, `Cache-Control: no-store`, and the public contact link. A separate, older `salty-lamps-proposal.pages.dev` address returned HTTP 200 with storefront HTML. That response is not evidence of an authorized production shop or a working payment route. It is a public legacy-preview exposure to track separately; no retired-account dashboard, credential, or deployment control was accessed or changed. The remaining double-click script that could have uploaded to that project has been replaced with a fail-closed stub. Do not use that preview for the migration or send customers there.
 
+On 29 September, Asif reported the owner's confirmation that the public preview
+contains the correct visible catalogue data and prices, and directed a mapped
+transfer from that reference into the new owner-account production database
+after review. This later instruction permits **read-only capture of public
+preview pages and APIs as catalogue evidence**. It does not permit access to the
+retired account, its database, credentials, dashboard or deployment, and does
+not make the preview a customer launch destination. The public APIs omit hidden
+and operational records; review those separately. The transfer map is in
+`salty-lamps-site/docs/preview-to-owner-production-map-2026-09-29.md`.
+
 ## Completed membership and invitation audit
 
 The later 26 September follow-up inspected the unfiltered **All members** page in the explicitly identified owner account. It displayed exactly the two approved identities above, both **Active**, with no **Invite Pending** entries or additional pages. [Cloudflare's member-management guidance](https://developers.cloudflare.com/fundamentals/manage-members/manage/) places pending invitations in this same list, rather than requiring a separate invitation page. This closes the pending-invitation audit for the observed account state. The retired identity is absent; no removal or other membership change was needed. This does not establish shop administrator Access protection, provider permissions or untested write scopes.
