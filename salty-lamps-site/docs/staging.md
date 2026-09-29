@@ -104,6 +104,12 @@ What it does **not** establish, and what a reader must not assume:
   opening stock; treat every quantity as a placeholder.
 - **Packed weights are untouched and still sandbox values** (1000, 5000 or 6000 g). New options got
   1000 g. No real packed weight exists yet.
+- **Two old default options were retired afterwards** (a Saltwood Frames default and a cable default, kept by
+  the first sync only because sandbox orders used them and shown publicly as sold out). Their sandbox order
+  lines moved to the matching preview option (Cable to Regular, Saltwood to Small) and the two options were
+  deleted, with a recovery bookmark taken first. Read back: 76 of 76 options equal the preview, none extra,
+  10 orders and 10 lines intact with no orphans. If the sync is run again on a database with such leftovers,
+  they reappear as out-of-stock public cards until handled the same way.
 - **Two gallery photos are absent** (their bytes live only in the old preview's database).
 - **Nothing here moves to the live shop.** The live database is separate and empty; test-shop edits
   never carry over. The owner workbook's `Ref` numbers (78 to 156) are the *preview's* option ids, and
