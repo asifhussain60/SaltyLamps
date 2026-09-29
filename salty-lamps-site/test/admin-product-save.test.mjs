@@ -62,6 +62,35 @@ test('lost image upload response replay creates one gallery row and one object',
  assert.equal(objects.size,1)
 })
 
+test('gallery reorder changes the cover, preserves option image links, and rejects stale or foreign orders', async () => {
+ const {sql,db}=fixture()
+ const a=await(await save(db,body())).json()
+ const b=await(await save(db,body())).json()
+ const insert=(product,index)=>{
+   sql.prepare('INSERT INTO product_images(product_id,key,path,sort_order) VALUES(?,?,?,?)').run(product,`key-${product}-${index}`,`/image-${product}-${index}`,index)
+   return sql.prepare('SELECT id FROM product_images WHERE product_id=? AND sort_order=?').get(product,index).id
+ }
+ const first=insert(a.id,0),second=insert(a.id,1),third=insert(a.id,2),foreign=insert(b.id,0)
+ sql.prepare('UPDATE products SET image=? WHERE id=?').run(`/image-${a.id}-0`,a.id)
+ const optionId=sql.prepare('SELECT id FROM skus WHERE product_id=?').get(a.id).id
+ sql.prepare('INSERT INTO sku_images(sku_id,image_id) VALUES(?,?)').run(optionId,second)
+ const {onRequestPut:reorder}=await import('../functions/api/admin/products/[id]/images/order.js')
+ const send=imageIds=>reorder({params:{id:a.id},env:{DB:db},data:{actorEmail:'qa@example.invalid'},request:new Request('http://localhost/api',{method:'PUT',body:JSON.stringify({imageIds})})})
+ for (const wrong of [[first,second,second],[first,second,foreign],[first,second],[first,second,third,foreign]]) {
+   assert.notEqual((await send(wrong)).status,200)
+   assert.equal(sql.prepare('SELECT image FROM products WHERE id=?').get(a.id).image,`/image-${a.id}-0`)
+ }
+ const order=[third,first,second]
+ assert.equal((await send(order)).status,200)
+ assert.equal((await send(order)).status,200)
+ assert.deepEqual(sql.prepare('SELECT id FROM product_images WHERE product_id=? ORDER BY sort_order,id').all(a.id).map(row=>row.id),order)
+ assert.equal(sql.prepare('SELECT image FROM products WHERE id=?').get(a.id).image,`/image-${a.id}-2`)
+ assert.equal(sql.prepare('SELECT image_id FROM sku_images WHERE sku_id=?').get(optionId).image_id,second)
+ sql.exec("CREATE TRIGGER reject_reorder BEFORE UPDATE ON products BEGIN SELECT RAISE(ABORT,'fixture failure'); END;")
+ assert.equal((await send([first,second,third])).status,500)
+ assert.deepEqual(sql.prepare('SELECT id FROM product_images WHERE product_id=? ORDER BY sort_order,id').all(a.id).map(row=>row.id),order)
+})
+
 test('sandbox image upload, retry, serving, replacement and deletion use only its test database',async()=>{
  const {sql,db}=fixture();const {id}=await(await save(db,body())).json()
  const env={DB:db,STAGING_IMAGE_STORAGE:'d1',STRIPE_TEST_ONLY:'1',MAIL_DRY_RUN:'true'}

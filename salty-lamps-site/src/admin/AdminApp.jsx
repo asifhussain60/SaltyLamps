@@ -296,13 +296,15 @@ function Toggle({ checked, onChange, label, inline, ariaLabel }) {
 // the cover image, and small replace/delete actions. Used only for already-saved
 // images (a new product's staged files render inline in ProductEdit instead, since
 // they have no server id to replace/delete against yet).
-function GalleryThumb({ src, primary, busy, onReplace, onDelete }) {
+function GalleryThumb({ src, primary, busy, onReplace, onDelete, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, dragProps, dropTarget }) {
   const fileRef = useRef(null)
   return (
-    <div className={`admin-gallery-item ${busy ? 'admin-gallery-item--busy' : ''}`}>
+    <div className={`admin-gallery-item ${busy ? 'admin-gallery-item--busy' : ''} ${dropTarget ? 'admin-gallery-item--drop-target' : ''}`} {...dragProps}>
       <img className="admin-gallery-thumb" src={src} alt="" />
       {primary && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
       <div className="admin-gallery-actions">
+        <button type="button" className="admin-gallery-action" title="Move left" aria-label="Move image left" disabled={busy || !canMoveLeft} onClick={onMoveLeft}>←</button>
+        <button type="button" className="admin-gallery-action" title="Move right" aria-label="Move image right" disabled={busy || !canMoveRight} onClick={onMoveRight}>→</button>
         <input
           ref={fileRef}
           type="file"
@@ -1322,6 +1324,8 @@ function ProductEdit({ id }) {
   const [imageBusyId, setImageBusyId] = useState(null)
   const [imageErr, setImageErr] = useState('')
   const [confirmDeleteImage, setConfirmDeleteImage] = useState(null)
+  const draggedImage = useRef(null)
+  const [dropImage, setDropImage] = useState(null)
 
   useEffect(() => {
     if (isNew) {
@@ -1404,6 +1408,37 @@ function ProductEdit({ id }) {
       return list.filter(p => p.key !== key)
     })
   }
+
+  const reorderImages = async (from, to) => {
+    if (from === to || from < 0 || to < 0 || imageBusyId !== null || saving || savePending) return
+    setImageErr('')
+    const source = isNew ? pendingImages : images
+    const reordered = [...source]
+    reordered.splice(to, 0, reordered.splice(from, 1)[0])
+    if (isNew) {
+      setPendingImages(reordered)
+      setProductDirty(true)
+      return
+    }
+    setImageBusyId('order')
+    try {
+      const res = await api(`/api/admin/products/${id}/images/order`, { method: 'PUT', body: { imageIds: reordered.map(image => image.id) } })
+      setImages(res.images)
+      setForm(current => ({ ...current, image: res.primary_path }))
+      announceCatalogChange()
+    } catch (error) {
+      setImageErr(error.message)
+      if (error.message.includes('gallery changed')) reload()
+    } finally { setImageBusyId(null) }
+  }
+
+  const dragProps = (key, index, list) => ({
+    draggable: imageBusyId === null && !saving && !savePending && list.length > 1,
+    onDragStart: event => { draggedImage.current = index; event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(key)) },
+    onDragOver: event => { if (draggedImage.current === null || imageBusyId !== null) return; event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDropImage(key) },
+    onDrop: event => { event.preventDefault(); const from = draggedImage.current; draggedImage.current = null; setDropImage(null); if (from !== null) reorderImages(from, index) },
+    onDragEnd: () => { draggedImage.current = null; setDropImage(null) },
+  })
 
   const deleteImage = async imgId => {
     setImageErr('')
@@ -1533,13 +1568,16 @@ function ProductEdit({ id }) {
 
         <section className="admin-card">
           <h2><Icon name="image" tone="amber" className="admin-card-icon" />Images</h2>
+          {(isNew ? pendingImages.length : images.length) > 1 && <p className="admin-muted">Drag pictures into order, or use the arrows. The first picture is primary.</p>}
           <div className="admin-gallery-grid">
             {isNew
               ? pendingImages.map((p, i) => (
-                <div key={p.key} className="admin-gallery-item">
+                <div key={p.key} className={`admin-gallery-item ${dropImage === p.key ? 'admin-gallery-item--drop-target' : ''}`} {...dragProps(p.key, i, pendingImages)}>
                   <img className="admin-gallery-thumb" src={p.previewUrl} alt="" />
                   {i === 0 && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
                   <div className="admin-gallery-actions">
+                    <button type="button" className="admin-gallery-action" aria-label="Move image left" disabled={i === 0} onClick={() => reorderImages(i, i - 1)}>←</button>
+                    <button type="button" className="admin-gallery-action" aria-label="Move image right" disabled={i === pendingImages.length - 1} onClick={() => reorderImages(i, i + 1)}>→</button>
                     <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Remove" aria-label="Remove image" onClick={() => removePendingImage(p.key)}>
                       <Icon name="trash" size={13} />
                     </button>
@@ -1551,7 +1589,13 @@ function ProductEdit({ id }) {
                   key={im.id}
                   src={im.path}
                   primary={i === 0}
-                  busy={imageBusyId === im.id}
+                  busy={imageBusyId !== null}
+                  canMoveLeft={i > 0}
+                  canMoveRight={i < images.length - 1}
+                  onMoveLeft={() => reorderImages(i, i - 1)}
+                  onMoveRight={() => reorderImages(i, i + 1)}
+                  dragProps={dragProps(im.id, i, images)}
+                  dropTarget={dropImage === im.id}
                   onReplace={file => replaceImage(im.id, file)}
                   onDelete={() => setConfirmDeleteImage(im)}
                 />

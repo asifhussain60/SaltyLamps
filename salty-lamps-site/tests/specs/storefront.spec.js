@@ -157,7 +157,7 @@ test.describe('the basket', () => {
     await page.goto('/shop')
     await page.locator('a[href^="/product-page/"]').first().click()
     await page.getByRole('button', { name: /^add to cart$/i }).first().click()
-    await page.getByRole('button', { name: /close cart/i }).click()
+    await page.getByRole('dialog', { name: 'Shopping cart' }).getByRole('button', { name: 'Close' }).click()
     await expect(page.getByRole('button', { name: /checkout/i })).toHaveCount(0)
     await page.locator('.cart-button').click()
     await expect(page.getByRole('button', { name: /checkout/i }).first()).toBeVisible()
