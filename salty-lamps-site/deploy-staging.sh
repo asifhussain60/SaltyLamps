@@ -114,7 +114,7 @@ LOCAL_CFG="$WORK/wrangler.toml.local"
 restore_config() { [ ! -e "$LOCAL_CFG" ] || mv -f "$LOCAL_CFG" wrangler.toml; }
 mv wrangler.toml "$LOCAL_CFG"
 trap restore_config EXIT
-cp "$CONFIG" wrangler.toml
+grep -v "^account_id" "$CONFIG" > wrangler.toml   # Pages rejects account_id; CLOUDFLARE_ACCOUNT_ID (owner) is exported above
 npx wrangler pages deploy dist --project-name "$PROJECT" --branch "$BRANCH" \
   --commit-hash "$COMMIT" --commit-message "private test release ${COMMIT:0:7}" --commit-dirty=false
 restore_config
