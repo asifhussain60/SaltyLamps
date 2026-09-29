@@ -53,14 +53,13 @@ def sql_for(updates):
         '-- PRIVATE STAGING ONLY. Do not apply to production or the retired account.',
         '-- Each row changes only if its current price still equals the original demo seed.',
         '-- Compare the live database and take an owner-account backup before applying.',
-        'BEGIN TRANSACTION;',
+        '-- No BEGIN/COMMIT: D1 rejects them, and it applies an imported file all-or-nothing.',
     ]
     for product_id, label, old, new in updates:
         lines.append(
             f'UPDATE skus SET price_pence={new} WHERE product_id={quoted(product_id)} '
             f'AND variant_label={quoted(label)} AND price_pence={old};'
         )
-    lines.append('COMMIT;')
     return '\n'.join(lines) + '\n'
 
 

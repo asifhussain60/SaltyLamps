@@ -21,6 +21,8 @@ class StagingPriceCorrectionTests(unittest.TestCase):
         self.assertEqual(sql.count('UPDATE skus SET'), len(updates))
         self.assertIn('AND price_pence=280;', sql)
         self.assertIn('PRIVATE STAGING ONLY', sql)
+        statements = [line for line in sql.splitlines() if not line.startswith('--')]
+        self.assertTrue(all(line.startswith('UPDATE skus SET') for line in statements), 'D1 rejects BEGIN/COMMIT in an uploaded file')
 
     def test_guarded_sql_preserves_an_intervening_owner_price(self):
         planner_spec = importlib.util.spec_from_file_location('planner', ROOT / 'scripts/plan-production-migrations.py')
