@@ -122,6 +122,54 @@ outside this workbook. Owner-entered data is not a full export: it covers what
 the owner remembers to list, so the hidden-products tab needs the owner's
 confirmation that it is complete.
 
+## Production import file: tooling ready, real file not yet produced
+
+`scripts/prepare-production-import.py` turns a rehearsal database into a
+production import file and a manifest. It is offline and never applies anything:
+the manifest carries `authorizedToApply: false` and the open gates.
+
+**The real file has not been made.** It needs the owner-confirmed public capture,
+which is on the owner's Mac and unreachable from this container. On that Mac,
+from `salty-lamps-site/`, using the existing verified capture (or a fresh one from
+`scripts/capture-public-preview.py`):
+
+    python3 scripts/rehearse-public-catalogue.py --capture <capture folder> --output <new rehearsal folder>
+    python3 scripts/prepare-production-import.py --rehearsal <that rehearsal folder> \
+        --output <new folder outside the repository> --verify-local-d1
+
+The output folder holds `production-import.sql` (mode 600) and `manifest.json`.
+
+It refuses, rather than warns, on: orders, checkout or email records, postcodes,
+Wix or test-shop tables, sandbox shipping, email switched on, a wrong or incomplete
+migration ledger, any reference to the retired account or its database, a statement
+over D1's 100 KB limit, or a `wrangler.prod.toml` that no longer pins the owner
+account and its production database. It then restores the file into an empty
+database and compares every table row for row, checks the autoincrement counters
+survive (so products created later get ids above the preview's 78 to 156), and with
+`--verify-local-d1` executes it in a throwaway local D1 and matches all table counts.
+
+Verified here only against a **stand-in capture built from the committed snapshot**
+(no reviews, not the public site): 34 products, 76 options, 10 categories, 77 image
+rows, 740 statements, largest 1,216 bytes; restored identically; accepted by local
+D1 with all 39 tables matching. That output is not a production file and was not
+kept. Four new unit tests cover it, including that every refusal fixture provably
+changes data. One bug found on the way: D1 rejects a compound SELECT over a handful
+of terms, so verification now counts tables in batches.
+
+What the manifest will still list as open, and this file cannot fix:
+- every packed weight is unknown, so applying it makes all options missing-postage;
+- two gallery rows point at `/api/images/` paths whose bytes are not in the file;
+- review rows that are not displayed come from the replacement's own migrations and
+  cannot be checked against the preview; only the displayed ones can;
+- settings are the replacement shop's migration defaults (email off), not the
+  owner's; stock, hidden products, owner review, recovery point, R2 and credentials.
+
+Not authorised and not run: applying it. When every gate is closed and the owner
+approves, the order is a recovery point (D1 export and Time Travel bookmark), a
+check that the production database is empty, the file executed with the owner-account
+production config, a read-back against `manifest.json`, the two gallery images placed
+in owner storage, and only then the workbook importers.
+
 ## Still required before any production write
 
 1. The owner's completed workbook (route chosen above), imported into the private
