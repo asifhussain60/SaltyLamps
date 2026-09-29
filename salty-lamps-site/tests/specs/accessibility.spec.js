@@ -9,7 +9,7 @@ for (const route of routes) {
   test(`accessibility and layout: ${route}`, async ({ page }, testInfo) => {
     await page.setViewportSize(testInfo.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 1000 })
     await page.goto(route)
-    await expect(page.locator('h1').first()).toBeVisible()
+    await expect(page.locator('h1:visible').first()).toBeVisible()
     if (route.includes('product-page')) await expect(page.locator('.product-buy-panel')).toBeVisible()
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
     const findings = results.violations.map(v => ({ id: v.id, impact: v.impact, description: v.description, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) }))

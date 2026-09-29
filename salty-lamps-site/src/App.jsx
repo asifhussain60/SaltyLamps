@@ -8,6 +8,7 @@ import CartDelivery from './components/CartDelivery.jsx'
 import CartOption from './components/CartOption.jsx'
 import CheckoutAddress from './components/CheckoutAddress.jsx'
 import PostcodeTypeahead from './components/PostcodeTypeahead.jsx'
+import { formatUkPostcode, isUkPostcode, normaliseUkPostcode } from '../functions/lib/uk-postcode.mjs'
 import EmbeddedPayment from './components/EmbeddedPayment.jsx'
 import { PENDING_CHECKOUT_KEY, reconcilePurchasedCart, changeCartOption } from './content/cart-session.mjs'
 import { MAX_CART_QUANTITY } from '../functions/lib/cart.mjs'
@@ -598,8 +599,14 @@ export default function App() {
   const [cart, setCart] = useState(readStoredCart)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const checkoutAttempt = useRef(undefined)
-  const [deliveryPostcode, setDeliveryPostcode] = useState('')
-  const [checkoutAddress, setCheckoutAddress] = useState({ email: '', name: '', line1: '', line2: '', city: '', postcode: '' })
+  const [deliveryPostcode, setDeliveryPostcode] = useState(() => {
+    try { return formatUkPostcode(window.sessionStorage.getItem('salty-lamps-delivery-postcode') || '') } catch { return '' }
+  })
+  const [checkoutAddress, setCheckoutAddress] = useState(() => {
+    let postcode = ''
+    try { postcode = formatUkPostcode(window.sessionStorage.getItem('salty-lamps-delivery-postcode') || '') } catch { /* Session storage may be unavailable. */ }
+    return { email: '', name: '', line1: '', line2: '', city: '', postcode }
+  })
   const [paymentSession, setPaymentSession] = useState(() => {
     try { return JSON.parse(window.sessionStorage.getItem(PENDING_CHECKOUT_KEY) || 'null') } catch { return null }
   })
@@ -838,7 +845,10 @@ export default function App() {
   // and the grid can never disagree about how many products there are.
   const productGroups = useMemo(() => groupProducts(products), [products])
   const promotedCollections = catalog.status === 'ready'
-    ? collections.filter(path => productGroups.some(product => productMatchesPath(product, path)) || path.trade?.heading)
+    ? collections.filter(path => {
+        const hasProduct = productGroups.some(product => productMatchesPath(product, path))
+        return hasProduct || (path.slug !== 'saltwood-frames' && path.trade?.heading)
+      })
     : collections.filter(path => path.slug !== 'saltwood-frames')
   const countLabel = value => (catalog.status === 'loading' ? '…' : value)
 
@@ -1193,6 +1203,11 @@ export default function App() {
 
   const handleCheckout = async () => {
     if (checkoutLoading || cart.some(item => invalidQuantities[item.key])) return
+    if (!isUkPostcode(deliveryPostcode) || normaliseUkPostcode(checkoutAddress.postcode) !== normaliseUkPostcode(deliveryPostcode)) {
+      setNotice('Review your delivery postcode before payment.')
+      document.getElementById('change-delivery-postcode')?.focus()
+      return
+    }
     for (const field of document.querySelectorAll('.checkout-address input[required]')) {
       if (!field.reportValidity()) { field.focus(); return }
     }
@@ -2239,12 +2254,17 @@ export default function App() {
     window.requestAnimationFrame(() => document.getElementById('order-review-title')?.focus())
   }
   const openAddressStep = () => {
-    if (!deliveryPostcode.trim()) {
-      setNotice('Enter your delivery postcode before continuing.')
+    if (!isUkPostcode(deliveryPostcode)) {
+      setNotice('Enter a complete UK delivery postcode before continuing.')
       document.getElementById('delivery-postcode')?.focus()
       return
     }
-    setCheckoutAddress(value => ({ ...value, postcode: deliveryPostcode.trim().toUpperCase() }))
+    const postcode = formatUkPostcode(deliveryPostcode)
+    setDeliveryPostcode(postcode)
+    try { window.sessionStorage.setItem('salty-lamps-delivery-postcode', postcode) } catch { /* In-memory checkout remains available. */ }
+    setCheckoutAddress(value => normaliseUkPostcode(value.postcode) === normaliseUkPostcode(postcode)
+      ? { ...value, postcode }
+      : { ...value, postcode, line1: '', line2: '', city: '' })
     setNotice('')
     window.history.pushState({}, '', '/checkout/address')
     window.dispatchEvent(new PopStateEvent('popstate'))
@@ -2296,11 +2316,15 @@ export default function App() {
     <section className="checkout-review checkout-address-page">
       <p className="eyebrow">Checkout · Step 2 of 3</p>
       <h1 id="delivery-address-title" tabIndex={-1}>Delivery address</h1>
-      <p>Your postcode is ready. Complete the UK address below; it will be filled in on the secure payment page.</p>
+      <p>Your chosen postcode stays with this address. Enter the house or flat and street details below.</p>
       <div className="checkout-order-summary">
-        <CheckoutAddress value={checkoutAddress} onChange={setCheckoutAddress} onPostcodeChange={setDeliveryPostcode} disabled={checkoutLoading} />
+        {isUkPostcode(deliveryPostcode)
+          ? <CheckoutAddress value={checkoutAddress} onChange={setCheckoutAddress} onChangePostcode={openOrderReview} disabled={checkoutLoading} />
+          : <p>Choose a UK delivery postcode on your order review before entering an address.</p>}
         {notice && <p className="notice" role="status">{notice}</p>}
-        <button type="button" className="button primary" onClick={handleCheckout} disabled={checkoutLoading || !cart.length}>{checkoutLoading ? 'Opening secure payment…' : 'Continue to payment'}</button>
+        {isUkPostcode(deliveryPostcode)
+          ? <button type="button" className="button primary" onClick={handleCheckout} disabled={checkoutLoading || !cart.length}>{checkoutLoading ? 'Opening secure payment…' : 'Continue to payment'}</button>
+          : <button type="button" className="button primary" onClick={openOrderReview}>Review your order</button>}
         <small>Review your address on the payment page before placing the order.</small>
       </div>
     </section>
@@ -2656,7 +2680,7 @@ export default function App() {
           <Link className="footer-link-accent" href="/return-refund-policy">Returns and Exchanges</Link>
           <Link href="/process">Manufacturing Process</Link>
         </nav>
-        <small className="postcode-attribution">Postcode data: Contains OS data © Crown copyright and database right 2026. Contains Royal Mail data © Royal Mail copyright and database right 2026. Source: Office for National Statistics licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</small>
+        <small className="postcode-attribution">Postcode suggestions: <a href="https://postcodes.io/">Postcodes.io</a>. Contains OS data © Crown copyright and database right 2026. Contains Royal Mail data © Royal Mail copyright and database right 2026. Source: Office for National Statistics licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</small>
       </footer>
 
       {route !== '/refund-request' && <ChatModule hideTrigger={route.startsWith('/checkout')} onSubmit={handleChatSubmit} message={chatMessage} content={content} busy={formStates.chat === 'sending'} error={formStates.chat === 'error'} />}

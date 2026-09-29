@@ -17,6 +17,13 @@
     />
   </head>
   <body>
+    <section id="startup-status" aria-live="polite" style="max-width:36rem;margin:4rem auto;padding:1.5rem;font:16px/1.5 system-ui,sans-serif;color:#252525;background:#fff8ef;border:1px solid #d8c8b7;border-radius:12px">
+      <h1 style="font-size:1.5rem">Salty Lamps</h1>
+      <p id="startup-message">Loading your page…</p>
+      <button id="startup-retry" type="button" hidden style="font:inherit;padding:12px 20px">Reload page</button>
+      <noscript><p>Enable JavaScript in your browser to use the shop and administrator pages.</p></noscript>
+    </section>
+    <script src="/startup.js"></script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

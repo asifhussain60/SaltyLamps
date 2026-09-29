@@ -1,0 +1,87 @@
+import { test, expect } from '@playwright/test'
+
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/checkout/delivery', route => route.fulfill({ json: { status: 'ready', options: [{ service: 'Test delivery', pricePence: 0 }] } }))
+})
+
+async function addressPage(page) {
+  await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
+  await page.getByRole('button', { name: 'Add to cart', exact: true }).click()
+  await page.getByRole('button', { name: 'Checkout', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Delivery postcode' }).fill('ST4 3NP')
+  await page.getByRole('button', { name: 'Continue to address', exact: true }).click()
+}
+
+test('manual address stays bound to the reviewed postcode', async ({ page }) => {
+  await addressPage(page)
+  await expect(page.getByLabel('Delivery postcode')).toHaveValue('ST4 3NP')
+  await expect(page.getByLabel('Delivery postcode')).toHaveAttribute('readonly', '')
+  await expect(page.getByRole('button', { name: 'Find my address' })).toHaveCount(0)
+  await page.getByLabel('Address line 1').fill('Flat 2, 10 Test Street')
+  await page.getByLabel('Town or city').fill('Stoke-on-Trent')
+  await page.getByRole('button', { name: 'Change postcode' }).click()
+  await expect(page).toHaveURL(/\/checkout$/)
+  await page.getByRole('combobox', { name: 'Delivery postcode' }).fill('SW1A 1AA')
+  await page.getByRole('button', { name: 'Continue to address', exact: true }).click()
+  await expect(page.getByLabel('Delivery postcode')).toHaveValue('SW1A 1AA')
+  await expect(page.getByLabel('Address line 1')).toHaveValue('')
+})
+
+test('unmatched delivery is explained before the address page', async ({ page }) => {
+  await page.route('**/api/checkout/delivery', route => route.fulfill({ json: { status: 'needs_review', options: [] } }))
+  await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
+  await page.getByRole('button', { name: 'Add to cart', exact: true }).click()
+  await page.getByRole('button', { name: 'Checkout', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Delivery postcode' }).fill('ST4 3NP')
+  await expect(page.getByText('Delivery is not available for this basket and postcode. Check your postcode or contact us for help before continuing.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Continue to address', exact: true })).toBeDisabled()
+})
+
+test('postcode fields accept UK input and stop incomplete codes before payment', async ({ page }) => {
+  await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
+  await page.getByRole('button', { name: 'Add to cart', exact: true }).click()
+  await page.getByRole('button', { name: 'Checkout', exact: true }).click()
+  const reviewPostcode = page.getByRole('combobox', { name: 'Delivery postcode' })
+  const continueAddress = page.getByRole('button', { name: 'Continue to address', exact: true })
+  await reviewPostcode.fill('st4')
+  await expect(reviewPostcode).toHaveValue('ST4')
+  await expect(reviewPostcode).toHaveAttribute('aria-invalid', 'true')
+  await expect(page.getByText('Enter a complete UK postcode to check delivery.')).toBeVisible()
+  await expect(continueAddress).toBeDisabled()
+  await reviewPostcode.fill('90210')
+  await expect(reviewPostcode).toHaveValue('')
+  await continueAddress.click()
+  await expect(page.getByRole('region', { name: 'Order summary' }).getByText('Enter a complete UK delivery postcode before continuing.')).toBeVisible()
+  await expect(page).toHaveURL(/\/checkout$/)
+  await reviewPostcode.fill('st4 3np')
+  await expect(reviewPostcode).toHaveAttribute('aria-invalid', 'false')
+  await continueAddress.click()
+  const addressPostcode = page.getByLabel('Delivery postcode')
+  await expect(addressPostcode).toHaveValue('ST4 3NP')
+  await expect(addressPostcode).toHaveAttribute('readonly', '')
+  await page.getByLabel('Email address').fill('buyer@example.com')
+  await page.getByLabel('Full name').fill('Example Buyer')
+  await page.getByLabel('Address line 1').fill('10 Test Street')
+  await page.getByLabel('Town or city').fill('Stoke-on-Trent')
+  await page.reload()
+  await expect(page).toHaveURL(/\/checkout\/address$/)
+  await expect(page.getByLabel('Delivery postcode')).toHaveValue('ST4 3NP')
+})
+
+for (const path of ['/shop', '/checkout/address']) test(`a blocked app script shows reload recovery on ${path}`, async ({ page }) => {
+  await page.route('**/assets/index-*.js', route => route.abort())
+  await page.goto(path)
+  await expect(page.getByRole('button', { name: 'Reload page' })).toBeVisible({ timeout: 18000 })
+  await expect(page.getByText(/could not finish loading/)).toBeVisible()
+})
+
+test('small-phone header preserves the shop name without broken words', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 })
+  await page.goto('/shop')
+  await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeVisible()
+  const brand = await page.locator('.brand span').boundingBox()
+  expect(brand.height).toBeLessThan(32)
+  expect(brand.x + brand.width).toBeLessThan(320)
+  await expect(page.locator('#startup-status')).toBeHidden()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+})

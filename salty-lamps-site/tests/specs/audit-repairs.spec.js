@@ -91,7 +91,7 @@ test('a committed product save with a lost response is recovered without creatin
 test('checkout retries retain the same attempt and changed addresses explicitly replace it',async({page,request})=>{
  const products=(await(await request.get('/api/products')).json()).products
  const product=products.find(p=>p.stock)
- await page.addInitScript(skuId=>sessionStorage.setItem('salty-lamps-cart',JSON.stringify([{skuId,qty:1}])),product.skuId)
+ await page.addInitScript(skuId=>{sessionStorage.setItem('salty-lamps-cart',JSON.stringify([{skuId,qty:1}]));sessionStorage.setItem('salty-lamps-delivery-postcode','SW1A 2AA')},product.skuId)
  const payloads=[]
  await page.route('**/api/checkout',async route=>{
   payloads.push(route.request().postDataJSON())
@@ -103,7 +103,7 @@ test('checkout retries retain the same attempt and changed addresses explicitly 
  await page.getByLabel('Full name').fill('Example Buyer')
  await page.getByLabel('Address line 1').fill('10 High Street')
  await page.getByLabel('Town or city').fill('London')
- await page.getByLabel('Postcode',{exact:true}).fill('SW1A 2AA')
+ await expect(page.getByLabel('Delivery postcode')).toHaveValue('SW1A 2AA')
  const pay=page.getByRole('button',{name:'Continue to payment',exact:true})
  await pay.click();await expect(page.getByRole('main').locator('.notice[role="status"]')).toContainText('Your basket is saved')
  await pay.click();await expect(page.getByRole('main').locator('.notice[role="status"]')).toContainText('Fixture unavailable')

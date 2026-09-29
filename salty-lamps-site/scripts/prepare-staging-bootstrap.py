@@ -20,7 +20,7 @@ def build():
     db = sqlite3.connect(':memory:')
     planner.rehearse(db, seed=True)
     # Deliberately synthetic shipping: it allows a provider-backed checkout
-    # rehearsal only for the two sample postcodes, never a real delivery quote.
+    # rehearsal across UK postcodes, never a real delivery quote.
     db.executemany(
         """INSERT INTO sku_weights(sku_id, packed_weight_g, postal_group, weight_public)
            VALUES(?, 1000, 'sandbox', 0)
@@ -33,7 +33,7 @@ def build():
         'group': 'sandbox',
         'service': 'Sandbox test delivery (no fulfilment)',
         'country': 'GB',
-        'postcodes': 'SW1A',
+        'postcodes': '',
         'min_g': 0,
         'max_g': 1000000,
         'price_pence': 0,

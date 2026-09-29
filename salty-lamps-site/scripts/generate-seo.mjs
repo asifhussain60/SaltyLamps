@@ -406,6 +406,7 @@ function flatRouteHtmlPath(routePath) {
 const baseHtml = fs
   .readFileSync(path.join(distDir, 'index.html'), 'utf8')
   .replaceAll('src="./assets/', 'src="/assets/')
+  .replaceAll('src="./startup.js"', 'src="/startup.js"')
   .replaceAll('href="./assets/', 'href="/assets/')
 
 for (const route of routes) {

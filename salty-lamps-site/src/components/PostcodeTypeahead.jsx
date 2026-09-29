@@ -1,6 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react'
-
-const formatPostcodeInput = value => String(value || '').toUpperCase().replace(/\s+/g, ' ').trimStart()
+import { isUkPostcode, sanitiseUkPostcodeInput } from '../../functions/lib/uk-postcode.mjs'
 
 export default function PostcodeTypeahead({ value, onChange, disabled = false, inputId = 'delivery-postcode', label = 'Delivery postcode', helpText = 'Choose a postcode suggestion or enter it manually.' }) {
   const id = useId()
@@ -9,11 +8,12 @@ export default function PostcodeTypeahead({ value, onChange, disabled = false, i
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const [status, setStatus] = useState('')
-  const selectedRef = useRef(formatPostcodeInput(value).trim())
-  const query = formatPostcodeInput(value).trim()
+  const selectedRef = useRef(sanitiseUkPostcodeInput(value).trim())
+  const query = sanitiseUkPostcodeInput(value).trim()
+  const invalid = !!query && !isUkPostcode(query)
 
   useEffect(() => {
-    if (disabled || query === selectedRef.current || query.replace(/\s/g, '').length < 2) {
+    if (disabled || query === selectedRef.current || !/^[A-Z]/.test(query)) {
       setSuggestions([])
       setOpen(false)
       setStatus('')
@@ -84,15 +84,17 @@ export default function PostcodeTypeahead({ value, onChange, disabled = false, i
         role="combobox"
         autoComplete="off"
         inputMode="text"
-        maxLength={10}
+        maxLength={16}
         placeholder="Start typing your postcode"
         value={value}
         disabled={disabled}
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls={`${id}-listbox`}
+        aria-invalid={invalid}
+        aria-describedby={`${id}-help${invalid ? ` ${id}-error` : ''}`}
         aria-activedescendant={active >= 0 ? `${id}-option-${active}` : undefined}
-        onChange={event => { selectedRef.current = ''; onChange(formatPostcodeInput(event.target.value)) }}
+        onChange={event => { selectedRef.current = ''; onChange(sanitiseUkPostcodeInput(event.target.value)) }}
         onFocus={() => setOpen(suggestions.length > 0)}
         onBlur={() => window.setTimeout(() => setOpen(false), 120)}
         onKeyDown={handleKeyDown}
@@ -114,7 +116,8 @@ export default function PostcodeTypeahead({ value, onChange, disabled = false, i
           ))}
         </ul>
       )}
-      <small>{helpText}</small>
+      <small id={`${id}-help`}>{helpText}</small>
+      {invalid && <small id={`${id}-error`} className="postcode-typeahead-error">Enter a complete UK postcode, for example ST4 3NP.</small>}
       <span className="sr-only" role="status">{status}</span>
     </div>
   )

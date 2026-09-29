@@ -87,7 +87,7 @@ test('order review passes the changed option and quantity into secure checkout',
  expect(payload.address).toMatchObject({email:'buyer@example.com',line1:'10 High Street',postcode:'ST4 3NP'})
 })
 
-test('postcode carries into the open UK address fields and payment payload',async({page,request})=>{
+test('reviewed postcode stays fixed on the UK address and payment payload',async({page,request})=>{
  const cart=await setup(page,request,[{skuId:129,qty:2}],r=>{
   const body=r.request().postDataJSON()
   const pricePence=body.postcode==='ST4 3NP'?450:799
@@ -100,9 +100,9 @@ test('postcode carries into the open UK address fields and payment payload',asyn
  let payload
  await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{clientSecret:'cs_test_secret_fixture',publishableKey:'pk_test_fixture',sessionId:'cs_test_postcode'}})})
  await enterAddress(page)
- await expect(main.getByLabel('Postcode',{exact:true})).toHaveValue('ST4 3NP')
+ await expect(main.getByLabel('Delivery postcode')).toHaveValue('ST4 3NP')
  await expect(main.getByLabel('Country')).toHaveValue('United Kingdom')
- await expect(main.getByLabel('Postcode',{exact:true})).toHaveAttribute('autocomplete','off')
+ await expect(main.getByLabel('Delivery postcode')).toHaveAttribute('readonly','')
  await expect(main.getByLabel('Address line 1')).toHaveAttribute('autocomplete','off')
  await expect(main.getByRole('heading',{name:'Email',exact:true})).toHaveCSS('font-size',await main.getByRole('heading',{name:'Shipping address'}).evaluate(element=>getComputedStyle(element).fontSize))
  const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()
@@ -115,7 +115,7 @@ test('postcode carries into the open UK address fields and payment payload',asyn
  expect(payload.address.city).toBe('Stoke-on-Trent')
 })
 
-test('postcode suggestions work on both checkout pages and stay in sync',async({page,request})=>{
+test('postcode suggestions on order review stay fixed through address entry',async({page,request})=>{
  const cart=await setup(page,request)
  if(!process.env.LIVE_POSTCODE) await page.route('**/api/postcode-suggestions?*',route=>{
   const query=new URL(route.request().url()).searchParams.get('query').replace(/\s/g,'').toUpperCase()
@@ -131,14 +131,13 @@ test('postcode suggestions work on both checkout pages and stay in sync',async({
  await expect(reviewPostcode).toHaveAttribute('autocomplete','off')
  await main.getByRole('button',{name:'Continue to address',exact:true}).click()
  await expect(page).toHaveURL(/\/checkout\/address$/)
- const addressPostcode=main.getByRole('combobox',{name:'Postcode',exact:true})
+ const addressPostcode=main.getByLabel('Delivery postcode')
  await expect(addressPostcode).toHaveValue('SW1A 2AA')
- await addressPostcode.fill('SW1A 1')
- await main.getByRole('option',{name:'SW1A 1AA'}).click()
- await expect(addressPostcode).toHaveValue('SW1A 1AA')
- await expect(addressPostcode).toHaveAttribute('autocomplete','off')
+ await expect(addressPostcode).toHaveAttribute('readonly','')
  await expect(main.getByLabel('Address line 1')).toHaveAttribute('autocomplete','off')
- await page.goBack()
+ await main.getByRole('button',{name:'Change postcode'}).click()
+ await reviewPostcode.fill('SW1A 1')
+ await main.getByRole('option',{name:'SW1A 1AA'}).click()
  await expect(reviewPostcode).toHaveValue('SW1A 1AA')
  await main.getByRole('button',{name:'Continue to address',exact:true}).click()
  await expect(addressPostcode).toHaveValue('SW1A 1AA')

@@ -93,5 +93,5 @@ test('a malformed payment response offers recovery rather than sending shoppers 
   await main.getByRole('button',{name:'Continue to payment',exact:true}).click()
   await expect(main.getByRole('status').filter({hasText:'could not open the payment page'})).toBeVisible()
   await expect(main.getByRole('button',{name:'Continue to payment',exact:true})).toBeEnabled()
-  await expect(main.getByLabel('Postcode',{exact:true})).toHaveValue('ST4 3NP')
+  await expect(main.getByLabel('Delivery postcode',{exact:true})).toHaveValue('ST4 3NP')
 })

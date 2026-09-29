@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import AppBoundary from './components/AppBoundary.jsx'
 import './styles/saltylamps.css'
 // admin.css is deliberately NOT imported here. It is 36 KB that no shopper needs,
 // and importing it globally made every storefront visit download the back office's
@@ -11,6 +12,6 @@ import './styles/saltylamps.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <AppBoundary><App /></AppBoundary>
   </React.StrictMode>
 )

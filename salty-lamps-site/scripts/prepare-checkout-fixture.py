@@ -29,6 +29,7 @@ def main():
 DEV_ADMIN_BYPASS=1
 MAIL_DRY_RUN=true
 STRIPE_TEST_ONLY=1
+POSTCODE_SUGGESTIONS_SOURCE=local
 SITE_URL=http://127.0.0.1:8789
 ''')
     (folder / 'wrangler.toml').write_text('''name = "salty-checkout-fixture"
