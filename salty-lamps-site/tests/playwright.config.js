@@ -64,7 +64,9 @@ export default defineConfig({
   // against it for the wrong reason.
   webServer: isLocal && !process.env.E2E_BASE_URL
     ? {
-        command: 'npx wrangler pages dev dist --port 8788 --d1 DB=salty-lamps-db --r2 IMAGES=salty-lamps-images',
+        // Read the local D1/R2 bindings from wrangler.toml. CLI overrides create
+        // a second empty D1 and make every catalogue test fail at server startup.
+        command: 'npx wrangler pages dev dist --port 8788',
         cwd: '..',
         url: 'http://127.0.0.1:8788/api/products',
         reuseExistingServer: true,

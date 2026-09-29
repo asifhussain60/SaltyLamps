@@ -1,9 +1,9 @@
 // Image uploads use durable request keys so a lost response cannot duplicate a gallery.
 import { json, apiError, auditStmt } from '../../../../lib/admin-helpers.mjs'
-import { readUploadedImage, putImageObject } from '../../../../lib/image-upload.mjs'
+import { readUploadedImage, putImageObject, hasImageStorage } from '../../../../lib/image-upload.mjs'
 
 export async function onRequestPost({ params, request, env, data }) {
-  if (!env.IMAGES) return apiError('Image storage is not configured.',503,{code:'no_storage'})
+  if (!hasImageStorage(env)) return apiError('Image storage is not configured.',503,{code:'no_storage'})
   const requestKey=request.headers.get('Idempotency-Key') || crypto.randomUUID()
   if(!/^[a-zA-Z0-9_-]{16,100}$/.test(requestKey)) return apiError('Invalid image request identifier.',400)
   const [upload,error]=await readUploadedImage(request)

@@ -7,6 +7,7 @@ const endpoint = async () => (await import('../functions/api/admin/products/save
 function fixture() {
   const sql = new DatabaseSync(':memory:')
   sql.exec(fs.readFileSync(new URL('../d1/schema.sql', import.meta.url), 'utf8'))
+  sql.exec(fs.readFileSync(new URL('../d1/staging/image-storage.sql', import.meta.url), 'utf8'))
   sql.exec(fs.readFileSync(new URL('../d1/migrations/015-admin-save-requests.sql', import.meta.url), 'utf8'))
   const wrap = (q, args = []) => ({ bind: (...a) => wrap(q, a), first: async () => sql.prepare(q).get(...args), all: async () => ({ results: sql.prepare(q).all(...args) }), run: async () => { const r = sql.prepare(q).run(...args); return { meta: { last_row_id: Number(r.lastInsertRowid) } } } })
   const db = { prepare: q => wrap(q), batch: async ss => { sql.exec('BEGIN'); try { const results = []; for (const s of ss) results.push(await s.run()); sql.exec('COMMIT'); return results } catch (e) { sql.exec('ROLLBACK'); throw e } } }
@@ -59,6 +60,100 @@ test('lost image upload response replay creates one gallery row and one object',
  const retry=await send();assert.equal(retry.status,200);assert.deepEqual(await retry.json(),value)
  assert.equal(sql.prepare('SELECT count(*) n FROM product_images').get().n,1)
  assert.equal(objects.size,1)
+})
+
+test('gallery reorder changes the cover, preserves option image links, and rejects stale or foreign orders', async () => {
+ const {sql,db}=fixture()
+ const a=await(await save(db,body())).json()
+ const b=await(await save(db,body())).json()
+ const insert=(product,index)=>{
+   sql.prepare('INSERT INTO product_images(product_id,key,path,sort_order) VALUES(?,?,?,?)').run(product,`key-${product}-${index}`,`/image-${product}-${index}`,index)
+   return sql.prepare('SELECT id FROM product_images WHERE product_id=? AND sort_order=?').get(product,index).id
+ }
+ const first=insert(a.id,0),second=insert(a.id,1),third=insert(a.id,2),foreign=insert(b.id,0)
+ sql.prepare('UPDATE products SET image=? WHERE id=?').run(`/image-${a.id}-0`,a.id)
+ const optionId=sql.prepare('SELECT id FROM skus WHERE product_id=?').get(a.id).id
+ sql.prepare('INSERT INTO sku_images(sku_id,image_id) VALUES(?,?)').run(optionId,second)
+ const {onRequestPut:reorder}=await import('../functions/api/admin/products/[id]/images/order.js')
+ const send=imageIds=>reorder({params:{id:a.id},env:{DB:db},data:{actorEmail:'qa@example.invalid'},request:new Request('http://localhost/api',{method:'PUT',body:JSON.stringify({imageIds})})})
+ for (const wrong of [[first,second,second],[first,second,foreign],[first,second],[first,second,third,foreign]]) {
+   assert.notEqual((await send(wrong)).status,200)
+   assert.equal(sql.prepare('SELECT image FROM products WHERE id=?').get(a.id).image,`/image-${a.id}-0`)
+ }
+ const order=[third,first,second]
+ assert.equal((await send(order)).status,200)
+ assert.equal((await send(order)).status,200)
+ assert.deepEqual(sql.prepare('SELECT id FROM product_images WHERE product_id=? ORDER BY sort_order,id').all(a.id).map(row=>row.id),order)
+ assert.equal(sql.prepare('SELECT image FROM products WHERE id=?').get(a.id).image,`/image-${a.id}-2`)
+ assert.equal(sql.prepare('SELECT image_id FROM sku_images WHERE sku_id=?').get(optionId).image_id,second)
+ sql.exec("CREATE TRIGGER reject_reorder BEFORE UPDATE ON products BEGIN SELECT RAISE(ABORT,'fixture failure'); END;")
+ assert.equal((await send([first,second,third])).status,500)
+ assert.deepEqual(sql.prepare('SELECT id FROM product_images WHERE product_id=? ORDER BY sort_order,id').all(a.id).map(row=>row.id),order)
+})
+
+test('sandbox image upload, retry, serving, replacement and deletion use only its test database',async()=>{
+ const {sql,db}=fixture();const {id}=await(await save(db,body())).json()
+ const env={DB:db,STAGING_IMAGE_STORAGE:'d1',STRIPE_TEST_ONLY:'1',MAIL_DRY_RUN:'true'}
+ const {onRequestPost:upload}=await import('../functions/api/admin/products/[id]/images.js')
+ const {onRequestPost:replace}=await import('../functions/api/admin/products/[id]/images/[imageId]/replace.js')
+ const {onRequestDelete:remove}=await import('../functions/api/admin/products/[id]/images/[imageId].js')
+ const {onRequestGet:getImage,onRequestHead:headImage}=await import('../functions/api/images/[[path]].js')
+ const bytes=new Uint8Array(600000).fill(21);bytes.set([137,80,78,71,13,10,26,10])
+ const form=content=>{const data=new FormData();data.set('image',new File([content],'image.png',{type:'image/png'}));return data}
+ const requestKey=crypto.randomUUID()
+ const send=()=>upload({params:{id},env,data:{actorEmail:'qa@example.invalid'},request:new Request('http://localhost/api',{method:'POST',headers:{'Idempotency-Key':requestKey},body:form(bytes)})})
+ const first=await send();assert.equal(first.status,201);const image=await first.json()
+ assert.deepEqual(await (await send()).json(),image)
+ assert.equal(sql.prepare('SELECT count(*) n FROM product_images').get().n,1)
+ assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,2)
+ // Text, not BLOB: the D1 binding would marshal a BLOB as one JS number per byte.
+ assert.deepEqual(sql.prepare('SELECT DISTINCT typeof(bytes) t FROM staging_image_chunks').all().map(row=>row.t),['text'])
+ const optionId=sql.prepare('SELECT id FROM skus WHERE product_id=?').get(id).id
+ sql.prepare('INSERT INTO sku_images(sku_id,image_id) VALUES(?,?)').run(optionId,image.id)
+ const path=image.path.slice('/api/images/'.length).split('/')
+ const context=method=>({params:{path},env,request:new Request('http://localhost'+image.path,{method})})
+ const head=await headImage(context('HEAD'));assert.equal(head.status,200)
+ assert.equal(head.headers.get('content-length'),String(bytes.length))
+ const served=await getImage(context('GET'));assert.equal(served.status,200)
+ assert.deepEqual(new Uint8Array(await served.arrayBuffer()),bytes)
+ assert.equal(head.headers.get('etag'),served.headers.get('etag'))
+ const next=new Uint8Array([137,80,78,71,13,10,26,10,1,2,3])
+ const swapped=await replace({params:{id,imageId:String(image.id)},env,data:{actorEmail:'qa@example.invalid'},request:new Request('http://localhost/api',{method:'POST',body:form(next)})})
+ assert.equal(swapped.status,200)
+ assert.equal((await getImage(context('GET'))).status,404)
+ const replacement=await swapped.json()
+ assert.equal(sql.prepare('SELECT image_id FROM sku_images WHERE sku_id=?').get(optionId).image_id,image.id)
+ const nextContext={params:{path:replacement.path.slice('/api/images/'.length).split('/')},env,request:new Request('http://localhost'+replacement.path)}
+ assert.deepEqual(new Uint8Array(await (await getImage(nextContext)).arrayBuffer()),next)
+ assert.equal((await remove({params:{id,imageId:String(image.id)},env,data:{actorEmail:'qa@example.invalid'}})).status,200)
+ assert.equal((await getImage(nextContext)).status,404)
+ assert.equal(sql.prepare('SELECT count(*) n FROM sku_images WHERE sku_id=?').get(optionId).n,0)
+ assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_objects').get().n,0)
+ assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,0)
+ const {putImageObject,deleteImageObject}=await import('../functions/lib/image-upload.mjs')
+ const pending={buffer:bytes.buffer,type:'image/png',ext:'png'}
+ const orphan=await putImageObject(env,id,pending,'retry-after-gallery-failure')
+ await putImageObject(env,id,pending,'retry-after-gallery-failure')
+ assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_objects').get().n,1)
+ assert.equal(sql.prepare('SELECT count(*) n FROM staging_image_chunks').get().n,2)
+ await deleteImageObject(env,orphan.key)
+})
+
+test('sandbox image storage still serves a chunk stored earlier as a BLOB',async()=>{
+ const {sql,db}=fixture()
+ const env={DB:db,STAGING_IMAGE_STORAGE:'d1',STRIPE_TEST_ONLY:'1',MAIL_DRY_RUN:'true'}
+ const bytes=new Uint8Array([137,80,78,71,13,10,26,10,7,7,7])
+ sql.prepare('INSERT INTO staging_image_objects(key,content_type,size,etag) VALUES(?,?,?,?)').run('products/p/legacy.png','image/png',bytes.length,'"legacy"')
+ sql.prepare('INSERT INTO staging_image_chunks(key,part,bytes) VALUES(?,?,?)').run('products/p/legacy.png',0,bytes)
+ const {getImageObject}=await import('../functions/lib/image-upload.mjs')
+ assert.deepEqual(new Uint8Array((await getImageObject(env,'products/p/legacy.png')).body),bytes)
+})
+
+test('sandbox image storage fails closed outside the protected test mode',async()=>{
+ const {db}=fixture()
+ const {onRequestPost:upload}=await import('../functions/api/admin/products/[id]/images.js')
+ const result=await upload({params:{id:'missing'},env:{DB:db,STAGING_IMAGE_STORAGE:'d1',STRIPE_TEST_ONLY:'0',MAIL_DRY_RUN:'true'},request:new Request('http://localhost/api',{method:'POST'}),data:{actorEmail:'qa@example.invalid'}})
+ assert.equal(result.status,503)
 })
 
 test('gallery deletion and replacement roll back with a failed cover update',async()=>{

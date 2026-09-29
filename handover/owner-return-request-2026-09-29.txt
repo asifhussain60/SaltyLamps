@@ -1,0 +1,17 @@
+Hi Asim,
+
+Thanks for confirming the preview has the right products and prices. We're keeping those exactly as they are.
+
+There are three things the preview can't show us, and I'd rather get them from you than guess. The attached spreadsheet (Salty-Lamps-Owner-Return-2026-09-29.xlsx) has two tabs for them. About 30 minutes; the first tab explains it.
+
+1) Public products: for each size you sell, how many you actually hold right now, and what the parcel weighs when it's packed and ready to post (box and padding included, in kilos, e.g. 1.5). Prices are shown for reference only and can't be changed on this sheet. If you're not sure of a line, leave it blank and it stays as it is.
+
+2) Hidden products: any product that's in your shop but that customers can't see (drafts, discontinued, seasonal, special offers). One row per size. The bath salt is filled in already with the three prices you approved for testing, so please check those and add its stock and weight.
+
+Two things this sheet can't carry, so please send them separately:
+  - photos for any hidden product (named after the product)
+  - your VAT and delivery answers (the tab from last time is still the place for those, if it's not done)
+
+Nothing gets published from this. I'll check it back with you before anything goes near the live site.
+
+Thanks,

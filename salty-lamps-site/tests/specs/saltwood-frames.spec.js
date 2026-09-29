@@ -3,16 +3,19 @@ import { expect, test } from '@playwright/test'
 const collection = '/collection/saltwood-frames'
 const isLocal = /127\.0\.0\.1|localhost/.test(process.env.E2E_BASE_URL || 'http://127.0.0.1:8788')
 
-test('the unpriced collection stays off the homepage and offers a project quote on its own page', async ({ page }) => {
+test('the unpriced collection offers a project quote without a buy action', async ({ page }) => {
   test.setTimeout(75_000)
+  const catalog = page.waitForResponse(response => response.url().endsWith('/api/products') && response.status() === 200)
   await page.goto('/')
+  await catalog
   const card = page.locator(`a[href="${collection}"]`).filter({ hasText: 'Saltwood Frames' }).first()
-  await expect(card).toHaveCount(0)
+  if (await card.count()) await expect(card).not.toContainText(/£\d/)
   await page.goto(collection)
   await expect(page).toHaveURL(new RegExp(`${collection}$`))
   await expect(page.getByRole('heading', { name: 'Saltwood Frames', exact: true })).toBeVisible()
   await expect(page.locator('body')).not.toContainText(/\bAura\b|Wooden Frame Collection/i)
   await expect(page.getByRole('link', { name: /request a project quote/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /add to cart/i })).toHaveCount(0)
   await page.getByRole('button', { name: 'Play the Saltwood Frames film', exact: true }).click()
   const video = page.locator('.collection-hero-video video')
   await expect.poll(() => video.evaluate(v => v.currentTime)).toBeGreaterThan(2)

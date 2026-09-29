@@ -160,3 +160,30 @@ test('an existing product image upload can recover a lost response without dupli
   expect(product.images).toHaveLength(1)
  }finally{await request.delete(`/api/admin/products/${id}`)}
 })
+
+test('product pictures reorder by arrows and drag, and the first remains the shop cover after reload',async({page,request})=>{
+ test.skip(!/127\.0\.0\.1|localhost/.test(process.env.E2E_BASE_URL || 'http://127.0.0.1:8788'),'Disposable local database only')
+ const created=await request.post('/api/admin/products',{data:{product:{name:`Gallery order ${crypto.randomUUID()}`},skus:[{sku:'GALLERY-ORDER',price:10,track_mode:'binary',in_stock:true}]}})
+ expect(created.ok()).toBe(true)
+ const {id}=await created.json()
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXcAAAAASUVORK5CYII=','base64')
+ try {
+  const photos=[]
+  for(let i=0;i<2;i++){
+   const uploaded=await request.post(`/api/admin/products/${id}/images`,{headers:{'Idempotency-Key':crypto.randomUUID()},multipart:{image:{name:`photo-${i}.png`,mimeType:'image/png',buffer:png}}})
+   expect(uploaded.status()).toBe(201)
+   photos.push(await uploaded.json())
+  }
+  await page.goto(`/admin/products/${id}`)
+  const tiles=page.locator('.admin-gallery-item')
+  await expect(tiles).toHaveCount(2)
+  await tiles.first().getByRole('button',{name:'Move image right'}).click()
+  await expect.poll(async()=>((await(await request.get('/api/admin/products')).json()).products.find(p=>p.id===id)).image).toBe(photos[1].path)
+  await page.reload()
+  await expect(tiles.first().locator('img')).toHaveAttribute('src',photos[1].path)
+  await tiles.nth(1).dragTo(tiles.first())
+  await expect.poll(async()=>((await(await request.get('/api/admin/products')).json()).products.find(p=>p.id===id)).image).toBe(photos[0].path)
+  await page.reload()
+  await expect(tiles.first().locator('img')).toHaveAttribute('src',photos[0].path)
+ }finally{await request.delete(`/api/admin/products/${id}`)}
+})
