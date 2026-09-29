@@ -45,6 +45,7 @@ USAGE
 
 import json
 import math
+import os
 import re
 import sys
 import urllib.error
@@ -58,6 +59,11 @@ API = "http://localhost:8788"
 # Cloudflare answers 403 to urllib's default "Python-urllib/3.x", so every request
 # has to name itself. Without this the deployed site simply refuses to talk.
 HEADERS = {"user-agent": "salty-lamps-workbook-importer/1.0"}
+# A deployed admin sits behind Cloudflare Access. An operator-supplied service token is
+# passed through when present in the environment; it is never printed or stored.
+if os.environ.get("CF_ACCESS_CLIENT_ID") and os.environ.get("CF_ACCESS_CLIENT_SECRET"):
+    HEADERS["CF-Access-Client-Id"] = os.environ["CF_ACCESS_CLIENT_ID"]
+    HEADERS["CF-Access-Client-Secret"] = os.environ["CF_ACCESS_CLIENT_SECRET"]
 
 
 def fetch(path):
@@ -125,6 +131,22 @@ def resolve_refs(target, ref_source):
             else:
                 resolved[s["id"]] = hit
     return resolved, problems
+
+
+def name_mismatches(sheet, by_ref):
+    """Refuse to attach a row to a differently named product.
+
+    A Ref is only meaningful in the database it came from. Given no snapshot, a Ref is
+    taken as this shop's own id, so a sheet built against another database would put
+    stock and weights on whatever option happens to hold that number. Comparing the
+    product name the sheet shows with the product the Ref resolves to catches that.
+    """
+    def norm(s):
+        return re.sub(r"\s+", " ", str(s or "")).strip().casefold()
+    return [f"row {row['row']}: Ref {ref} is \"{row['product']}\" in the sheet but "
+            f"\"{by_ref[ref][0]['name']}\" in the shop, so it was not matched."
+            for ref, row in sheet.items()
+            if ref in by_ref and norm(row['product']) != norm(by_ref[ref][0]['name'])]
 
 
 def read_product_rows(ws):
@@ -230,7 +252,8 @@ def main():
     if ref_source and not Path(ref_source).exists():
         sys.exit(f"No such snapshot: {ref_source}")
 
-    ws = load_workbook(path, data_only=False)["Products"]
+    book = load_workbook(path, data_only=False)
+    ws = book["Products"] if "Products" in book.sheetnames else book["Public products"]
 
     sheet, problems = read_product_rows(ws)
     if problems:
@@ -239,6 +262,7 @@ def main():
     live = fetch("/api/admin/products")["products"]
     by_ref, map_problems = resolve_refs(live, ref_source)
     problems.extend(map_problems)
+    problems.extend(name_mismatches(sheet, by_ref))
 
     price_changes, stock_changes, code_changes, hide, missing, blank = [], [], [], [], [], []
     size_changes, mode_switches = [], []

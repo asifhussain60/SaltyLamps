@@ -80,12 +80,53 @@ session could not check it.
   decision at the moment of action. It was not accepted and no charge was
   incurred.
 
+## Hidden products and stock: the workbook route (chosen 29 September)
+
+The owner-entered route was chosen for what the preview cannot show. Built and
+tested locally; **nothing has been sent to the owner and no answers exist yet.**
+
+- `handover/Salty-Lamps-Owner-Return-2026-09-29.xlsx`, built offline by
+  `scripts/build_owner_return_workbook.py` from the committed snapshot (76 options
+  with stable ids 78 to 156, matching the confirmed preview's identities). Tab 1
+  asks for actual stock and packed weight per option; prices are shown for
+  reference and no header exists that could change one. Tab 2 lists hidden
+  products, with the bath salt prefilled from the reviewed decisions (its
+  stock and weights are what is missing). A draft covering message is in
+  `handover/owner-return-request-2026-09-29.txt`.
+- `scripts/import_hidden_products.py` creates the Tab 2 products through the
+  admin save API. It reports first, writes only with `--apply`, creates but never
+  edits or deletes, skips anything already in the shop, blocks a code used by
+  another product, keeps a product hidden unless marked Yes (which needs a stock
+  count) and never invents stock. Its request id comes from the content, so a
+  lost response replays. It reads back what it wrote.
+- **Guard added to `import_owner_workbook.py`:** with no snapshot it trusted a Ref
+  as the target's own id, so a workbook built against another database would put
+  stock on whatever option held that number. It now refuses when the sheet's
+  product name differs from the row a Ref resolves to. It also reads the new tab
+  name and passes Cloudflare Access service-token headers from the environment.
+
+Verified on a fresh disposable local shop with a live admin API: the report, an
+apply, and an independent read of the admin and public APIs agreed on prices,
+stock, weights, visibility and categories; a rerun created nothing; the bath salt
+already in that shop was skipped, not duplicated; only the product marked Yes
+appeared on the public shop; a workbook row with a Ref belonging to another
+product was refused with exit 1 and left the option untouched (80 problems
+listed, because the workbook's ids also collide with that shop's new ids).
+Eight new unit tests cover parsing, validation and the guard.
+
+Limits. The Public products tab is only safe against a database that holds the
+preview's ids, which the rehearsal's database does and the current demo test
+shop does not; the guard will refuse there. Neither importer has been run against
+the deployed test shop. Settings (VAT, delivery) and hidden-product photos are
+outside this workbook. Owner-entered data is not a full export: it covers what
+the owner remembers to list, so the hidden-products tab needs the owner's
+confirmation that it is complete.
+
 ## Still required before any production write
 
-1. An authorised full source. Rules forbid the retired account, so this needs an
-   explicit owner decision on a new route, for example owner-entered hidden
-   products, weights, stock and settings in the private shop's admin using the
-   returned workbook path, followed by a fresh export from the owner account.
+1. The owner's completed workbook (route chosen above), imported into the private
+   shop and confirmed complete by the owner, then a fresh export from the owner
+   account. Settings and hidden-product photos still need separate answers.
 2. Publish this release to the private test shop with `deploy-staging.sh`, then
    run its Chrome checklist in the protected admin and shop.
 3. Recapture the public preview with `scripts/capture-public-preview.py`, rerun
