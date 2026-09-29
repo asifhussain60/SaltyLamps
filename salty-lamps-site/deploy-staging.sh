@@ -106,14 +106,18 @@ PY
 
 say "8/8 Publish to the private test project"
 confirm "Deploy commit ${COMMIT:0:7} to the Pages project $PROJECT on branch '$BRANCH'? The customer domain and production are not involved."
-# Pages rejects -c/--config; it only reads ./wrangler.toml. Put the pinned staging config
-# there for the length of the deploy and always remove it, so it can never be picked up later.
-[ ! -e wrangler.toml ] || die "wrangler.toml already exists here; refusing to overwrite it."
+# Pages rejects -c/--config; it only reads ./wrangler.toml. The tracked wrangler.toml is the
+# local-only placeholder, so set it aside, put the pinned staging config in its place for the
+# length of the deploy, and restore the original on every exit path (including failure).
+LOCAL_CFG="$WORK/wrangler.toml.local"
+[ ! -e "$LOCAL_CFG" ] || die "$LOCAL_CFG already exists."
+restore_config() { [ ! -e "$LOCAL_CFG" ] || mv -f "$LOCAL_CFG" wrangler.toml; }
+mv wrangler.toml "$LOCAL_CFG"
+trap restore_config EXIT
 cp "$CONFIG" wrangler.toml
-trap 'rm -f wrangler.toml' EXIT
 npx wrangler pages deploy dist --project-name "$PROJECT" --branch "$BRANCH" \
   --commit-hash "$COMMIT" --commit-message "private test release ${COMMIT:0:7}" --commit-dirty=false
-rm -f wrangler.toml
+restore_config
 
 say "Published. Still to verify by hand, in Chrome, signed in through Cloudflare Access"
 cat <<'EOF'
