@@ -32,7 +32,8 @@ def slugify(value):
 def read_capture(folder):
     manifest = json.loads((folder / 'manifest.json').read_text())
     sources = {}
-    for name in ('products', 'categories', 'content'):
+    names = ('products', 'categories', 'content') + (('reviews',) if 'reviews' in manifest['endpoints'] else ())
+    for name in names:
         data = (folder / (name + '.json')).read_bytes()
         expected = manifest['endpoints'][name]
         if sha(data) != expected['sha256'] or len(data) != expected['bytes']:
@@ -170,6 +171,20 @@ def verify_public_catalogue(db, cards, categories):
         raise ValueError('Category aliases do not match source')
 
 
+def verify_published_reviews(db, source):
+    unsafe = re.compile(r'health benefit|air quality|purif|detox|asthma|blood circulation|blood pressure|negative ions?|pneumonia', re.I)
+    rows = db.execute('SELECT id,name,date_text,quote,proof,rating,featured,display FROM reviews '
+                      'ORDER BY featured DESC,featured_order,name').fetchall()
+    public = [{'id': r[0], 'name': r[1], 'date': r[2], 'quote': r[3], 'proof': r[4],
+               'rating': r[5], 'featured': bool(r[6])}
+              for r in rows if r[7] == 1 and not unsafe.search(r[3] or '')]
+    # The public query sorts by name without a tie-break. Distinct records with
+    # the same name can swap order across independent SQLite databases.
+    if len(public) != len(source['reviews']) or {r['id']: r for r in public} != {r['id']: r for r in source['reviews']}:
+        raise ValueError('Published review corpus differs from the public source')
+    return len(public)
+
+
 def rehearse(capture, output):
     if output.exists():
         raise ValueError('Output exists; refusing to overwrite a prior review')
@@ -189,6 +204,9 @@ def rehearse(capture, output):
         planner.rehearse(db, seed=True, reviewed_media=True, root=temp)
     reconcile_public(db, groups, source['categories'])
     verify_public_catalogue(db, cards, source['categories'])
+    reviews_verified = verify_published_reviews(db, source['reviews']) if 'reviews' in source else None
+    if reviews_verified is not None and reviews_verified != manifest['counts']['publishedReviews']:
+        raise ValueError('Published review count changed')
     if list(db.execute('PRAGMA foreign_key_check')):
         raise ValueError('Foreign-key failure after source reconciliation')
     ledger = dict(db.execute('SELECT name,status FROM production_migration_ledger'))
@@ -210,6 +228,7 @@ def rehearse(capture, output):
         'mediaFilesVerified': len({path for card in cards for path in [card['image'], *card['images']] if path}),
         'migrationsApplied': len(ledger), 'foreignKeysValid': True,
         'publicCatalogFieldsVerified': len(cards),
+        'publishedReviewsVerified': reviews_verified,
         'packedWeightsMissing': unknown_weights,
         'importReady': False,
         'openReview': ['Packed postage weights and current opening stock', 'Hidden products and non-public operational fields',
