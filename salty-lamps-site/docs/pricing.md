@@ -1,6 +1,6 @@
 # Salty Lamps — Pricing
 
-Reviewed 27 September 2026. This guide and the admin Pricing page share the same cost data.
+Reviewed 30 September 2026. This guide and the admin Pricing page share the same cost data.
 
 Estimated incremental Cloudflare cost: $0/month while Pages, Functions, D1, Zero Trust and R2 Standard stay within their free allowances. This is a conditional estimate, not a fixed bill or spending cap. The EU-jurisdiction database is empty. The owner dashboard now shows Zero Trust Free active; its $0/month checkout required agreement to terms and authorization for charges beyond included limits. The administrator application and exact two-user member policy are configured and read back, but production deployment and revoked-user acceptance remain pending. R2 separately requires a recurring, usage-billed subscription before a bucket can be created; the owner directed deferral until go-live and no testing charges. Payment processing, domain renewal, existing Wix and Zoho service, and customer email delivery are separate costs. No paid Cloudflare upgrade is selected.
 

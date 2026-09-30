@@ -30,6 +30,8 @@ not make the preview a customer launch destination. The public APIs omit hidden
 and operational records; review those separately. The transfer map is in
 `salty-lamps-site/docs/preview-to-owner-production-map-2026-09-29.md`.
 
+On 30 September 2026, Asif decided that the private test shop is the shop that goes live. The Cloudflare Pages project `salty-lamps-staging` and its database `salty-lamps-staging-db` (`981a6d7b-8eb7-4057-8023-d2a4894c21e4`, owner account) will be promoted in place and `www.saltylamps.co.uk` attached to that project at launch, after the sandbox clean-up and configuration switch in migration steps 3 and 11. The owner's administrator entries in that database are real data. The empty `salty-lamps-db` (`4637fb18-2b0a-498d-b6c0-a90d6e50d3f4`) and the `salty-lamps` holding project stay unchanged and in reserve. This decision does not authorize any live payment, launch, import or cancellation; each remains a separate approval.
+
 ## Completed membership and invitation audit
 
 The later 26 September follow-up inspected the unfiltered **All members** page in the explicitly identified owner account. It displayed exactly the two approved identities above, both **Active**, with no **Invite Pending** entries or additional pages. [Cloudflare's member-management guidance](https://developers.cloudflare.com/fundamentals/manage-members/manage/) places pending invitations in this same list, rather than requiring a separate invitation page. This closes the pending-invitation audit for the observed account state. The retired identity is absent; no removal or other membership change was needed. This does not establish shop administrator Access protection, provider permissions or untested write scopes.
