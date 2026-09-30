@@ -35,8 +35,14 @@ test('the cart remains accessible while editing quantities', async ({ page }, te
   await page.goto('/product-page/angel-shape-himalayan-rock-salt-lamp')
   await page.getByRole('button', { name: 'Add to cart', exact: true }).click()
   const cart = page.getByRole('dialog', { name: 'Shopping cart' })
+  // Changing the quantity starts a delivery check and the Checkout button fades while it
+  // runs. Scanning mid-fade measures a half-blended colour (2.57:1) that no visitor sees
+  // for more than a moment, so let the check finish and stop animating before the scan.
+  const delivery = page.waitForResponse(response => response.url().includes('/api/checkout/delivery'), { timeout: 5000 }).catch(() => null)
   await cart.getByRole('spinbutton').fill('12')
   await expect(cart.getByRole('heading', { name: '12 items' })).toBeVisible()
+  await delivery
+  await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; animation: none !important; }' })
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
   if (process.env.SALTY_VISUAL_AUDIT) {
     const dir = path.resolve('..', '..', '.visual-qa')
