@@ -1317,9 +1317,10 @@ function ProductEdit({ id }) {
   const [introEdited, setIntroEdited] = useState(false)
   useEffect(() => {
     let alive = true
-    Promise.all([fetch('/api/content').then(r => r.json()), fetch('/api/categories').then(r => r.json())])
-      .then(([content, cats]) => alive && setShopCopy({ themes: content.themes || {}, taxonomy: makeTaxonomy(cats.categories || [], cats.aliases || {}) }))
-      .catch(() => alive && setShopCopy({ themes: {}, taxonomy: null }))
+    // An admin route, not the shop's public ones: the admin host refuses those.
+    api('/api/admin/shop-copy')
+      .then(copy => alive && setShopCopy({ themes: copy.themes || {}, taxonomy: makeTaxonomy(copy.categories || [], copy.aliases || {}) }))
+      .catch(() => alive && setShopCopy({ themes: {}, taxonomy: null, failed: true }))
     return () => { alive = false }
   }, [])
   const [skus, setSkus] = useState([])
@@ -1496,7 +1497,7 @@ function ProductEdit({ id }) {
   const standardText = () => {
     if (!shopCopy?.taxonomy || !form) return ''
     const theme = shopCopy.taxonomy.themeForProduct({ categories: String(form.categories || '').split(',').map(c => c.trim()).filter(Boolean) })
-    return standardIntro((shopCopy.themes[theme] || shopCopy.themes.lamp || {}).lede, form.name)
+    return standardIntro(shopCopy.themes[theme] || shopCopy.themes.lamp, form.name)
   }
   const introShown = () => (introEdited || form.intro ? form.intro : standardText())
   // Unchanged standard text is not the owner's wording: store nothing for it.
@@ -1584,7 +1585,7 @@ function ProductEdit({ id }) {
               {unsupportedSentences(introShown()).map((sentence, i) => <q key={i}>{sentence}</q>)}
               {' '}Reword or remove it and it will show; the rest of your wording is shown as written.
             </span>
-          ) : 'Shown under the product name at the top of the shop page. Clear the box to go back to the standard text.'}>
+          ) : shopCopy?.failed ? 'Could not load the standard text. Anything you type here is saved as your own wording.' : 'Shown under the product name at the top of the shop page. Clear the box to go back to the standard text.'}>
             <textarea className="admin-input" rows={6} value={introShown()} onChange={e => { setIntroEdited(true); setField('intro', e.target.value) }} />
           </Field>
           <Field label="Product Detail" error={errs.description} hint={hasUnsupportedClaim(form.description) ? (

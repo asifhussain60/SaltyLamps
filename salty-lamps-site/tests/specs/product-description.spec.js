@@ -90,3 +90,70 @@ test('Product Description opens with the standard text, and the owner wording re
     await request.patch(`/api/admin/products/${p.id}`, { data: { name: p.name, slug: p.slug, description: p.description, intro: '', image: p.image, categories: p.categories, tags: p.tags, visible: !!p.visible } })
   }
 })
+
+test('Product Description is filled even when the shop\'s public routes are refused, as they are on the admin host', async ({ page, request }) => {
+  // functions/_middleware.js answers 404 to every public /api/* route on the admin hostname.
+  // Local runs skip that rule, so simulate it here; a box that borrowed a public route stays empty.
+  const p = await angel(request)
+  for (const path of ['products', 'categories', 'content']) await page.route(`**/api/${path}`, route => route.fulfill({ status: 404, body: 'Not found' }))
+  const copy = page.waitForResponse(response => new URL(response.url()).pathname === '/api/admin/shop-copy')
+  await page.goto(`/admin/products/${p.id}`)
+  expect((await copy).status()).toBe(200)
+  await expect(page.getByRole('textbox', { name: /^Product Description/ })).toContainText(p.name)
+})
+
+test('a product can be created, read, updated and deleted with its Product Description', async ({ page, request }) => {
+  const name = `Intro lifecycle ${crypto.randomUUID().slice(0, 8)}`
+  let id
+  try {
+    // CREATE through the screen. The box opens with the standard text for a new product.
+    await page.goto('/admin/products/new')
+    await page.getByLabel('Name', { exact: true }).fill(name)
+    await page.getByLabel('SKU code', { exact: true }).fill('INTRO-LIFE')
+    await page.getByLabel('Price (£)', { exact: true }).fill('9.99')
+    const intro = page.getByRole('textbox', { name: /^Product Description/ })
+    await expect(intro).not.toHaveValue('')
+    await intro.fill('Created with my own opening paragraph.')
+    await page.getByRole('textbox', { name: /^Product Detail/ }).fill('Created with my own product detail.')
+    await page.getByRole('button', { name: 'Create product', exact: true }).click()
+    await expect(page).toHaveURL(/\/admin\/products\/product_[\w-]+$/)
+    id = new URL(page.url()).pathname.split('/').pop()
+
+    // READ: the API, the admin screen after a reload, and the shop all agree.
+    const row = async () => (await (await request.get('/api/admin/products')).json()).products.find(p => p.id === id)
+    expect(await row()).toMatchObject({ intro: 'Created with my own opening paragraph.', description: 'Created with my own product detail.' })
+    await page.reload()
+    await expect(page.getByRole('textbox', { name: /^Product Description/ })).toHaveValue('Created with my own opening paragraph.')
+    await expect(page.getByRole('textbox', { name: /^Product Detail/ })).toHaveValue('Created with my own product detail.')
+    const slug = (await row()).slug
+    await page.goto(`/product-page/${slug}`)
+    await expect(lede(page)).toHaveText('Created with my own opening paragraph.')
+    await expect(page.getByText('Created with my own product detail.')).toBeVisible()
+
+    // UPDATE both boxes independently.
+    await page.goto(`/admin/products/${id}`)
+    await page.getByRole('textbox', { name: /^Product Description/ }).fill('Updated opening paragraph.')
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    expect(await row()).toMatchObject({ intro: 'Updated opening paragraph.', description: 'Created with my own product detail.' })
+    await page.getByRole('textbox', { name: /^Product Detail/ }).fill('Updated product detail.')
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    expect(await row()).toMatchObject({ intro: 'Updated opening paragraph.', description: 'Updated product detail.' })
+
+    // The other update routes keep the owner wording: the per-field PATCH with no intro sent.
+    const patched = await request.patch(`/api/admin/products/${id}`, { data: { name, slug, description: 'Patched detail.', image: '', categories: '', tags: '', visible: true } })
+    expect(patched.ok()).toBe(true)
+    expect(await row()).toMatchObject({ intro: 'Updated opening paragraph.', description: 'Patched detail.' })
+
+    // DELETE removes it from the admin list and the shop.
+    expect((await request.delete(`/api/admin/products/${id}`)).ok()).toBe(true)
+    expect(await row()).toBeUndefined()
+    await page.goto(`/product-page/${slug}`)
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
+    await expect(lede(page)).toHaveCount(0)
+    id = null
+  } finally {
+    if (id) await request.delete(`/api/admin/products/${id}`)
+  }
+})
