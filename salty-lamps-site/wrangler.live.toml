@@ -1,0 +1,51 @@
+# LIVE configuration for the shop that goes live in place (decided 30 September 2026):
+# the Pages project that served the private test shop becomes the customer shop, and
+# its database (the one holding the owner's real catalogue) becomes the live database.
+#
+# Used only by deploy-live.sh. The test-shop script (deploy-staging.sh) keeps using
+# wrangler.staging.toml, which forces sandbox mode; it refuses to run once www is
+# attached to this project, so the two can never overwrite each other's settings.
+#
+# What differs from wrangler.staging.toml, and why:
+#   - STRIPE_TEST_ONLY, MAIL_DRY_RUN and STAGING_IMAGE_STORAGE are GONE. Their absence
+#     is the switch: live Stripe keys are accepted, email can send, and photos are
+#     stored in R2 instead of the test database.
+#   - [[r2_buckets]] IMAGES is bound. R2 must be enabled on the account first (error
+#     10042 otherwise), or photo upload and every /api/images address fail.
+#   - SITE_URL is the customer address. It drives order-email links, Stripe return links
+#     and the administrator-to-shop redirect.
+#
+# Unchanged on purpose: the administrator hostname stays behind Cloudflare Access, and
+# PUBLIC_HOST stays www so only www is indexable (test and admin hosts send noindex).
+#
+# Secrets are NEVER in this file. The owner sets them in their own terminal, then the
+# shop is redeployed, because Pages binds secrets at deploy time:
+#   npx wrangler pages secret put STRIPE_SECRET_KEY      --project-name salty-lamps-staging
+#   npx wrangler pages secret put STRIPE_PUBLISHABLE_KEY --project-name salty-lamps-staging
+#   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET  --project-name salty-lamps-staging
+#   npx wrangler pages secret put RESEND_API_KEY         --project-name salty-lamps-staging
+#
+# The project name stays salty-lamps-staging: renaming a Pages project is not possible,
+# and recreating it would lose its hostnames, Access links and deployment history.
+name = "salty-lamps-staging"
+account_id = "e35d5918c507bc2cf4e920fe38b5e318"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "salty-lamps-staging-db"
+database_id = "981a6d7b-8eb7-4057-8023-d2a4894c21e4"
+
+# Requires the one-time R2 opt-in on the account:  npx wrangler r2 bucket create salty-lamps-images
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "salty-lamps-images"
+
+[vars]
+SITE_URL = "https://www.saltylamps.co.uk"
+PUBLIC_HOST = "www.saltylamps.co.uk"
+ADMIN_HOSTS = "admin.saltylamps.co.uk"
+ACCESS_AUD = "72d903a62fcd255a453d435e0564c1da117166a099489adb273e4768b0822957"
+ACCESS_TEAM_DOMAIN = "steep-voice-d86f.cloudflareaccess.com"

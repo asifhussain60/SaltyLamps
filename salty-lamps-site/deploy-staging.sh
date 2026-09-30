@@ -89,6 +89,16 @@ if os.environ["OWNER"] not in ids: sys.exit("This login is not a member of the S
 print("Signed in as", email or "(token)", "with access to the owner account.")
 '
 
+# This script always sets sandbox mode. Once www is attached to the project the shop is live
+# and running it would put real checkout back into Stripe test mode and stop every uploaded
+# photo being served, so refuse. Publish the live shop with ./deploy-live.sh instead.
+set +e
+npx wrangler pages project list --json 2>/dev/null | python3 scripts/pages-has-www.py "$PROJECT"
+WWW_CHECK=$?
+set -e
+[ "$WWW_CHECK" != 0 ] || die "www.saltylamps.co.uk is attached to $PROJECT: the shop is live, and this script would switch it back to sandbox mode. Use ./deploy-live.sh."
+[ "$WWW_CHECK" = 1 ] || die "could not tell whether the shop is live (project list unreadable); stopping rather than risk a sandbox deploy onto it."
+
 say "6/8 Recovery point for the test database (read-only)"
 wr d1 export DB --remote --output "$WORK/staging-before.sql"
 wr d1 time-travel info DB --json > "$WORK/staging-time-travel-before.json"
