@@ -29,12 +29,25 @@ test('an edited description reaches the shop, and an unsupported claim is left o
   expect(await shown(request)).toBe(before.description)
 })
 
-test('the admin says which wording the shop leaves out', async ({ page, request }) => {
+test('the admin quotes the sentence the shop leaves out, and flags the product in the list', async ({ page, request }) => {
   const p = await angel(request)
-  await page.goto(`/admin/products/${p.id}`)
-  const box = page.getByRole('textbox', { name: /^Description/ }).first()
-  await box.fill('A lamp that offers natural air purification.')
-  await expect(page.getByText('leaves out any sentence about air purification or health benefits')).toBeVisible()
-  await box.fill('A plain, honest description.')
-  await expect(page.getByText('leaves out any sentence about air purification or health benefits')).toHaveCount(0)
+  const original = p.description
+  try {
+    await page.goto(`/admin/products/${p.id}`)
+    const box = page.getByRole('textbox', { name: /^Description/ }).first()
+    await box.fill('A warm lamp. It offers natural air purification. Each piece is hand finished.')
+    await expect(page.getByRole('status').filter({ hasText: 'Left out of the shop' })).toContainText('It offers natural air purification.')
+    await box.fill('A plain, honest description.')
+    await expect(page.getByText('Left out of the shop')).toHaveCount(0)
+
+    // Saved with a claim, the product carries a badge in the products list.
+    expect((await save(request, p, 'A warm lamp. It offers natural air purification.')).ok()).toBe(true)
+    await page.goto('/admin/products')
+    await expect(page.getByRole('row').filter({ hasText: p.name }).getByText('Wording trimmed')).toBeVisible()
+    expect((await save(request, p, 'A plain, honest description.')).ok()).toBe(true)
+    await page.goto('/admin/products')
+    await expect(page.getByRole('row').filter({ hasText: p.name }).getByText('Wording trimmed')).toHaveCount(0)
+  } finally {
+    await save(request, p, original)
+  }
 })

@@ -856,3 +856,8 @@
 .wix-records__controls textarea { min-width:18rem; min-height:5rem; }
 .wix-records__value { white-space:pre-wrap; overflow-wrap:anywhere; min-width:12rem; }
 .wix-records .admin-doc__table td { max-width:30rem; overflow-wrap:anywhere; }
+
+/* A sentence the shop leaves out of a description: unmissable, not a quiet hint. */
+.admin-field-warning { display: block; margin-top: 6px; padding: 8px 10px; border-left: 3px solid var(--ember); background: rgba(216, 138, 53, 0.12); color: var(--ink, inherit); font-size: 0.875rem; line-height: 1.45; }
+.admin-field-warning q { display: block; margin: 4px 0; font-style: italic; }
+.admin-badge--payment-pending + .admin-badge, td .admin-badge--payment-pending { margin-left: 8px; }

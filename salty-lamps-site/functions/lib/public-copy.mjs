@@ -26,9 +26,14 @@ export const hasUnsupportedClaim = text => UNSAFE_REVIEW.test(String(text || '')
 
 const cleanCopy = text => String(text || '').replaceAll('lenght', 'length').replaceAll('Polyurethene', 'polyurethane').replaceAll('worm glow', 'warm glow')
 
+const sentencesOf = text => cleanCopy(text).split(/(?<=[.!?])\s+/)
+
+// The sentences the shop leaves out of the owner's wording, so the admin can quote them.
+export const unsupportedSentences = text => sentencesOf(text).filter(sentence => hasUnsupportedClaim(sentence)).map(sentence => sentence.trim())
+
 // The owner's own wording, minus any sentence that makes an unsupported claim.
 export function withoutUnsupportedClaims(text) {
-  return cleanCopy(text).split(/(?<=[.!?])\s+/).filter(sentence => !hasUnsupportedClaim(sentence)).join(' ').trim()
+  return sentencesOf(text).filter(sentence => !hasUnsupportedClaim(sentence)).join(' ').trim()
 }
 
 // options.useStoredDescription is for the live shop: what the owner saved in the admin

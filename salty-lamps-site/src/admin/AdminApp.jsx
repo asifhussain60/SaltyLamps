@@ -39,7 +39,7 @@ import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import { storeHref } from './store-url.mjs'
-import { hasUnsupportedClaim } from '../../functions/lib/public-copy.mjs'
+import { hasUnsupportedClaim, unsupportedSentences } from '../../functions/lib/public-copy.mjs'
 import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
@@ -1268,7 +1268,7 @@ function ProductsList() {
                 return (
                   <tr key={p.id}>
                     <td>{p.image ? <img className="admin-thumb" src={p.image} alt="" /> : <div className="admin-thumb admin-thumb--empty" />}</td>
-                    <td><AdminLink href={`/admin/products/${p.id}`} className="admin-link">{p.name}</AdminLink></td>
+                    <td><AdminLink href={`/admin/products/${p.id}`} className="admin-link">{p.name}</AdminLink>{hasUnsupportedClaim(p.description) && <span className="admin-badge admin-badge--payment-pending" title="A sentence in this description makes an air purification or health claim, so the shop leaves it out. Open the product to see which.">Wording trimmed</span>}</td>
                     <td>{p.skus.length}</td>
                     <td>{priceLabel}</td>
                     <td>{p.skus.filter(s=>s.packed_weight_g!=null&&s.postal_group).length} / {p.skus.length} ready</td>
@@ -1555,7 +1555,13 @@ function ProductEdit({ id }) {
           <Field label="Slug" error={errs.slug} hint="Leave blank to derive from the name.">
             <input className="admin-input" value={form.slug} onChange={e => setField('slug', e.target.value)} />
           </Field>
-          <Field label="Description" error={errs.description} hint={hasUnsupportedClaim(form.description) ? 'The shop leaves out any sentence about air purification or health benefits. The rest of your wording is shown.' : undefined}>
+          <Field label="Description" error={errs.description} hint={hasUnsupportedClaim(form.description) ? (
+            <span className="admin-field-warning" role="status">
+              Left out of the shop, because it makes an air purification or health claim:{' '}
+              {unsupportedSentences(form.description).map((sentence, i) => <q key={i}>{sentence}</q>)}
+              {' '}Reword or remove it and it will show; the rest of your wording is shown as written.
+            </span>
+          ) : undefined}>
             <textarea className="admin-input" rows={4} value={form.description} onChange={e => setField('description', e.target.value)} />
           </Field>
           <Field label="Categories" error={errs.categories} hint="Comma-separated slugs, e.g. salt-lamps,accessories">

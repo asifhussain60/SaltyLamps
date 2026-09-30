@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { hasUnsupportedClaim, isPublishableReview, publicCollectionSections, publicProduct, withoutUnsupportedClaims } from '../functions/lib/public-copy.mjs'
+import { hasUnsupportedClaim, unsupportedSentences, isPublishableReview, publicCollectionSections, publicProduct, withoutUnsupportedClaims } from '../functions/lib/public-copy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
 
 test('public catalogue copy removes unsupported claims and adds grounded kitchen purpose tags', () => {
@@ -70,4 +70,11 @@ test('when every sentence is an unsupported claim the reviewed wording is used, 
   assert.equal(other.description, 'Plain lamp text with a warm glow.')
   const blank = publicProduct({ productName: 'Some Other Lamp', description: '', tags: [] }, { useStoredDescription: true })
   assert.equal(blank.description, '')
+})
+
+test('the admin can quote exactly which sentences the shop leaves out', () => {
+  const saved = 'A warm lamp. It promotes a calming atmosphere through natural air purification. Each piece is hand finished.'
+  assert.deepEqual(unsupportedSentences(saved), ['It promotes a calming atmosphere through natural air purification.'])
+  assert.deepEqual(unsupportedSentences('Nothing risky here.'), [])
+  assert.equal(withoutUnsupportedClaims(saved), 'A warm lamp. Each piece is hand finished.')
 })
