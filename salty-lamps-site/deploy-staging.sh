@@ -12,6 +12,7 @@
 #
 #   STAGING_DRY_RUN=1 ./deploy-staging.sh   # offline half only: no network, no login, no writes
 #   ./deploy-staging.sh                     # full run; asks "yes" before every remote write
+#   STAGING_CODE_ONLY=1 ./deploy-staging.sh # publish the code only; never touches the database (use once the owner is editing live)
 #
 # Optional: STAGING_BRANCH (default main) must be the staging project's production
 # branch, or the custom hostname will not move to the new deployment.
@@ -25,6 +26,7 @@ RETIRED_ACCOUNT=844bc687926c910d5ad9d79c40ad1f2f
 RETIRED_EMAIL=asifhussain60@hotmail.com
 BRANCH="${STAGING_BRANCH:-main}"
 DRY="${STAGING_DRY_RUN:-0}"
+CODE_ONLY="${STAGING_CODE_ONLY:-0}"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 # Outside the repository on purpose: the price-correction generator refuses paths inside it.
 WORK="${STAGING_WORK_DIR:-$HOME/salty-lamps-private}/staging-$STAMP"
@@ -83,6 +85,9 @@ wr d1 time-travel info DB --json > "$WORK/staging-time-travel-before.json"
 printf 'Saved %s and a Time Travel bookmark. To roll back: wrangler d1 time-travel restore DB --bookmark=<value in staging-time-travel-before.json>\n' "$WORK/staging-before.sql"
 
 say "7/8 Test database changes"
+if [ "$CODE_ONLY" = 1 ]; then
+  printf 'STAGING_CODE_ONLY=1: the database is not changed in this run.\n'
+else
 confirm "Create the image-storage tables in the PRIVATE TEST database salty-lamps-staging-db? (CREATE TABLE IF NOT EXISTS only)"
 wr d1 execute DB --remote --file d1/staging/image-storage.sql
 confirm "Apply the guarded price correction to salty-lamps-staging-db? Each UPDATE only fires where the price still equals the old demo value; edited prices are left alone."
@@ -103,6 +108,8 @@ if kept:
     print('Left unchanged because they no longer held the old demo price:', kept)
 sys.exit(0 if applied + len(kept) == len(planned) else 'Read-back does not account for every planned correction.')
 PY
+
+fi
 
 say "8/8 Publish to the private test project"
 confirm "Deploy commit ${COMMIT:0:7} to the Pages project $PROJECT on branch '$BRANCH'? The customer domain and production are not involved."

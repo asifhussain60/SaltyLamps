@@ -39,6 +39,7 @@ import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import { storeHref } from './store-url.mjs'
+import { hasUnsupportedClaim } from '../../functions/lib/public-copy.mjs'
 import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
@@ -1554,7 +1555,7 @@ function ProductEdit({ id }) {
           <Field label="Slug" error={errs.slug} hint="Leave blank to derive from the name.">
             <input className="admin-input" value={form.slug} onChange={e => setField('slug', e.target.value)} />
           </Field>
-          <Field label="Description" error={errs.description}>
+          <Field label="Description" error={errs.description} hint={hasUnsupportedClaim(form.description) ? 'The shop leaves out any sentence about air purification or health benefits. The rest of your wording is shown.' : undefined}>
             <textarea className="admin-input" rows={4} value={form.description} onChange={e => setField('description', e.target.value)} />
           </Field>
           <Field label="Categories" error={errs.categories} hint="Comma-separated slugs, e.g. salt-lamps,accessories">

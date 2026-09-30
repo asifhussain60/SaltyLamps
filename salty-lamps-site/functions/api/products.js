@@ -13,7 +13,7 @@ export async function onRequestGet({ env }) {
       env.DB.prepare(PRODUCTS_QUERY),
       env.DB.prepare(PRODUCT_IMAGES_QUERY),
     ])
-    const products = flattenProductRows(cards.results || [], images.results || []).map(publicProduct)
+    const products = flattenProductRows(cards.results || [], images.results || []).map(product => publicProduct(product, { useStoredDescription: true }))
 
     return new Response(JSON.stringify({ products }), {
       status: 200,

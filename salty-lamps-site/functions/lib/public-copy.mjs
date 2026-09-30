@@ -20,7 +20,21 @@ export const PUBLIC_REVIEW_WHERE = `display = 1
   AND lower(quote) NOT LIKE '%negative ion%'
   AND lower(quote) NOT LIKE '%pneumonia%'`
 
-export function publicProduct(product) {
+// Wording the shop does not publish (see the 13 September end-user review). Kept in one
+// place so the shop, the build-time pages and the admin's warning cannot disagree.
+export const hasUnsupportedClaim = text => UNSAFE_REVIEW.test(String(text || ''))
+
+const cleanCopy = text => String(text || '').replaceAll('lenght', 'length').replaceAll('Polyurethene', 'polyurethane').replaceAll('worm glow', 'warm glow')
+
+// The owner's own wording, minus any sentence that makes an unsupported claim.
+export function withoutUnsupportedClaims(text) {
+  return cleanCopy(text).split(/(?<=[.!?])\s+/).filter(sentence => !hasUnsupportedClaim(sentence)).join(' ').trim()
+}
+
+// options.useStoredDescription is for the live shop: what the owner saved in the admin
+// wins over the fixed reviewed wording below. The build-time pages read the committed
+// snapshot, which still carries legacy export text, so they keep the reviewed wording.
+export function publicProduct(product, options = {}) {
   const productName = product.productName || product.name || ''
   const tags = new Set(product.tags || [])
   if (/\b(bowl|platter)\b/i.test(productName)) {
@@ -32,11 +46,12 @@ export function publicProduct(product) {
   } else if (/culinary salt/i.test(productName)) {
     tags.add('pantry')
   }
+  const reviewed = PRODUCT_DESCRIPTIONS.get(productName)
+  const stored = options?.useStoredDescription === true ? withoutUnsupportedClaims(product.description) : ''
   return {
     ...product,
     tags: [...tags],
-    description: PRODUCT_DESCRIPTIONS.get(productName)
-      || String(product.description || '').replaceAll('lenght', 'length').replaceAll('Polyurethene', 'polyurethane').replaceAll('worm glow', 'warm glow'),
+    description: stored || reviewed || cleanCopy(product.description),
   }
 }
 
