@@ -32,7 +32,11 @@ const PROCESS_VIDEO_UPLOAD_DATE = '2026-06-22'
 // only this unpacking changed.
 const snapshot = readSnapshot()
 const { categories, siteUrl, categoryAliases } = snapshot
-const products = (snapshot.products || []).map(publicProduct)
+// A snapshot read from the real database carries the owner's saved wording, which is what
+// the live shop shows (functions/api/products.js), so the pages must use it too. An older
+// committed snapshot carries legacy export text, so it keeps the reviewed wording.
+const storedWording = ['staging', 'live'].includes(snapshot.resolvedFrom)
+const products = (snapshot.products || []).map(product => publicProduct(product, { useStoredDescription: storedWording }))
 const content = snapshot.content || {}
 // Falls back for a snapshot written before the address was part of the content layer.
 // The Store schema is consumed by search engines, so an absent address has to become

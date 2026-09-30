@@ -52,6 +52,16 @@ say "3/8 Build the test-shop bundle (offline)"
 export CONTENT_SNAPSHOT_SOURCE=committed VITE_STAGING=1
 npm run build
 git diff --quiet -- src/content || die "the build changed the committed content snapshot; restore it and investigate."
+# The pages' text, prices and structured data come from the committed snapshot, not the
+# database. Warn (never block a code-only publish) when it was not read from the test shop
+# database, or is over a day old, because search engines would then read stale prices.
+node -e "
+const s = JSON.parse(require('fs').readFileSync('src/content/content-snapshot.json', 'utf8'));
+const hours = Math.round((Date.now() - new Date(s.generatedAt)) / 36e5);
+if (s.resolvedFrom !== 'staging' || hours > 24) {
+  console.log('WARNING: page prices and copy come from a snapshot read from \"' + s.resolvedFrom + '\" ' + hours + ' hours ago, not the test shop database.');
+  console.log('         Before launch run: npm run content:refresh-staging, review the diff, commit it, then publish.');
+}"
 
 say "4/8 Prepare the guarded price correction (offline)"
 umask 077

@@ -24,6 +24,13 @@
 //              production config and token. No development remote fallback.
 //   local      the running `wrangler pages dev` server — no cloud credentials needed.
 //   committed  Use the checked-in file as-is. Never touches the network.
+//   staging    The owner's test shop database, which is the shop that goes live and
+//              holds real prices and copy. READ-ONLY: only the fixed SELECT statements
+//              below run, checked by scripts/read-only-sql.mjs first. Run it on purpose,
+//              review the diff of src/content/content-snapshot.json, commit it, then
+//              deploy. `npm run content:refresh-staging`; needs `npx wrangler login` as
+//              the owner. A failure is fatal here: it never falls back to the old file.
+//              STAGING_SNAPSHOT_LOCAL_DIR=<folder> reads a disposable local copy instead.
 //
 // USAGE
 //   node scripts/fetch-content-snapshot.mjs   # offline, no legacy account access
@@ -31,7 +38,11 @@
 //   CONTENT_SNAPSHOT_SOURCE=local node scripts/fetch-content-snapshot.mjs
 //   CONTENT_SNAPSHOT_SOURCE=committed node scripts/fetch-content-snapshot.mjs
 
-import { RETIRED_PROPOSAL_ACCOUNT_ID, RETIRED_PROPOSAL_DATABASE_ID, validateProductionTarget } from './production-target.mjs'
+import {
+  APPROVED_OWNER_ACCOUNT_ID, RETIRED_PROPOSAL_ACCOUNT_ID, RETIRED_PROPOSAL_DATABASE_ID, validateProductionTarget,
+} from './production-target.mjs'
+import { assertReadOnlySql, resultSetsFromWrangler } from './read-only-sql.mjs'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -47,6 +58,7 @@ const outPath = path.join(root, 'src/content/content-snapshot.json')
 
 const PRODUCTION = process.env.CONTENT_SNAPSHOT_PRODUCTION === '1'
 const SOURCE = process.env.CONTENT_SNAPSHOT_SOURCE || (PRODUCTION ? 'live' : 'committed')
+if (SOURCE === 'staging' && PRODUCTION) throw new Error('The staging source is not a production build; unset CONTENT_SNAPSHOT_PRODUCTION.')
 if (PRODUCTION && SOURCE !== 'live') throw new Error('Production snapshots require a live source; committed/local fallback is forbidden.')
 if (SOURCE === 'live' && (
   process.env.CLOUDFLARE_ACCOUNT_ID?.toLowerCase() === RETIRED_PROPOSAL_ACCOUNT_ID
@@ -101,19 +113,60 @@ async function fromRemote() {
   if (!res.ok || !body.success || !Array.isArray(body.result) || body.result.some(r => r.success === false)) throw new Error(`D1 query failed: ${JSON.stringify(body.errors)}`)
 
   const sets = body.result.map(r => r.results || [])
+  ok(`products, taxonomy and content from the reviewed owner-account D1 target`)
+  return snapshotFromSets(sets, 'live')
+}
+
+// Turns one result set per REMOTE_QUERIES entry, in order, into the snapshot's fields.
+function snapshotFromSets(sets, resolvedFrom) {
   const [productRows, imageRows, categoryRows, aliasRows, ...contentSets] = sets
   if (contentSets.length < CONTENT_QUERY_KEYS.length) {
     throw new Error(`expected ${REMOTE_QUERIES.length} result sets, got ${sets.length} — is migration 004 applied?`)
   }
-
-  ok(`products, taxonomy and content from the reviewed owner-account D1 target`)
   return {
-    resolvedFrom: 'live',
+    resolvedFrom,
     products: flattenProductRows(productRows, imageRows),
     categories: categoryRows,
     categoryAliases: Object.fromEntries(aliasRows.map(r => [r.alias, r.slug])),
     content: shapeContent(Object.fromEntries(CONTENT_QUERY_KEYS.map((k, i) => [k, contentSets[i]]))),
   }
+}
+
+// The test shop's database, through the wrangler login already used for deploys.
+// Read-only by construction: the statements are checked before wrangler starts, and the
+// pinned config (wrangler.staging.toml) names the only database it can reach.
+function fromStaging() {
+  const statements = REMOTE_QUERIES.map(q => q.trim().replace(/;\s*$/, ''))
+  assertReadOnlySql(statements)
+  const localDir = process.env.STAGING_SNAPSHOT_LOCAL_DIR
+  const requested = process.env.CLOUDFLARE_ACCOUNT_ID
+  if (!localDir && requested && requested.toLowerCase() !== APPROVED_OWNER_ACCOUNT_ID) {
+    throw new Error('CLOUDFLARE_ACCOUNT_ID is not the approved owner account.')
+  }
+  const target = localDir
+    ? { cwd: localDir, args: ['--local', '--persist-to', path.join(localDir, 'state')] }
+    : { cwd: root, args: ['--remote', '-c', 'wrangler.staging.toml'] }
+  let output
+  try {
+    output = execFileSync(
+      path.join(root, 'node_modules/.bin/wrangler'),
+      ['d1', 'execute', 'DB', ...target.args, '--json', '--command', statements.join(';\n')],
+      {
+        cwd: target.cwd,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        maxBuffer: 64 * 1024 * 1024,
+        timeout: 120000,
+        env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: APPROVED_OWNER_ACCOUNT_ID, WRANGLER_SEND_METRICS: 'false' },
+      },
+    )
+  } catch (err) {
+    const reason = String(err.stderr || err.message).replace(/\x1b\[[0-9;]*m/g, '').trim().split('\n').filter(Boolean).slice(-3).join(' | ')
+    throw new Error(`wrangler could not read the test shop database (${reason}). Run \`npx wrangler login\` as the Salty Lamps owner.`)
+  }
+  const sets = resultSetsFromWrangler(output.slice(output.indexOf('[')), REMOTE_QUERIES.length)
+  ok(`products, taxonomy and content read (read-only) from ${localDir ? `the local copy in ${localDir}` : 'the test shop database'}`)
+  return snapshotFromSets(sets, 'staging')
 }
 
 // Reads through the RUNNING dev server rather than `wrangler d1 execute --local`.
@@ -182,8 +235,10 @@ async function resolveSnapshot() {
   }
 
   try {
+    if (SOURCE === 'staging') return fromStaging()
     return SOURCE === 'local' ? await fromLocal() : await fromRemote()
   } catch (err) {
+    if (SOURCE === 'staging') throw err
     if (PRODUCTION) throw new Error(`Production snapshot unavailable; refusing stale/proposal fallback: ${err.message}`)
     const prev = committedSnapshot()
     if (!prev) {
