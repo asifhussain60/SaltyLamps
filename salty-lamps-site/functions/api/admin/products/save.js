@@ -67,8 +67,8 @@ export async function onRequestPost({ request, env, data }) {
     const p = product.value
     const statements = [env.DB.prepare('INSERT INTO admin_save_requests(request_id,actor_email,fingerprint,result_json) VALUES(?,?,?,?)').bind(body.requestId,actor,fingerprint,JSON.stringify(result))]
     statements.push(body.id
-      ? env.DB.prepare('UPDATE products SET name=?,slug=?,description=?,image=?,categories=?,tags=?,visible=? WHERE id=?').bind(p.name,p.slug,p.description,p.image,p.categories,p.tags,p.visible,id)
-      : env.DB.prepare('INSERT INTO products(id,name,slug,description,image,categories,tags,visible) VALUES(?,?,?,?,?,?,?,?)').bind(id,p.name,p.slug,p.description,p.image,p.categories,p.tags,p.visible))
+      ? env.DB.prepare('UPDATE products SET name=?,slug=?,description=?,intro=CASE WHEN ? THEN ? ELSE intro END,image=?,categories=?,tags=?,visible=? WHERE id=?').bind(p.name,p.slug,p.description,body.product?.intro === undefined ? 0 : 1,p.intro,p.image,p.categories,p.tags,p.visible,id)
+      : env.DB.prepare('INSERT INTO products(id,name,slug,description,intro,image,categories,tags,visible) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,p.name,p.slug,p.description,p.intro,p.image,p.categories,p.tags,p.visible))
     for (const s of validated) {
       const v=s.value
       if (s.id != null) {

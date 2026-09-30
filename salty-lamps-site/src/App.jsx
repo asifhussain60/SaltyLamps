@@ -25,7 +25,7 @@ import { combineSchemas, listSchema, productGroupSchema, productSchema, storeSch
 import { categoryMetaDescription, collectionCategoryMetaDescription, productMetaDescription } from './content/seo.mjs'
 import { makeTaxonomy } from './content/taxonomy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
-import { publicCollectionSections } from '../functions/lib/public-copy.mjs'
+import { publicCollectionSections, standardIntro } from '../functions/lib/public-copy.mjs'
 import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 import snapshot from './content/content-snapshot.json'
 import ProductGallery, { ProductImage } from './components/ProductGallery.jsx'
@@ -154,7 +154,8 @@ const productSellingContent = (content, taxonomy, product) => {
     // above the option picker, so interpolating the variant name made the page open
     // "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large brings a warm glow…"
     // — naming an option in the sentence before the shopper has been offered one.
-    lede: String(themeCopy.lede || '').replace(/\{name\}/g, product.productName || product.name),
+    // The owner's own paragraph for this product wins; blank falls back to the template.
+    lede: product.intro || standardIntro(themeCopy.lede, product.productName || product.name),
   }
 }
 

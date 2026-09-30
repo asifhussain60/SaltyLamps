@@ -20,8 +20,8 @@ export async function onRequestPatch({ params, request, env, data }) {
 
     await env.DB.batch([
       env.DB.prepare(
-        `UPDATE products SET name=?, slug=?, description=?, image=?, categories=?, tags=?, visible=? WHERE id=?`,
-      ).bind(value.name, value.slug, value.description, value.image, value.categories, value.tags, value.visible, params.id),
+        `UPDATE products SET name=?, slug=?, description=?, intro=CASE WHEN ? THEN ? ELSE intro END, image=?, categories=?, tags=?, visible=? WHERE id=?`,
+      ).bind(value.name, value.slug, value.description, body.intro === undefined ? 0 : 1, value.intro, value.image, value.categories, value.tags, value.visible, params.id),
       auditStmt(env.DB, data.actorEmail, 'product.update', 'product', params.id, value),
     ])
     return json({ id: params.id })

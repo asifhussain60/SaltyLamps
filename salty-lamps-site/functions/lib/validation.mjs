@@ -143,8 +143,13 @@ export function validateProduct(input = {}) {
   value.slug = slug
 
   const description = trimStr(input.description)
-  if (description.length > 2000) errors.description = 'Description must be 2000 characters or fewer.'
+  if (description.length > 2000) errors.description = 'Product detail must be 2000 characters or fewer.'
   value.description = description
+
+  // Optional paragraph under the product title; blank falls back to the standard text.
+  const intro = trimStr(input.intro)
+  if (intro.length > 1000) errors.intro = 'Product description must be 1000 characters or fewer.'
+  value.intro = intro
 
   const image = trimStr(input.image)
   if (image.length > 500) errors.image = 'Image path is too long.'

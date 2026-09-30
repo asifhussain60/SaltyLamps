@@ -65,7 +65,7 @@ class PreviewRehearsalTest(unittest.TestCase):
 
             report = module.rehearse(capture, output)
             self.assertEqual(report['publicCatalogFieldsVerified'], 76)
-            self.assertEqual(report['migrationsApplied'], 16)
+            self.assertEqual(report['migrationsApplied'], 17)
             self.assertEqual(report['packedWeightsMissing'], 76)
             self.assertEqual(report['mediaFilesVerified'], 77)
             self.assertFalse(report['importReady'])

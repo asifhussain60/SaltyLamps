@@ -34,7 +34,7 @@ test('the admin quotes the sentence the shop leaves out, and flags the product i
   const original = p.description
   try {
     await page.goto(`/admin/products/${p.id}`)
-    const box = page.getByRole('textbox', { name: /^Description/ }).first()
+    const box = page.getByRole('textbox', { name: /^Product Detail/ }).first()
     await box.fill('A warm lamp. It offers natural air purification. Each piece is hand finished.')
     await expect(page.getByRole('status').filter({ hasText: 'Left out of the shop' })).toContainText('It offers natural air purification.')
     await box.fill('A plain, honest description.')
@@ -49,5 +49,44 @@ test('the admin quotes the sentence the shop leaves out, and flags the product i
     await expect(page.getByRole('row').filter({ hasText: p.name }).getByText('Wording trimmed')).toHaveCount(0)
   } finally {
     await save(request, p, original)
+  }
+})
+
+const lede = page => page.locator('.product-lede')
+
+test('Product Description opens with the standard text, and the owner wording replaces it on the shop', async ({ page, request }) => {
+  const p = await angel(request)
+  try {
+    await page.goto(`/product-page/${p.slug}`)
+    const standard = (await lede(page).innerText()).trim()
+    expect(standard).toContain(p.name)
+
+    await page.goto(`/admin/products/${p.id}`)
+    const box = page.getByRole('textbox', { name: /^Product Description/ })
+    await expect(box).toHaveValue(standard)
+    // Saving without touching it stores nothing, so the product keeps following the standard text.
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    expect((await angel(request)).intro).toBe('')
+
+    await box.fill('My own opening paragraph. It offers natural air purification.')
+    await expect(page.getByRole('status').filter({ hasText: 'Left out of the shop' })).toContainText('It offers natural air purification.')
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    await page.goto(`/product-page/${p.slug}`)
+    await expect(lede(page)).toHaveText('My own opening paragraph.')
+
+    // A caller that does not send the field at all must not wipe the owner wording.
+    expect((await save(request, p, p.description)).ok()).toBe(true)
+    expect((await angel(request)).intro).toBe('My own opening paragraph. It offers natural air purification.')
+
+    await page.goto(`/admin/products/${p.id}`)
+    await box.fill('')
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    await page.goto(`/product-page/${p.slug}`)
+    await expect(lede(page)).toHaveText(standard)
+  } finally {
+    await request.patch(`/api/admin/products/${p.id}`, { data: { name: p.name, slug: p.slug, description: p.description, intro: '', image: p.image, categories: p.categories, tags: p.tags, visible: !!p.visible } })
   }
 })

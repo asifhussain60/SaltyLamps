@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 
 export function commerceFixture() {
   const sql = new DatabaseSync(':memory:')
-  for (const file of ['schema.sql', 'migrations/005-email.sql', 'migrations/011-product-weights.sql', 'migrations/014-commerce-safety.sql', 'migrations/016-frame-choices.sql']) {
+  for (const file of ['schema.sql', 'migrations/005-email.sql', 'migrations/011-product-weights.sql', 'migrations/014-commerce-safety.sql', 'migrations/016-frame-choices.sql', 'migrations/017-product-intro.sql']) {
     const path = new URL(`../../d1/${file}`, import.meta.url)
     if (fs.existsSync(path)) sql.exec(fs.readFileSync(path, 'utf8'))
   }

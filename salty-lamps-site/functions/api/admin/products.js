@@ -70,9 +70,9 @@ export async function onRequestPost({ request, env, data }) {
   try {
     const stmts = [
       env.DB.prepare(
-        `INSERT INTO products (id, name, slug, description, image, categories, tags, visible)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(id, p.name, p.slug, p.description, p.image, p.categories, p.tags, p.visible),
+        `INSERT INTO products (id, name, slug, description, intro, image, categories, tags, visible)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(id, p.name, p.slug, p.description, p.intro, p.image, p.categories, p.tags, p.visible),
       ...skuValues.flatMap(s => [
         env.DB.prepare(
           `INSERT INTO skus (sku, product_id, variant_label, price_pence, track_mode, quantity, in_stock)

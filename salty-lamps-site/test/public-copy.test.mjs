@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { hasUnsupportedClaim, unsupportedSentences, isPublishableReview, publicCollectionSections, publicProduct, withoutUnsupportedClaims } from '../functions/lib/public-copy.mjs'
+import { standardIntro, hasUnsupportedClaim, unsupportedSentences, isPublishableReview, publicCollectionSections, publicProduct, withoutUnsupportedClaims } from '../functions/lib/public-copy.mjs'
 import { buildCollectionSections } from '../functions/lib/section-rules.mjs'
 
 test('public catalogue copy removes unsupported claims and adds grounded kitchen purpose tags', () => {
@@ -77,4 +77,11 @@ test('the admin can quote exactly which sentences the shop leaves out', () => {
   assert.deepEqual(unsupportedSentences(saved), ['It promotes a calming atmosphere through natural air purification.'])
   assert.deepEqual(unsupportedSentences('Nothing risky here.'), [])
   assert.equal(withoutUnsupportedClaims(saved), 'A warm lamp. Each piece is hand finished.')
+})
+
+test('a product intro follows the same claims rule, and the standard text takes the product name', () => {
+  const p = publicProduct({ productName: 'Ball Lamp', description: 'x', intro: 'Made by hand. It purifies the air.', tags: [] }, { useStoredDescription: true })
+  assert.equal(p.intro, 'Made by hand.')
+  assert.equal(publicProduct({ productName: 'Ball Lamp', description: 'x', tags: [] }).intro, '')
+  assert.equal(standardIntro('{name} brings a glow. {name} is cut by hand.', 'Ball Lamp'), 'Ball Lamp brings a glow. Ball Lamp is cut by hand.')
 })

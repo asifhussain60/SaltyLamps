@@ -9,6 +9,7 @@ function fixture() {
   sql.exec(fs.readFileSync(new URL('../d1/schema.sql', import.meta.url), 'utf8'))
   sql.exec(fs.readFileSync(new URL('../d1/staging/image-storage.sql', import.meta.url), 'utf8'))
   sql.exec(fs.readFileSync(new URL('../d1/migrations/015-admin-save-requests.sql', import.meta.url), 'utf8'))
+  sql.exec(fs.readFileSync(new URL('../d1/migrations/017-product-intro.sql', import.meta.url), 'utf8'))
   const wrap = (q, args = []) => ({ bind: (...a) => wrap(q, a), first: async () => sql.prepare(q).get(...args), all: async () => ({ results: sql.prepare(q).all(...args) }), run: async () => { const r = sql.prepare(q).run(...args); return { meta: { last_row_id: Number(r.lastInsertRowid) } } } })
   const db = { prepare: q => wrap(q), batch: async ss => { sql.exec('BEGIN'); try { const results = []; for (const s of ss) results.push(await s.run()); sql.exec('COMMIT'); return results } catch (e) { sql.exec('ROLLBACK'); throw e } } }
   return { sql, db }

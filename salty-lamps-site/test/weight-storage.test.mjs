@@ -18,6 +18,7 @@ function fixture() {
   sql.exec(
     fs.readFileSync(new URL('../d1/schema.sql', import.meta.url), 'utf8'),
   )
+  sql.exec(fs.readFileSync(new URL('../d1/migrations/017-product-intro.sql', import.meta.url), 'utf8'))
   const migration = fs.readFileSync(
     new URL('../d1/migrations/011-product-weights.sql', import.meta.url),
     'utf8',

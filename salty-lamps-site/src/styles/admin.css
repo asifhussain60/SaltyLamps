@@ -861,3 +861,6 @@
 .admin-field-warning { display: block; margin-top: 6px; padding: 8px 10px; border-left: 3px solid var(--ember); background: rgba(216, 138, 53, 0.12); color: var(--ink, inherit); font-size: 0.875rem; line-height: 1.45; }
 .admin-field-warning q { display: block; margin: 4px 0; font-style: italic; }
 .admin-badge--payment-pending + .admin-badge, td .admin-badge--payment-pending { margin-left: 8px; }
+
+/* Long text is read as well as typed: start tall, let the owner drag taller. */
+textarea.admin-input { min-height: 7.5rem; line-height: 1.5; resize: vertical; }

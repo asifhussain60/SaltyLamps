@@ -57,8 +57,12 @@ export function publicProduct(product, options = {}) {
     ...product,
     tags: [...tags],
     description: stored || reviewed || cleanCopy(product.description),
+    intro: withoutUnsupportedClaims(product.intro),
   }
 }
+
+// The standard paragraph for a product type, with the product's name filled in.
+export const standardIntro = (template, name) => String(template || '').replace(/\{name\}/g, name || '')
 
 export function publicCollectionSections(sections, collectionSlug) {
   return (sections || []).map(section => {

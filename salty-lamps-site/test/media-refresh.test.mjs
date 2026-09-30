@@ -10,6 +10,7 @@ const migration = read('d1/migrations/010-lighter-catalogue.sql')
 function fixture() {
   const db = new DatabaseSync(':memory:')
   db.exec(read('d1/schema.sql'))
+  db.exec(read('d1/migrations/017-product-intro.sql'))
   db.exec(read('d1/migrations/004-content-layer.sql'))
   let id = 1000
   for (const p of assignments.products) {

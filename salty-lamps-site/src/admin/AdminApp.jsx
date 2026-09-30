@@ -39,7 +39,8 @@ import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import { storeHref } from './store-url.mjs'
-import { hasUnsupportedClaim, unsupportedSentences } from '../../functions/lib/public-copy.mjs'
+import { hasUnsupportedClaim, unsupportedSentences, standardIntro } from '../../functions/lib/public-copy.mjs'
+import { makeTaxonomy } from '../content/taxonomy.mjs'
 import '../styles/admin.css'
 
 // ---- small utilities ------------------------------------------------------
@@ -1309,6 +1310,18 @@ function ProductEdit({ id }) {
     [id],
   )
   const [form, setForm] = useState(null)
+  // The shop's standard paragraph for this product's type. The Product Description box
+  // opens showing it, and saving it unchanged stores nothing, so the product keeps
+  // following the standard text until the owner writes their own.
+  const [shopCopy, setShopCopy] = useState(null)
+  const [introEdited, setIntroEdited] = useState(false)
+  useEffect(() => {
+    let alive = true
+    Promise.all([fetch('/api/content').then(r => r.json()), fetch('/api/categories').then(r => r.json())])
+      .then(([content, cats]) => alive && setShopCopy({ themes: content.themes || {}, taxonomy: makeTaxonomy(cats.categories || [], cats.aliases || {}) }))
+      .catch(() => alive && setShopCopy({ themes: {}, taxonomy: null }))
+    return () => { alive = false }
+  }, [])
   const [skus, setSkus] = useState([])
   const saveAttempt = useRef(null)
   const uploadAttempts = useRef(new Map())
@@ -1330,14 +1343,15 @@ function ProductEdit({ id }) {
 
   useEffect(() => {
     if (isNew) {
-      setForm({ name: '', slug: '', description: '', categories: '', tags: '', visible: true, image: '' })
+      setForm({ name: '', slug: '', description: '', intro: '', categories: '', tags: '', visible: true, image: '' })
       setSkus([blankSku()])
       return
     }
     const p = data?.products?.find(x => x.id === id)
     if (p) {
+      setIntroEdited(false)
       setForm({
-        name: p.name, slug: p.slug, description: p.description || '',
+        name: p.name, slug: p.slug, description: p.description || '', intro: p.intro || '',
         categories: p.categories || '', tags: p.tags || '', visible: !!p.visible, image: p.image || '',
       })
       setSkus(p.skus.map(s => ({
@@ -1479,6 +1493,15 @@ function ProductEdit({ id }) {
     }
   }
 
+  const standardText = () => {
+    if (!shopCopy?.taxonomy || !form) return ''
+    const theme = shopCopy.taxonomy.themeForProduct({ categories: String(form.categories || '').split(',').map(c => c.trim()).filter(Boolean) })
+    return standardIntro((shopCopy.themes[theme] || shopCopy.themes.lamp || {}).lede, form.name)
+  }
+  const introShown = () => (introEdited || form.intro ? form.intro : standardText())
+  // Unchanged standard text is not the owner's wording: store nothing for it.
+  const introToSave = () => (introShown().trim() === standardText().trim() ? '' : introShown())
+
   const validateAll = () => {
     const next = {}
     const pv = validateProduct(form)
@@ -1497,7 +1520,7 @@ function ProductEdit({ id }) {
     if (!saveAttempt.current) {
       if (!validateAll()) return
       saveAttempt.current = {
-        payload: { requestId: crypto.randomUUID(), ...(isNew ? {} : { id }), product: form, skus: skus.map(s => ({ ...s, ...weightPayload(s) })) },
+        payload: { requestId: crypto.randomUUID(), ...(isNew ? {} : { id }), product: { ...form, intro: introToSave() }, skus: skus.map(s => ({ ...s, ...weightPayload(s) })) },
         images: [...pendingImages],
         result: null,
       }
@@ -1555,14 +1578,23 @@ function ProductEdit({ id }) {
           <Field label="Slug" error={errs.slug} hint="Leave blank to derive from the name.">
             <input className="admin-input" value={form.slug} onChange={e => setField('slug', e.target.value)} />
           </Field>
-          <Field label="Description" error={errs.description} hint={hasUnsupportedClaim(form.description) ? (
+          <Field label="Product Description" error={errs.intro} hint={hasUnsupportedClaim(introShown()) ? (
+            <span className="admin-field-warning" role="status">
+              Left out of the shop, because it makes an air purification or health claim:{' '}
+              {unsupportedSentences(introShown()).map((sentence, i) => <q key={i}>{sentence}</q>)}
+              {' '}Reword or remove it and it will show; the rest of your wording is shown as written.
+            </span>
+          ) : 'Shown under the product name at the top of the shop page. Clear the box to go back to the standard text.'}>
+            <textarea className="admin-input" rows={6} value={introShown()} onChange={e => { setIntroEdited(true); setField('intro', e.target.value) }} />
+          </Field>
+          <Field label="Product Detail" error={errs.description} hint={hasUnsupportedClaim(form.description) ? (
             <span className="admin-field-warning" role="status">
               Left out of the shop, because it makes an air purification or health claim:{' '}
               {unsupportedSentences(form.description).map((sentence, i) => <q key={i}>{sentence}</q>)}
               {' '}Reword or remove it and it will show; the rest of your wording is shown as written.
             </span>
-          ) : undefined}>
-            <textarea className="admin-input" rows={4} value={form.description} onChange={e => setField('description', e.target.value)} />
+          ) : 'Shown lower down the shop page, under Product details.'}>
+            <textarea className="admin-input" rows={14} value={form.description} onChange={e => setField('description', e.target.value)} />
           </Field>
           <Field label="Categories" error={errs.categories} hint="Comma-separated slugs, e.g. salt-lamps,accessories">
             <input className="admin-input" value={form.categories} onChange={e => setField('categories', e.target.value)} />
@@ -2047,7 +2079,7 @@ function EmailTemplateEditor({ template, fields, onSaved }) {
           {LONG_EMAIL_FIELDS.includes(field) ? (
             <textarea
               className="admin-input"
-              rows={4}
+              rows={8}
               value={draft[field]}
               onChange={e => setDraft(d => ({ ...d, [field]: e.target.value }))}
             />
@@ -2546,7 +2578,7 @@ function CategoriesList() {
             <input className="admin-input" value={form.name} onChange={e => setField('name', e.target.value)} />
           </Field>
           <Field label="Description" error={errs.description} hint="Shown on the category page and used as its search-engine description.">
-            <textarea className="admin-input" rows={2} value={form.description} onChange={e => setField('description', e.target.value)} />
+            <textarea className="admin-input" rows={6} value={form.description} onChange={e => setField('description', e.target.value)} />
           </Field>
           <Field label="Hero image" error={errs.image} hint="Site path, e.g. /media/live-site-products/lamp-block-gemini.jpg">
             <input className="admin-input" value={form.image} onChange={e => setField('image', e.target.value)} />

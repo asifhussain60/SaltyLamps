@@ -10,6 +10,7 @@ import { onRequestPost } from '../functions/api/admin/products/[id]/skus.js'
 function fixture() {
   const sql = new DatabaseSync(':memory:')
   sql.exec(fs.readFileSync(new URL('../d1/schema.sql', import.meta.url), 'utf8'))
+  sql.exec(fs.readFileSync(new URL('../d1/migrations/017-product-intro.sql', import.meta.url), 'utf8'))
   const migration = fs.readFileSync(new URL('../d1/migrations/009-option-images.sql', import.meta.url), 'utf8')
   sql.exec(migration); sql.exec(migration)
   sql.exec(`INSERT INTO products (id,name,slug,image) VALUES ('a','Platter','platter','/square.jpg'), ('b','Lamp','lamp','/lamp.jpg');
