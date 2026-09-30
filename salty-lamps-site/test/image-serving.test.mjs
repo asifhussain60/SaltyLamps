@@ -42,3 +42,32 @@ test('configured production image storage keeps precedence over test database st
   await deleteImageObject(env, uploaded.key)
   assert.equal(objects.size, 0)
 })
+
+// The launch flip removes STRIPE_TEST_ONLY, MAIL_DRY_RUN and STAGING_IMAGE_STORAGE. These two
+// pin down what that does to photos, so the runbook's R2 blocker is a tested fact, not a worry.
+test('live mode with R2 bound stores and serves photos from R2 alone', async () => {
+  const objects = new Map()
+  const bytes = new Uint8Array([255, 216, 255, 224])
+  const env = { // wrangler.live.toml: no sandbox switches, IMAGES bound, and no database access for photos
+    DB: { prepare() { throw new Error('Photos must not touch the database in live mode') } },
+    IMAGES: {
+      async put(key, body, options) { objects.set(key, { body, options }) },
+      async get(key) { return objects.has(key) ? { body: objects.get(key).body, httpEtag: '"x"', size: bytes.length, httpMetadata: { contentType: 'image/jpeg' } } : null },
+      async head(key) { return objects.has(key) ? { size: bytes.length } : null },
+    },
+  }
+  const uploaded = await putImageObject(env, 'product-1', { buffer: bytes.buffer, type: 'image/jpeg', ext: 'jpg' })
+  const served = await onRequestGet({ env, params: { path: [uploaded.key.replace('/api/images/', '')] }, request: new Request('https://www.saltylamps.co.uk' + uploaded.url) })
+  assert.equal(served.status, 200)
+})
+
+test('live mode WITHOUT R2 serves no photos, so a test-database photo disappears at launch', async () => {
+  const env = { DB: { prepare() { throw new Error('must not read the test photo tables') } } }
+  const response = await onRequestGet({ env, params: { path: ['any-uploaded-photo.jpg'] }, request: new Request('https://www.saltylamps.co.uk/api/images/any-uploaded-photo.jpg') })
+  assert.equal(response.status, 503)
+  // Sandbox photo storage needs all three test switches; removing any one of them disables it.
+  for (const partial of [{ STAGING_IMAGE_STORAGE: 'd1', STRIPE_TEST_ONLY: '1' }, { STAGING_IMAGE_STORAGE: 'd1', MAIL_DRY_RUN: 'true' }]) {
+    const res = await onRequestGet({ env: { ...env, ...partial }, params: { path: ['x.jpg'] }, request: new Request('https://www.saltylamps.co.uk/api/images/x.jpg') })
+    assert.equal(res.status, 503)
+  }
+})
