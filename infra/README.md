@@ -1,5 +1,7 @@
 # Salty Lamps infrastructure
 
+**Current provider handoff:** [Stripe and Resend for Claude Code](stripe-resend-handoff.md) records the approved owner accounts, verified secret locations and names, how the integrations work, and the remaining live setup. The older provider notes and quick index below include historical proposal and UAT details; use the handoff and [account ownership](account-ownership.md) for current work.
+
 This directory documents the Cloudflare and Stripe infrastructure backing
 `salty-lamps-site`, in enough detail to migrate the whole stack to a new
 domain and/or a new Stripe account without re-deriving anything from scratch.
