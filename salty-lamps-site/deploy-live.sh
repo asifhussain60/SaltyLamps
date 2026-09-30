@@ -57,7 +57,7 @@ say "3/8 Content snapshot must be fresh and read from the shop database (offline
 # edits the database until the freeze, so a stale snapshot shows search engines old prices.
 node -e "
 const s = JSON.parse(require('fs').readFileSync('src/content/content-snapshot.json', 'utf8'));
-const hours = Math.round((Date.now() - new Date(s.generatedAt)) / 36e5);
+const hours = Math.round((Date.now() - new Date(s.verifiedAt || s.generatedAt)) / 36e5);
 if (s.resolvedFrom !== 'staging') { console.error('The snapshot was read from \"' + s.resolvedFrom + '\", not the shop database.'); process.exit(1); }
 if (hours > Number(process.argv[1])) { console.error('The snapshot is ' + hours + ' hours old (limit ' + process.argv[1] + ').'); process.exit(1); }
 console.log('Snapshot read from the shop database ' + hours + ' hours ago.');" "$MAX_SNAPSHOT_HOURS" \

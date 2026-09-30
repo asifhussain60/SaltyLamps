@@ -57,7 +57,7 @@ git diff --quiet -- src/content || die "the build changed the committed content 
 # database, or is over a day old, because search engines would then read stale prices.
 node -e "
 const s = JSON.parse(require('fs').readFileSync('src/content/content-snapshot.json', 'utf8'));
-const hours = Math.round((Date.now() - new Date(s.generatedAt)) / 36e5);
+const hours = Math.round((Date.now() - new Date(s.verifiedAt || s.generatedAt)) / 36e5);
 if (s.resolvedFrom !== 'staging' || hours > 24) {
   console.log('WARNING: page prices and copy come from a snapshot read from \"' + s.resolvedFrom + '\" ' + hours + ' hours ago, not the test shop database.');
   console.log('         Before launch run: npm run content:refresh-staging, review the diff, commit it, then publish.');

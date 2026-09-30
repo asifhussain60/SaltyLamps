@@ -290,6 +290,9 @@ const snapshot = {
   generatedAt: new Date().toISOString(),
   source: SOURCE,
   resolvedFrom: resolved.resolvedFrom || SOURCE,
+  // When the shop database was last READ for this file. generatedAt only moves when the content
+  // changes, so on its own it cannot say whether an unchanged snapshot is still current.
+  ...(resolved.resolvedFrom === 'staging' ? { verifiedAt: new Date().toISOString() } : {}),
   siteUrl,
   ...(productionTarget ? { target: { accountId: productionTarget.accountId, databaseId: productionTarget.databaseId }, verifiedAt: new Date().toISOString() } : {}),
   ...resolved,
@@ -307,9 +310,10 @@ const snapshot = {
 // Comparing everything EXCEPT generatedAt means the timestamp still records when the
 // content last genuinely changed, rather than when a build last ran.
 const serialised = `${JSON.stringify(snapshot, null, 2)}\n`
-const withoutTimestamp = ({ generatedAt, ...rest }) => JSON.stringify(rest)
+const withoutTimestamp = ({ generatedAt, verifiedAt, ...rest }) => JSON.stringify(rest)
 const previous = committedSnapshot()
-const unchanged = previous && withoutTimestamp(previous) === withoutTimestamp(snapshot)
+// A staging read always records its verification time, so the launch gate can trust it.
+const unchanged = previous && withoutTimestamp(previous) === withoutTimestamp(snapshot) && resolved.resolvedFrom !== 'staging'
 
 const summary =
   `${resolved.products.length} products, ${resolved.categories.length} categories, ` +
