@@ -5,6 +5,7 @@
   var retry = document.getElementById('startup-retry')
   if (!panel || !message || !retry) return
   function recover() {
+    panel.hidden = false
     message.textContent = 'The page could not finish loading. Check your connection, then reload. You may need to sign in again.'
     retry.hidden = false
   }

@@ -9,7 +9,8 @@ import { DEFAULT_CONTACT_EMAIL } from '../functions/lib/content-queries.mjs'
 import { combineSchemas, listSchema, productGroupSchema, productSchema, storeSchema } from '../src/content/schema.mjs'
 import { categoryMetaDescription, collectionCategoryMetaDescription, productMetaDescription } from '../src/content/seo.mjs'
 import { makeTaxonomy } from '../src/content/taxonomy.mjs'
-import { publicProduct } from '../functions/lib/public-copy.mjs'
+import { hasUnsupportedClaim, publicProduct, standardIntro } from '../functions/lib/public-copy.mjs'
+import { assertProductionAddress, flattenRichText, productFacts, staticBody, withStaticBody } from '../src/content/static-body.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -303,7 +304,7 @@ function buildStoreSchema() {
 // The trail must mirror a path the site can actually be navigated by, or Google
 // reports it as invalid. Each arm below therefore reuses the same route helpers
 // (`categoryRoute`, `collectionRoute`) that generate the real links.
-function breadcrumbSchema(route) {
+function crumbsFor(route) {
   if (route.path === '/') return null
 
   const crumbs = [{ name: 'Home', path: '/' }]
@@ -339,6 +340,12 @@ function breadcrumbSchema(route) {
   // nothing it cannot see from the URL, so emit nothing rather than noise.
   if (crumbs.length < 3 && !route.shopperPath) return null
 
+  return crumbs
+}
+
+function breadcrumbSchema(route) {
+  const crumbs = crumbsFor(route)
+  if (!crumbs) return null
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -360,6 +367,120 @@ function schemaFor(route) {
     itemListSchema(route),
     route.schema,
   ])
+}
+
+// The readable body each page carries before JavaScript runs. See
+// src/content/static-body.mjs for why; this only gathers the same facts the app renders.
+const STATIC_HEADINGS = {
+  '/': 'Warm salt glow for homes, gifts, kitchens, spas, and trade projects.',
+  '/shop': snapshot.content?.snippets?.['shop.title'] || 'Shop Himalayan salt lamps, candle holders, saltware, and salt licks.',
+  '/gallery': 'Product details, lifestyle scenes, and trade-use references.',
+  '/process': 'From mined rock salt to finished lamps, bricks, bowls, and tiles.',
+  '/reviews': 'Real customer notes from the Salty Lamps guestbook.',
+}
+
+const productLink = product => ({ name: product.name, href: productRoute(product), price: product.price, stock: product.stock })
+const listItems = name => (content.lists?.[name] || []).filter(item => item.title || item.text)
+
+function bodyFor(route) {
+  if (route.robots && route.robots.includes('noindex')) return null
+  const crumbs = (crumbsFor(route) || []).map(crumb => ({ name: crumb.name, href: crumb.path }))
+
+  if (route.product) {
+    const product = route.product
+    const siblings = (productsByGroup.get(product.productId) || []).filter(item => item.slug !== product.slug)
+    const theme = content.themes?.[schemaTaxonomy.themeForProduct(product)] || content.themes?.lamp || {}
+    return staticBody({
+      crumbs,
+      heading: product.productName || product.name,
+      lead: product.intro || standardIntro(theme.lede, product.productName || product.name),
+      paragraphs: [product.variantLabel ? `${product.variantLabel}. ${product.description}` : product.description],
+      sections: [
+        { title: theme.useTitle, items: theme.uses },
+        { title: theme.careTitle, items: theme.care },
+        { title: 'Why it is worth choosing', text: theme.promise },
+        { title: 'Buyer reassurance', items: theme.reassurance },
+      ],
+      image: product.image ? { src: resolveMedia(product.image), alt: product.name } : null,
+      facts: productFacts(product),
+      linksHeading: 'Other options',
+      links: siblings.map(item => ({ name: `${item.variantLabel || item.name} — £${Number(item.price).toFixed(2)}`, href: productRoute(item) })),
+    })
+  }
+
+  if (route.shopperPath && !route.category) {
+    return staticBody({
+      crumbs,
+      heading: route.shopperPath.name,
+      lead: route.shopperPath.description,
+      paragraphs: [flattenRichText(route.shopperPath.heroIntro)],
+      products: (route.products || []).map(productLink),
+      linksHeading: 'Shop by type',
+      links: route.shopperPath.categories
+        .map(slug => categories.find(item => item.slug === slug))
+        .filter(Boolean)
+        .map(category => ({ name: category.name, href: collectionRoute(route.shopperPath.slug, category.slug) })),
+    })
+  }
+
+  if (route.category || route.shopperPath) {
+    return staticBody({
+      crumbs,
+      heading: route.category?.name || route.shopperPath.name,
+      lead: route.category?.description || route.shopperPath?.description,
+      products: (route.products || []).map(productLink),
+    })
+  }
+
+  if (route.path === '/') {
+    return staticBody({
+      heading: STATIC_HEADINGS['/'],
+      lead: route.description,
+      linksHeading: 'Shop Salty Lamps',
+      links: [
+        ...shopperPaths.map(item => ({ name: item.name, href: collectionRoute(item.slug) })),
+        ...categories.filter(item => item.slug !== 'all-products').map(item => ({ name: item.name, href: categoryRoute(item.slug) })),
+        { name: 'Shop everything', href: '/shop' },
+      ],
+    })
+  }
+
+  if (route.path === '/shop') {
+    return staticBody({
+      crumbs,
+      heading: STATIC_HEADINGS['/shop'],
+      lead: route.description,
+      linksHeading: 'Shop by category',
+      links: categories.filter(item => item.slug !== 'all-products').map(item => ({ name: item.name, href: categoryRoute(item.slug) })),
+      productsHeading: 'Every product',
+      products: products.map(productLink),
+    })
+  }
+
+  if (route.path === '/process') {
+    return staticBody({
+      crumbs,
+      heading: STATIC_HEADINGS['/process'],
+      lead: route.description,
+      paragraphs: listItems('process-steps').map(step => `${step.title}. ${step.text}`),
+    })
+  }
+
+  if (route.path === '/reviews') {
+    const quotes = (content.featuredReviews || [])
+      .filter(review => review.quote && !hasUnsupportedClaim(review.quote))
+      .slice(0, 8)
+      .map(review => `“${review.quote}” — ${review.name}`)
+    return staticBody({ crumbs, heading: STATIC_HEADINGS['/reviews'], lead: route.description, paragraphs: quotes })
+  }
+
+  if (STATIC_HEADINGS[route.path]) {
+    return staticBody({ crumbs, heading: STATIC_HEADINGS[route.path], lead: route.description })
+  }
+
+  const page = policyPages[route.path]
+  if (page) return staticBody({ crumbs, heading: page.title, paragraphs: page.body })
+  return null
 }
 
 function injectHead(html, route) {
@@ -395,7 +516,8 @@ function injectHead(html, route) {
     <script type="application/ld+json" data-prerender-jsonld>${schemaJson}</script>`
 
   output = output.replace('  </head>', `${seoTags}\n  </head>`)
-  return output
+  const body = bodyFor(route)
+  return body ? withStaticBody(output, body) : output
 }
 
 function flatRouteHtmlPath(routePath) {
@@ -560,6 +682,44 @@ function assertReferencedMediaExists() {
   }
   console.log(`  ✓ all ${referenced.size} referenced media files present`)
 }
+
+// Every address written above must be the real shop. A canonical, sitemap entry, share
+// card or schema URL that names the private test shop, the admin or a pages.dev preview
+// would send search engines to a page that is sign-in protected or no-indexed.
+function assertOnlyProductionAddresses() {
+  const files = []
+  const walk = dir => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name !== 'assets' && entry.name !== 'media') walk(full)
+      } else if (/\.(html|xml|txt)$/.test(entry.name)) {
+        files.push({ name: path.relative(distDir, full), text: fs.readFileSync(full, 'utf8') })
+      }
+    }
+  }
+  walk(distDir)
+  assertProductionAddress(siteUrl, files)
+  console.log(`  ✓ ${files.length} SEO files all point at ${siteUrl}`)
+}
+
+assertOnlyProductionAddresses()
+
+// Every indexable product page must carry its own words in the HTML itself.
+function assertStaticBodies() {
+  let checked = 0
+  for (const product of products) {
+    const html = fs.readFileSync(flatRouteHtmlPath(productRoute(product)), 'utf8')
+    const h1s = (html.match(/<h1[ >]/g) || []).length
+    if (h1s !== 1 || !html.includes(`£${Number(product.price).toFixed(2)}`)) {
+      throw new Error(`${productRoute(product)} must carry exactly one <h1> and its price in the HTML (found ${h1s} <h1>).`)
+    }
+    checked += 1
+  }
+  console.log(`  ✓ ${checked} product pages carry their name and price without JavaScript`)
+}
+
+assertStaticBodies()
 
 assertReferencedMediaExists()
 
