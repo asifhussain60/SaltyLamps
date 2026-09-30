@@ -150,3 +150,14 @@ test('checkout metadata preserves recorded weights, including explicitly unknown
     null,
   )
 })
+
+test('the drafted live UK rates are valid, price by basket weight and match the recorded Wix band edges', async () => {
+  const fs = await import('node:fs')
+  const { validatePostageConfig, quotePostage, usesBasketWeightBands } = await import('../functions/lib/weights.mjs')
+  const config = validatePostageConfig(JSON.parse(fs.readFileSync(new URL('../docs/live-postage-config-draft.json', import.meta.url), 'utf8')))
+  assert.equal(config.rates.length, 11)
+  assert.equal(usesBasketWeightBands(config), true)
+  const pence = (grams, country = 'GB') => quotePostage([{ quantity: 1, packed_weight_g: grams, postal_group: 'sandbox' }], config, { country }).options[0]?.price_pence
+  assert.deepEqual([200, 201, 1000, 1001, 3000, 12000, 12001, 60000, 180000, 180001].map(g => pence(g)), [350, 399, 399, 599, 599, 699, 799, 1599, 4799, 7000])
+  assert.equal(pence(1000, 'FR'), undefined)
+})

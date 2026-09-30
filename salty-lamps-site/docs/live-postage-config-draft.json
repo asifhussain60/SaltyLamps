@@ -1,0 +1,116 @@
+{
+  "unit": "kg",
+  "show_cards": false,
+  "rates": [
+    {
+      "id": "uk-band-01",
+      "group": "1",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 0,
+      "max_g": 200,
+      "price_pence": 350
+    },
+    {
+      "id": "uk-band-02",
+      "group": "2",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 200,
+      "max_g": 1000,
+      "price_pence": 399
+    },
+    {
+      "id": "uk-band-03",
+      "group": "3",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 1000,
+      "max_g": 3000,
+      "price_pence": 599
+    },
+    {
+      "id": "uk-band-04",
+      "group": "4",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 3000,
+      "max_g": 12000,
+      "price_pence": 699
+    },
+    {
+      "id": "uk-band-05",
+      "group": "5",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 12000,
+      "max_g": 30000,
+      "price_pence": 799
+    },
+    {
+      "id": "uk-band-06",
+      "group": "6",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 30000,
+      "max_g": 60000,
+      "price_pence": 1599
+    },
+    {
+      "id": "uk-band-07",
+      "group": "7",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 60000,
+      "max_g": 90000,
+      "price_pence": 2399
+    },
+    {
+      "id": "uk-band-08",
+      "group": "8",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 90000,
+      "max_g": 120000,
+      "price_pence": 3199
+    },
+    {
+      "id": "uk-band-09",
+      "group": "9",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 120000,
+      "max_g": 150000,
+      "price_pence": 3999
+    },
+    {
+      "id": "uk-band-10",
+      "group": "10",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 150000,
+      "max_g": 180000,
+      "price_pence": 4799
+    },
+    {
+      "id": "uk-band-11",
+      "group": "11",
+      "service": "DHL / Royal Mail / EVRI",
+      "country": "GB",
+      "postcodes": "",
+      "min_g": 180000,
+      "max_g": 1000000000,
+      "price_pence": 7000
+    }
+  ]
+}
