@@ -68,3 +68,16 @@ Resend is configured for **sending only**; the existing Zoho MX records and mail
 - **Stored `site_url`.** The shop setting still reads `https://test.saltylamps.co.uk`; `SITE_URL` in the live configuration overrides it for checkout and email links, but update the stored value in the administrator when email is enabled.
 
 The older `infra/stripe.md`, `infra/email.md`, and parts of `infra/README.md` describe a retired proposal or dated UAT state. Use them only as historical evidence when they conflict with this review, `account-ownership.md`, or the current migration plan.
+
+## Status added on 1 October 2026
+
+- **Migration 018 is applied and the live deploy now enforces the migration log.** `d1/migrations/018-order-special-instructions.sql` (`orders.special_instructions`, for the optional checkout "Special instructions" note) was applied to `salty-lamps-staging-db` on 1 October 2026 with its ledger row, after a private backup and Time Travel bookmark in `~/salty-lamps-private/special-instructions-20261001T130953Z`. A read-only check that day printed "Shop database has all 18 migrations (1 deferred)." Step 6 of `deploy-live.sh` now refuses unless `production_migration_ledger` holds every file in `d1/migrations` unedited (`deferred` rows accepted), because the paid-order insert in `functions/api/webhook.js` fails without its column. The same check, read-only, from `salty-lamps-site/`:
+
+  ```
+  CLOUDFLARE_ACCOUNT_ID=e35d5918c507bc2cf4e920fe38b5e318 npx wrangler -c wrangler.staging.toml d1 execute DB --remote --json --command "SELECT name, sha256, status FROM production_migration_ledger" | node scripts/migration-ledger.mjs
+  ```
+
+- **The live restricted key should match the sandbox key's permissions.** Besides the writes listed in migration step 7, the order-saving code reads related Stripe records: `functions/lib/checkout-state.mjs` expands `data.price.product` on line items, `functions/api/checkout/verify.js` expands `shipping_cost.shipping_rate`, and `functions/api/webhook.js` expands `latest_charge`. Give the live key read access to Products/Prices, Shipping rates and Charges as well. This is inferred from the code, not from a live test. A missing permission makes the webhook fail (500); Stripe retries and the order records on the next retry once the permission is added.
+- **The first live Checkout Session is unproven until the dry run.** `functions/api/checkout.js` uses Stripe API version `2024-06-20` in live mode and `2025-04-30.basil` in sandbox mode, so sandbox payments do not exercise the live request shape.
+- **Live keys and `RESEND_API_KEY` are not installed as of this note.** This repeats the 30 September record above; nothing in this update re-listed the Pages secrets or created a key.
+- **Release path after launch.** Once `www` is attached, `deploy-live.sh` is the only release path (`deploy-staging.sh` refuses). After `www` is attached, never roll back to an older Pages deployment unless its message reads "live release" followed by a commit id (every earlier deployment is in sandbox mode and would put real checkout into Stripe test mode); otherwise move `www` back to the `salty-lamps` holding project. Nothing goes live without Asif's explicit approval.
