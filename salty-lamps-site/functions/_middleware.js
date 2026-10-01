@@ -42,6 +42,8 @@ const PUBLIC_PAGES = new Set([
   '/checkout/success', '/checkout/cancel', '/checkout/cancelled',
 ])
 const PUBLIC_PAGE_PREFIXES = ['/product-page/', '/category/', '/collection/']
+// robots.txt and the sitemaps scripts/generate-seo.mjs writes (sitemap.xml, pages-sitemap.xml, …).
+const CRAWLER_FILE = /^\/(?:robots\.txt|(?:[a-z]+-)?sitemap\.xml)$/
 
 export async function onRequest(context) {
   const { request, env, next } = context
@@ -171,5 +173,8 @@ function isUnknownBrowserPage(request, pathname) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false
   if (!String(request.headers.get('accept') || '').includes('text/html')) return false
   if (PUBLIC_PAGES.has(pathname) || isAdminPath(pathname)) return false
+  // Crawler files are not pages, but a fetcher that sends a browser-style Accept would
+  // otherwise get them as 404 + noindex and lose the sitemap.
+  if (CRAWLER_FILE.test(pathname)) return false
   return !PUBLIC_PAGE_PREFIXES.some(prefix => pathname.startsWith(prefix))
 }

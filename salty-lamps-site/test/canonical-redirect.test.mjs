@@ -28,3 +28,17 @@ test('unknown browser pages retain legacy redirects but genuine missing pages re
   assert.equal(missing.status, 404)
   assert.equal(missing.headers.get('x-robots-tag'), 'noindex, nofollow')
 })
+
+test('robots.txt and every sitemap reach a crawler that asks for HTML', async () => {
+  // A browser-style Accept used to turn these into 404 + noindex, hiding the sitemap from any
+  // crawler that sends one; a made-up page must still 404.
+  const env = { PUBLIC_HOST: 'www.saltylamps.co.uk' }
+  const next = async () => new Response('file')
+  const ask = path => onRequest({ request: new Request(`https://www.saltylamps.co.uk${path}`, { headers: { accept: 'text/html,application/xhtml+xml,*/*;q=0.8' } }), env, next })
+  for (const path of ['/robots.txt', '/sitemap.xml', '/pages-sitemap.xml', '/products-sitemap.xml', '/categories-sitemap.xml', '/images-sitemap.xml', '/videos-sitemap.xml']) {
+    const result = await ask(path)
+    assert.equal(result.status, 200, path)
+    assert.equal(result.headers.get('x-robots-tag'), null, path)
+  }
+  for (const path of ['/blog', '/sitemap', '/robots.txt.bak', '/old-sitemap.xml.html']) assert.equal((await ask(path)).status, 404, path)
+})
