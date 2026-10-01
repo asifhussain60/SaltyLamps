@@ -1474,30 +1474,9 @@ label {
   aspect-ratio: 4 / 3;
 }
 
-.product-image span {
-  position: absolute;
-  z-index: 2;
-  left: 12px;
-  top: 12px;
-  border-radius: 6px;
-  padding: 6px 8px;
-  background: color-mix(in srgb, var(--theme-deep) 86%, rgba(28, 17, 13, 0.78));
-  color: #fff7ec;
-  font-family: var(--ui);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .product-card.is-soldout .product-image img {
   filter: grayscale(0.5) brightness(0.92);
   opacity: 0.72;
-}
-
-.product-card.is-soldout .product-image span {
-  background: color-mix(in srgb, var(--ember) 90%, #1c110d);
-  color: #fff3ea;
 }
 
 .product-body,
@@ -2092,21 +2071,6 @@ label {
   filter: drop-shadow(0 24px 32px rgba(51, 30, 19, 0.18));
 }
 
-.product-gallery-category {
-  position: absolute;
-  left: 18px;
-  top: 18px;
-  border-radius: 6px;
-  padding: 7px 9px;
-  background: color-mix(in srgb, var(--theme-deep) 84%, var(--ink));
-  color: var(--salt);
-  font-family: var(--ui);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .product-gallery-enlarge-hint {
   position: absolute;
   right: 14px;
@@ -2597,23 +2561,6 @@ label {
   transition: transform 0.34s ease, filter 0.34s ease;
 }
 
-.gallery-feature-card > span,
-.gallery-story-card > span {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  width: fit-content;
-  border-radius: 6px;
-  padding: 7px 9px;
-  background: color-mix(in srgb, var(--ember) 88%, var(--salt));
-  color: var(--ink);
-  font-family: var(--ui);
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .gallery-feature-card > div,
 .gallery-story-card > div {
   align-self: end;
@@ -2723,21 +2670,6 @@ label {
   height: 100%;
   object-fit: cover;
   transition: filter 0.28s ease, transform 0.28s ease;
-}
-
-.gallery-card span {
-  position: absolute;
-  left: 10px;
-  top: 10px;
-  border-radius: 6px;
-  padding: 6px 8px;
-  background: color-mix(in srgb, var(--ink) 72%, transparent);
-  color: var(--salt);
-  font-family: var(--ui);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
 }
 
 .gallery-card strong {

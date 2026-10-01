@@ -149,7 +149,6 @@ const productSellingContent = (content, taxonomy, product) => {
   const themeCopy = themeContentOf(content, theme)
   return {
     ...themeCopy,
-    category: taxonomy.nameOf(taxonomy.primaryCategoryOf(product)),
     // The product's own name, not the SKU's. The heading and the lede sit directly
     // above the option picker, so interpolating the variant name made the page open
     // "Ball - Sphere Shaped Himalayan Rock Salt Lamp — Large brings a warm glow…"
@@ -382,11 +381,10 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
   const groupName = taxonomy.nameOf(taxonomy.primaryCategoryOf(product))
   const variantClass = variant ? ` product-card--${variant}` : ''
   const hasOptions = product.variantCount > 1
-  // Only render the badge when there is something to say. It is absolutely
-  // positioned with padding and a dark background, so an empty one drew a small
-  // dark rectangle on every in-stock card — every product has an empty tags list.
-  const badge = product.stock ? product.tags[0] : 'Out of stock'
 
+  // No label over the photo (owner's call, 1 Oct 2026): tags and stock stay in the
+  // admin, and a sold-out card already says so below — greyed photo, "Currently
+  // unavailable", disabled button.
   return (
     <article className={`product-card theme-${taxonomy.themeForProduct(product)}${variantClass}${product.stock ? '' : ' is-soldout'}`}>
       <Link className="product-image" href={`/product-page/${product.slug}`} aria-label={`View ${product.name}`}>
@@ -396,7 +394,6 @@ function ProductCard({ taxonomy, product, onQuickView, onAdd, variant = '' }) {
             screen — including whichever one is the page's largest element — load
             exactly as before; only the ones below the fold wait their turn. */}
         <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
-        {badge && <span>{badge}</span>}
       </Link>
       <div className="product-body">
         <p>{groupName}</p>
@@ -920,7 +917,6 @@ export default function App() {
         name: product.name,
         image: product.image,
         href: `/product-page/${product.slug}`,
-        label: taxonomy.nameOf(taxonomy.primaryCategoryOf(product)),
         variant: index % 7 === 0 ? 'wide' : index % 5 === 0 ? 'tall' : '',
       })),
       ...taxonomy.navList.slice(0, 6).map((category, index) => ({
@@ -928,7 +924,6 @@ export default function App() {
         name: category.name,
         image: category.image,
         href: taxonomy.href(category.slug),
-        label: category.name,
         variant: index % 3 === 0 ? 'wide' : '',
       })),
     ],
@@ -938,7 +933,6 @@ export default function App() {
     () => [
       {
         key: 'home-gifts',
-        label: 'Home showcase',
         title: 'Warm rooms, quiet corners, and giftable glow.',
         body: 'Styled lamps and holders for homes, spas, kitchens, and calm retail displays.',
         image: media('yoga-room.png'),
@@ -946,7 +940,6 @@ export default function App() {
       },
       {
         key: 'kitchen-saltware',
-        label: 'Kitchen saltware',
         title: 'Saltware for cooking, serving, and table theatre.',
         body: 'Bowls, platters, shot glasses, and pantry pieces shown in real hosting moments.',
         image: img('salty-chef-family-live-site.png'),
@@ -954,7 +947,6 @@ export default function App() {
       },
       {
         key: 'trade-spa',
-        label: 'Trade and spa',
         title: 'Salt walls, tiles, bricks, and bulk project supply.',
         body: 'A more architectural look at how the range works for wellness and trade spaces.',
         image: media('home-spa-salt-room-generated.png'),
@@ -962,7 +954,6 @@ export default function App() {
       },
       {
         key: 'yard-supply',
-        label: 'Equestrian',
         title: 'Field, stable, and smallholding supply.',
         body: 'Natural salt licks and yard-ready essentials for repeat rural buyers.',
         image: media('home-horse-salt-lick-generated.png'),
@@ -1835,16 +1826,12 @@ export default function App() {
     const proof = productProof(content, theme)
     const selling = productSellingContent(content, taxonomy, product)
     const visibleReviews = productVisibleReviews(content, theme)
-    const eyebrow = product.tags.join(' / ')
 
     return (
       <section className={`product-page theme-${theme}`}>
-        <ProductGallery key={product.skuId} product={product} category={selling.category} />
+        <ProductGallery key={product.skuId} product={product} />
         <div className="product-detail">
           <div className="product-buy-panel">
-            {/* No product has tags yet, and an empty eyebrow still reserves its
-                bottom margin — so render it only when there is something in it. */}
-            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
             <h1>{group.name}</h1>
             <p className="product-lede">{selling.lede}</p>
             {group.variantCount > 1 && (
@@ -1953,7 +1940,6 @@ export default function App() {
         <div className="gallery-showcase">
           <Link className="gallery-feature-card" href={featuredGalleryItem.href}>
             <img src={featuredGalleryItem.image} alt={featuredGalleryItem.title} fetchPriority="high" decoding="async" />
-            <span>{featuredGalleryItem.label}</span>
             <div>
               <h2>{featuredGalleryItem.title}</h2>
               <p>{featuredGalleryItem.body}</p>
@@ -1964,7 +1950,6 @@ export default function App() {
             {supportingGalleryItems.map(item => (
               <Link className="gallery-story-card" key={item.key} href={item.href}>
                 <img src={item.image} alt={item.title} loading="lazy" />
-                <span>{item.label}</span>
                 <div>
                   <h2>{item.title}</h2>
                   <p>{item.body}</p>
@@ -1986,7 +1971,6 @@ export default function App() {
           {galleryItems.map(item => (
             <Link className={`gallery-card ${item.variant ? `gallery-card--${item.variant}` : ''}`} key={item.key} href={item.href}>
               <img src={item.image} alt={item.name} loading="lazy" />
-              <span>{item.label}</span>
               <strong>{item.name}</strong>
             </Link>
           ))}
@@ -2727,7 +2711,6 @@ export default function App() {
             <button className="close-button" type="button" data-dialog-focus onClick={closeQuickView}>Close</button>
             <ProductImage src={quickViewVariant.image} alt={quickViewVariant.name} decoding="async" />
             <div>
-              {quickViewProduct.tags.length > 0 && <p className="eyebrow">{quickViewProduct.tags.join(' / ')}</p>}
               <h2 id="quick-view-title">{quickViewProduct.name}</h2>
               <p>{quickViewProduct.description}</p>
               {quickViewProduct.variantCount > 1 && (

@@ -222,6 +222,47 @@ test.describe('product photographs', () => {
   })
 })
 
+// The owner had the tag, stock and theme labels taken off every picture on 1 October
+// 2026. Tags, stock and categories are still kept and edited in the admin, and tags
+// still drive search and collection sections; the shop just stopped showing them.
+test.describe('product pictures carry no labels', () => {
+  test('shop cards and gallery tiles show nothing over the picture', async ({ page }) => {
+    await page.goto('/shop')
+    await expect(page.locator('.product-card').first()).toBeVisible()
+    await expect(page.locator('.product-image > span')).toHaveCount(0)
+    // Without the "Out of stock" label, a sold-out card still has to say so in words.
+    for (const card of await page.locator('.product-card.is-soldout').all()) {
+      await expect(card).toContainText('Currently unavailable')
+    }
+
+    await page.goto('/gallery')
+    await expect(page.locator('.gallery-card').first()).toBeVisible()
+    await expect(page.locator('.gallery-feature-card > span, .gallery-story-card > span, .gallery-card > span')).toHaveCount(0)
+  })
+
+  test('the product page and quick view show no label or tag heading', async ({ page, request }) => {
+    // Culinary salt is always tagged "pantry" (functions/lib/public-copy.mjs), so it
+    // exercises a tagged product in every environment.
+    const { products } = await (await request.get('/api/products')).json()
+    const culinary = products.find(item => /culinary salt/i.test(item.name))
+    expect(culinary?.tags).toContain('pantry')
+
+    await page.goto('/shop')
+    await page.locator('.product-card', { hasText: /culinary salt/i }).first()
+      .getByRole('button', { name: 'View', exact: true }).click()
+    await expect(page.locator('.quick-view h2')).toBeVisible()
+    await expect(page.locator('.quick-view .eyebrow')).toHaveCount(0)
+
+    await page.goto(`/product-page/${culinary.slug}`)
+    await expect(page.locator('.product-buy-panel h1')).toBeVisible()
+    await expect(page.locator('.product-buy-panel .eyebrow')).toHaveCount(0)
+    // The owner's point: a label appearing only once a product is opened is just as
+    // inconsistent. Only the "View larger" hint, identical on every product and hidden
+    // from screen readers, may sit on the main photo.
+    await expect(page.locator('.product-gallery-main > span:not([aria-hidden="true"])')).toHaveCount(0)
+  })
+})
+
 test.describe('the pages a customer is sent to after paying', () => {
   // These 404'd once, after a real payment had been taken — the order was
   // captured correctly and the customer saw an error page. Never again.

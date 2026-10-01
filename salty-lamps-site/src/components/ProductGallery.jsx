@@ -8,7 +8,7 @@ export function ProductImage({ src, alt, ...props }) {
 
 // The parent keys this gallery by the option identity: changing an option starts
 // at its cover, even when two options have equal prices or share a product name.
-export default function ProductGallery({ product, category }) {
+export default function ProductGallery({ product }) {
   const photos = [...new Set([product.image, ...(product.images || [])].filter(Boolean))]
   const [selected, setSelected] = useState(null)
   const [expanded, setExpanded] = useState(false)
@@ -73,7 +73,6 @@ export default function ProductGallery({ product, category }) {
         onClick={() => setExpanded(true)}
       >
         <ProductImage src={active} alt={product.name} fetchPriority="high" decoding="async" />
-        <span className="product-gallery-category">{category}</span>
         <span className="product-gallery-enlarge-hint" aria-hidden="true">View larger</span>
       </button>
     </div>
