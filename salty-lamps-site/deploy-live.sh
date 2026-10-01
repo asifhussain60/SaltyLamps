@@ -5,9 +5,11 @@
 #
 # It does not attach www, create the holding rule, or change DNS, Access, Stripe or
 # secrets; those are the owner's steps in docs/migration.md step 11. It never writes to
-# the database. Run it yourself, on a machine where `npx wrangler login` was completed as
-# the Salty Lamps owner (Saltylamps@hotmail.com) or the approved Gmail administrator
-# inside that account. Nothing here reads or stores a password, token or API key.
+# the database, and step 6 refuses to go on unless the database's own migration log holds
+# every file in d1/migrations unedited (apply any new migration first, backup first).
+# Run it yourself, on a machine where `npx wrangler login` was completed as the Salty Lamps
+# owner (Saltylamps@hotmail.com) or the approved Gmail administrator inside that account.
+# Nothing here reads or stores a password, token or API key.
 #
 #   LIVE_DRY_RUN=1 ./deploy-live.sh   # offline half only: no network, no login, no writes
 #   ./deploy-live.sh                  # full run; reads the account, then asks you to type
@@ -37,8 +39,16 @@ die()  { printf 'STOPPED: %s\n' "$*" >&2; exit 1; }
 confirm_phrase() { printf '\n%s\nType "%s" to continue: ' "$1" "$2"; read -r reply; [ "$reply" = "$2" ] || die "declined; nothing further was changed."; }
 wr()   { npx wrangler -c "$CONFIG" "$@"; }
 
+# scripts/*-preflight.py import tomllib (Python 3.11+) but this Mac's default python3 is
+# 3.9, so pick an interpreter once, newest first, rather than die at step 1.
+PY=""
+for candidate in python3.13 python3.12 python3.11 python3; do
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)'; then PY="$(command -v "$candidate")"; break; fi
+done
+[ -n "$PY" ] || die "Python 3.11 or newer is needed (brew install python@3.13)."
+
 say "1/8 Fail-closed target check (offline)"
-python3 scripts/live-preflight.py
+"$PY" scripts/live-preflight.py
 [ -z "${CONTENT_SNAPSHOT_PRODUCTION:-}" ] || die "CONTENT_SNAPSHOT_PRODUCTION is set; this is not a production-snapshot build."
 [ -z "${VITE_STAGING:-}" ] || die "VITE_STAGING is set in this shell; it would put the test-shop banner on the live site."
 [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ "$CLOUDFLARE_ACCOUNT_ID" = "$OWNER_ACCOUNT" ] || die "CLOUDFLARE_ACCOUNT_ID is not the owner account."
@@ -80,7 +90,7 @@ fi
 
 say "5/8 Confirm the Cloudflare login is the owner account"
 WHO="$(npx wrangler whoami --json)" || die "not logged in. Run: npx wrangler login  (as the Salty Lamps owner)."
-printf '%s' "$WHO" | RETIRED_EMAIL="$RETIRED_EMAIL" OWNER="$OWNER_ACCOUNT" RETIRED="$RETIRED_ACCOUNT" python3 -c '
+printf '%s' "$WHO" | RETIRED_EMAIL="$RETIRED_EMAIL" OWNER="$OWNER_ACCOUNT" RETIRED="$RETIRED_ACCOUNT" "$PY" -c '
 import json, os, sys
 text = sys.stdin.read()
 who = json.loads(text[text.index("{"):])
@@ -107,6 +117,12 @@ for name in STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY STRIPE_WEBHOOK_SECRET RESEN
 done
 [ -z "$MISSING" ] || die "these secrets are not set on $PROJECT:$MISSING. The owner sets each with: npx wrangler pages secret put NAME --project-name $PROJECT"
 printf 'All four secrets are present by name. Their values were not read.\n'
+# The deployed code writes columns that only exist once their migration has run (the paid-order
+# insert in functions/api/webhook.js), and this script never changes the database, so refuse to
+# publish code the database is not ready for. Reads the planner's ledger; see migration-ledger.mjs.
+wr d1 execute DB --remote --json --command "SELECT name, sha256, status FROM production_migration_ledger" \
+  | node scripts/migration-ledger.mjs \
+  || die "the shop database migrations could not be confirmed, or some are missing or edited (see above); apply them to the database, backup first, before a live release."
 
 say "7/8 Recovery point for the shop database (read-only)"
 umask 077
@@ -114,7 +130,7 @@ mkdir -p "$WORK"
 wr d1 export DB --remote --output "$WORK/live-before.sql"
 wr d1 time-travel info DB --json > "$WORK/live-time-travel-before.json"
 printf 'Saved %s and a Time Travel bookmark. To roll back: wrangler d1 time-travel restore DB --bookmark=<value in live-time-travel-before.json>\n' "$WORK/live-before.sql"
-STRANDED="$(wr d1 execute DB --remote --json --command "SELECT COUNT(*) AS n FROM staging_image_objects" 2>/dev/null | python3 -c 'import sys,json; t=sys.stdin.read(); print(json.loads(t[t.index("["):])[0]["results"][0]["n"])' 2>/dev/null || echo unknown)"
+STRANDED="$(wr d1 execute DB --remote --json --command "SELECT COUNT(*) AS n FROM staging_image_objects" 2>/dev/null | "$PY" -c 'import sys,json; t=sys.stdin.read(); print(json.loads(t[t.index("["):])[0]["results"][0]["n"])' 2>/dev/null || echo unknown)"
 printf 'Photos still stored in the temporary test-database storage: %s. They stop being served once this release is live; copy or re-upload them to R2 before www is opened to the public.\n' "$STRANDED"
 
 say "8/8 Publish the live configuration to $PROJECT"
@@ -138,6 +154,8 @@ cat <<'EOF'
   2. Copy or re-upload the photos listed above, then check every product image address returns 200.
   3. Create the temporary www rule, attach www to this project, then run the owner-present email test
      and the real-payment dry run. Only then lift the rule.
-  If this release misbehaves before www is attached: ./deploy-staging.sh (code-only) puts the sandbox back.
-  After www is attached, roll back from Cloudflare Pages > salty-lamps-staging > Deployments.
+  Rolling back. Before www is attached: STAGING_CODE_ONLY=1 ./deploy-staging.sh puts the sandbox back.
+  After www is attached, do NOT roll back to an older deployment (Pages > salty-lamps-staging > Deployments)
+  unless its message reads "live release <sha>": every earlier one is sandbox mode and would put real
+  checkout into Stripe test mode. Otherwise move www back to the salty-lamps holding project.
 EOF

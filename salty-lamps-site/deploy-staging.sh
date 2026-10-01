@@ -36,8 +36,16 @@ die()     { printf 'STOPPED: %s\n' "$*" >&2; exit 1; }
 confirm() { printf '\n%s\nType yes to continue: ' "$1"; read -r reply; [ "$reply" = yes ] || die "declined; nothing further was changed."; }
 wr()      { npx wrangler -c "$CONFIG" "$@"; }
 
+# scripts/*-preflight.py import tomllib (Python 3.11+) but this Mac's default python3 is
+# 3.9, so pick an interpreter once, newest first, rather than die at step 1.
+PY=""
+for candidate in python3.13 python3.12 python3.11 python3; do
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)'; then PY="$(command -v "$candidate")"; break; fi
+done
+[ -n "$PY" ] || die "Python 3.11 or newer is needed (brew install python@3.13)."
+
 say "1/8 Fail-closed target check (offline)"
-python3 scripts/staging-preflight.py
+"$PY" scripts/staging-preflight.py
 [ -z "${CONTENT_SNAPSHOT_PRODUCTION:-}" ] || die "CONTENT_SNAPSHOT_PRODUCTION is set; this is not a production build."
 [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ "$CLOUDFLARE_ACCOUNT_ID" = "$OWNER_ACCOUNT" ] || die "CLOUDFLARE_ACCOUNT_ID is not the owner account."
 export CLOUDFLARE_ACCOUNT_ID="$OWNER_ACCOUNT"
@@ -66,7 +74,7 @@ if (s.resolvedFrom !== 'staging' || hours > 24) {
 say "4/8 Prepare the guarded price correction (offline)"
 umask 077
 mkdir -p "$WORK"
-python3 scripts/prepare-staging-price-correction.py "$WORK/price-correction.sql"
+"$PY" scripts/prepare-staging-price-correction.py "$WORK/price-correction.sql"
 printf 'Working files: %s\n' "$WORK"
 
 if [ "$DRY" = 1 ]; then
@@ -77,7 +85,7 @@ fi
 
 say "5/8 Confirm the Cloudflare login is the owner account"
 WHO="$(npx wrangler whoami --json)" || die "not logged in. Run: npx wrangler login  (as the Salty Lamps owner)."
-printf '%s' "$WHO" | RETIRED_EMAIL="$RETIRED_EMAIL" OWNER="$OWNER_ACCOUNT" RETIRED="$RETIRED_ACCOUNT" python3 -c '
+printf '%s' "$WHO" | RETIRED_EMAIL="$RETIRED_EMAIL" OWNER="$OWNER_ACCOUNT" RETIRED="$RETIRED_ACCOUNT" "$PY" -c '
 import json, os, sys
 text = sys.stdin.read()
 who = json.loads(text[text.index("{"):])
@@ -93,7 +101,7 @@ print("Signed in as", email or "(token)", "with access to the owner account.")
 # and running it would put real checkout back into Stripe test mode and stop every uploaded
 # photo being served, so refuse. Publish the live shop with ./deploy-live.sh instead.
 set +e
-npx wrangler pages project list --json 2>/dev/null | python3 scripts/pages-has-www.py "$PROJECT"
+npx wrangler pages project list --json 2>/dev/null | "$PY" scripts/pages-has-www.py "$PROJECT"
 WWW_CHECK=$?
 set -e
 [ "$WWW_CHECK" != 0 ] || die "www.saltylamps.co.uk is attached to $PROJECT: the shop is live, and this script would switch it back to sandbox mode. Use ./deploy-live.sh."
@@ -113,7 +121,7 @@ wr d1 execute DB --remote --file d1/staging/image-storage.sql
 confirm "Apply the guarded price correction to salty-lamps-staging-db? Each UPDATE only fires where the price still equals the old demo value; edited prices are left alone."
 wr d1 execute DB --remote --file "$WORK/price-correction.sql"
 wr d1 execute DB --remote --json --command "SELECT product_id, variant_label, price_pence FROM skus" > "$WORK/skus-after.json"
-python3 - "$WORK/skus-after.json" <<'PY'
+"$PY" - "$WORK/skus-after.json" <<'PY'
 import importlib.util, json, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('prices', Path('scripts/prepare-staging-price-correction.py'))
