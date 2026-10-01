@@ -13,7 +13,8 @@
     "test:unit": "node --test test/*.test.mjs",
     "media:verify": "node scripts/media-refresh.mjs verify",
     "media:compile": "node scripts/compile-media-refresh.mjs",
-    "media:verify-cutover": "node scripts/verify-media-cutover.mjs"
+    "media:verify-cutover": "node scripts/verify-media-cutover.mjs",
+    "live:check": "node scripts/live-check.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.17.0",
