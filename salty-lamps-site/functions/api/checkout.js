@@ -4,6 +4,7 @@ import {readPostageConfig} from '../lib/postage-store.mjs'
 import { CartError, readCheckoutCart, normaliseCart } from '../lib/cart.mjs'
 import { deliveryMessage } from './checkout/delivery.js'
 import { isUkPostcode } from '../lib/uk-postcode.mjs'
+import { SPECIAL_INSTRUCTIONS_MAX } from '../lib/validation.mjs'
 // POST /api/checkout
 // Body: { items: [{ skuId: number, quantity: number }], postcode: string, address: object }
 // Looks up each line server-side in D1 (never trusts a client-sent price),
@@ -169,13 +170,17 @@ function readUkAddress(raw) {
   const line1 = field('line1', 150)
   const line2 = field('line2', 150)
   const city = field('city', 100)
+  const instructions = field('instructions', SPECIAL_INSTRUCTIONS_MAX)
   const postcode = normalisePostcode(raw.postcode)
   if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new CartError('Enter a valid email address.')
   if (!name || name.length > 100 || !line1 || line1.length > 150 || line2.length > 150 || !city || city.length > 100) {
     throw new CartError('Complete your UK delivery address before payment.')
   }
   if (!isUkPostcode(postcode)) throw new CartError('Enter a valid UK postcode.')
-  return { email, name, line1, line2, city, postcode: `${postcode.slice(0, -3)} ${postcode.slice(-3)}` }
+  if (instructions.length > SPECIAL_INSTRUCTIONS_MAX) throw new CartError(`Special instructions must be ${SPECIAL_INSTRUCTIONS_MAX} characters or fewer.`)
+  // Appended last and only when written: a checkout without a note serialises exactly as it did
+  // before the note existed, so address_json and the fingerprint still match for in-flight checkouts.
+  return { email, name, line1, line2, city, postcode: `${postcode.slice(0, -3)} ${postcode.slice(-3)}`, ...(instructions ? { instructions } : {}) }
 }
 
 function jsonError(message, status, code) {

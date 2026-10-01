@@ -24,6 +24,10 @@ async function enterAddress(page) {
  await page.getByRole('button',{name:'Continue to address',exact:true}).click()
  await expect(page).toHaveURL(/\/checkout\/address$/)
  if(process.env.REVIEW_SCREENSHOTS) await page.screenshot({path:'/tmp/salty-lamps-address-empty.png',fullPage:true})
+ await fillAddress(page)
+}
+
+async function fillAddress(page) {
  await page.getByLabel('Email address').fill('buyer@example.com')
  await page.getByLabel('Full name').fill('Example Buyer')
  await page.getByLabel('Address line 1').fill('10 High Street')
@@ -113,6 +117,62 @@ test('reviewed postcode stays fixed on the UK address and payment payload',async
  await expect(page.locator('.site-header')).toBeVisible()
  expect(payload.postcode).toBe('ST4 3NP')
  expect(payload.address.city).toBe('Stoke-on-Trent')
+})
+
+test('special instructions are optional, counted, kept through a postcode change and sent with the address',async({page,request})=>{
+ const cart=await setup(page,request)
+ await cart.getByRole('button',{name:'Checkout',exact:true}).click()
+ const main=page.getByRole('main')
+ let payload
+ await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{clientSecret:'cs_test_secret_fixture',publishableKey:'pk_test_fixture',sessionId:'cs_test_instructions'}})})
+ await main.getByLabel('Delivery postcode').fill('ST4 3NP')
+ await enterAddress(page)
+ const box=main.getByRole('textbox',{name:/Instructions for this order/})
+ const count=main.locator('#checkout-instructions-count')
+ await expect(main.getByRole('heading',{name:'Special instructions'})).toBeVisible()
+ await expect(box).toBeVisible()
+ await expect(box).toHaveAccessibleName('Instructions for this order (optional)')
+ await expect(box).toHaveJSProperty('required',false)
+ await expect(box).toHaveAttribute('maxlength','500')
+ await expect(box).toHaveAttribute('aria-describedby','checkout-instructions-help checkout-instructions-count')
+ await expect(count).toHaveText('0 / 500')
+ const text='Leave with the neighbour at no. 12'
+ await box.fill(text)
+ await expect(count).toHaveText(`${text.length} / 500`)
+ await expect(count).toHaveText('34 / 500')
+ await expect(count).not.toHaveClass(/is-near-limit/)
+ await box.fill('x'.repeat(460))
+ await expect(count).toHaveText('460 / 500')
+ await expect(count).toHaveClass(/is-near-limit/)
+ const accessibility=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()
+ expect(accessibility.violations.map(v=>v.id)).toEqual([])
+ await box.fill(text)
+ await main.getByRole('button',{name:'Change postcode'}).click()
+ await main.getByLabel('Delivery postcode').fill('ST4 4AA')
+ await main.getByRole('button',{name:'Continue to address',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/address$/)
+ await expect(main.getByLabel('Delivery postcode')).toHaveValue('ST4 4AA')
+ await expect(main.getByLabel('Address line 1')).toHaveValue('')
+ await expect(box).toHaveValue(text)
+ await fillAddress(page)
+ await box.fill(`${text}  `)
+ await main.getByRole('button',{name:'Continue to payment',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/payment$/)
+ expect(payload.address.instructions).toBe(text)
+})
+
+test('an empty instructions box never blocks payment and is not sent',async({page,request})=>{
+ const cart=await setup(page,request)
+ await cart.getByRole('button',{name:'Checkout',exact:true}).click()
+ const main=page.getByRole('main')
+ let payload
+ await page.route('**/api/checkout',r=>{payload=r.request().postDataJSON();return r.fulfill({json:{clientSecret:'cs_test_secret_fixture',publishableKey:'pk_test_fixture',sessionId:'cs_test_no_instructions'}})})
+ await main.getByLabel('Delivery postcode').fill('ST4 3NP')
+ await enterAddress(page)
+ await expect(main.getByRole('textbox',{name:/Instructions for this order/})).toHaveValue('')
+ await main.getByRole('button',{name:'Continue to payment',exact:true}).click()
+ await expect(page).toHaveURL(/\/checkout\/payment$/)
+ expect(Object.keys(payload.address)).toEqual(['email','name','line1','line2','city','postcode'])
 })
 
 test('postcode suggestions on order review stay fixed through address entry',async({page,request})=>{

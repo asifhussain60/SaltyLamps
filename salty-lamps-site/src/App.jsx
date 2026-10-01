@@ -603,7 +603,7 @@ export default function App() {
   const [checkoutAddress, setCheckoutAddress] = useState(() => {
     let postcode = ''
     try { postcode = formatUkPostcode(window.sessionStorage.getItem('salty-lamps-delivery-postcode') || '') } catch { /* Session storage may be unavailable. */ }
-    return { email: '', name: '', line1: '', line2: '', city: '', postcode }
+    return { email: '', name: '', line1: '', line2: '', city: '', postcode, instructions: '' }
   })
   const [paymentSession, setPaymentSession] = useState(() => {
     try { return JSON.parse(window.sessionStorage.getItem(PENDING_CHECKOUT_KEY) || 'null') } catch { return null }

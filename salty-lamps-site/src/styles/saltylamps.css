@@ -3521,9 +3521,13 @@ label {
 .checkout-address h2:first-child { margin-top: 0; }
 .checkout-address label, .checkout-postcode label { font-family: var(--ui); font-size: .9rem; font-weight: 700; color: var(--ink); }
 .checkout-address label span { font-weight: 400; color: var(--muted); }
-.checkout-address input, .checkout-postcode input { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; color: var(--ink); background: var(--paper); font: inherit; }
-.checkout-address input:focus-visible, .checkout-postcode input:focus-visible { outline: 3px solid var(--theme-accent); outline-offset: 2px; }
-.checkout-address input:read-only { color: var(--muted); background: color-mix(in srgb, var(--paper) 70%, var(--line)); }
+.checkout-address input, .checkout-address textarea, .checkout-postcode input { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; color: var(--ink); background: var(--paper); font: inherit; }
+.checkout-address input:focus-visible, .checkout-address textarea:focus-visible, .checkout-postcode input:focus-visible { outline: 3px solid var(--theme-accent); outline-offset: 2px; }
+.checkout-address input:read-only, .checkout-address textarea:read-only { color: var(--muted); background: color-mix(in srgb, var(--paper) 70%, var(--line)); }
+.checkout-address textarea { min-height: 120px; line-height: 1.45; resize: vertical; }
+.checkout-address .checkout-instructions-help { margin-top: 0; text-wrap: pretty; }
+.checkout-address .checkout-instructions-count { justify-self: end; font-variant-numeric: tabular-nums; }
+.checkout-address .checkout-instructions-count.is-near-limit { color: var(--ember); font-weight: 700; }
 .checkout-fixed-postcode { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .checkout-fixed-postcode input { flex: 1 1 190px; }
 .checkout-fixed-postcode .text-button { flex: 0 0 auto; min-height: 44px; }

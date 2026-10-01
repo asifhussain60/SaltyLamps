@@ -510,6 +510,9 @@
 .admin-kv { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
 .admin-kv span { color: var(--muted); }
 .admin-address { font-style: normal; line-height: 1.5; }
+.admin-instructions { margin-top: 12px; }
+.admin-instructions span { color: var(--muted); }
+.admin-instructions p { margin: 2px 0 0; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-total { font-size: 1rem; margin-top: 10px; }
 
 /* ---- states ---- */

@@ -65,6 +65,7 @@ export function sampleFor(key) {
                 ['Stripe reference', SAMPLE_ORDER.id],
               ],
             },
+        ...(key === 'admin_new_order' ? [{ type: 'note', title: 'Special instructions', text: 'Please leave the parcel with the neighbour at no. 12 if no one is in.' }] : []),
         ...orderPanels,
       ],
     }

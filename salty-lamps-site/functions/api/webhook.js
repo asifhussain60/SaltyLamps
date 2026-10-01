@@ -113,8 +113,8 @@ async function recordOrder(env, stripe, session, origin) {
   const statements = [
     db.prepare(
       `INSERT INTO orders (id, payment_intent, status, customer_email, amount_total_pence, currency,
-                           ship_name, ship_line1, ship_line2, ship_city, ship_postcode, ship_country)
-       VALUES (?, ?, 'paid', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                           ship_name, ship_line1, ship_line2, ship_city, ship_postcode, ship_country, special_instructions)
+       VALUES (?, ?, 'paid', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       session.id,
       session.payment_intent,
@@ -127,6 +127,8 @@ async function recordOrder(env, stripe, session, origin) {
       addr.city ?? null,
       addr.postal_code ?? null,
       addr.country ?? null,
+      // Snapshots made before the note existed, and v1 sessions with no snapshot, have none.
+      submitted?.instructions || '',
     ),
   ]
 
@@ -260,6 +262,8 @@ async function prepareOrderEmails(env, db, session, orderedBySkuId, before, orig
           ['Stripe reference', order.id],
         ],
       },
+      // Owner only: orderBlocks is shared with the customer's mails, which must not echo the note back.
+      ...(order.special_instructions ? [{ type: 'note', title: 'Special instructions', text: order.special_instructions }] : []),
       ...blocks,
     ],
   })

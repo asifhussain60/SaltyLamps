@@ -15,6 +15,10 @@ export const MAX_IMAGE_BYTES = 2 * 1024 * 1024 // 2 MB
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 export const LOW_STOCK_THRESHOLD = 5
 
+// Longest "Special instructions" note a customer may add at checkout. The storefront box,
+// the checkout payload and the server all read this one number.
+export const SPECIAL_INSTRUCTIONS_MAX = 500
+
 export const TRACK_MODES = ['quantity', 'binary']
 export const PAYMENT_STATUSES = ['pending', 'paid', 'refunded', 'cancelled']
 export const FULFILMENT_STATUSES = ['unfulfilled', 'packed', 'shipped', 'delivered']

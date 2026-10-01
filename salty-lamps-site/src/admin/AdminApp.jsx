@@ -1025,6 +1025,12 @@ function OrderDetail({ id }) {
             {order.ship_country && <div>{order.ship_country}</div>}
             {!order.ship_line1 && <div className="admin-muted">No shipping address on file.</div>}
           </address>
+          {order.special_instructions && (
+            <div className="admin-instructions">
+              <span>Special instructions</span>
+              <p>{order.special_instructions}</p>
+            </div>
+          )}
         </section>
       </div>
 

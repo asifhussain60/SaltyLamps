@@ -8,6 +8,7 @@ import { onRequestGet as verify } from '../functions/api/checkout/verify.js'
 import { onRequestPatch as patchOrder } from '../functions/api/admin/orders/[id].js'
 import { onRequestPost as webhook } from '../functions/api/webhook.js'
 import { isStripeTestKey, stripeModeAllowed } from '../functions/lib/stripe-mode.mjs'
+import { renderEmail } from '../functions/lib/email-render.mjs'
 
 const json=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}})
 const envFor=db=>({DB:db,STRIPE_SECRET_KEY:'sk_test_fixture',STRIPE_PUBLISHABLE_KEY:'pk_test_fixture',STRIPE_WEBHOOK_SECRET:'whsec_fixture'})
@@ -331,4 +332,62 @@ test('simultaneous despatch actions enqueue one notification and a failed queue 
   assert.equal(sql.prepare("SELECT COUNT(*) n FROM commerce_email_jobs WHERE order_id='cs_despatch'").get().n,1)
   assert.equal(sql.prepare("SELECT COUNT(*) n FROM email_outbox WHERE template_key='order_shipped'").get().n,1)
  }finally{sql.close()}
+})
+
+// Real checkout -> signed paid webhook on the SQLite fixture; only Stripe is replaced.
+async function checkoutThenPay(sessionId,extraAddress={}){
+ const {sql,db}=commerceFixture();const prior=globalThis.fetch
+ globalThis.fetch=async(url,init)=>{const u=String(url)
+  if(u.endsWith('/v1/customers'))return json({id:'cus_fixture'})
+  if(u.includes('/line_items'))return json({data:[{id:'li_1',quantity:1,price:{unit_amount:1000,product:{metadata:{sku_id:'1'}}}}],has_more:false})
+  if(u.endsWith('/v1/checkout/sessions'))return json({id:sessionId,client_secret:'fixture',expires_at:Math.floor(Date.now()/1000)+1800})
+  return json({latest_charge:{payment_method_details:{type:'card'}}})}
+ try{
+  const env=envFor(db)
+  assert.equal((await checkout({env,request:fixtureRequest('/api/checkout',{address:{...fixtureAddress,...extraAddress},postcode:fixtureAddress.postcode,items:[{skuId:1,quantity:1}]})})).status,200)
+  const session={id:sessionId,payment_intent:'pi_fixture',status:'complete',payment_status:'paid',metadata:{store:'salty-lamps',checkout_version:'2'},customer_details:{email:fixtureAddress.email},amount_total:1500,currency:'gbp'}
+  assert.equal((await webhook({env,request:signedRequest({id:`evt_${sessionId}`,type:'checkout.session.completed',data:{object:session}})})).status,200)
+  return sql
+ }catch(error){sql.close();throw error}finally{globalThis.fetch=prior}
+}
+const queuedMail=(sql,sessionId,key)=>JSON.parse(sql.prepare('SELECT payload FROM commerce_email_jobs WHERE id LIKE ?').get(`order:${sessionId}:${key}:%`).payload)
+
+test('a special-instructions note reaches the order and the owner email only, and is escaped there',async()=>{
+ const sql=await checkoutThenPay('cs_test_note',{instructions:'  <b>Gift</b> wrap\nplease  '})
+ try{
+  const note='<b>Gift</b> wrap\nplease'
+  assert.equal(JSON.parse(sql.prepare("SELECT address_json FROM checkout_reservations WHERE session_id='cs_test_note'").get().address_json).instructions,note)
+  assert.equal(sql.prepare("SELECT special_instructions s FROM orders WHERE id='cs_test_note'").get().s,note)
+  const owner=queuedMail(sql,'cs_test_note','admin_new_order'),customer=queuedMail(sql,'cs_test_note','order_confirmation')
+  assert.deepEqual(owner.blocks.slice(0,2).map(b=>b.type),['panel','note'])
+  assert.deepEqual(owner.blocks[1],{type:'note',title:'Special instructions',text:note})
+  assert.equal(JSON.stringify(customer.blocks).includes('Gift'),false)
+  const html=key=>{const mail=queuedMail(sql,'cs_test_note',key);return renderEmail({template:sql.prepare('SELECT * FROM email_templates WHERE key=?').get(key),data:mail.data,blocks:mail.blocks,siteUrl:'http://localhost'}).html}
+  assert.ok(html('admin_new_order').includes('&lt;b&gt;Gift&lt;/b&gt; wrap\nplease'))
+  assert.equal(html('admin_new_order').includes('<b>Gift</b>'),false)
+  assert.equal(html('order_confirmation').includes('Gift'),false)
+ }finally{sql.close()}
+})
+
+test('a checkout without a note keeps the exact old address shape and stores an empty note',async()=>{
+ const sql=await checkoutThenPay('cs_test_nonote',{instructions:'   '})
+ try{
+  assert.deepEqual(Object.keys(JSON.parse(sql.prepare("SELECT address_json FROM checkout_reservations WHERE session_id='cs_test_nonote'").get().address_json)),['email','name','line1','line2','city','postcode'])
+  assert.deepEqual(Object.keys(JSON.parse(sql.prepare('SELECT address_json FROM checkout_attempts').get().address_json)),['email','name','line1','line2','city','postcode'])
+  assert.equal(sql.prepare("SELECT special_instructions s FROM orders WHERE id='cs_test_nonote'").get().s,'')
+  assert.equal(queuedMail(sql,'cs_test_nonote','admin_new_order').blocks.some(b=>b.type==='note'),false)
+ }finally{sql.close()}
+})
+
+test('a note over 500 characters is refused before any checkout is recorded, while exactly 500 is accepted',async()=>{
+ const {sql,db}=commerceFixture();const prior=globalThis.fetch
+ globalThis.fetch=async url=>String(url).endsWith('/v1/customers')?json({id:'cus_fixture'}):json({id:'cs_test_limit',client_secret:'fixture',expires_at:Math.floor(Date.now()/1000)+1800})
+ const post=instructions=>checkout({env:envFor(db),request:fixtureRequest('/api/checkout',{address:{...fixtureAddress,instructions},postcode:fixtureAddress.postcode,items:[{skuId:1,quantity:1}]})})
+ try{
+  const refused=await post('x'.repeat(501))
+  assert.equal(refused.status,400);assert.deepEqual(await refused.json(),{error:'Special instructions must be 500 characters or fewer.'})
+  assert.equal(sql.prepare('SELECT COUNT(*) n FROM checkout_attempts').get().n,0);assert.equal(sql.prepare('SELECT COUNT(*) n FROM checkout_reservations').get().n,0)
+  assert.equal((await post('x'.repeat(500))).status,200)
+  assert.equal(JSON.parse(sql.prepare('SELECT address_json FROM checkout_reservations').get().address_json).instructions.length,500)
+ }finally{globalThis.fetch=prior;sql.close()}
 })
