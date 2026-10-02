@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-30T20:28:09.697Z",
+  "generatedAt": "2026-10-02T20:20:31.169Z",
   "source": "staging",
   "resolvedFrom": "staging",
-  "verifiedAt": "2026-09-30T20:28:09.697Z",
+  "verifiedAt": "2026-10-02T20:20:31.175Z",
   "siteUrl": "https://www.saltylamps.co.uk",
   "products": [
     {
@@ -353,8 +353,8 @@
       "showWeightCards": false,
       "deliveryNeedsConfirmation": false,
       "price": 29.99,
-      "stock": true,
-      "stockQty": 9,
+      "stock": false,
+      "stockQty": 0,
       "trackMode": "quantity",
       "categories": [
         "all-products",
@@ -424,7 +424,7 @@
       "deliveryNeedsConfirmation": false,
       "price": 3.99,
       "stock": true,
-      "stockQty": 93,
+      "stockQty": 91,
       "trackMode": "quantity",
       "categories": [
         "all-products",
@@ -817,8 +817,8 @@
       "showWeightCards": false,
       "deliveryNeedsConfirmation": false,
       "price": 8.99,
-      "stock": true,
-      "stockQty": 10,
+      "stock": false,
+      "stockQty": 0,
       "trackMode": "quantity",
       "categories": [
         "all-products",
@@ -1713,8 +1713,8 @@
       "showWeightCards": false,
       "deliveryNeedsConfirmation": false,
       "price": 19.99,
-      "stock": true,
-      "stockQty": 19,
+      "stock": false,
+      "stockQty": 0,
       "trackMode": "quantity",
       "categories": [
         "all-products",
