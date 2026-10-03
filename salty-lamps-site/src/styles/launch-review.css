@@ -14,6 +14,8 @@
 .launch-button--outline:hover { background: #eff2ec; color: var(--launch-green); }
 .launch-text-link { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--launch-green); font-size: 16px; font-weight: 700; text-decoration: none; }
 .launch-text-link:hover { text-decoration: underline; }
+.launch-inline-link { color: var(--launch-green); font-weight: 600; text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.launch-inline-link:hover { color: #19382f; text-decoration-thickness: 2px; }
 .launch-welcome { display: grid; grid-template-columns: 1.08fr 1fr; min-height: 530px; border: 1px solid #354c3e; border-radius: 20px; overflow: hidden; background: #21382e; color: #fff8eb; }
 .launch-welcome-copy { padding: clamp(28px, 4vw, 62px); background: radial-gradient(ellipse at 20% 0%, #3d5643, transparent 60%); }
 .launch-welcome-copy .launch-eyebrow { color: #eac28c; }

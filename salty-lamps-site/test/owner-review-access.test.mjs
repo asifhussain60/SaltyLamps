@@ -6,6 +6,7 @@ import { onRequest as page } from '../functions/_middleware.js'
 import { onRequest as api } from '../functions/api/admin/_middleware.js'
 import { LAUNCH_CHECKS } from '../functions/lib/launch-review.mjs'
 import { ownerReviewHref } from '../src/admin/store-url.mjs'
+import { REVIEW_LINKS, instructionParts } from '../src/admin/review-links.mjs'
 
 // A local signing key and mocked key service simulate Asim's claims through the
 // real verifier. No token is sent to Cloudflare; live policy tests are separate.
@@ -16,7 +17,7 @@ const env = { ADMIN_HOSTS: 'admin.saltylamps.co.uk', PUBLIC_HOST: 'www.saltylamp
 const source = readFileSync(new URL('../src/admin/AdminApp.jsx', import.meta.url), 'utf8')
 const nav = source.split('const NAV = [')[1].split('const TITLES =')[0]
 const navPaths = [...nav.matchAll(/href: '([^']+)'/g)].map(match => match[1])
-const linkedPaths = [...new Set([...navPaths, ...LAUNCH_CHECKS.map(check => check.path).filter(Boolean)])]
+const linkedPaths = [...new Set([...Object.values(REVIEW_LINKS).flatMap(Object.values), ...navPaths, ...LAUNCH_CHECKS.map(check => check.path).filter(Boolean)])]
 const claims = { iss: issuer, aud: [env.ACCESS_AUD], email: 'saltylamps@hotmail.com', exp: Math.floor(Date.now() / 1000) + 600 }
 function token(overrides = {}) {
   const segment = value => Buffer.from(JSON.stringify(value)).toString('base64url')
@@ -33,7 +34,7 @@ test('every owner-review link stays on an approved protected host', () => {
   for (const path of linkedPaths) {
     const resolved = new URL(ownerReviewHref(path, 'admin.saltylamps.co.uk'), 'https://admin.saltylamps.co.uk')
     assert.equal(resolved.hostname, path.startsWith('/admin') ? 'admin.saltylamps.co.uk' : 'test.saltylamps.co.uk', path)
-    assert.equal(resolved.pathname, path)
+    assert.equal(resolved.pathname + resolved.search + resolved.hash, path)
   }
   assert.equal(ownerReviewHref('/shop', 'localhost'), '/shop')
 })
@@ -61,4 +62,22 @@ test('simulated Asim token passes every administrator link; invalid tokens fail 
     assert.equal(response.status, 200, path)
     assert.equal(await response.text(), claims.email)
   }
+})
+
+
+test('instruction links preserve wording and lead to the specific requested destinations', () => {
+  for (const check of LAUNCH_CHECKS) {
+    const parts = check.steps.flatMap(text => {
+      const parts = instructionParts(text, check.id)
+      assert.equal(parts.map(p => p.text).join(''), text)
+      return parts
+    })
+    for (const phrase of Object.keys(REVIEW_LINKS[check.id] || {})) {
+      assert.ok(parts.some(p => p.path && p.text === phrase), `${check.id}: ${phrase} must render as a link`)
+    }
+  }
+  const info = instructionParts('Open the gallery, customer reviews and manufacturing page.', 'info')
+  assert.deepEqual(info.filter(p => p.path).map(p => p.path), ['/gallery', '/reviews', '/process'])
+  assert.equal(instructionParts('Open Inventory and the packed-weight view.', 'stock-weight').find(p => p.text === 'packed-weight view').path, '/admin/inventory?tab=weights')
+  assert.deepEqual(instructionParts('Leave this shop comment unchanged.', 'unknown'), [{ text: 'Leave this shop comment unchanged.' }])
 })

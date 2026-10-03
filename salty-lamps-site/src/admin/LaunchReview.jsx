@@ -3,6 +3,7 @@ import { LAUNCH_GROUPS, RESULT_LABELS, reviewCounts, reviewText } from '../../fu
 import { dirtyForms } from './navigation.mjs'
 import { Icon } from './Confirm.jsx'
 import { ownerReviewHref } from './store-url.mjs'
+import { instructionParts } from './review-links.mjs'
 import '../styles/launch-review.css'
 
 const LOCAL_KEY = 'salty-lamps-launch-review-unsaved-v1'
@@ -19,6 +20,12 @@ function download(review) {
   const a = document.createElement('a'); a.href = url; a.download = 'asim-salty-lamps-review.txt'; a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+function InstructionText({ children, checkId }) {
+  return instructionParts(children, checkId).map((part, i) => part.path
+    ? <a key={i} className="launch-inline-link" href={ownerReviewHref(part.path, window.location.hostname)} target="asim-launch-shop" rel="noopener" title="Opens in a separate tab">{part.text}</a>
+    : part.text)
+}
+
 export function WelcomeAsim({ compact = false }) {
   if (compact) return <a className="launch-dashboard-link" href="/admin/welcome"><span className="launch-round-icon"><Icon name="check" size={22} /></span><span><strong>Asim, welcome to your new shop.</strong><small>Your welcome page and launch checklist are ready.</small></span><span aria-hidden="true">→</span></a>
   return <article className="launch-page">
@@ -26,12 +33,12 @@ export function WelcomeAsim({ compact = false }) {
       <div className="launch-welcome-copy"><p className="launch-eyebrow">A new chapter for Salty Lamps</p><span className="launch-pill launch-pill--light"><Icon name="check" size={14} /> Built with care. Ready for your review.</span><h2>Congratulations,<br /><em>Asim.</em></h2><p className="launch-welcome-lead">Your business has a beautiful new home.</p><p>From the glow of your salt lamps to the details behind every order, this shop brings your products and your work together in one place.</p><a className="launch-button launch-button--gold" href="/admin/launch-checklist">Start your launch checklist <span aria-hidden="true">→</span></a><span className="launch-welcome-footnote">Take your time. Your answers and comments are saved as you go.</span></div>
       <div className="launch-welcome-photo"><img src="/media/light-catalogue/natural-small.webp" alt="A Himalayan salt lamp glowing with warm amber light" /><div className="launch-photo-caption"><span>Natural Himalayan rock salt</span><strong>A familiar warmth.<br />A fresh beginning.</strong></div></div>
     </header>
-    <section className="launch-introduction"><div><p className="launch-eyebrow">The finishing touch is yours</p><h3>Let’s make sure it feels right.</h3></div><p>We have checked the pages, product information and email delivery. Now we would love you to try the shop as a customer and review it as its owner. Your eye for the little details is what makes this ready for your customers.</p></section>
+    <section className="launch-introduction"><div><p className="launch-eyebrow">The finishing touch is yours</p><h3>Let’s make sure it feels right.</h3></div><p><InstructionText checkId="welcome">We have checked the pages, product information and email delivery. Now we would love you to try the shop as a customer and review it as its owner. Your eye for the little details is what makes this ready for your customers.</InstructionText></p></section>
     <div className="launch-feature-grid">{[
       ['box', 'Your catalogue, together', 'Review the descriptions, pictures, prices, stock and packed weights you have already entered.'],
       ['check', 'One clear step at a time', 'Each check explains what to do and what should happen. Tick a pass, flag a problem or ask for help.'],
       ['send', 'Your feedback reaches us', 'Comments are saved in this protected portal. Submit your review so Asif can see every result and note.'],
-    ].map(([icon, title, text], i) => <section className="launch-feature" key={title}><span className="launch-round-icon"><Icon name={icon} size={22} /></span><small>0{i + 1}</small><h3>{title}</h3><p>{text}</p></section>)}</div>
+    ].map(([icon, title, text], i) => <section className="launch-feature" key={title}><span className="launch-round-icon"><Icon name={icon} size={22} /></span><small>0{i + 1}</small><h3>{title}</h3><p><InstructionText checkId="welcome">{text}</InstructionText></p></section>)}</div>
     <aside className="launch-care-note"><Icon name="info" size={22} /><div><strong>A careful final rehearsal</strong><p>The customer site is still restricted while we finish testing. Arrange access and the real payment test with Asif first. Completing this checklist does not open the shop publicly.</p></div></aside>
     <footer className="launch-welcome-close"><h3>Here’s to your next chapter.</h3><p>Thank you for trusting us with Salty Lamps. Let’s get those last details right, together.</p><a className="launch-button" href="/admin/launch-checklist">Begin the checklist <span aria-hidden="true">→</span></a></footer>
   </article>
@@ -111,7 +118,7 @@ export default function LaunchReview() {
     {notice && <p className="launch-notice" role="status">{notice}</p>}
     {view === 'checklist' ? <>
       <section className="launch-progress"><div><span className="launch-eyebrow">Your progress</span><strong>{checked}<small> / {counts.total} results recorded</small></strong><div className="launch-progress-track" role="progressbar" aria-label="Results recorded" aria-valuemin={0} aria-valuemax={counts.total} aria-valuenow={checked}><span style={{ width: `${checked / counts.total * 100}%` }} /></div></div><div className="launch-stat"><strong>{counts.pass}</strong><span>Passed</span></div><div className="launch-stat"><strong>{counts.issue}</strong><span>Problems</span></div><div className="launch-stat"><strong>{counts.blocked}</strong><span>Need help</span></div></section>
-      <div className="launch-how"><p><strong>How to use this</strong> Open a task, follow its steps and compare the result. Tick “Passed”, or choose “Problem found” or “Need help”. Add comments whenever useful.</p><p>Shopping checks have separate phone and computer answers. Business, email delivery and payment checks are completed once. Saved answers are shared between your devices and both approved administrators.</p></div>
+      <div className="launch-how"><p><strong>How to use this</strong> Open a task, follow its steps and compare the result. Click the underlined words to open the right page in a separate tab; your checklist stays here. Tick “Passed”, or choose “Problem found” or “Need help”. Add comments whenever useful.</p><p>Shopping checks have separate phone and computer answers. Business, email delivery and payment checks are completed once. Saved answers are shared between your devices and both approved administrators.</p></div>
       <div className="launch-workspace"><nav className="launch-section-nav" aria-label="Checklist sections">{LAUNCH_GROUPS.map((g, i) => {
         const n = g.items.filter(c => doc.entries[`${c.scope === 'shared' ? 'shared' : device}:${c.id}`]?.result && doc.entries[`${c.scope === 'shared' ? 'shared' : device}:${c.id}`].result !== 'pending').length
         return <button key={g.id} aria-pressed={groupId === g.id} onClick={() => setGroupId(g.id)}><span className="launch-section-number">0{i + 1}</span><span>{g.name}<small>{n} of {g.items.length} checked{g.id === 'payment' ? ' · coordinate first' : ''}</small></span><Icon name={g.icon} size={17} /></button>
@@ -119,7 +126,7 @@ export default function LaunchReview() {
         <label className="launch-filter">Show <select value={filter} onChange={e => setFilter(e.target.value)}><option value="all">All steps</option><option value="pending">Not tested yet</option><option value="attention">Problems & help needed</option></select></label>
         {shown.map((item, i) => { const e = entry(item); return <details className={`launch-task launch-task--${e.result}`} key={`${device}:${item.id}`} open={e.result !== 'pass'}><summary><span className="launch-task-icon">{e.result === 'pass' ? <Icon name="check" size={19} /> : <Icon name={group.icon} size={19} />}</span><span><strong>{item.title}</strong><small>{item.scope === 'shared' ? 'Complete once' : `Testing on ${device}`} · {RESULT_LABELS[e.result]}</small></span><span className="launch-task-caret" aria-hidden="true">+</span></summary><div className="launch-task-body">
           {item.coordinated && <aside className="launch-payment-note"><strong>Arrange this with Asif first.</strong> This uses real money and the real shop. You complete any purchase or refund yourself. If access or the agreed test is not ready, choose “Need help”.</aside>}
-          <div className="launch-task-columns"><div><h4>What to do</h4><ol>{item.steps.map(s => <li key={s}>{s}</li>)}</ol></div><div className="launch-expected"><span className="launch-eyebrow">What should happen</span><p>{item.expected}</p></div></div>
+          <div className="launch-task-columns"><div><h4>What to do</h4><ol>{item.steps.map(s => <li key={s}><InstructionText checkId={item.id}>{s}</InstructionText></li>)}</ol></div><div className="launch-expected"><span className="launch-eyebrow">What should happen</span><p>{item.expected}</p></div></div>
           {item.path && <a className="launch-text-link" href={ownerReviewHref(item.path, window.location.hostname)} target="asim-launch-shop" rel="noopener">Open {item.path.startsWith('/admin') ? 'administrator page' : 'shop page'} <Icon name="externalLink" size={14} /></a>}
           <div className="launch-results"><label className="launch-pass"><input type="checkbox" checked={e.result === 'pass'} onChange={event => editEntry(item, { result: event.target.checked ? 'pass' : 'pending' })} />Passed</label>{['issue', 'blocked'].map(status => <button key={status} aria-pressed={e.result === status} onClick={() => editEntry(item, { result: e.result === status ? 'pending' : status })}>{RESULT_LABELS[status]}</button>)}</div>
           <label className="launch-comment">Comment for Asif <span>Optional · no customer, password or card details</span><textarea rows={3} maxLength={1500} placeholder={['issue', 'blocked'].includes(e.result) ? 'What did you try, what happened and which page or product was involved?' : 'Anything you would like us to know?'} value={e.comment} onChange={event => editEntry(item, { comment: event.target.value })} /></label>

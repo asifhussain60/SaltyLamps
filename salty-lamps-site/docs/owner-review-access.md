@@ -42,7 +42,22 @@ and absent tokens fail closed. The fixture uses an isolated mocked key service;
 it is not a Cloudflare-issued credential and is never sent to a live host.
 Cloudflare policy testing and actual hosted browsing are separate evidence.
 
-Hosted verification and release evidence will be recorded after publication.
+First release: commit `5102e97`, deployment `4bd2e7a1.salty-lamps-staging.pages.dev`.
+Backup and bookmark are in the private `live-20261003T152155Z` export directory.
+Sixteen administrator destinations and nine shop destinations rendered in the
+approved operator browser session. All 20 original navigation/checklist URLs
+redirected signed-out GET requests to the expected Access application.
+The published Sign out button displayed successful logout; choosing Cloudflare
+returned to the administrator dashboard. This verifies the operator round trip,
+not Asim's remote browser or an actual owner-issued token.
+
+Follow-up adds underlined links within the authored welcome/checklist instructions,
+including exact product pages, policies, manufacturing, customer reviews and the
+inventory weights tab. Links open separately, preserving the checklist. Stored
+answers, comments and review identifiers are unchanged. Local desktop and 390px
+phone layouts were checked with a read-only empty-review fixture; no horizontal
+overflow. Targeted review and simulated-token tests passed (9 tests).
+Hosted follow-up verification is pending this code-only publication.
 
 ## Public-opening follow-up
 

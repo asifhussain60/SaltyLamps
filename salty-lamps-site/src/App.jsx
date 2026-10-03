@@ -2613,7 +2613,7 @@ export default function App() {
                 : renderHome()}
       </main>
 
-      <footer className="site-footer">
+      <footer className="site-footer" id="contact">
         <div className="footer-brand">
           <span className="footer-eyebrow">Primary manufacturer &amp; processor</span>
           <strong>Salty Lamps Ltd</strong>
