@@ -57,7 +57,29 @@ inventory weights tab. Links open separately, preserving the checklist. Stored
 answers, comments and review identifiers are unchanged. Local desktop and 390px
 phone layouts were checked with a read-only empty-review fixture; no horizontal
 overflow. Targeted review and simulated-token tests passed (9 tests).
-Hosted follow-up verification is pending this code-only publication.
+Follow-up release: commit `a0fd2cd`, deployment
+`ad5e56d8.salty-lamps-staging.pages.dev`. Dated database export and Time Travel
+bookmark are in private `live-20261003T153826Z`.
+
+All 31 checklist inline anchors and 8 welcome inline anchors were inspected on
+the published pages. The new lamp, frame and bulb destinations rendered their
+expected products and choices; the bulb displayed GBP 1.00. The inventory query
+opened Weights selected. The contact anchor landed with the contact footer in
+the viewport. Clicking the actual home-page inline link opened the protected
+shop separately and preserved the checklist. Together with the first-pass
+hosted routes this covers all 30 distinct navigation/review destinations
+(including the contact fragment and inventory query). All 30 signed-out GET
+checks returned the expected Access login and return destination. Evidence is
+saved privately as `owner-access-signed-out.json` and
+`owner-inline-links-browser.json`; the earlier full browser-route evidence
+remains in the first release's private directory. No checkout, catalogue,
+stock, review answer or payment writes were performed.
+
+Owner-specific assurance consists of the Cloudflare recorded-identity policy
+tester plus the local cryptographically signed claim fixture through the real
+verifier. Hosted browsing used the approved operator's session, not a captured,
+forged or Cloudflare-issued Asim token. Asim's own remote-browser round trip is
+not claimed as completed.
 
 ## Public-opening follow-up
 
