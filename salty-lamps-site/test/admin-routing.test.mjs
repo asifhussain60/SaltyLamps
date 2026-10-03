@@ -1,8 +1,9 @@
+import { productionBindings } from './environment-fixture.mjs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { onRequest } from '../functions/_middleware.js'
 
-const env = {
+const env = { ...productionBindings,
   ADMIN_HOSTS: 'admin.saltylamps.co.uk',
   SITE_URL: 'https://test.saltylamps.co.uk',
   PUBLIC_HOST: 'www.saltylamps.co.uk',

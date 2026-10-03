@@ -1,0 +1,22 @@
+{
+  "redirect_id": "5f153e3597e2468ca9329dbdab3aab40",
+  "status": "Active, dashboard verified",
+  "expression": "(http.host eq \"saltylamps.co.uk\") or (http.host eq \"www.saltylamps.co.uk\" and starts_with(http.request.full_uri, \"http://\"))",
+  "destination": "concat(\"https://www.saltylamps.co.uk\", http.request.uri.path)",
+  "status_code": 301,
+  "preserve_query_string": true,
+  "dns": "All 3 apex A records now proxied; content retained for rollback",
+  "outside_public_view": "Jina public read confirms Going live shortly",
+  "browser": "HTTP apex /shop?redirect_check=1 reaches HTTPS www new shop from approved preview IP",
+  "unresolved": "Asim exact old-site URL not supplied; direct Wix-hosted addresses not identified or changed.",
+  "checked_at": "2026-10-03T19:32:55.599180+00:00",
+  "private_evidence_directory": "/Users/asifhussain/salty-lamps-private/redirect-20261003T192833Z",
+  "verification": {
+    "authoritative_dns_and_public_resolvers": "Cloudflare edge IPs returned by james.ns.cloudflare.com, 1.1.1.1 and 8.8.8.8",
+    "edge_requests": "9 of 9 HTTP/HTTPS root, shop and legacy product/query checks returned 301 to secure www, server cloudflare",
+    "local_dns_cache": "Still resolves apex to old Wix addresses; old route redirects to www. Propagation incomplete locally.",
+    "www_http": "3 of 3 ordinary requests now return 301 to secure www",
+    "mail": "MX remains Zoho priorities 10/20/50",
+    "screenshot": "/Users/asifhussain/.codex/visualizations/2026/10/03/01a10339-c058-7172-9709-3b711327ffba/redirect-active.png"
+  }
+}

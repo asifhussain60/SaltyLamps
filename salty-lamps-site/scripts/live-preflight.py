@@ -36,9 +36,10 @@ def validate(config, environment, staging_config=None):
     require(config.get('r2_buckets') == [{'binding': 'IMAGES', 'bucket_name': 'salty-lamps-images'}],
             'R2 must be bound as IMAGES to salty-lamps-images')
     vars_ = config.get('vars', {})
+    require(vars_.get('DEPLOYMENT_ENV') == 'production', 'Production environment must be explicit')
     for name in SANDBOX_SWITCHES:
         require(name not in vars_, f'{name} is a sandbox switch and must be absent from the live configuration')
-    for name in ('DEV_ADMIN_BYPASS', 'ADMIN_OPEN_HOSTS'):
+    for name in ('DEV_ADMIN_BYPASS', 'ADMIN_OPEN_HOSTS', 'DEVELOPMENT_SHARED_HOST'):
         require(name not in vars_, f'{name} is forbidden in the live configuration')
     require(vars_.get('SITE_URL') == SITE, 'SITE_URL must be the customer address')
     require(vars_.get('PUBLIC_HOST') == 'www.saltylamps.co.uk', 'PUBLIC_HOST must be the customer host')
@@ -54,7 +55,7 @@ def validate(config, environment, staging_config=None):
         supplied = environment.get(name, '')
         allowed = ('sk_live_', 'rk_live_') if name.endswith('SECRET_KEY') else ('pk_live_',)
         require(not supplied or supplied.startswith(allowed), 'A test Stripe key in the environment is forbidden')
-    for name in ('DEV_ADMIN_BYPASS', 'ADMIN_OPEN_HOSTS', 'STRIPE_TEST_ONLY', 'MAIL_DRY_RUN', 'STAGING_IMAGE_STORAGE'):
+    for name in ('DEV_ADMIN_BYPASS', 'ADMIN_OPEN_HOSTS', 'DEVELOPMENT_SHARED_HOST', 'STRIPE_TEST_ONLY', 'MAIL_DRY_RUN', 'STAGING_IMAGE_STORAGE'):
         require(not environment.get(name), f'{name} is set in this shell and must not be')
     require(environment.get('CLOUDFLARE_ACCOUNT_ID', OWNER) == OWNER, 'Unexpected Cloudflare account')
     return True

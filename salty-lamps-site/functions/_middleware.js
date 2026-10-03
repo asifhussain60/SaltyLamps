@@ -1,6 +1,9 @@
 import { onRequest as authenticateAdmin } from './api/admin/_middleware.js'
+import { isSharedDevelopmentHost } from './lib/development-host.mjs'
+import { environmentMismatch } from './lib/environment-guard.mjs'
 // Runs before every request to the site — storefront pages, static assets, API
-// routes, all of it. Three jobs, and nothing else belongs here.
+// routes covered by _routes.json. It also verifies the database/image identities
+// before any remote commerce handler can run; local fixtures skip that gate.
 //
 //   1. KEEP THE ADMIN OFF THE SHOP. When ADMIN_HOSTS names a hostname, /admin is
 //      served there and refused everywhere else. Cloudflare Pages `_redirects`
@@ -17,11 +20,9 @@ import { onRequest as authenticateAdmin } from './api/admin/_middleware.js'
 //      build carrying the same canonical tags pointing at the real domain, so all
 //      but one are duplicates. Canonicals are a hint; a noindex header is not.
 //
-// WHY IT IS WRITTEN THE WAY IT IS. Root middleware is the most expensive place in
-// this codebase to put anything, because it runs on requests that would otherwise
-// never touch a Function at all. So the common path — a shopper loading a product
-// photograph on the real domain — does two string comparisons and returns. Nothing
-// is parsed, nothing is fetched, and the response is not even copied.
+// Resource checks deliberately fail closed: each covered remote request reads the
+// database environment setting and the reserved image-storage marker. Static asset
+// exclusions still follow _routes.json; authentication is only invoked for admin.
 //
 // Administrator pages reuse the API authentication gate after hostname checks.
 // Public storefront and image requests never invoke token verification.
@@ -50,6 +51,19 @@ export async function onRequest(context) {
   const hostname = hostnameOf(request)
   const { pathname } = new URL(request.url)
 
+  // The development project's aliases must never bypass the protected test
+  // hostname. Its admin still uses the existing signed Access authentication.
+  if (env.DEVELOPMENT_SHARED_HOST && !isLocalHost(hostname)
+      && !isSharedDevelopmentHost(hostname, env)) {
+    return new Response('Not found', { status: 404,
+      headers: { 'x-robots-tag': 'noindex, nofollow', 'cache-control': 'no-store' } })
+  }
+
+  if (!isLocalHost(hostname) && await environmentMismatch(env)) {
+    return new Response('Environment configuration mismatch', { status: 503,
+      headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' } })
+  }
+
   // The temporary public launch page is static, not a shop route. The zone
   // rewrites non-preview browser requests here while retaining the original URL.
   // No commerce handler or database is called, and writes never reach assets.
@@ -68,7 +82,8 @@ export async function onRequest(context) {
   // destinations. Keep a bare admin bookmark on the dashboard and send customer
   // pages to this environment's shop URL instead of rendering a second shop on
   // the protected administrator hostname.
-  if (!isLocalHost(hostname) && isAdminHost(hostname, env)) {
+  if (!isLocalHost(hostname) && isAdminHost(hostname, env)
+      && !isSharedDevelopmentHost(hostname, env)) {
     if (pathname.startsWith('/api/') &&
         !pathname.startsWith('/api/admin/') &&
         !pathname.startsWith('/api/images/')) {

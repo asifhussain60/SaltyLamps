@@ -1,3 +1,4 @@
+import { productionBindings } from './environment-fixture.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -13,7 +14,7 @@ import { REVIEW_LINKS, instructionParts } from '../src/admin/review-links.mjs'
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'owner-review-fixture', alg: 'RS256', use: 'sig' }
 const issuer = 'https://owner-review-fixture.invalid'
-const env = { ADMIN_HOSTS: 'admin.saltylamps.co.uk', PUBLIC_HOST: 'www.saltylamps.co.uk', SITE_URL: 'https://www.saltylamps.co.uk', ACCESS_TEAM_DOMAIN: 'owner-review-fixture.invalid', ACCESS_AUD: 'owner-review-fixture' }
+const env = { ...productionBindings, ADMIN_HOSTS: 'admin.saltylamps.co.uk', PUBLIC_HOST: 'www.saltylamps.co.uk', SITE_URL: 'https://www.saltylamps.co.uk', ACCESS_TEAM_DOMAIN: 'owner-review-fixture.invalid', ACCESS_AUD: 'owner-review-fixture' }
 const source = readFileSync(new URL('../src/admin/AdminApp.jsx', import.meta.url), 'utf8')
 const nav = source.split('const NAV = [')[1].split('const TITLES =')[0]
 const navPaths = [...nav.matchAll(/href: '([^']+)'/g)].map(match => match[1])

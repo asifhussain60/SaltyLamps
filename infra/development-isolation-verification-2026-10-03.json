@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-03",
+  "status": "complete",
+  "owner_account": "e35d5918c507bc2cf4e920fe38b5e318",
+  "private_snapshot": "/Users/asifhussain/salty-lamps-private/development-snapshot-20261003",
+  "live": {
+    "project": "salty-lamps-staging",
+    "deployment_id": "d6548933-b050-4d80-a043-80e5adffa320",
+    "deployment_unchanged": true,
+    "deployment_configuration_unchanged": true,
+    "domains": [
+      "salty-lamps-staging.pages.dev",
+      "admin.saltylamps.co.uk",
+      "www.saltylamps.co.uk"
+    ],
+    "checks_passed": 11,
+    "checks_failed": 0
+  },
+  "development": {
+    "project": "salty-lamps-development",
+    "deployment_id": "9bae1e7b-7e93-4399-8054-1e4cae4fcf12",
+    "database_id": "62066199-f4b8-4026-8dd2-b56a10cd975d",
+    "image_bucket": "salty-lamps-development-images",
+    "catalogue_tables_verified": 39,
+    "uploaded_images_copied": 13,
+    "private_operations_copied": false,
+    "sandbox_keys_installed": false,
+    "sending_key_installed": false,
+    "authenticated_browser_checks": [
+      "homepage",
+      "gallery",
+      "shop",
+      "product",
+      "basket add/remove",
+      "administrator dashboard: zero orders, sign-out visible"
+    ],
+    "signed_out_access_protected": true,
+    "pages_shop_api_aliases_denied": true,
+    "independent_setting_write_probe_passed": true
+  },
+  "release": {
+    "script": "salty-lamps-site/publish.sh",
+    "code_only": true,
+    "live_promotion_refused_dirty_or_untested_source": true,
+    "tests_passed": 276,
+    "target_preflight_tests_passed": 11,
+    "approval_required_before_live_publish": true,
+    "code_changes_committed": false,
+    "fingerprint": "7ae945ff49661ab661b4a08ed8a92c11e9ea20a7a81daaaf037139dac37bfc2e",
+    "immutable_live_checkout": true
+  },
+  "limitations": [
+    "Approved development sandbox keys still need installation",
+    "Owner-account administrator can override infrastructure outside the guarded workflow"
+  ],
+  "evidence_files": [
+    "snapshot-manifest.json",
+    "database-manifest.json",
+    "image-manifest.json",
+    "development-database-verified.json",
+    "development-project-final.json",
+    "isolation-probe.json",
+    "development-public-protection-check.json",
+    "live-final-check.log",
+    "development-home-final.jpg",
+    "development-admin.jpg"
+  ]
+}

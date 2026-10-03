@@ -44,6 +44,7 @@ binding = "IMAGES"
 bucket_name = "salty-lamps-images"
 
 [vars]
+DEPLOYMENT_ENV = "production"
 SITE_URL = "https://www.saltylamps.co.uk"
 PUBLIC_HOST = "www.saltylamps.co.uk"
 ADMIN_HOSTS = "admin.saltylamps.co.uk"

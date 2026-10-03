@@ -49,6 +49,9 @@ done
 
 say "1/8 Fail-closed target check (offline)"
 "$PY" scripts/live-preflight.py
+if [ "$DRY" != 1 ]; then
+  "$PY" scripts/release-approval-preflight.py
+fi
 [ -z "${CONTENT_SNAPSHOT_PRODUCTION:-}" ] || die "CONTENT_SNAPSHOT_PRODUCTION is set; this is not a production-snapshot build."
 [ -z "${VITE_STAGING:-}" ] || die "VITE_STAGING is set in this shell; it would put the test-shop banner on the live site."
 [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ "$CLOUDFLARE_ACCOUNT_ID" = "$OWNER_ACCOUNT" ] || die "CLOUDFLARE_ACCOUNT_ID is not the owner account."

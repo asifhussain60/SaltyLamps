@@ -1,8 +1,9 @@
+import { productionBindings } from './environment-fixture.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { onRequest as page } from '../functions/_middleware.js'
 import { onRequest as api } from '../functions/api/admin/_middleware.js'
-const env = {ADMIN_HOSTS:'admin.saltylamps.co.uk',PUBLIC_HOST:'www.saltylamps.co.uk',ACCESS_AUD:'expected',ACCESS_TEAM_DOMAIN:'saltylamps'}
+const env = { ...productionBindings,ADMIN_HOSTS:'admin.saltylamps.co.uk',PUBLIC_HOST:'www.saltylamps.co.uk',ACCESS_AUD:'expected',ACCESS_TEAM_DOMAIN:'saltylamps'}
 function context(url, overrides={}, headers={}) {
  return {request:new Request(url,{headers}),env:{...env,...overrides},data:{},next:async()=>new Response('protected content')}
 }

@@ -1,5 +1,7 @@
 # Salty Lamps migration boundaries
 
+**Current environments, 3 October 2026:** the public shop is live. `test.saltylamps.co.uk` now belongs to the isolated `salty-lamps-development` project with `salty-lamps-development-db` and `salty-lamps-development-images`. The owner-edited `salty-lamps-staging-db` and `salty-lamps-images` are LIVE resources and must never be used by development tests/imports. Read `salty-lamps-site/docs/development-environments.md` first. Keep only main and develop active: main must match the exact deployed live commit; develop contains development work. Use `./publish.sh test` from a clean committed develop checkout. After the owner accepts that exact hosted release and Asif explicitly approves production, record it with `./publish.sh sign-off --approved-by Asif --owner-accepted --note ...`, then use `./publish.sh live` (or `--push` to update GitHub main too). Promotion advances main only after the signed-off commit is confirmed deployed live. Never manually advance main before publication. Both Pages projects use Direct Upload: live is pinned to main and test to develop; GitHub pushes must not automatically deploy live. Never synchronize development data into live. The pre-launch shared-test descriptions below are historical and do not override this split.
+
 Read `infra/account-ownership.md` and `salty-lamps-site/docs/migration.md` before any Cloudflare or Wix migration work.
 
 - `Saltylamps@hotmail.com` is the approved owner of the Salty Lamps Cloudflare account and the only production account destination.
