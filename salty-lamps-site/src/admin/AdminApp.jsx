@@ -39,7 +39,7 @@ import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import LaunchReview, { WelcomeAsim } from './LaunchReview.jsx'
-import { storeHref } from './store-url.mjs'
+import { ownerReviewHref } from './store-url.mjs'
 import { hasUnsupportedClaim, unsupportedSentences, standardIntro } from '../../functions/lib/public-copy.mjs'
 import { makeTaxonomy } from '../content/taxonomy.mjs'
 import '../styles/admin.css'
@@ -2790,7 +2790,7 @@ export default function AdminApp({ route }) {
             )
           )}
         </nav>
-        <a className="admin-nav-link admin-nav-link--foot" href={storeHref('/', window.location.hostname, import.meta.env.VITE_STAGING === '1')}>
+        <a className="admin-nav-link admin-nav-link--foot" href={ownerReviewHref('/', window.location.hostname)}>
           <Icon name="externalLink" size={15} className="admin-nav-icon" />View store
         </a>
       </aside>
@@ -2799,6 +2799,7 @@ export default function AdminApp({ route }) {
         <header className="admin-topbar">
           <button className="admin-burger" aria-label="Toggle menu" onClick={() => setNavOpen(o => !o)}>☰</button>
           <h1 className="admin-topbar-title">{TITLES[activeKey] || 'Admin'}</h1>
+          <a className="admin-btn admin-btn--ghost admin-signout" href="/cdn-cgi/access/logout" onClick={event => { if (!allowLeave()) event.preventDefault() }}>Sign out</a>
         </header>
         <main className="admin-content">{page}</main>
       </div>

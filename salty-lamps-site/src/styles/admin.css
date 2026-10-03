@@ -95,6 +95,7 @@
   backdrop-filter: blur(8px);
 }
 .admin-topbar-title { margin: 0; font-family: var(--modern); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; }
+.admin-signout { margin-left: auto; flex-shrink: 0; }
 .admin-burger { display: none; background: none; border: 0; font-size: 1.4rem; cursor: pointer; color: var(--ink); }
 .admin-content { padding: clamp(18px, 3vw, 32px); display: grid; gap: 20px; align-content: start; }
 

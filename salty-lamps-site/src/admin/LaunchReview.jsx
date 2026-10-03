@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LAUNCH_GROUPS, RESULT_LABELS, reviewCounts, reviewText } from '../../functions/lib/launch-review.mjs'
 import { dirtyForms } from './navigation.mjs'
 import { Icon } from './Confirm.jsx'
-import { storeHref } from './store-url.mjs'
+import { ownerReviewHref } from './store-url.mjs'
 import '../styles/launch-review.css'
 
 const LOCAL_KEY = 'salty-lamps-launch-review-unsaved-v1'
@@ -120,7 +120,7 @@ export default function LaunchReview() {
         {shown.map((item, i) => { const e = entry(item); return <details className={`launch-task launch-task--${e.result}`} key={`${device}:${item.id}`} open={e.result !== 'pass'}><summary><span className="launch-task-icon">{e.result === 'pass' ? <Icon name="check" size={19} /> : <Icon name={group.icon} size={19} />}</span><span><strong>{item.title}</strong><small>{item.scope === 'shared' ? 'Complete once' : `Testing on ${device}`} · {RESULT_LABELS[e.result]}</small></span><span className="launch-task-caret" aria-hidden="true">+</span></summary><div className="launch-task-body">
           {item.coordinated && <aside className="launch-payment-note"><strong>Arrange this with Asif first.</strong> This uses real money and the real shop. You complete any purchase or refund yourself. If access or the agreed test is not ready, choose “Need help”.</aside>}
           <div className="launch-task-columns"><div><h4>What to do</h4><ol>{item.steps.map(s => <li key={s}>{s}</li>)}</ol></div><div className="launch-expected"><span className="launch-eyebrow">What should happen</span><p>{item.expected}</p></div></div>
-          {item.path && <a className="launch-text-link" href={storeHref(item.path, window.location.hostname, import.meta.env.VITE_STAGING === '1')} target="asim-launch-shop" rel="noopener">Open {item.path.startsWith('/admin') ? 'administrator page' : 'shop page'} <Icon name="externalLink" size={14} /></a>}
+          {item.path && <a className="launch-text-link" href={ownerReviewHref(item.path, window.location.hostname)} target="asim-launch-shop" rel="noopener">Open {item.path.startsWith('/admin') ? 'administrator page' : 'shop page'} <Icon name="externalLink" size={14} /></a>}
           <div className="launch-results"><label className="launch-pass"><input type="checkbox" checked={e.result === 'pass'} onChange={event => editEntry(item, { result: event.target.checked ? 'pass' : 'pending' })} />Passed</label>{['issue', 'blocked'].map(status => <button key={status} aria-pressed={e.result === status} onClick={() => editEntry(item, { result: e.result === status ? 'pending' : status })}>{RESULT_LABELS[status]}</button>)}</div>
           <label className="launch-comment">Comment for Asif <span>Optional · no customer, password or card details</span><textarea rows={3} maxLength={1500} placeholder={['issue', 'blocked'].includes(e.result) ? 'What did you try, what happened and which page or product was involved?' : 'Anything you would like us to know?'} value={e.comment} onChange={event => editEntry(item, { comment: event.target.value })} /></label>
         </div></details> })}
