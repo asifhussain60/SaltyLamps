@@ -40,3 +40,26 @@ Review desktop and phone layouts and the bookmark instructions. After publishing
 check public home/deep links show the launch page, exact images/styles/scripts
 load, API remains denied outside the approved IP, and approved private shop still
 loads. Use read-only checks only against the owner's real database.
+
+## Published evidence - 3 October 2026
+
+- Release commit: `663c9ebbd296b7a4d095ebfb4e5bca9467da720e`.
+- Live deployment: `https://e6829ad9.salty-lamps-staging.pages.dev`.
+- All 256 unit tests and production build passed in the guarded release.
+- Recovery export: `~/salty-lamps-private/live-20261003T144533Z/live-before.sql`,
+  15,874,257 bytes, SHA256
+  `e561c20663511dfb242340fe4238ad7ac1344c2bbccdb700ad835b867b257a94`.
+  The private Time Travel bookmark is beside it.
+- URL rewrite: `0c83c9d27cc14f1fae0788035979bc94`, active, static `/going-live`.
+- Holding Block rule: `17a7e3ab521d40bfa2a752022584612c`, remains active; exact
+  GET/HEAD static launch exceptions only, approved preview IP unchanged.
+- Cloudflare Trace public GET home matched the rewrite and reached 503. POST
+  `/going-live` skipped the rewrite, matched holding Block and ended 403.
+- Outside network read through Jina's public URL reader returned the actual launch
+  page at www root with 503, and /api/products returned Cloudflare Block with 403.
+  The web research fetcher itself is blocked and was not used as evidence of failure.
+- Chrome live preview `/going-live`: all five images loaded, desktop and 390px
+  phone had no overflow; bookmark dialog opens/closes. Approved private gallery
+  still renders the shop rather than the holding page.
+- Public preview for an approved-IP viewer: `https://www.saltylamps.co.uk/going-live`.
+- Test/admin Access policies and the reserve holding Pages project were untouched.
