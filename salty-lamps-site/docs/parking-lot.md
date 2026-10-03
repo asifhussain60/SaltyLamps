@@ -1,6 +1,19 @@
 # Salty Lamps post cutover parking lot
 
-Recorded 3 October 2026 at Asif's request. **Parked — planning only. Do not execute during the cutover.** Resume only when Asif explicitly asks to take up this work after the cutover. This document does not authorize deployment, data changes, new hosted resources, domain changes or payment tests.
+Recorded 3 October 2026 at Asif's request. **Gallery resumed and visually approved by Asif on 3 October; the independent testing environment remains parked.** Asif subsequently requested repository groundwork, an initial-release assessment, and a preview on the test site. After reviewing the local preview, Asif said: "I love it, release it to prod when done". This authorizes production publication of the frames, not lifting the public testing restriction, data changes, new hosted resources, domain changes or payment tests.
+
+## Resumed gallery preview and initial-release assessment
+
+- Candidate maintained on `codex/gallery-frame-preview` in a separate worktree, based on the currently deployed `2089b10` launch revision. The primary `golive` checkout is left intact.
+- Asif accepted the local preview and authorized production release. The approved frame treatment is now enabled on `/gallery` by default; the temporary hostname/query gate was removed before release.
+- Design: equal-width warm brown rails on all four sides, bevelled corners, a narrow recessed inner rim and modest shadow. The frame narrows on phones. Existing names, links, ordering, mosaic spans and label visibility are preserved. Product-detail galleries, cards elsewhere and the administrator are outside this change.
+- This is a presentation-only candidate: no migration, new dependency, product write or payment change. Asif has accepted the visual preview; it is suitable for inclusion in the initial release while the existing launch gates remain separate. The larger isolated-test-shop plan is not a prerequisite for this read-only visual review.
+- The test address still shares live-mode services and real data with www. Review gallery appearance and product navigation only. Do not run the write-capable browser suite, place test orders, upload photos or edit stock there.
+- Use `deploy-live.sh` for the preview code deployment because www is already attached. It preserves live configuration and saves a private export plus recovery bookmark before publishing. The preview does not lift the public testing restriction.
+- The approved frame treatment is enabled for customers in the release candidate. Rerun desktop/phone and navigation checks, refresh the read-only catalogue snapshot, and publish through the guarded release path. Public opening still requires the launch decision.
+- Rollback for the preview is a code revert followed by the guarded live release. Do not restore the database or select a historic sandbox deployment.
+
+Verification of the initial gated preview: all 258 unit checks passed, including hostname/query boundaries; the production build passed its search and media checks. Local browser review used a read-only catalogue fixture from a freshly refreshed snapshot, at desktop and phone widths. All 24 gallery captions fitted; no horizontal overflow on the phone. Hosted verification and release recovery evidence are recorded in `gallery-frame-preview.md`.
 
 This plan covers a safe place to test future changes, a repeatable recovery and release process, and the first requested visual change: picture-frame borders around gallery tiles. It is separate from the current launch work and must not become a new launch dependency.
 
@@ -80,7 +93,7 @@ Preview representative wide and standard tiles together, plus a phone layout, be
 | Recovery baseline | Private export, bookmark, photo coverage and disposable restore evidence | Parked; not performed |
 | Independent test shop | Separate deployed resources, protected access and verified isolation | Parked; not provisioned |
 | Error and release workflow | Reproduced issue, tested repair, approval, controlled release and live verification | Parked; not executed |
-| Framed gallery tiles | Accepted preview, verified gallery behaviour and approved release | Parked; design requirement recorded only |
+| Framed gallery tiles | Accepted preview, verified gallery behaviour and approved release | Visually accepted by Asif; production release authorized, publication verification tracked below |
 
 ## Maintainer references
 
@@ -92,4 +105,4 @@ Preview representative wide and standard tiles together, plus a phone layout, be
 - [Cloudflare resource bindings](https://developers.cloudflare.com/pages/functions/bindings/) support separate environment resources; verify the resulting deployed connections.
 - [Cloudflare database recovery](https://developers.cloudflare.com/d1/reference/time-travel/) overwrites a database in place. Use an export/import into a disposable database for recovery testing; do not assume the recovery command creates a clone.
 
-Only this planning document was created for this request. No application code, configuration, database, hosted resource, deployment or cutover step was changed.
+The original parking request created this planning document only. The subsequent preview request is tracked in the resumption section above; the remaining environment and workflow work stays parked.

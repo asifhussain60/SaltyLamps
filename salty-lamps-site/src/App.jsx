@@ -1967,7 +1967,7 @@ export default function App() {
           <Link className="text-link" href="/shop">Shop the full range</Link>
         </div>
 
-        <div className="gallery-grid gallery-mosaic">
+        <div className="gallery-grid gallery-mosaic gallery-mosaic--framed">
           {galleryItems.map(item => (
             <Link className={`gallery-card ${item.variant ? `gallery-card--${item.variant}` : ''}`} key={item.key} href={item.href}>
               <img src={item.image} alt={item.name} loading="lazy" />

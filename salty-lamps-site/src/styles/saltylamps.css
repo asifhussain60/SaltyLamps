@@ -2694,6 +2694,39 @@ label {
   filter: none;
 }
 
+/* Four equal-width rails, with light catching the upper bevel.
+   A real border keeps the photo, gradient and caption inside the opening. */
+.gallery-mosaic--framed .gallery-card {
+  border: clamp(7px, 1vw, 13px) solid #795035;
+  border-color: #a87950 #70472f #62402c #92633f;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px #563b2b, 0 9px 20px rgba(51, 30, 19, 0.16);
+}
+
+.gallery-mosaic--framed .gallery-card::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 3px solid #ddc3a0;
+  box-shadow: inset 0 0 0 1px #65452f, inset 0 3px 8px rgba(31, 25, 21, 0.45);
+  content: '';
+  pointer-events: none;
+}
+
+.gallery-mosaic--framed .gallery-card:hover {
+  box-shadow: 0 0 0 1px #563b2b, 0 12px 24px rgba(51, 30, 19, 0.22);
+}
+
+.gallery-mosaic--framed .gallery-card:focus-visible {
+  outline: 3px solid #30251d;
+  outline-offset: 5px;
+}
+
+.gallery-mosaic--framed .gallery-card:hover img,
+.gallery-mosaic--framed .gallery-card:focus-visible img {
+  transform: none;
+}
+
 .policy-page {
   max-width: 900px;
   margin: clamp(36px, 5vw, 72px) auto;
