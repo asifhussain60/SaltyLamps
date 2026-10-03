@@ -142,7 +142,10 @@ step 2; add it in Stripe, Stripe retries the delivery, and the order then record
 
 ### 13. GATE G4: THE FINAL SWITCH [Asif says yes in chat, in that turn]
 Everything above passed. Ask: "Shall I open www to the public now?" On his yes, [Asif] deletes the
-security rule from step 8. That is the moment the holding message goes. Then [You]:
+security rule from step 8 AND disables the temporary URL rewrite named
+`Public launch page while shop stays private`. Both must be lifted before visitors
+see the shop. See `salty-lamps-site/docs/public-launch-page.md` for the precise
+public-page boundary and rollback. Then [You]:
 ```bash
 npm run live:check
 ```

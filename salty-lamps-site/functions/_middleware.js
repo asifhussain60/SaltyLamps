@@ -50,6 +50,20 @@ export async function onRequest(context) {
   const hostname = hostnameOf(request)
   const { pathname } = new URL(request.url)
 
+  // The temporary public launch page is static, not a shop route. The zone
+  // rewrites non-preview browser requests here while retaining the original URL.
+  // No commerce handler or database is called, and writes never reach assets.
+  if (pathname === '/going-live' || pathname === '/going-live.html') {
+    const read = request.method === 'GET' || request.method === 'HEAD'
+    const response = read ? await next() : new Response('Going live shortly')
+    const headers = new Headers(response.headers)
+    headers.set('cache-control', 'no-store')
+    headers.set('retry-after', '3600')
+    headers.set('x-content-type-options', 'nosniff')
+    headers.set('content-security-policy', "default-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+    return new Response(request.method === 'HEAD' ? null : response.body, { status: 503, headers })
+  }
+
   // The admin and shop share a Pages project and D1 binding, but not browser
   // destinations. Keep a bare admin bookmark on the dashboard and send customer
   // pages to this environment's shop URL instead of rendering a second shop on
