@@ -11,8 +11,8 @@ export async function onRequestGet({ request, env }) {
   const page = Math.max(1, Number(url.searchParams.get('page')) || 1)
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 50))
   const source = url.searchParams.get('source')
-  const where = ENQUIRY_SOURCES.includes(source) ? `WHERE source = ?` : ''
-  const binds = ENQUIRY_SOURCES.includes(source) ? [source] : []
+  const where = [...ENQUIRY_SOURCES, 'feedback'].includes(source) ? `WHERE source = ?` : ''
+  const binds = [...ENQUIRY_SOURCES, 'feedback'].includes(source) ? [source] : []
 
   try {
     const total = await env.DB

@@ -4743,3 +4743,19 @@ button:disabled { cursor: not-allowed; }
   .shop-layout-stats strong { font-size: 1rem; }
   .shop-layout-rail { display: none; }
 }
+.feedback-page { max-width: 1120px; margin: 0 auto; padding: 56px 24px; display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px; align-items: start; }
+.feedback-intro h1 { font-size: clamp(2rem, 4vw, 3rem); margin: 12px 0 20px; }
+.feedback-intro > p { line-height: 1.7; }
+.feedback-note, .feedback-sandbox { padding: 20px; border: 1px solid #d8c5ac; border-radius: 14px; background: #faf2e7; margin-top: 24px; }
+.feedback-note p { margin: 10px 0 0; line-height: 1.7; }
+.feedback-card { min-width: 0; display: grid; gap: 10px; padding: 30px; background: #fffaf3; border: 1px solid #d8c5ac; border-radius: 18px; box-shadow: 0 8px 28px rgb(75 43 18 / 7%); }
+.feedback-card label { font-weight: 650; margin-top: 10px; }
+.feedback-card label span, .feedback-card small { font-weight: 400; color: #625548; }
+.feedback-card input, .feedback-card select, .feedback-card textarea { width: 100%; min-width: 0; min-height: 46px; padding: 12px; border: 1px solid #aa9277; border-radius: 8px; background: white; color: #302319; font: inherit; }
+.feedback-card textarea { resize: vertical; }
+.feedback-card :is(input, select, textarea, button, a):focus-visible { outline: 3px solid #975318; outline-offset: 3px; }
+.feedback-card .button { margin-top: 14px; justify-self: start; }
+.feedback-card [disabled] { opacity: 0.65; cursor: wait; }
+.feedback-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.feedback-error { border: 1px solid #aa3727; border-radius: 8px; padding: 14px; color: #86281b; background: #fff2ef; }
+@media (max-width: 760px) { .feedback-page { grid-template-columns: 1fr; padding: 30px 18px; gap: 24px; } .feedback-card { padding: 20px; } }

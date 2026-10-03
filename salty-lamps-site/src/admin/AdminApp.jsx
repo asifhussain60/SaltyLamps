@@ -2264,14 +2264,17 @@ function EmailActivity() {
   )
 }
 
-function EmailEnquiries() {
-  const { loading, error, data, reload } = usePageData(() => api('/api/admin/enquiries?limit=100'))
+function EmailEnquiries({ feedback = false }) {
+  const [page, setPage] = useState(1)
+  const { loading, error, data, reload } = usePageData(() => api(`/api/admin/enquiries?limit=100&page=${page}${feedback ? '&source=feedback' : ''}`), [page, feedback])
 
   if (loading) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
-  if (!data.rows.length) return <EmptyState>No enquiries yet.</EmptyState>
+  if (!data.rows.length) return <EmptyState>{feedback ? 'No feedback yet.' : 'No enquiries yet.'}</EmptyState>
 
   return (
+    <>
+    {feedback && <p className="admin-muted">Private feedback saved by visitors. Email notifications are listed in Activity. In the test shop, notifications are recorded without sending.</p>}
     <table className="admin-table">
       <thead><tr><th>When</th><th>Type</th><th>Name</th><th>Email</th><th>Message</th></tr></thead>
       <tbody>
@@ -2286,6 +2289,8 @@ function EmailEnquiries() {
         ))}
       </tbody>
     </table>
+    <div className="admin-modal-actions"><button className="admin-btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} · {data.total} messages</span><button className="admin-btn" disabled={page * 100 >= data.total} onClick={() => setPage(page + 1)}>Next</button></div>
+    </>
   )
 }
 
@@ -2293,10 +2298,11 @@ const EMAIL_TABS = [
   { key: 'templates', label: 'Templates' },
   { key: 'activity', label: 'Activity' },
   { key: 'enquiries', label: 'Enquiries' },
+  { key: 'feedback', label: 'Feedback' },
 ]
 
 function Emails() {
-  const [tab, setTab] = useState('templates')
+  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'feedback' ? 'feedback' : 'templates')
 
   return (
     <section className="admin-card">
@@ -2316,7 +2322,8 @@ function Emails() {
       </div>
       {tab === 'templates' && <EmailTemplates />}
       {tab === 'activity' && <EmailActivity />}
-      {tab === 'enquiries' && <EmailEnquiries />}
+      {tab === 'enquiries' && <EmailEnquiries key="enquiries" />}
+      {tab === 'feedback' && <EmailEnquiries key="feedback" feedback />}
     </section>
   )
 }

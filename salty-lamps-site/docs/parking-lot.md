@@ -1,5 +1,13 @@
 # Salty Lamps post cutover parking lot
 
+Current environment status is documented in `development-environments.md`: the isolated test shop and guarded publishing workflow now exist. The original environment planning notes below are historical.
+
+## Feedback resumed on 3 October 2026
+
+Asif requested the feedback feature attributed to Asim, implemented and published in the isolated test environment. No earlier detailed feedback specification was present in this parking-lot document. The implemented scope is a private visitor feedback form, a saved administrator record, a generated notification addressed to the configured administrator with the visitor as Reply-To, and administrator review under Emails → Feedback. It is distinct from public customer reviews and the owner launch checklist.
+
+The test environment continues to capture email without sending. No sending credential, live release, customer record or catalogue change is part of this work. See `feedback.md` for verification and usage.
+
 Recorded 3 October 2026 at Asif's request. **Gallery resumed and visually approved by Asif on 3 October; the independent testing environment remains parked.** Asif subsequently requested repository groundwork, an initial-release assessment, and a preview on the test site. After reviewing the local preview, Asif said: "I love it, release it to prod when done". This authorizes production publication of the frames, not lifting the public testing restriction, data changes, new hosted resources, domain changes or payment tests.
 
 ## Resumed gallery preview and initial-release assessment

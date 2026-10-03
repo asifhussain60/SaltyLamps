@@ -34,6 +34,7 @@ export function WelcomeAsim({ compact = false }) {
       <div className="launch-welcome-photo"><img src="/media/light-catalogue/natural-small.webp" alt="A Himalayan salt lamp glowing with warm amber light" /><div className="launch-photo-caption"><span>Natural Himalayan rock salt</span><strong>A familiar warmth.<br />A fresh beginning.</strong></div></div>
     </header>
     <section className="launch-introduction"><div><p className="launch-eyebrow">The finishing touch is yours</p><h3>Let’s make sure it feels right.</h3></div><p><InstructionText checkId="welcome">We have checked the pages, product information and email delivery. Now we would love you to try the shop as a customer and review it as its owner. Your eye for the little details is what makes this ready for your customers.</InstructionText></p></section>
+    <p><a className="launch-button" href={ownerReviewHref('/feedback', window.location.hostname)}>Leave feedback</a> <a className="launch-button" href="/admin/emails?tab=feedback">Read saved feedback</a></p>
     <div className="launch-feature-grid">{[
       ['box', 'Your catalogue, together', 'Review the descriptions, pictures, prices, stock and packed weights you have already entered.'],
       ['check', 'One clear step at a time', 'Each check explains what to do and what should happen. Tick a pass, flag a problem or ask for help.'],

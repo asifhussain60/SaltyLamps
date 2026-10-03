@@ -1,3 +1,4 @@
+import { FEEDBACK_TEMPLATE } from './feedback.mjs'
 import { orderVariant } from './frame-orientation.mjs'
 import {weightLabel} from './weights.mjs'
 // Sending. One provider, one place.
@@ -102,7 +103,7 @@ export async function sendTemplated(env, messages, { origin = '' } = {}) {
     const templates = await loadTemplates(env, [...new Set(queue.map(m => m.templateKey))])
 
     const prepared = queue.map(message => {
-      const stored = templates.get(message.templateKey)
+      const stored = templates.get(message.templateKey) || (message.templateKey === 'admin_feedback' ? FEEDBACK_TEMPLATE : null)
       // templateOverride lets the admin "send test to me" button exercise an
       // UNSAVED draft through this exact path, rather than a second send
       // implementation that could drift from the real one.

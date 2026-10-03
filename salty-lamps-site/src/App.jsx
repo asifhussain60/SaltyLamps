@@ -1,3 +1,4 @@
+import Feedback from './components/Feedback.jsx'
 import FrameOrientation from './components/FrameOrientation.jsx'
 import { needsFrameOrientation, cartLineKey, cartRequestItem, FRAME_ORIENTATIONS } from '../functions/lib/frame-orientation.mjs'
 import {CHECKOUT_ATTEMPT_KEY, checkoutPayload, nextCheckoutAttempt} from './content/checkout-attempt.mjs'
@@ -210,6 +211,7 @@ const categoryPageCopy = (content, taxonomy, slug) => {
 
 const activePageMeta = ({ content, taxonomy, route, categorySlug, collectionCategorySlug, activeShopperPath, currentProduct, page }) => {
   const pageTitle = title => pageTitleOf(content, title)
+  if (route === '/feedback') return { title: pageTitle('Share your feedback'), description: 'Send private feedback, suggestions or a problem report to Salty Lamps.' }
 
   if (currentProduct) {
     return {
@@ -894,6 +896,7 @@ export default function App() {
     route !== '/checkout/payment' &&
     route !== '/checkout/success' &&
     route !== '/checkout/cancelled' &&
+    route !== '/feedback' &&
     route !== '/refund-request' &&
     !(categorySlug && isKnownCategoryRoute)
   const meta = notFound
@@ -2574,6 +2577,7 @@ export default function App() {
           <Link href="/gallery">Gallery</Link>
           <a href="/#trade">Trade</a>
           <a href={contactMailto(content)}>Contact</a>
+          <Link href={`/feedback?from=${encodeURIComponent(route)}`}>Feedback</Link>
           <Link className="nav-about" href="/process">How it’s made</Link>
         </nav>
         <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>
@@ -2596,6 +2600,8 @@ export default function App() {
             ? renderCheckoutSuccess()
           : route === '/checkout/cancelled'
             ? renderCheckoutCancelled()
+          : route === '/feedback'
+          ? <Feedback />
           : route === '/refund-request'
             ? renderRefundRequest()
           : route === '/process'
@@ -2668,7 +2674,7 @@ export default function App() {
         <small className="postcode-attribution">Postcode suggestions: <a href="https://postcodes.io/">Postcodes.io</a>. Contains OS data © Crown copyright and database right 2026. Contains Royal Mail data © Royal Mail copyright and database right 2026. Source: Office for National Statistics licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>.</small>
       </footer>
 
-      {route !== '/refund-request' && <ChatModule hideTrigger={route.startsWith('/checkout')} onSubmit={handleChatSubmit} message={chatMessage} content={content} busy={formStates.chat === 'sending'} error={formStates.chat === 'error'} />}
+      {route !== '/feedback' && route !== '/refund-request' && <ChatModule hideTrigger={route.startsWith('/checkout')} onSubmit={handleChatSubmit} message={chatMessage} content={content} busy={formStates.chat === 'sending'} error={formStates.chat === 'error'} />}
 
       <aside
         ref={cartDialogRef}

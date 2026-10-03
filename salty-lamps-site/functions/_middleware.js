@@ -37,7 +37,7 @@ import {
 
 const ROBOTS_KEEP_OUT = 'User-agent: *\nDisallow: /\n'
 const PUBLIC_PAGES = new Set([
-  '/', '/shop', '/gallery', '/process', '/reviews', '/privacy-policy',
+  '/', '/feedback', '/shop', '/gallery', '/process', '/reviews', '/privacy-policy',
   '/terms-and-conditions', '/return-refund-policy', '/returns-exchanges',
   '/refund-request', '/checkout', '/checkout/address', '/checkout/payment',
   '/checkout/success', '/checkout/cancel', '/checkout/cancelled',
