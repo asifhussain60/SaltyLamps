@@ -13,7 +13,7 @@ Recorded 3 October 2026 at Asif's request. **Gallery resumed and visually approv
 - The approved frame treatment is enabled for customers in the release candidate. Rerun desktop/phone and navigation checks, refresh the read-only catalogue snapshot, and publish through the guarded release path. Public opening still requires the launch decision.
 - Rollback for the preview is a code revert followed by the guarded live release. Do not restore the database or select a historic sandbox deployment.
 
-Verification of the initial gated preview: all 258 unit checks passed, including hostname/query boundaries; the production build passed its search and media checks. Local browser review used a read-only catalogue fixture from a freshly refreshed snapshot, at desktop and phone widths. All 24 gallery captions fitted; no horizontal overflow on the phone. Hosted verification and release recovery evidence are recorded in `gallery-frame-preview.md`.
+Verification of the initial gated preview: all 258 unit checks passed, including hostname/query boundaries; the production build passed its search and media checks. Local browser review used a read-only catalogue fixture from a freshly refreshed snapshot, at desktop and phone widths. All 24 gallery captions fitted; no horizontal overflow on the phone. The accepted design has been published and verified on both test and www; all 255 final unit tests passed. Hosted verification and release recovery evidence are recorded in `gallery-frame-preview.md`.
 
 This plan covers a safe place to test future changes, a repeatable recovery and release process, and the first requested visual change: picture-frame borders around gallery tiles. It is separate from the current launch work and must not become a new launch dependency.
 
@@ -93,7 +93,7 @@ Preview representative wide and standard tiles together, plus a phone layout, be
 | Recovery baseline | Private export, bookmark, photo coverage and disposable restore evidence | Parked; not performed |
 | Independent test shop | Separate deployed resources, protected access and verified isolation | Parked; not provisioned |
 | Error and release workflow | Reproduced issue, tested repair, approval, controlled release and live verification | Parked; not executed |
-| Framed gallery tiles | Accepted preview, verified gallery behaviour and approved release | Visually accepted by Asif; production release authorized, publication verification tracked below |
+| Framed gallery tiles | Accepted preview, verified gallery behaviour and approved release | Complete: accepted by Asif, released to production, desktop/phone and both hosted gallery addresses verified |
 
 ## Maintainer references
 
