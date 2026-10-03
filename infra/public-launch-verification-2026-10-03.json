@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-03",
+  "status": "Public shop open",
+  "authorization": "Asif confirmed all checks and instructed cutover/go-live, then authorized disabling the remaining launch-page rule.",
+  "release_commit": "08e8a8ead2fa9fe96fc655c84b6c9f6af6966eab",
+  "account_id": "e35d5918c507bc2cf4e920fe38b5e318",
+  "public_url": "https://www.saltylamps.co.uk/",
+  "rules": {
+    "holding_block": "17a7e3ab521d40bfa2a752022584612c disabled by Asif, dashboard verified",
+    "launch_rewrite": "0c83c9d27cc14f1fae0788035979bc94 disabled, dashboard verified",
+    "secure_www_redirect": "5f153e3597e2468ca9329dbdab3aab40 remains active"
+  },
+  "verification": {
+    "read_only_launch_checks": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 1,
+      "skip_reason": "Protected test hostname retained"
+    },
+    "outside_network": "Fresh Jina public reader retrieved storefront instead of launch page",
+    "browser": "Public homepage rendered with 34 products and functioning navigation",
+    "product_photos": "88 distinct photos returned 200",
+    "legacy_redirects": "56 old addresses redirect once to working pages",
+    "admin": "Anonymous request redirected to Cloudflare Access"
+  },
+  "owner_acceptance": "User reported all checks confirmed; no additional live charge or refund performed by agent.",
+  "recovery_directory": "/Users/asifhussain/salty-lamps-private/public-launch-20261003T195615Z",
+  "rollback": "Re-enable both temporary launch rules; retain deployed live-mode release.",
+  "retained": "Administrator Access, protected test host, Wix service, Zoho mail, reserve holding project and existing owner data",
+  "follow_up": "Search Console/Bing registration and test-host retirement remain separate follow-up work."
+}

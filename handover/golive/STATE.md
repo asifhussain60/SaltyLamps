@@ -1,5 +1,14 @@
 # Go-live state (written 2 October 2026, branch `golive`, from commit 754223d)
 
+## Latest status — 3 October 2026
+
+Public shop opened with Asif’s explicit approval and reported confirmation of all owner checks.
+The www holding Block and public launch URL rewrite are disabled, with their definitions retained
+for rollback. All 11 read-only launch checks pass; an outside-network reader sees the storefront.
+Administrator sign-in and the protected test hostname remain in place. Wix and Zoho are retained.
+See `infra/public-launch-verification-2026-10-03.json` for current evidence.
+The following 2 October sections are historical and must not be treated as current launch blockers.
+
 ## What is live and what is not
 
 - **Not live.** www.saltylamps.co.uk still shows the holding page (Pages project `salty-lamps`).

@@ -12,5 +12,9 @@ Everything needed to finish taking the Salty Lamps shop live in a fresh agent se
 **To start:** open Codex in `~/PROJECTS/SaltyLamps` on the `golive` branch and paste the prompt from
 `CODEX-PROMPT.md`.
 
-The shop is **not live**. The public site still shows the holding page. The last step before it is
-opened to the public needs Asif's explicit "yes".
+**Public launch completed 3 October 2026 with Asif’s explicit approval and reported owner acceptance.**
+The temporary holding and launch-page rewrite rules are disabled; the secure www redirect remains
+active. Public storefront access was verified from an outside network, all 11 read-only launch
+checks passed, and administrator sign-in remains protected. The test hostname is still retained.
+See `infra/public-launch-verification-2026-10-03.json` for evidence and rollback.
+`STATE.md` below its latest-status note and the guide retain historical preparation details.
