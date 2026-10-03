@@ -19,13 +19,17 @@ export default function Feedback() {
     try {
       const response = await fetch('/api/support/feedback', { method: 'POST',
         headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
-      const result = await response.json()
-      if (!response.ok || !result.ok) throw new Error(Object.values(result.error?.fields || {}).join(' ') || result.error?.message || 'Please try again.')
+      const result = await response.json().catch(() => null)
+      if (!response.ok || !result?.ok) {
+        setStatus('error')
+        setError(`${Object.values(result?.error?.fields || {}).join(' ') || result?.error?.message || 'We could not save your feedback. Please try again.'} Your message is still in the form.`)
+        return
+      }
       setReference(result.reference)
       setStatus('saved')
-    } catch (err) {
+    } catch {
       setStatus('error')
-      setError(`${err.message || 'We could not reach the shop.'} Your message is still in the form.`)
+      setError('We could not reach the shop. Check your connection and try again. Your message is still in the form.')
     } finally {
       busy.current = false
       requestAnimationFrame(() => notice.current?.focus())

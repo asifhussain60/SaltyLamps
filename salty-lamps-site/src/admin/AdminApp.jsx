@@ -2274,7 +2274,7 @@ function EmailEnquiries({ feedback = false }) {
 
   return (
     <>
-    {feedback && <p className="admin-muted">Private feedback saved by visitors. Email notifications are listed in Activity. In the test shop, notifications are recorded without sending.</p>}
+    {feedback && <p className="admin-muted">Private feedback saved by visitors. Email notifications are listed in Activity.{import.meta.env.VITE_STAGING === '1' && ' In the test shop, notifications are recorded without sending.'}</p>}
     <table className="admin-table">
       <thead><tr><th>When</th><th>Type</th><th>Name</th><th>Email</th><th>Message</th></tr></thead>
       <tbody>
