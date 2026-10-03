@@ -17,6 +17,8 @@
     "live:check": "node scripts/live-check.mjs"
   },
   "dependencies": {
+    "@dnd-kit/helpers": "^0.5.0",
+    "@dnd-kit/react": "^0.5.0",
     "@stripe/stripe-js": "^9.17.0",
     "bootstrap": "^5.3.0",
     "react": "^18.3.0",

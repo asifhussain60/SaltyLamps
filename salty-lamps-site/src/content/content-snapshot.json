@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-03T14:39:25.767Z",
+  "generatedAt": "2026-10-03T19:45:35.307Z",
   "source": "staging",
   "resolvedFrom": "staging",
-  "verifiedAt": "2026-10-03T14:39:25.769Z",
+  "verifiedAt": "2026-10-03T19:45:35.308Z",
   "siteUrl": "https://www.saltylamps.co.uk",
   "products": [
     {
@@ -2229,7 +2229,7 @@
       "deliveryNeedsConfirmation": false,
       "price": 1,
       "stock": true,
-      "stockQty": 43,
+      "stockQty": 42,
       "trackMode": "quantity",
       "categories": [
         "all-products",

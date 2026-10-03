@@ -105,15 +105,15 @@ export function parseRule(raw) {
  * Build the rendered sections for a collection landing page.
  *
  * Assignment is first-match across sections, so a product appears exactly once, and
- * anything no section claims is swept into a trailing unlabelled section. In-stock
- * items sort ahead of out-of-stock, stably, so the caller's chosen order survives
- * within each group.
+ * anything no section claims is swept into a trailing unlabelled section. Preserve
+ * the caller's sequence within each group, including unavailable products: either
+ * the owner's preferred order or the customer's explicit price/name sort.
  *
  * `sections` is the flat row set from collection_sections: parents have
  * parent_id === null, bands carry their parent's id.
  */
 export function buildCollectionSections(sectionRows, items, leftoverTitle = 'More in this range') {
-  const ordered = [...items].sort((a, b) => (a.stock === b.stock ? 0 : a.stock ? -1 : 1))
+  const ordered = items
 
   // A collection with nothing in it gets NO sections, rather than one empty unnamed
   // one. The caller renders a filter chip, a path card and a section heading for every

@@ -31,6 +31,7 @@ import {
   validateCategory,
 } from '../../functions/lib/validation.mjs'
 import DonutChart from '../components/DonutChart.jsx'
+import ImageGallery from './ImageGallery.jsx'
 import { Icon, Confirm } from './Confirm.jsx'
 import InfrastructureDoc from './docs/InfrastructureDoc.jsx'
 import TechnicalDoc from './docs/TechnicalDoc.jsx'
@@ -40,6 +41,7 @@ import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
 import LaunchReview, { WelcomeAsim } from './LaunchReview.jsx'
 import { ownerReviewHref } from './store-url.mjs'
+import ProductOrder from './ProductOrder.jsx'
 import { hasUnsupportedClaim, unsupportedSentences, standardIntro } from '../../functions/lib/public-copy.mjs'
 import { makeTaxonomy } from '../content/taxonomy.mjs'
 import '../styles/admin.css'
@@ -295,33 +297,19 @@ function Toggle({ checked, onChange, label, inline, ariaLabel }) {
   )
 }
 
-// One tile in a product's image gallery — shows the image, a "Primary" badge on
-// the cover image, and small replace/delete actions. Used only for already-saved
-// images (a new product's staged files render inline in ProductEdit instead, since
-// they have no server id to replace/delete against yet).
-function GalleryThumb({ src, primary, busy, onReplace, onDelete, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, dragProps, dropTarget }) {
+// Replace/delete actions stay separate from the picture's drag handle.
+function GalleryActions({ busy, onReplace, onDelete }) {
   const fileRef = useRef(null)
   return (
-    <div className={`admin-gallery-item ${busy ? 'admin-gallery-item--busy' : ''} ${dropTarget ? 'admin-gallery-item--drop-target' : ''}`} {...dragProps}>
-      <img className="admin-gallery-thumb" src={src} alt="" />
-      {primary && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
-      <div className="admin-gallery-actions">
-        <button type="button" className="admin-gallery-action" title="Move left" aria-label="Move image left" disabled={busy || !canMoveLeft} onClick={onMoveLeft}>←</button>
-        <button type="button" className="admin-gallery-action" title="Move right" aria-label="Move image right" disabled={busy || !canMoveRight} onClick={onMoveRight}>→</button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          hidden
-          onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) onReplace(f) }}
-        />
-        <button type="button" className="admin-gallery-action" title="Replace" aria-label="Replace image" disabled={busy} onClick={() => fileRef.current?.click()}>
-          <Icon name="image" size={13} />
-        </button>
-        <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Delete" aria-label="Delete image" disabled={busy} onClick={onDelete}>
-          <Icon name="trash" size={13} />
-        </button>
-      </div>
+    <div className="admin-gallery-actions">
+      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden
+        onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) onReplace(f) }} />
+      <button type="button" className="admin-gallery-action" title="Replace" aria-label="Replace image" disabled={busy} onClick={() => fileRef.current?.click()}>
+        Replace
+      </button>
+      <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Delete" aria-label="Delete image" disabled={busy} onClick={onDelete}>
+        Delete
+      </button>
     </div>
   )
 }
@@ -1205,6 +1193,16 @@ function OrderDetail({ id }) {
 
 // ---- products list --------------------------------------------------------
 
+function ProductsPage() {
+  const [tab, setTab] = useState('manage')
+  return <>
+    <div className="admin-section-tabs" aria-label="Product views">
+      {[['manage', 'Manage products'], ['order', 'Shop order']].map(([key, label]) => <button key={key} type="button" aria-pressed={tab === key} className={tab === key ? 'active' : ''} onClick={() => { if (key !== tab && allowLeave()) setTab(key) }}>{label}</button>)}
+    </div>
+    {tab === 'order' ? <ProductOrder api={api} useDirty={useUnsavedChangesWarning} onSaved={announceCatalogChange} /> : <ProductsList />}
+  </>
+}
+
 function ProductsList() {
   const { loading, error, data, reload } = usePageData(() => api('/api/admin/products'))
   const [confirmDelete, setConfirmDelete] = useState(null)
@@ -1347,8 +1345,6 @@ function ProductEdit({ id }) {
   const [imageBusyId, setImageBusyId] = useState(null)
   const [imageErr, setImageErr] = useState('')
   const [confirmDeleteImage, setConfirmDeleteImage] = useState(null)
-  const draggedImage = useRef(null)
-  const [dropImage, setDropImage] = useState(null)
 
   useEffect(() => {
     if (isNew) {
@@ -1444,6 +1440,7 @@ function ProductEdit({ id }) {
       setProductDirty(true)
       return
     }
+    setImages(reordered)
     setImageBusyId('order')
     try {
       const res = await api(`/api/admin/products/${id}/images/order`, { method: 'PUT', body: { imageIds: reordered.map(image => image.id) } })
@@ -1451,18 +1448,11 @@ function ProductEdit({ id }) {
       setForm(current => ({ ...current, image: res.primary_path }))
       announceCatalogChange()
     } catch (error) {
+      setImages(source)
       setImageErr(error.message)
       if (error.message.includes('gallery changed')) reload()
     } finally { setImageBusyId(null) }
   }
-
-  const dragProps = (key, index, list) => ({
-    draggable: imageBusyId === null && !saving && !savePending && list.length > 1,
-    onDragStart: event => { draggedImage.current = index; event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(key)) },
-    onDragOver: event => { if (draggedImage.current === null || imageBusyId !== null) return; event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDropImage(key) },
-    onDrop: event => { event.preventDefault(); const from = draggedImage.current; draggedImage.current = null; setDropImage(null); if (from !== null) reorderImages(from, index) },
-    onDragEnd: () => { draggedImage.current = null; setDropImage(null) },
-  })
 
   const deleteImage = async imgId => {
     setImageErr('')
@@ -1616,50 +1606,28 @@ function ProductEdit({ id }) {
 
         <section className="admin-card">
           <h2><Icon name="image" tone="amber" className="admin-card-icon" />Images</h2>
-          {(isNew ? pendingImages.length : images.length) > 1 && <p className="admin-muted">Drag pictures into order, or use the arrows. The first picture is primary.</p>}
-          <div className="admin-gallery-grid">
-            {isNew
-              ? pendingImages.map((p, i) => (
-                <div key={p.key} className={`admin-gallery-item ${dropImage === p.key ? 'admin-gallery-item--drop-target' : ''}`} {...dragProps(p.key, i, pendingImages)}>
-                  <img className="admin-gallery-thumb" src={p.previewUrl} alt="" />
-                  {i === 0 && <span className="admin-badge admin-gallery-primary-badge">Primary</span>}
-                  <div className="admin-gallery-actions">
-                    <button type="button" className="admin-gallery-action" aria-label="Move image left" disabled={i === 0} onClick={() => reorderImages(i, i - 1)}>←</button>
-                    <button type="button" className="admin-gallery-action" aria-label="Move image right" disabled={i === pendingImages.length - 1} onClick={() => reorderImages(i, i + 1)}>→</button>
-                    <button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Remove" aria-label="Remove image" onClick={() => removePendingImage(p.key)}>
-                      <Icon name="trash" size={13} />
-                    </button>
-                  </div>
-                </div>
-              ))
-              : images.map((im, i) => (
-                <GalleryThumb
-                  key={im.id}
-                  src={im.path}
-                  primary={i === 0}
-                  busy={imageBusyId !== null}
-                  canMoveLeft={i > 0}
-                  canMoveRight={i < images.length - 1}
-                  onMoveLeft={() => reorderImages(i, i - 1)}
-                  onMoveRight={() => reorderImages(i, i + 1)}
-                  dragProps={dragProps(im.id, i, images)}
-                  dropTarget={dropImage === im.id}
-                  onReplace={file => replaceImage(im.id, file)}
-                  onDelete={() => setConfirmDeleteImage(im)}
-                />
-              ))}
+          <p className="admin-gallery-hint">Drag photos to reorder. The first photo is primary.</p>
+          <ImageGallery
+            images={isNew ? pendingImages.map(p => ({ id: p.key, path: p.previewUrl })) : images}
+            busy={imageBusyId !== null || saving || savePending}
+            onReorder={reorderImages}
+            renderActions={(image, busy) => isNew
+              ? <div className="admin-gallery-actions"><button type="button" className="admin-gallery-action admin-gallery-action--danger" title="Remove" aria-label="Remove image" disabled={busy} onClick={() => removePendingImage(image.id)}>Remove</button></div>
+              : <GalleryActions busy={busy} onReplace={file => replaceImage(image.id, file)} onDelete={() => setConfirmDeleteImage(image)} />}
+          >
             <label className={`admin-gallery-add ${imageBusyId === 'new' ? 'admin-gallery-item--busy' : ''}`}>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
+                disabled={imageBusyId !== null || saving || savePending}
                 hidden
                 onChange={e => { addImages(e.target.files); e.target.value = '' }}
               />
               <Icon name="plus" size={18} />
               <span>Add image</span>
             </label>
-          </div>
+          </ImageGallery>
           {images.length === 0 && pendingImages.length === 0 && <p className="admin-muted">No images yet.</p>}
           {imageErr && <span className="admin-field-error">{imageErr}</span>}
           {!isNew && pendingImages.length > 0 && <button type="button" className="admin-btn" disabled={imageBusyId !== null} onClick={retryImages}>Retry image uploads</button>}
@@ -2726,7 +2694,7 @@ export default function AdminApp({ route }) {
   else if (section === 'launch-checklist') page = <LaunchReview />
   else if (section === 'wix-records') page = <WixRecords />
   else if (section === 'orders') page = params[0] ? <OrderDetail id={params[0]} /> : <OrdersList />
-  else if (section === 'products') page = params[0] ? <ProductEdit id={params[0]} /> : <ProductsList />
+  else if (section === 'products') page = params[0] ? <ProductEdit id={params[0]} /> : <ProductsPage />
   else if (section === 'categories') page = <CategoriesList />
   else if (section === 'inventory') page = <Inventory />
   else if (section === 'reports') page = <Reports />

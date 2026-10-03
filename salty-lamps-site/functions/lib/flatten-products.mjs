@@ -2,6 +2,8 @@
 // (Node build script) — both need the exact same products+skus -> flat product
 // list transform, just fetched via different D1 access paths.
 
+import { PRODUCT_ORDER_JOIN, PRODUCT_ORDER_BY } from './product-order.mjs'
+
 export const PRODUCTS_QUERY = `
   SELECT p.id AS product_id, p.name, p.slug, p.description, p.intro, p.image, p.categories, p.tags,
          s.id AS sku_id, s.sku, s.variant_label, s.price_pence, s.track_mode, s.quantity, s.in_stock,
@@ -14,8 +16,9 @@ export const PRODUCTS_QUERY = `
   LEFT JOIN sku_weights w ON w.sku_id=s.id
   LEFT JOIN sku_images si ON si.sku_id = s.id
   LEFT JOIN product_images pi ON pi.id = si.image_id AND pi.product_id = p.id
+  ${PRODUCT_ORDER_JOIN}
   WHERE p.visible = 1
-  ORDER BY p.name, s.id
+  ORDER BY ${PRODUCT_ORDER_BY}, s.id
 `
 
 // Gallery images, fetched SEPARATELY and stitched in JS — never JOINed into
