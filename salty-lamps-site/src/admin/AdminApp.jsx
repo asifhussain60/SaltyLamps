@@ -38,6 +38,7 @@ import PricingDoc from './docs/PricingDoc.jsx'
 import MigrationDoc from './docs/MigrationDoc.jsx'
 import WixRecords from './WixRecords.jsx'
 import AsimTestSuite from './AsimTestSuite.jsx'
+import LaunchReview, { WelcomeAsim } from './LaunchReview.jsx'
 import { storeHref } from './store-url.mjs'
 import { hasUnsupportedClaim, unsupportedSentences, standardIntro } from '../../functions/lib/public-copy.mjs'
 import { makeTaxonomy } from '../content/taxonomy.mjs'
@@ -548,6 +549,7 @@ function Dashboard() {
 
   return (
     <>
+      <WelcomeAsim compact />
       <div className="admin-kpi-row">
         <KpiCard
           label="Revenue today" value={gbp(data.revenue.today_pence)}
@@ -2654,6 +2656,8 @@ function CategoriesList() {
 // ---- shell ----------------------------------------------------------------
 
 const NAV = [
+  { key: 'welcome', label: 'Welcome, Asim', href: '/admin/welcome', icon: 'home' },
+  { key: 'launch-checklist', label: 'Launch checklist', href: '/admin/launch-checklist', icon: 'check' },
   { key: '', label: 'Dashboard', href: '/admin', icon: 'home' },
   { key: 'wix-records', label: 'Wix records', href: '/admin/wix-records', icon: 'book' },
   { key: 'orders', label: 'Orders', href: '/admin/orders', icon: 'receipt' },
@@ -2678,6 +2682,8 @@ const NAV = [
 ]
 
 const TITLES = {
+  welcome: 'Welcome, Asim',
+  'launch-checklist': 'Launch checklist',
   '': 'Dashboard',
   'wix-records': 'Wix records',
   orders: 'Orders',
@@ -2716,6 +2722,8 @@ export default function AdminApp({ route }) {
 
   let page
   if (section === '') page = <Dashboard />
+  else if (section === 'welcome') page = <WelcomeAsim />
+  else if (section === 'launch-checklist') page = <LaunchReview />
   else if (section === 'wix-records') page = <WixRecords />
   else if (section === 'orders') page = params[0] ? <OrderDetail id={params[0]} /> : <OrdersList />
   else if (section === 'products') page = params[0] ? <ProductEdit id={params[0]} /> : <ProductsList />

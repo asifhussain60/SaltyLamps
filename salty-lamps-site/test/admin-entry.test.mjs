@@ -12,7 +12,7 @@ test('storefront admin bookmark preserves path on the dedicated hostname',async(
  assert.equal(res.headers.get('location'),'https://admin.saltylamps.co.uk/admin/orders?status=paid')
 })
 test('direct admin pages and APIs require valid Access even with obsolete bypass flags',async()=>{
- for(const [handler,path] of [[page,'/admin/orders'],[api,'/api/admin/orders'],[api,'/api/admin/wix-records']]) {
+ for(const [handler,path] of [[page,'/admin/orders'],[page,'/admin/welcome'],[page,'/admin/launch-checklist'],[api,'/api/admin/orders'],[api,'/api/admin/wix-records'],[api,'/api/admin/launch-review']]) {
   const res=await handler(context('https://admin.saltylamps.co.uk'+path,{ADMIN_OPEN_HOSTS:'admin.saltylamps.co.uk',DEV_ADMIN_BYPASS:'1'}))
   assert.equal(res.status,401)
   assert.match(res.headers.get('cache-control'),/no-store/)
