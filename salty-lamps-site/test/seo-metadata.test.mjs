@@ -41,4 +41,5 @@ test('a variant points back to an honest ProductGroup', () => {
   assert.equal(group.productGroupID, 'lamp-1')
   assert.deepEqual(variant.isVariantOf, { '@id': '#group-lamp-1' })
   assert.equal(variant.inProductGroupWithID, 'lamp-1')
+  assert.equal(variant.offers.priceValidUntil, undefined)
 })

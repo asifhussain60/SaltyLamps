@@ -36,15 +36,6 @@
 
 const CONTEXT = 'https://schema.org'
 
-// Rolling a year out. priceValidUntil is what stops Google treating a price as
-// indefinitely fresh, and an absent one is a common reason a merchant listing is
-// dropped. A year matches how often this catalogue is repriced.
-export function priceValidUntil(now = new Date()) {
-  const d = new Date(now)
-  d.setUTCFullYear(d.getUTCFullYear() + 1)
-  return d.toISOString().slice(0, 10)
-}
-
 export const SHOP = {
   name: 'Salty Lamps',
   legalName: 'Salty Lamps Ltd',
@@ -89,7 +80,6 @@ export function productSchema(product, {
   description,
   groupId,
   groupRef,
-  now,
 } = {}) {
   if (!product) return null
   const images = [...new Set([...(imageUrls || []), imageUrl].filter(Boolean))]
@@ -114,7 +104,6 @@ export function productSchema(product, {
       url,
       priceCurrency: 'GBP',
       price: product.price,
-      priceValidUntil: priceValidUntil(now),
       availability: product.stock ? `${CONTEXT}/InStock` : `${CONTEXT}/OutOfStock`,
       itemCondition: `${CONTEXT}/NewCondition`,
       seller: { '@type': 'Organization', name: SHOP.legalName },

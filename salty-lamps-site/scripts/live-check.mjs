@@ -117,6 +117,17 @@ export function noindexProblems({ headers, html }) {
 
 export const sitemapLocs = xml => [...String(xml).matchAll(/<loc>\s*([^<]*?)\s*<\/loc>/g)].map(match => unescapeXml(match[1]))
 
+export function productSitemapProblems(urls, products) {
+  const listed = new Set(urls)
+  const current = new Set(products.map(product => `${CANONICAL_ORIGIN}/product-page/${product.slug}`))
+  const stale = [...listed].filter(url => !current.has(url))
+  const missing = [...current].filter(url => !listed.has(url))
+  return [
+    ...stale.map(url => `listed product is absent from the live catalogue: ${url}`),
+    ...missing.map(url => `live product is missing from the sitemap: ${url}`),
+  ]
+}
+
 // Only exact-path 301s can be requested. Wildcard/placeholder rules have no concrete address, and
 // a rule with no status is a 302 on Pages, which would not carry search rankings.
 export function parseRedirects(text) {
@@ -299,6 +310,18 @@ export async function runChecks({
     return Promise.all(samples.map(async sample => ({ ...sample, res: sample.path ? await send(`${base}${sample.path}`, { text: true }) : null })))
   })
 
+  const loadProducts = () => once('products', async () => {
+    const res = await send(`${base}/api/products`, { text: true, accept: 'application/json' })
+    if (res.error || res.status !== 200) return { error: `/api/products: ${describe(res)}` }
+    try {
+      const products = JSON.parse(res.body).products
+      if (Array.isArray(products) && products.length && products.every(product => typeof product.slug === 'string' && product.slug)) {
+        return { products }
+      }
+    } catch { /* handled below */ }
+    return { error: '/api/products returned no valid product slugs' }
+  })
+
   const checks = {
     async robots() {
       const res = await send(`${base}/robots.txt`, { text: true })
@@ -330,8 +353,14 @@ export async function runChecks({
 
     async sitemaps() {
       const { problems, children, addresses } = await loadSitemaps()
+      const catalogue = await loadProducts()
+      if (catalogue.error) problems.push(catalogue.error)
+      else {
+        const productUrls = children.find(child => child.name === 'products-sitemap.xml')?.locs || []
+        if (productUrls.length) problems.push(...productSitemapProblems(productUrls, catalogue.products))
+      }
       if (problems.length) return [verdict('sitemaps', NAMES.sitemaps, fail(`${problems.length} problem(s): ${problems[0]}`), problems)]
-      return [verdict('sitemaps', NAMES.sitemaps, ok(`index lists ${children.length} sitemaps, all 200; ${addresses} addresses in pages, products and categories`))]
+      return [verdict('sitemaps', NAMES.sitemaps, ok(`index lists ${children.length} sitemaps, all 200; ${addresses} addresses in pages, products and categories; product pages match live catalogue`))]
     },
 
     async pages() {
@@ -372,11 +401,9 @@ export async function runChecks({
     },
 
     async images() {
-      const res = await send(`${base}/api/products`, { text: true, accept: 'application/json' })
-      if (res.error || res.status !== 200) return [verdict('images', NAMES.images, fail(`/api/products: ${describe(res)}`))]
-      let products
-      try { products = JSON.parse(res.body).products } catch { /* handled below */ }
-      if (!Array.isArray(products) || !products.length) return [verdict('images', NAMES.images, fail('/api/products returned no products'))]
+      const catalogue = await loadProducts()
+      if (catalogue.error) return [verdict('images', NAMES.images, fail(catalogue.error))]
+      const { products } = catalogue
       const urls = new Set()
       for (const product of products) {
         for (const src of [product.image, ...(Array.isArray(product.images) ? product.images : [])]) {

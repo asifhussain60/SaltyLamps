@@ -143,8 +143,9 @@ test.describe('structured data', () => {
     expect(Number(product.offers.price)).toBeGreaterThan(0)
     expect(product.offers.availability).toMatch(/InStock|OutOfStock/)
     expect(product.offers.itemCondition).toContain('NewCondition')
-    expect(product.offers.priceValidUntil, 'a merchant listing without priceValidUntil is often dropped')
-      .toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    // An ordinary catalogue price has no announced expiry. A fabricated date
+    // would imply a sale window the shop has not actually promised.
+    expect(product.offers.priceValidUntil).toBeUndefined()
     expect(product.brand?.name).toBeTruthy()
 
     // Never assert a rating: the shop holds no numeric ratings, so any that

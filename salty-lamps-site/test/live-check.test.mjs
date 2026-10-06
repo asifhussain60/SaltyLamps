@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import test from 'node:test'
 import {
   accessRedirectVerdict, canonicalLinks, countH1, exitCode, formatReport, noindexProblems, pageVerdict,
-  parseArgs, parseRedirects, redirectVerdict, robotsVerdict, runChecks, sitemapLocs, testHostVerdict,
+  parseArgs, parseRedirects, productSitemapProblems, redirectVerdict, robotsVerdict, runChecks, sitemapLocs, testHostVerdict,
 } from '../scripts/live-check.mjs'
 
 const WWW = 'https://www.saltylamps.co.uk'
@@ -70,6 +70,16 @@ test('sitemapLocs returns page addresses and ignores image and video locations',
     + `<video:video><video:content_loc>${WWW}/v.mp4</video:content_loc></video:video></url><url><loc> ${WWW}/b&amp;c </loc></url></urlset>`
   assert.deepEqual(sitemapLocs(xml), [`${WWW}/a`, `${WWW}/b&c`])
   assert.deepEqual(sitemapLocs('<sitemapindex></sitemapindex>'), [])
+})
+
+test('product sitemap must contain exactly the live catalogue slugs', () => {
+  assert.deepEqual(productSitemapProblems(
+    [`${WWW}/product-page/a-lamp`, `${WWW}/product-page/retired-lamp`],
+    [{ slug: 'a-lamp' }, { slug: 'new-lamp' }],
+  ), [
+    `listed product is absent from the live catalogue: ${WWW}/product-page/retired-lamp`,
+    `live product is missing from the sitemap: ${WWW}/product-page/new-lamp`,
+  ])
 })
 
 // --- old Wix addresses --------------------------------------------------------
@@ -141,16 +151,16 @@ function fakeNetwork(origin = WWW, patch = {}) {
   add('GET', `${origin}/robots.txt`, 200, GOOD_ROBOTS)
   add('GET', `${origin}/sitemap.xml`, 200, locs(...['pages', 'products', 'categories', 'images', 'videos'].map(name => `${WWW}/${name}-sitemap.xml`)))
   add('GET', `${origin}/pages-sitemap.xml`, 200, locs(`${WWW}/`, `${WWW}/shop`))
-  add('GET', `${origin}/products-sitemap.xml`, 200, locs(`${WWW}/product-page/a-lamp`))
+  add('GET', `${origin}/products-sitemap.xml`, 200, locs(`${WWW}/product-page/a-lamp`, `${WWW}/product-page/b-lamp`, `${WWW}/product-page/c-lamp`))
   add('GET', `${origin}/categories-sitemap.xml`, 200, locs(`${WWW}/category/lamps`, `${WWW}/collection/gifts`))
   add('GET', `${origin}/images-sitemap.xml`, 200, locs(`${WWW}/product-page/a-lamp`))
   add('GET', `${origin}/videos-sitemap.xml`, 200, locs(`${WWW}/`))
   for (const path of PAGES) add('GET', `${origin}${path}`, 200, pageHtml(path), { 'content-type': 'text/html' })
   add('GET', `${origin}/shop`, 200, pageHtml('/shop'))
   add('GET', `${origin}/api/products`, 200, JSON.stringify({ products: [
-    { image: '/media/a.jpg', images: ['/media/a.jpg', '/media/b.jpg'] },
-    { image: '/api/images/c.webp' },
-    { image: null },
+    { slug: 'a-lamp', image: '/media/a.jpg', images: ['/media/a.jpg', '/media/b.jpg'] },
+    { slug: 'b-lamp', image: '/api/images/c.webp' },
+    { slug: 'c-lamp', image: null },
   ] }), { 'content-type': 'application/json' })
   for (const image of ['/media/a.jpg', '/media/b.jpg', '/api/images/c.webp']) add('HEAD', `${origin}${image}`, 200, '', { 'content-type': 'image/jpeg' })
   add('GET', `${origin}/old-lamp`, 301, '', { location: '/product-page/a-lamp' })
@@ -179,7 +189,7 @@ test('a healthy shop passes every check, one line each', async () => {
   assert.deepEqual(results.map(r => r.key), ['robots', 'noindex', 'sitemaps', 'pages', 'pages', 'pages', 'pages', 'bare', 'redirects', 'images', 'admin', 'testhost'])
   assert.match(results.find(r => r.key === 'redirects').reason, /^2 old addresses/)
   assert.match(results.find(r => r.key === 'images').reason, /^3 distinct photos/)
-  assert.match(results.find(r => r.key === 'sitemaps').reason, /5 addresses/)
+  assert.match(results.find(r => r.key === 'sitemaps').reason, /7 addresses/)
   assert.equal(exitCode(results), 0)
 })
 
@@ -218,6 +228,14 @@ test('a missing child sitemap fails the sitemap check', async () => {
   assert.equal(results.find(r => r.key === 'sitemaps').status, 'fail')
 })
 
+test('a missing product sitemap reports its outage without claiming every product disappeared', async () => {
+  const results = await run(fakeNetwork(WWW, { [`GET ${WWW}/products-sitemap.xml`]: () => new Response('', { status: 404 }) }))
+  const result = results.find(item => item.key === 'sitemaps')
+  assert.equal(result.status, 'fail')
+  assert.match(result.reason, /products-sitemap\.xml.*404/)
+  assert.equal(result.details.length, 1)
+})
+
 test('a sitemap index that omits a child is named in the failure', async () => {
   const network = fakeNetwork(WWW, { 'GET https://www.saltylamps.co.uk/sitemap.xml': () => new Response(locs(`${WWW}/pages-sitemap.xml`)) })
   const sitemaps = (await run(network)).find(r => r.key === 'sitemaps')
@@ -225,11 +243,21 @@ test('a sitemap index that omits a child is named in the failure', async () => {
   assert.match(sitemaps.reason, /products-sitemap\.xml/)
 })
 
+test('a retired product still listed in the sitemap fails the live check', async () => {
+  const network = fakeNetwork(WWW, {
+    [`GET ${WWW}/products-sitemap.xml`]: () => new Response(locs(`${WWW}/product-page/a-lamp`, `${WWW}/product-page/b-lamp`, `${WWW}/product-page/c-lamp`, `${WWW}/product-page/retired-lamp`)),
+  })
+  const result = (await run(network)).find(item => item.key === 'sitemaps')
+  assert.equal(result.status, 'fail')
+  assert.match(result.details.join('\n'), /retired-lamp/)
+})
+
 test('skip drops a check without running it, and unreachable hosts fail loudly rather than pass', async () => {
   const network = fakeNetwork()
   const results = await run(network, { skip: ['images', 'redirects'] })
   assert.deepEqual(results.filter(r => r.status === 'skip').map(r => r.key), ['redirects', 'images'])
-  assert.ok(!network.calls.some(call => call.url.includes('/api/products') || call.url.includes('/old-lamp')))
+  assert.ok(network.calls.some(call => call.url.includes('/api/products')))
+  assert.ok(!network.calls.some(call => call.url.includes('/old-lamp') || call.url.includes('/media/a.jpg')))
   const down = await runChecks({ base: WWW, admin: ADMIN, fetch: async () => { throw dnsError() }, redirectsText: REDIRECTS })
   assert.ok(failed(down).length >= 8)
   assert.equal(exitCode(down), 1)
