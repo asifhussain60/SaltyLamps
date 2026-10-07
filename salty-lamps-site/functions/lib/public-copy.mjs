@@ -33,7 +33,9 @@ export const unsupportedSentences = text => sentencesOf(text).filter(sentence =>
 
 // The owner's own wording, minus any sentence that makes an unsupported claim.
 export function withoutUnsupportedClaims(text) {
-  return sentencesOf(text).filter(sentence => !hasUnsupportedClaim(sentence)).join(' ').trim()
+  const copy = cleanCopy(text)
+  if (!hasUnsupportedClaim(copy)) return copy.trim()
+  return sentencesOf(copy).filter(sentence => !hasUnsupportedClaim(sentence)).join(' ').trim()
 }
 
 // options.useStoredDescription is for the live shop: what the owner saved in the admin

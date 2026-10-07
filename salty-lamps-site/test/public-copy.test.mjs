@@ -63,6 +63,12 @@ test('an unsupported claim is left out of the owner wording, and the rest is kep
   assert.equal(withoutUnsupportedClaims('Nothing risky here.'), 'Nothing risky here.')
 })
 
+test('the live product detail keeps the owner\'s paragraphs and feature lines', () => {
+  const saved = 'A warm lamp.\n\nKey Features\n- Hand carved\n- Amber glow\n\nMaterial: Natural salt'
+  const shown = publicProduct({ productName: 'Sphere lamp', description: saved, tags: [] }, { useStoredDescription: true }).description
+  assert.equal(shown, saved)
+})
+
 test('when every sentence is an unsupported claim the reviewed wording is used, and unnamed products still show their text', () => {
   const allBad = publicProduct({ productName: ANGEL, description: 'Purifies the room. It improves air quality.', tags: [] }, { useStoredDescription: true })
   assert.match(allBad.description, /^A hand-finished angel-shaped lamp/)

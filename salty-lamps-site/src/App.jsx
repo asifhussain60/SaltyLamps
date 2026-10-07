@@ -1888,7 +1888,7 @@ export default function App() {
           <div className="product-info-panel">
             <article>
               <span>Product details</span>
-              <p>{product.description} Natural Himalayan salt varies in colour, texture, and weight, so the product you receive will have its own tone and surface character.</p>
+              <p className="product-detail-copy">{product.description} Natural Himalayan salt varies in colour, texture, and weight, so the product you receive will have its own tone and surface character.</p>
             </article>
             <article>
               <span>Buyer reassurance</span>

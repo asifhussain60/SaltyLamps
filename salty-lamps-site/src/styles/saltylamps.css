@@ -2405,6 +2405,10 @@ label {
   grid-template-columns: 1fr;
 }
 
+.product-info-panel .product-detail-copy {
+  white-space: pre-line;
+}
+
 .product-review-panel {
   display: grid;
   gap: 14px;
