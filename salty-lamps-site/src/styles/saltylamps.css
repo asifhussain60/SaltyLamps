@@ -2406,7 +2406,8 @@ label {
 }
 
 .product-info-panel .product-detail-copy {
-  white-space: pre-line;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .product-review-panel {
