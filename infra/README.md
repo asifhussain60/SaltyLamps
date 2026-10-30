@@ -1,5 +1,7 @@
 # Salty Lamps infrastructure
 
+**Current hosting status, 30 October 2026:** the replacement shop, development shop, holding site, administrator portal and their Cloudflare databases/storage have been removed. See the [removal and recovery record](cloudflare-removal-2026-10-30.md) for verified results, preserved source/videos and private local recovery locations. Older deployment descriptions below are historical. Wix and account settings were untouched during removal.
+
 **Current provider handoff:** [Stripe and Resend for Claude Code](stripe-resend-handoff.md) records the approved owner accounts, verified secret locations and names, how the integrations work, and the remaining live setup. The older provider notes and quick index below include historical proposal and UAT details; use the handoff and [account ownership](account-ownership.md) for current work.
 
 This directory documents the Cloudflare and Stripe infrastructure backing
