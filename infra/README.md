@@ -16,6 +16,8 @@ is public.
 
 ## Files
 
+- [`future-cloudflare-hosting.md`](future-cloudflare-hosting.md) — new-domain restoration guide: configuration, private recovery inputs, provider setup, code changes, verification and rollback
+
 - [`account-ownership.md`](account-ownership.md) — approved owner and administrator identities; retired-account prohibition
 - [`cloudflare.md`](cloudflare.md) — Pages project, D1 database, API tokens, secrets, Functions
 - [`stripe.md`](stripe.md) — account, API key, webhook endpoint
